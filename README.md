@@ -33,7 +33,7 @@
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer ["Flutter Mobile Client (SKAVIA App)"]
+    subgraph ClientLayer [Flutter Mobile Client - SKAVIA App]
         UI["Presentation Layer<br/>(Theme, Widgets & Screens)"]
         Controller["State Controllers<br/>(ChangeNotifier / Provider)"]
         Domain["Domain Entities & Core Logic<br/>(Feature-First Clean Architecture)"]
@@ -41,7 +41,7 @@ flowchart TD
         UI --> Controller --> Domain --> DataSources
     end
 
-    subgraph AuthLayer ["Identity & Authentication (Firebase)"]
+    subgraph AuthLayer [Identity & Authentication - Firebase]
         FAuth["Firebase Auth Engine<br/>(Project: skavia-113a3)"]
         GoogleAuth["Google Sign-In"]
         EmailAuth["Email & Password Auth"]
@@ -51,14 +51,14 @@ flowchart TD
         FAuth --> PhoneAuth
     end
 
-    subgraph DBLayer ["Relational Persistence (Supabase PostgreSQL 15)"]
+    subgraph DBLayer [Relational Persistence - Supabase PostgreSQL 15]
         SupaClient["PostgREST API Client"]
         Tables["34 Relational Tables (Full 50-Page SRS)"]
         RLS["Hardened Row-Level Security & Indexes"]
         SupaClient --> Tables --> RLS
     end
 
-    subgraph StorageLayer ["Object Storage (Supabase Buckets)"]
+    subgraph StorageLayer [Object Storage - Supabase Buckets]
         Avatars["avatars (5MB - Profile Photos)"]
         Portfolios["portfolios (10MB - Work Showcase)"]
         Certificates["certificates (10MB - Certifications)"]
@@ -66,9 +66,9 @@ flowchart TD
         Attachments["attachments (20MB - Project Docs & Chat)"]
     end
 
-    DataSources -->|"Auth Tokens & UIDs"| FAuth
-    DataSources -->|"Secure REST API"| SupaClient
-    DataSources -->|"CDN Upload & Stream"| StorageLayer
+    DataSources -->|Auth Tokens & UIDs| FAuth
+    DataSources -->|Secure REST API| SupaClient
+    DataSources -->|CDN Upload & Stream| StorageLayer
 ```
 
 ---
