@@ -75,13 +75,12 @@ flowchart TD
 
 ## 📋 Lab Milestone: Week 1 Deliverables (Architecture & Dual Backend Setup)
 
-According to the [12-Week Strategic Roadmap](SKAVIA_12_WEEK_PLAN.md), Week 1 focuses on scaffolding the enterprise architecture, establishing the Firebase authentication layer, and deploying the complete Supabase relational database and storage infrastructure.
+Week 1 focuses on scaffolding the enterprise architecture, establishing the Firebase authentication layer, and deploying the complete Supabase relational database and storage infrastructure.
 
 ### 1. Enterprise Architecture Initialization
 - Initialized Flutter cross-platform skeleton adhering strictly to **Feature-First Domain-Driven Clean Architecture** (`lib/app`, `lib/core`, `lib/shared`, `lib/data`, `lib/features`).
 - Established single-responsibility documentation:
   - [`ARCHITECTURE.md`](ARCHITECTURE.md): Separation of concerns and dependency rules.
-  - [`SKAVIA_12_WEEK_PLAN.md`](SKAVIA_12_WEEK_PLAN.md): 12-week MVP roadmap, task distribution, and defense walkthrough.
   - [`ROUTING_AND_FILE_STRUCTURE.md`](ROUTING_AND_FILE_STRUCTURE.md): Application route catalog and navigation mapping.
 
 ### 2. Firebase Authentication Integration (100% Configured)
