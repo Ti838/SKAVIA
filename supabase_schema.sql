@@ -633,12 +633,76 @@ CREATE POLICY "Tasks Access" ON tasks FOR ALL USING (true) WITH CHECK (true);
 -- 15.3 Financial Transparency & Tamper-Proof Protections
 CREATE POLICY "Payments Read" ON payments FOR SELECT USING (true);
 CREATE POLICY "Payments Insert" ON payments FOR INSERT WITH CHECK (true);
+CREATE POLICY "Payments Update" ON payments FOR UPDATE USING (true);
 CREATE POLICY "Invoices Read" ON invoices FOR SELECT USING (true);
 CREATE POLICY "Invoices Insert" ON invoices FOR INSERT WITH CHECK (true);
 CREATE POLICY "Transactions Read" ON transactions FOR SELECT USING (true);
 CREATE POLICY "Transactions Insert" ON transactions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Worker Earnings Read" ON worker_earnings FOR SELECT USING (true);
 CREATE POLICY "Worker Earnings Insert" ON worker_earnings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Worker Earnings Update" ON worker_earnings FOR UPDATE USING (true);
+
+-- 15.4 ATOMIC PAYMENT COMPLETION TRANSACTION (PostgreSQL RPC Function)
+-- Guarantees ACID compliance: Updates payment, records transaction, creates invoice, and credits worker in one atomic call.
+CREATE OR REPLACE FUNCTION complete_payment_transaction(
+    p_payment_id UUID,
+    p_gateway_name VARCHAR,
+    p_gateway_tx_id VARCHAR,
+    p_client_name VARCHAR,
+    p_worker_amount DECIMAL,
+    p_skavia_fee DECIMAL,
+    p_total_amount DECIMAL,
+    p_worker_profile_id UUID DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    v_invoice_number VARCHAR;
+    v_invoice_id UUID;
+    v_tx_id UUID;
+    v_earning_id UUID;
+    v_now TIMESTAMP WITH TIME ZONE := NOW();
+BEGIN
+    -- 1. Update Payment status to Completed
+    UPDATE payments
+    SET status = 'Completed',
+        paid_at = v_now
+    WHERE payment_id = p_payment_id;
+
+    -- 2. Insert Transaction record
+    INSERT INTO transactions (payment_id, gateway_name, gateway_tx_id, amount, status, created_at)
+    VALUES (p_payment_id, p_gateway_name, p_gateway_tx_id, p_total_amount, 'Completed', v_now)
+    RETURNING transaction_id INTO v_tx_id;
+
+    -- 3. Generate unique invoice number: INV-YYYYMM-XXXXXX
+    v_invoice_number := 'INV-' || TO_CHAR(v_now, 'YYYYMM') || '-' || LPAD(FLOOR(RANDOM() * 1000000)::TEXT, 6, '0');
+
+    -- 4. Insert Invoice record
+    INSERT INTO invoices (payment_id, invoice_number, client_name, worker_amount, skavia_fee, total_amount, issued_at)
+    VALUES (p_payment_id, v_invoice_number, p_client_name, p_worker_amount, p_skavia_fee, p_total_amount, v_now)
+    RETURNING invoice_id INTO v_invoice_id;
+
+    -- 5. Credit Worker Earning if worker is specified
+    IF p_worker_profile_id IS NOT NULL THEN
+        INSERT INTO worker_earnings (worker_profile_id, payment_id, amount, status, created_at)
+        VALUES (p_worker_profile_id, p_payment_id, p_worker_amount, 'Available', v_now)
+        RETURNING earning_id INTO v_earning_id;
+    END IF;
+
+    -- Return JSON payload of completed transaction
+    RETURN jsonb_build_object(
+        'payment_id', p_payment_id,
+        'invoice_id', v_invoice_id,
+        'invoice_number', v_invoice_number,
+        'transaction_id', v_tx_id,
+        'earning_id', v_earning_id,
+        'status', 'Completed',
+        'paid_at', v_now
+    );
+END;
+$$;
 
 CREATE POLICY "Reviews Access" ON reviews FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Reputations Access" ON reputations FOR ALL USING (true) WITH CHECK (true);
