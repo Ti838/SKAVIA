@@ -13,8 +13,9 @@
   <img src="https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white" alt="Dart"/>
   <img src="https://img.shields.io/badge/Firebase-Auth_Integrated-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
   <img src="https://img.shields.io/badge/Supabase-PostgreSQL_15-3ECF8E?logo=supabase&logoColor=white" alt="Supabase"/>
-  <img src="https://img.shields.io/badge/Architecture-Feature--First_Clean-blueviolet" alt="Architecture"/>
-  <img src="https://img.shields.io/badge/Milestone-Week_1_Completed-success" alt="Milestone"/>
+  <img src="https://img.shields.io/badge/SSLCommerz-Payment_Integrated-0052CC" alt="SSLCommerz"/>
+  <img src="https://img.shields.io/badge/Tests-37_Passed-success" alt="Tests"/>
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/>
 </p>
 
 ---
@@ -24,102 +25,95 @@
 * **System:** SKAVIA Solution-Oriented Service & Workforce Platform
 * **Target Platforms:** Android / iOS / Web (Flutter 3.x)
 * **Engineering Paradigm:** Feature-First Domain-Driven Clean Architecture
-* **Active Milestone:** **Phase 1 Complete** *(Foundation, Modular Architecture & Dual-Backend Live Integration)*
-* **Security Standard:** Row Level Security (RLS) on all 34 relational tables, Firebase Auth token verification, tamper-evident audit logging
+* **Security Standard:** Row Level Security (RLS) on all relational tables, private KYC storage isolation, and zero-PII marketplace views.
+* **Payment Standard:** Server-authoritative SSLCommerz hosted checkout, bank IPN validation edge function, and atomic, idempotent settlement.
 
 ---
 
-## 🏗️ System Architecture & Daily Integration Flow
+## 🏗️ System Architecture & Integration Flow
 
 ```mermaid
 flowchart TD
     subgraph ClientLayer [Flutter Mobile Client - SKAVIA App]
-        UI["Presentation Layer<br/>(Theme, Widgets & Screens)"]
+        UI["Presentation Layer<br/>(Splash, Onboarding, Login, Register, Unified Dashboard)"]
         Controller["State Controllers<br/>(ChangeNotifier / Provider)"]
         Domain["Domain Entities & Core Logic<br/>(Feature-First Clean Architecture)"]
-        DataSources["Data Sources & Repositories<br/>(PostgREST & Firebase Auth Handlers)"]
+        DataSources["Data Sources & Repositories<br/>(PostgREST & Payment Handlers)"]
         UI --> Controller --> Domain --> DataSources
     end
 
-    subgraph AuthLayer [Identity & Authentication - Firebase]
-        FAuth["Firebase Auth Engine<br/>(Project: skavia-113a3)"]
-        GoogleAuth["Google Sign-In"]
-        EmailAuth["Email & Password Auth"]
-        PhoneAuth["Phone OTP Verification"]
-        FAuth --> GoogleAuth
-        FAuth --> EmailAuth
-        FAuth --> PhoneAuth
+    subgraph AuthLayer [Identity & Authentication - Firebase & Supabase]
+        FAuth["Firebase Auth Engine<br/>(Google, Email/Password, Phone OTP)"]
+        SupaSync["Supabase User Profile Sync"]
+        FAuth --> SupaSync
     end
 
     subgraph DBLayer [Relational Persistence - Supabase PostgreSQL 15]
         SupaClient["PostgREST API Client"]
         Tables["34 Relational Tables (Full 50-Page SRS)"]
-        RLS["Hardened Row-Level Security & Indexes"]
+        RLS["Strict Row-Level Security & Private KYC Storage"]
         SupaClient --> Tables --> RLS
     end
 
-    subgraph StorageLayer [Object Storage - Supabase Buckets]
-        Avatars["avatars (5MB - Profile Photos)"]
-        Portfolios["portfolios (10MB - Work Showcase)"]
-        Certificates["certificates (10MB - Certifications)"]
-        Verifications["verifications (10MB - NID & Licenses)"]
-        Attachments["attachments (20MB - Project Docs & Chat)"]
+    subgraph PaymentLayer [SSLCommerz Hosted Checkout & Settlement]
+        SSLGateway["SSLCommerz Gateway (API v4)"]
+        EdgeFunction["verify-sslcommerz-ipn (Deno Edge Function)"]
+        Settlement["complete_payment_transaction (SECURITY DEFINER RPC)"]
+        SSLGateway --> EdgeFunction --> Settlement
     end
 
-    DataSources -->|Auth Tokens & UIDs| FAuth
-    DataSources -->|Secure REST API| SupaClient
-    DataSources -->|CDN Upload & Stream| StorageLayer
+    DataSources --> FAuth
+    DataSources --> SupaClient
+    DataSources --> SSLGateway
 ```
 
 ---
 
-## 📋 Lab Milestone: Week 1 Deliverables (Architecture & Dual Backend Setup)
+## 🚀 Key Completed Milestones
 
-Week 1 focuses on scaffolding the enterprise architecture, establishing the Firebase authentication layer, and deploying the complete Supabase relational database and storage infrastructure.
+### 1. Core UI & Onboarding
+- **Splash & Onboarding:** Smooth initial splash and animated onboarding carousel.
+- **Authentication:** Email & password authentication, login, registration, and phone OTP verification interfaces.
+- **Unified Main Dashboard:** Dual-mode navigation hub dynamically switching between Customer view and Worker view.
 
-### 1. Enterprise Architecture Initialization
-- Initialized Flutter cross-platform skeleton adhering strictly to **Feature-First Domain-Driven Clean Architecture** (`lib/app`, `lib/core`, `lib/shared`, `lib/data`, `lib/features`).
-- Established single-responsibility documentation:
-  - [`ARCHITECTURE.md`](ARCHITECTURE.md): Separation of concerns and dependency rules.
-  - [`ROUTING_AND_FILE_STRUCTURE.md`](ROUTING_AND_FILE_STRUCTURE.md): Application route catalog and navigation mapping.
+### 2. Database Hardening & Security Remediation
+- **User Privacy (RLS):** Strict Owner-Only Row Level Security on `public.users` (`auth.uid()::text = user_id`) with anonymous access completely revoked.
+- **Zero-PII Marketplace Directory:** `marketplace_public_profiles` view exposing only approved public worker metrics while strictly excluding phone numbers, emails, and credentials.
+- **Private KYC Storage:** `verifications` bucket access restricted strictly to file owners (`(storage.foldername(name))[1] = auth.uid()::text`).
 
-### 2. Firebase Authentication Integration (100% Configured)
-- Connected Firebase project **`skavia-113a3`** with `firebase_core` and `firebase_auth`.
-- Integrated `lib/firebase_options.dart` and native `android/app/google-services.json`.
-- Extracted and linked Android Keystore **Debug SHA-1** (`40:EF:AD:...`) and **SHA-256** to prevent `ApiException 10` during Google Sign-In and Phone OTP verification.
+### 3. Server-Authoritative SSLCommerz Payment Integration
+- **Hosted Checkout:** SSLCommerz API v4 session initialization with bound payment correlation references (`value_a: paymentId`).
+- **Edge Function Verification:** Server-to-server bank validation (`verify-sslcommerz-ipn`) against official SSLCommerz transaction validation APIs, rejecting counterfeit callbacks and mismatched amounts.
+- **Atomic & Idempotent Settlement:** `complete_payment_transaction` RPC executing under `service_role` with row-locking (`FOR UPDATE`) and unique constraints preventing duplicate transactions, invoices, or earnings.
+- **Debounce & Polling UX:** Eliminated client-side fallbacks; checkout debounced against repeated taps and status authoritatively polled with bounded backoff.
 
-### 3. Supabase Relational Database Deployment (34 Tables)
-- Conducted deep architectural analysis of the **50-page SKAVIA SRS** (Sections 4.4, 4.5 & 4.8).
-- Authored and executed [`supabase_schema.sql`](supabase_schema.sql) in Supabase SQL Editor:
-  - **Full Schema Deployment:** Created **34 relational tables** covering users, categories, worker profiles, algorithmic match results, individual service requests, complex team structures, payments, reviews, and disputes.
-  - **Security & Integrity:** Removed sensitive password hash columns in favor of Firebase JWT mapping, enforced tamper-proof constraints on `audit_logs`, and fortified payment records against anonymous modification.
-  - **Performance Optimization:** Provisioned 18 high-speed B-Tree indexes on all foreign key relationships to prevent full-table sequential scans.
-  - **Seed Data:** Seeded realistic Bangladeshi service providers (Electricians, HVAC Specialists, Plumbers, IT Technicians) across Dhaka hubs (Uttara, Dhanmondi, Banani, Mirpur).
-
-### 4. S3-Compatible Object Storage Provisioning
-- Configured 5 distinct public storage buckets with strict MIME type guards and upload limits:
-  1. `avatars` (5MB - Profile images)
-  2. `portfolios` (10MB - Work galleries)
-  3. `certificates` (10MB - Verification diplomas)
-  4. `verifications` (10MB - NID / Trade licenses)
-  5. `attachments` (20MB - In-app chat & issue attachments)
-
-### 5. Automated Verification & Code Quality
-- Centralized all database table and bucket keys in [`lib/data/tables/database_tables.dart`](lib/data/tables/database_tables.dart).
-- Executed `flutter analyze` ensuring **zero static analysis warnings or errors** (`No issues found!`).
-- Validated package dependencies and configuration integrity.
+### 4. Comprehensive Automated Test Suite
+- **37 Automated Tests Passing (100% Pass Rate):**
+  - **15 Security & Settlement Tests:** Currency checking, amount matching, non-VALID status rejection, idempotency, debouncing, and private-data protection.
+  - **8 Billing & Fee Model Tests:** Mathematical fee split isolation (85% worker / 15% SKAVIA fee).
+  - **14 Taxonomy, Matching & Feature Tests:** Category taxonomy, weighted matching engine, chat models, and smoke tests.
+- **Static Analysis:** `flutter analyze` passing with 0 warnings and 0 errors.
 
 ---
 
 ## ⚡ Quick Verification Commands
 
 ```bash
+# Code formatting check
+dart format --output=none --set-exit-if-changed lib test
+
 # Run static codebase analysis
 flutter analyze
 
-# Execute test suite
+# Execute full test suite (37 tests)
 flutter test
 ```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
