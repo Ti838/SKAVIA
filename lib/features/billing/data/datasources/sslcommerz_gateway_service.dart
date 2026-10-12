@@ -1,18 +1,24 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
+
 import '../../../../app/config/app_config.dart';
 
 /// SSLCommerz Gateway Backend Communication Service
 /// Handles API V4 session initiation for Hosted Checkout (bKash, Nagad, Cards, etc.)
 class SslCommerzGatewayService {
   // API Endpoints
-  static const String sandboxApiUrl = 'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
-  static const String liveApiUrl = 'https://securepay.sslcommerz.com/gwprocess/v4/api.php';
+  static const String sandboxApiUrl =
+      'https://sandbox.sslcommerz.com/gwprocess/v4/api.php';
+  static const String liveApiUrl =
+      'https://securepay.sslcommerz.com/gwprocess/v4/api.php';
 
   // Internal Callback URLs for redirect interception
-  static const String successUrl = 'https://skavia-platform.web.app/payment/success';
+  static const String successUrl =
+      'https://skavia-platform.web.app/payment/success';
   static const String failUrl = 'https://skavia-platform.web.app/payment/fail';
-  static const String cancelUrl = 'https://skavia-platform.web.app/payment/cancel';
+  static const String cancelUrl =
+      'https://skavia-platform.web.app/payment/cancel';
   static const String ipnUrl = 'https://skavia-platform.web.app/payment/ipn';
 
   final String storeId;
@@ -23,9 +29,9 @@ class SslCommerzGatewayService {
     String? storeId,
     String? storePasswd,
     bool? isSandbox,
-  })  : storeId = storeId ?? AppConfig.sslCommerzStoreId,
-        storePasswd = storePasswd ?? AppConfig.sslCommerzStorePasswd,
-        isSandbox = isSandbox ?? AppConfig.sslCommerzIsSandbox;
+  }) : storeId = storeId ?? AppConfig.sslCommerzStoreId,
+       storePasswd = storePasswd ?? AppConfig.sslCommerzStorePasswd,
+       isSandbox = isSandbox ?? AppConfig.sslCommerzIsSandbox;
 
   /// Initiates a payment session with SSLCommerz and returns the GatewayPageURL
   Future<SslCommerzInitResult> initiatePayment({
@@ -36,6 +42,7 @@ class SslCommerzGatewayService {
     required String customerPhone,
     String productName = 'SKAVIA On-Demand Service',
     String productCategory = 'Service',
+    String? paymentId,
   }) async {
     final endpoint = isSandbox ? sandboxApiUrl : liveApiUrl;
 
@@ -50,7 +57,9 @@ class SslCommerzGatewayService {
       'cancel_url': cancelUrl,
       'ipn_url': ipnUrl,
       'cus_name': customerName.isNotEmpty ? customerName : 'SKAVIA Customer',
-      'cus_email': customerEmail.isNotEmpty ? customerEmail : 'customer@skavia.app',
+      'cus_email': customerEmail.isNotEmpty
+          ? customerEmail
+          : 'customer@skavia.app',
       'cus_add1': 'Dhaka, Bangladesh',
       'cus_phone': customerPhone.isNotEmpty ? customerPhone : '01700000000',
       'cus_city': 'Dhaka',
@@ -59,13 +68,11 @@ class SslCommerzGatewayService {
       'product_name': productName,
       'product_category': productCategory,
       'product_profile': 'general',
+      'value_a': ?paymentId,
     };
 
     try {
-      final response = await http.post(
-        Uri.parse(endpoint),
-        body: body,
-      );
+      final response = await http.post(Uri.parse(endpoint), body: body);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -85,12 +92,15 @@ class SslCommerzGatewayService {
 
         return SslCommerzInitResult(
           isSuccess: false,
-          errorMessage: data['failedreason'] ?? 'SSLCommerz session initialization failed.',
+          errorMessage:
+              data['failedreason'] ??
+              'SSLCommerz session initialization failed.',
         );
       } else {
         return SslCommerzInitResult(
           isSuccess: false,
-          errorMessage: 'HTTP ${response.statusCode}: Failed to connect to SSLCommerz.',
+          errorMessage:
+              'HTTP ${response.statusCode}: Failed to connect to SSLCommerz.',
         );
       }
     } catch (e) {

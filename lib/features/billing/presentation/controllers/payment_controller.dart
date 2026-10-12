@@ -1,10 +1,18 @@
 import 'package:flutter/foundation.dart';
+
 import '../../../../app/config/app_config.dart';
 import '../../data/datasources/payment_remote_datasource.dart';
 import '../../data/datasources/sslcommerz_gateway_service.dart';
 import '../../data/models/payment_transaction_model.dart';
 
-enum PaymentState { initial, loading, sessionCreated, processing, success, failed }
+enum PaymentState {
+  initial,
+  loading,
+  sessionCreated,
+  processing,
+  success,
+  failed,
+}
 
 /// Controller managing Payment, Checkout, and Invoice operations.
 /// Strictly implements SRS Section 3.1.O (FR-O01 to FR-O05) and Section 3.1.P (FR-P01 to FR-P04).
@@ -15,13 +23,14 @@ class PaymentController extends ChangeNotifier {
   PaymentController({
     PaymentRemoteDataSource? remoteDataSource,
     SslCommerzGatewayService? gatewayService,
-  })  : _remoteDataSource = remoteDataSource ?? PaymentRemoteDataSource(),
-        _gatewayService = gatewayService ?? SslCommerzGatewayService();
+  }) : _remoteDataSource = remoteDataSource ?? PaymentRemoteDataSource(),
+       _gatewayService = gatewayService ?? SslCommerzGatewayService();
 
   PaymentState _state = PaymentState.initial;
   PaymentState get state => _state;
 
-  bool get isLoading => _state == PaymentState.loading || _state == PaymentState.processing;
+  bool get isLoading =>
+      _state == PaymentState.loading || _state == PaymentState.processing;
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
@@ -74,6 +83,11 @@ class PaymentController extends ChangeNotifier {
     String? workerProfileId,
     String serviceTitle = 'SKAVIA On-Demand Service',
   }) async {
+    // Prevent accidental duplicate payment attempts from repeated button presses
+    if (isLoading) {
+      return null;
+    }
+
     _state = PaymentState.loading;
     _errorMessage = null;
     notifyListeners();
@@ -101,6 +115,7 @@ class PaymentController extends ChangeNotifier {
         customerEmail: customerEmail,
         customerPhone: customerPhone,
         productName: serviceTitle,
+        paymentId: _currentPayment!.paymentId,
       );
 
       if (result.isSuccess && result.gatewayUrl != null) {
@@ -110,7 +125,9 @@ class PaymentController extends ChangeNotifier {
         return _gatewayPageUrl;
       } else {
         _state = PaymentState.failed;
-        _errorMessage = result.errorMessage ?? 'Failed to initialize payment gateway session.';
+        _errorMessage =
+            result.errorMessage ??
+            'Failed to initialize payment gateway session.';
         notifyListeners();
         return null;
       }
@@ -122,8 +139,8 @@ class PaymentController extends ChangeNotifier {
     }
   }
 
-  /// 2. Finalize payment when SSLCommerz returns a successful callback
-  /// (SRS UC-11 Main Flow: update payment, record transaction, invoice, worker earnings)
+  /// 2. Authoritatively verify backend settlement when user returns from SSLCommerz WebView
+  /// Never marks payment completed solely on browser/app redirect.
   Future<bool> handlePaymentSuccess({
     required String gatewayTxId,
     required String gatewayName,
@@ -141,6 +158,24 @@ class PaymentController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Step A: Check if authoritative server-side IPN has already settled this payment
+      final backendSettlement = await _remoteDataSource.verifyBackendSettlement(
+        paymentId: _currentPayment!.paymentId,
+        maxAttempts: 3,
+        retryInterval: const Duration(seconds: 1),
+      );
+
+      if (backendSettlement != null) {
+        _currentPayment = backendSettlement.payment;
+        _currentTransaction = backendSettlement.transaction;
+        _currentInvoice = backendSettlement.invoice;
+        _currentWorkerEarning = backendSettlement.workerEarning;
+        _state = PaymentState.success;
+        notifyListeners();
+        return true;
+      }
+
+      // Step B: Attempt remote RPC if configured (fails safely if client-role RPC is revoked)
       final feeSplit = calculateFeeSplit(_currentPayment!.totalAmount);
       final workerAmount = feeSplit['workerAmount']!;
       final skaviaFee = feeSplit['skaviaFee']!;
@@ -170,6 +205,28 @@ class PaymentController extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  /// Authoritatively check payment status from backend (for app reopen, refresh, or delayed callback)
+  Future<PaymentModel?> checkPaymentStatus(String paymentId) async {
+    final payment = await _remoteDataSource.getPayment(paymentId);
+    if (payment != null) {
+      _currentPayment = payment;
+      if (payment.status == 'Completed') {
+        _state = PaymentState.success;
+        _currentInvoice = await _remoteDataSource.getInvoiceByPaymentId(
+          paymentId,
+        );
+        _currentTransaction = await _remoteDataSource.getTransactionByPaymentId(
+          paymentId,
+        );
+      } else if (payment.status == 'Failed') {
+        _state = PaymentState.failed;
+        _errorMessage = 'Payment failed at gateway.';
+      }
+      notifyListeners();
+    }
+    return payment;
   }
 
   /// 3. Handle payment cancellation or failure

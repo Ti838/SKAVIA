@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../../data/tables/database_tables.dart';
 import '../models/payment_transaction_model.dart';
 
@@ -75,24 +76,46 @@ class PaymentRemoteDataSource {
     final now = DateTime.now();
 
     try {
-      // 1. Try calling the atomic RPC function
-      final rpcParams = {
-        'p_payment_id': paymentId,
-        'p_gateway_name': gatewayName,
-        'p_gateway_tx_id': gatewayTxId,
-        'p_client_name': clientName,
-        'p_worker_amount': workerAmount,
-        'p_skavia_fee': skaviaFee,
-        'p_total_amount': totalAmount,
-        'p_worker_profile_id': ?workerProfileId,
-      };
+      // 1. Try calling the hardened backend RPC function or verify status
+      Map<String, dynamic> data = {};
+      try {
+        final rpcResult = await _safeClient.rpc(
+          'complete_payment_transaction',
+          params: {
+            'p_payment_id': paymentId,
+            'p_gateway_name': gatewayName,
+            'p_gateway_tx_id': gatewayTxId,
+            'p_val_id': gatewayTxId,
+            'p_verified_amount': totalAmount,
+          },
+        );
+        data = Map<String, dynamic>.from(rpcResult as Map);
+      } catch (_) {
+        // Fallback to legacy signature if running on unmigrated environment
+        final legacyResult = await _safeClient.rpc(
+          'complete_payment_transaction',
+          params: {
+            'p_payment_id': paymentId,
+            'p_gateway_name': gatewayName,
+            'p_gateway_tx_id': gatewayTxId,
+            'p_client_name': clientName,
+            'p_worker_amount': workerAmount,
+            'p_skavia_fee': skaviaFee,
+            'p_total_amount': totalAmount,
+            'p_worker_profile_id': ?workerProfileId,
+          },
+        );
+        data = Map<String, dynamic>.from(legacyResult as Map);
+      }
 
-      final rpcResult = await _safeClient.rpc('complete_payment_transaction', params: rpcParams);
-      final data = Map<String, dynamic>.from(rpcResult as Map);
-
-      final invoiceNumber = data['invoice_number'] as String? ?? 'INV-${now.year}${now.month}-${now.millisecondsSinceEpoch}';
-      final invoiceId = data['invoice_id'] as String? ?? 'inv-${now.millisecondsSinceEpoch}';
-      final txId = data['transaction_id'] as String? ?? 'tx-${now.millisecondsSinceEpoch}';
+      final invoiceNumber =
+          data['invoice_number'] as String? ??
+          'INV-${now.year}${now.month}-${now.millisecondsSinceEpoch}';
+      final invoiceId =
+          data['invoice_id'] as String? ?? 'inv-${now.millisecondsSinceEpoch}';
+      final txId =
+          data['transaction_id'] as String? ??
+          'tx-${now.millisecondsSinceEpoch}';
       final earningId = data['earning_id'] as String?;
 
       return PaymentCompletionResult(
@@ -136,80 +159,83 @@ class PaymentRemoteDataSource {
             : null,
       );
     } catch (e) {
-      // 2. Fallback: Direct table operations if RPC not yet created in remote database
-      try {
-        await _safeClient
-            .from(DatabaseTables.payments)
-            .update({'status': 'Completed', 'paid_at': now.toIso8601String()})
-            .eq('payment_id', paymentId);
+      // In production security model, client cannot locally bypass server verification.
+      // Re-throw so PaymentController marks payment as pending verification or failed.
+      throw Exception(
+        'Server settlement required: Payment must be confirmed by SSLCommerz IPN Edge Function. Details: $e',
+      );
+    }
+  }
 
-        final invoiceNumber = 'INV-${now.year}${now.month.toString().padLeft(2, '0')}-${now.millisecondsSinceEpoch.toString().substring(7)}';
+  /// Authoritatively retrieve payment record from Supabase
+  Future<PaymentModel?> getPayment(String paymentId) async {
+    try {
+      final response = await _safeClient
+          .from(DatabaseTables.payments)
+          .select()
+          .eq('payment_id', paymentId)
+          .maybeSingle();
+      if (response == null) return null;
+      return PaymentModel.fromJson(response);
+    } catch (_) {
+      return null;
+    }
+  }
 
-        final invRes = await _safeClient.from(DatabaseTables.invoices).insert({
-          'payment_id': paymentId,
-          'invoice_number': invoiceNumber,
-          'client_name': clientName,
-          'worker_amount': workerAmount,
-          'skavia_fee': skaviaFee,
-          'total_amount': totalAmount,
-        }).select().single();
+  /// Authoritatively retrieve invoice record associated with payment
+  Future<InvoiceModel?> getInvoiceByPaymentId(String paymentId) async {
+    try {
+      final response = await _safeClient
+          .from(DatabaseTables.invoices)
+          .select()
+          .eq('payment_id', paymentId)
+          .maybeSingle();
+      if (response == null) return null;
+      return InvoiceModel.fromJson(response);
+    } catch (_) {
+      return null;
+    }
+  }
 
-        final txRes = await _safeClient.from(DatabaseTables.transactions).insert({
-          'payment_id': paymentId,
-          'gateway_name': gatewayName,
-          'gateway_tx_id': gatewayTxId,
-          'amount': totalAmount,
-          'status': 'Completed',
-        }).select().single();
+  /// Authoritatively retrieve transaction record associated with payment
+  Future<TransactionModel?> getTransactionByPaymentId(String paymentId) async {
+    try {
+      final response = await _safeClient
+          .from(DatabaseTables.transactions)
+          .select()
+          .eq('payment_id', paymentId)
+          .maybeSingle();
+      if (response == null) return null;
+      return TransactionModel.fromJson(response);
+    } catch (_) {
+      return null;
+    }
+  }
 
-        return PaymentCompletionResult(
-          payment: PaymentModel(
-            paymentId: paymentId,
-            clientId: clientName,
-            totalAmount: totalAmount,
-            skaviaFee: skaviaFee,
-            status: 'Completed',
-            paidAt: now,
-            createdAt: now,
-          ),
-          transaction: TransactionModel.fromJson(txRes),
-          invoice: InvoiceModel.fromJson(invRes),
-        );
-      } catch (_) {
-        // Offline resilience fallback
-        final invoiceNumber = 'INV-${now.year}${now.month.toString().padLeft(2, '0')}-${now.millisecondsSinceEpoch.toString().substring(7)}';
-        return PaymentCompletionResult(
-          payment: PaymentModel(
-            paymentId: paymentId,
-            clientId: clientName,
-            totalAmount: totalAmount,
-            skaviaFee: skaviaFee,
-            status: 'Completed',
-            paidAt: now,
-            createdAt: now,
-          ),
-          transaction: TransactionModel(
-            transactionId: 'tx-${now.millisecondsSinceEpoch}',
-            paymentId: paymentId,
-            gatewayName: gatewayName,
-            gatewayTxId: gatewayTxId,
-            amount: totalAmount,
-            status: 'Completed',
-            createdAt: now,
-          ),
-          invoice: InvoiceModel(
-            invoiceId: 'inv-${now.millisecondsSinceEpoch}',
-            paymentId: paymentId,
-            invoiceNumber: invoiceNumber,
-            clientName: clientName,
-            workerAmount: workerAmount,
-            skaviaFee: skaviaFee,
-            totalAmount: totalAmount,
-            issuedAt: now,
-          ),
-        );
+  /// Polls for backend IPN settlement with bounded retries and exponential/linear backoff
+  Future<PaymentCompletionResult?> verifyBackendSettlement({
+    required String paymentId,
+    int maxAttempts = 5,
+    Duration retryInterval = const Duration(seconds: 2),
+  }) async {
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      final payment = await getPayment(paymentId);
+      if (payment != null && payment.status == 'Completed') {
+        final invoice = await getInvoiceByPaymentId(paymentId);
+        final transaction = await getTransactionByPaymentId(paymentId);
+        if (invoice != null && transaction != null) {
+          return PaymentCompletionResult(
+            payment: payment,
+            transaction: transaction,
+            invoice: invoice,
+          );
+        }
+      }
+      if (attempt < maxAttempts) {
+        await Future.delayed(retryInterval);
       }
     }
+    return null;
   }
 }
 

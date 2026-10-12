@@ -36,8 +36,12 @@ class PaymentModel {
       totalAmount: (json['total_amount'] as num).toDouble(),
       skaviaFee: (json['skavia_fee'] as num).toDouble(),
       status: json['status'] as String? ?? 'Pending',
-      paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String) : null,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      paidAt: json['paid_at'] != null
+          ? DateTime.parse(json['paid_at'] as String)
+          : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -83,7 +87,9 @@ class TransactionModel {
       gatewayTxId: json['gateway_tx_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
       status: json['status'] as String? ?? 'Completed',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -132,7 +138,9 @@ class InvoiceModel {
       workerAmount: (json['worker_amount'] as num).toDouble(),
       skaviaFee: (json['skavia_fee'] as num).toDouble(),
       totalAmount: (json['total_amount'] as num).toDouble(),
-      issuedAt: json['issued_at'] != null ? DateTime.parse(json['issued_at'] as String) : DateTime.now(),
+      issuedAt: json['issued_at'] != null
+          ? DateTime.parse(json['issued_at'] as String)
+          : DateTime.now(),
       pdfUrl: json['pdf_url'] as String?,
     );
   }
@@ -176,7 +184,9 @@ class WorkerEarningModel {
       paymentId: json['payment_id'] as String?,
       amount: (json['amount'] as num).toDouble(),
       status: json['status'] as String? ?? 'Available',
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : DateTime.now(),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
     );
   }
 
