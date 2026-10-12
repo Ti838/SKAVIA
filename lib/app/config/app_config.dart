@@ -12,7 +12,7 @@ class AppConfig {
   );
   static const String supabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue: 'YOUR_SUPABASE_ANON_KEY',
+    defaultValue: 'sb_publishable_pdNZXWOsIM757lVSYOjwdw_LTk6aCDN',
   );
 
   // Network timeouts
@@ -34,6 +34,21 @@ class AppConfig {
   );
 
   // Platform Business Model Configuration (SRS Section 3.1.O: Transparent SKAVIA Fee)
-  static const double skaviaPlatformFeePercent = 0.15; // 15% platform management fee
-}
+  static const double skaviaPlatformFeePercent =
+      0.15; // 15% platform management fee
 
+  // SKAVIA AI Engine Configuration (Groq & OpenRouter)
+  // Securely injected via compile-time --dart-define or server-side Edge Function proxy
+  static const String groqApiKey = String.fromEnvironment(
+    'GROQ_API_KEY',
+    defaultValue: '',
+  );
+  static const String openRouterApiKey = String.fromEnvironment(
+    'OPENROUTER_API_KEY',
+    defaultValue: '',
+  );
+  static const String huggingFaceToken = String.fromEnvironment(
+    'HUGGINGFACE_TOKEN',
+    defaultValue: '',
+  );
+}
