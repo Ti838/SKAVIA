@@ -590,57 +590,192 @@ ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- 15.1 Public Read Catalog Policies (Open browsing for clients & workers)
+DROP POLICY IF EXISTS "Public Read Categories" ON categories;
 CREATE POLICY "Public Read Categories" ON categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Services" ON services;
 CREATE POLICY "Public Read Services" ON services FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Skills" ON skills;
 CREATE POLICY "Public Read Skills" ON skills FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Branches" ON branches;
 CREATE POLICY "Public Read Branches" ON branches FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Roles" ON roles;
 CREATE POLICY "Public Read Roles" ON roles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Worker Profiles" ON worker_profiles;
 CREATE POLICY "Public Read Worker Profiles" ON worker_profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Worker Skills" ON worker_skills;
 CREATE POLICY "Public Read Worker Skills" ON worker_skills FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Portfolios" ON portfolio_items;
 CREATE POLICY "Public Read Portfolios" ON portfolio_items FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Certificates" ON certificates;
 CREATE POLICY "Public Read Certificates" ON certificates FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Availability" ON availability_slots;
 CREATE POLICY "Public Read Availability" ON availability_slots FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Reviews" ON reviews;
 CREATE POLICY "Public Read Reviews" ON reviews FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public Read Reputations" ON reputations;
 CREATE POLICY "Public Read Reputations" ON reputations FOR SELECT USING (true);
 
--- 15.2 Operational & Transactional Policies
+-- 15.2 Operational & Identity Policies (Owner-Bound Authorization)
+DROP POLICY IF EXISTS "Users Read Access" ON users;
 CREATE POLICY "Users Read Access" ON users FOR SELECT USING (true);
-CREATE POLICY "Users Insert Access" ON users FOR INSERT WITH CHECK (true);
-CREATE POLICY "Users Update Access" ON users FOR UPDATE USING (true);
 
-CREATE POLICY "Customer Profiles Access" ON customer_profiles FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Worker Profiles Modify Access" ON worker_profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Worker Profiles Update Access" ON worker_profiles FOR UPDATE USING (true);
-CREATE POLICY "Worker Skills Access" ON worker_skills FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Portfolio Items Modify" ON portfolio_items FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Certificates Modify" ON certificates FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Availability Modify" ON availability_slots FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Verifications Access" ON verifications FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Users Insert Access" ON users;
+CREATE POLICY "Users Insert Access" ON users FOR INSERT WITH CHECK (auth.uid()::text = user_id);
 
-CREATE POLICY "Requirements Read" ON requirements FOR SELECT USING (true);
-CREATE POLICY "Requirements Insert" ON requirements FOR INSERT WITH CHECK (true);
-CREATE POLICY "Requirements Update" ON requirements FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Users Update Access" ON users;
+CREATE POLICY "Users Update Access" ON users FOR UPDATE USING (auth.uid()::text = user_id) WITH CHECK (auth.uid()::text = user_id);
 
-CREATE POLICY "Requirement Skills Access" ON requirement_skills FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Match Results Access" ON match_results FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Customer Profiles Read" ON customer_profiles;
+CREATE POLICY "Customer Profiles Read" ON customer_profiles FOR SELECT USING (auth.uid()::text = user_id);
 
-CREATE POLICY "Service Requests Access" ON service_requests FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Projects Access" ON projects FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Teams Access" ON teams FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Team Members Access" ON team_members FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Tasks Access" ON tasks FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Customer Profiles Insert" ON customer_profiles;
+CREATE POLICY "Customer Profiles Insert" ON customer_profiles FOR INSERT WITH CHECK (auth.uid()::text = user_id);
 
--- 15.3 Financial Transparency & Tamper-Proof Protections
-CREATE POLICY "Payments Read" ON payments FOR SELECT USING (true);
-CREATE POLICY "Payments Insert" ON payments FOR INSERT WITH CHECK (true);
-CREATE POLICY "Payments Update" ON payments FOR UPDATE USING (true);
-CREATE POLICY "Invoices Read" ON invoices FOR SELECT USING (true);
-CREATE POLICY "Invoices Insert" ON invoices FOR INSERT WITH CHECK (true);
-CREATE POLICY "Transactions Read" ON transactions FOR SELECT USING (true);
-CREATE POLICY "Transactions Insert" ON transactions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Worker Earnings Read" ON worker_earnings FOR SELECT USING (true);
-CREATE POLICY "Worker Earnings Insert" ON worker_earnings FOR INSERT WITH CHECK (true);
-CREATE POLICY "Worker Earnings Update" ON worker_earnings FOR UPDATE USING (true);
+DROP POLICY IF EXISTS "Customer Profiles Update" ON customer_profiles;
+CREATE POLICY "Customer Profiles Update" ON customer_profiles FOR UPDATE USING (auth.uid()::text = user_id) WITH CHECK (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "Worker Profiles Modify Access" ON worker_profiles;
+CREATE POLICY "Worker Profiles Modify Access" ON worker_profiles FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "Worker Profiles Update Access" ON worker_profiles;
+CREATE POLICY "Worker Profiles Update Access" ON worker_profiles FOR UPDATE USING (auth.uid()::text = user_id) WITH CHECK (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "Worker Skills Modify" ON worker_skills;
+CREATE POLICY "Worker Skills Modify" ON worker_skills FOR ALL 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = worker_skills.worker_profile_id AND wp.user_id = auth.uid()::text))
+    WITH CHECK (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = worker_skills.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Portfolio Items Modify" ON portfolio_items;
+CREATE POLICY "Portfolio Items Modify" ON portfolio_items FOR ALL 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = portfolio_items.worker_profile_id AND wp.user_id = auth.uid()::text))
+    WITH CHECK (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = portfolio_items.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Certificates Modify" ON certificates;
+CREATE POLICY "Certificates Modify" ON certificates FOR ALL 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = certificates.worker_profile_id AND wp.user_id = auth.uid()::text))
+    WITH CHECK (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = certificates.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Availability Modify" ON availability_slots;
+CREATE POLICY "Availability Modify" ON availability_slots FOR ALL 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = availability_slots.worker_profile_id AND wp.user_id = auth.uid()::text))
+    WITH CHECK (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = availability_slots.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+-- KYC & Sensitive Document Security: Only owning worker or reviewer may access identity documents
+DROP POLICY IF EXISTS "Verifications Read" ON verifications;
+CREATE POLICY "Verifications Read" ON verifications FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = verifications.worker_profile_id AND wp.user_id = auth.uid()::text) OR reviewed_by = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Verifications Submit" ON verifications;
+CREATE POLICY "Verifications Submit" ON verifications FOR INSERT 
+    WITH CHECK (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = verifications.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+-- Requirements & Marketplace Authorization
+DROP POLICY IF EXISTS "Requirements Read" ON requirements;
+CREATE POLICY "Requirements Read" ON requirements FOR SELECT USING (status = 'Open' OR submitted_by = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Requirements Insert" ON requirements;
+CREATE POLICY "Requirements Insert" ON requirements FOR INSERT WITH CHECK (submitted_by = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Requirements Update" ON requirements;
+CREATE POLICY "Requirements Update" ON requirements FOR UPDATE USING (submitted_by = auth.uid()::text) WITH CHECK (submitted_by = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Requirement Skills Read" ON requirement_skills;
+CREATE POLICY "Requirement Skills Read" ON requirement_skills FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Requirement Skills Modify" ON requirement_skills;
+CREATE POLICY "Requirement Skills Modify" ON requirement_skills FOR ALL 
+    USING (EXISTS (SELECT 1 FROM requirements r WHERE r.requirement_id = requirement_skills.requirement_id AND r.submitted_by = auth.uid()::text))
+    WITH CHECK (EXISTS (SELECT 1 FROM requirements r WHERE r.requirement_id = requirement_skills.requirement_id AND r.submitted_by = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Match Results Access" ON match_results;
+CREATE POLICY "Match Results Access" ON match_results FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM requirements r WHERE r.requirement_id = match_results.requirement_id AND r.submitted_by = auth.uid()::text)
+        OR EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = match_results.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+-- Service Requests & Project Execution (Dual Client-Worker Scope)
+DROP POLICY IF EXISTS "Service Requests Access" ON service_requests;
+CREATE POLICY "Service Requests Access" ON service_requests FOR SELECT 
+    USING (client_id = auth.uid()::text OR EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = service_requests.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Service Requests Insert" ON service_requests;
+CREATE POLICY "Service Requests Insert" ON service_requests FOR INSERT WITH CHECK (client_id = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Service Requests Update" ON service_requests;
+CREATE POLICY "Service Requests Update" ON service_requests FOR UPDATE 
+    USING (client_id = auth.uid()::text OR EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = service_requests.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Projects Access" ON projects;
+CREATE POLICY "Projects Access" ON projects FOR ALL USING (client_id = auth.uid()::text) WITH CHECK (client_id = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Teams Read" ON teams;
+CREATE POLICY "Teams Read" ON teams FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Team Members Read" ON team_members;
+CREATE POLICY "Team Members Read" ON team_members FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Tasks Read" ON tasks;
+CREATE POLICY "Tasks Read" ON tasks FOR SELECT USING (true);
+
+-- 15.3 Financial Transparency & Anti-Tampering Protections
+-- Payments: Client can view their own payments; worker can view payments related to their booked jobs
+DROP POLICY IF EXISTS "Payments Read" ON payments;
+CREATE POLICY "Payments Read" ON payments FOR SELECT 
+    USING (client_id = auth.uid()::text OR EXISTS (SELECT 1 FROM service_requests sr JOIN worker_profiles wp ON sr.worker_profile_id = wp.worker_profile_id WHERE sr.service_request_id = payments.service_request_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Payments Insert" ON payments;
+CREATE POLICY "Payments Insert" ON payments FOR INSERT WITH CHECK (client_id = auth.uid()::text);
+
+-- Payments Update: Clients CANNOT update payment status directly; settlement requires backend RPC complete_payment_transaction
+DROP POLICY IF EXISTS "Payments Update" ON payments;
+CREATE POLICY "Payments Update" ON payments FOR UPDATE USING (false);
+
+DROP POLICY IF EXISTS "Invoices Read" ON invoices;
+CREATE POLICY "Invoices Read" ON invoices FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM payments p WHERE p.payment_id = invoices.payment_id AND p.client_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Transactions Read" ON transactions;
+CREATE POLICY "Transactions Read" ON transactions FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM payments p WHERE p.payment_id = transactions.payment_id AND p.client_id = auth.uid()::text));
+
+-- Worker Earnings: Strictly private to the individual worker profile owner; only trusted backend can credit/insert
+DROP POLICY IF EXISTS "Worker Earnings Read" ON worker_earnings;
+CREATE POLICY "Worker Earnings Read" ON worker_earnings FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = worker_earnings.worker_profile_id AND wp.user_id = auth.uid()::text));
+
+DROP POLICY IF EXISTS "Worker Earnings Modify" ON worker_earnings;
+CREATE POLICY "Worker Earnings Modify" ON worker_earnings FOR ALL USING (false);
+
+-- Realtime Messaging & Notification Privacy
+DROP POLICY IF EXISTS "Conversations Access" ON conversations;
+CREATE POLICY "Conversations Access" ON conversations FOR ALL 
+    USING (auth.uid()::text IN (participant_one, participant_two))
+    WITH CHECK (auth.uid()::text IN (participant_one, participant_two));
+
+DROP POLICY IF EXISTS "Messages Read" ON messages;
+CREATE POLICY "Messages Read" ON messages FOR SELECT 
+    USING (EXISTS (SELECT 1 FROM conversations c WHERE c.conversation_id = messages.conversation_id AND auth.uid()::text IN (c.participant_one, c.participant_two)));
+
+DROP POLICY IF EXISTS "Messages Insert" ON messages;
+CREATE POLICY "Messages Insert" ON messages FOR INSERT WITH CHECK (sender_id = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Notifications Access" ON notifications;
+CREATE POLICY "Notifications Access" ON notifications FOR ALL 
+    USING (user_id = auth.uid()::text)
+    WITH CHECK (user_id = auth.uid()::text);
+
+DROP POLICY IF EXISTS "Audit Logs Access" ON audit_logs;
+CREATE POLICY "Audit Logs Access" ON audit_logs FOR SELECT USING (user_id = auth.uid()::text);
 
 -- 15.4 ATOMIC PAYMENT COMPLETION TRANSACTION (PostgreSQL RPC Function)
 -- Guarantees ACID compliance: Updates payment, records transaction, creates invoice, and credits worker in one atomic call.
@@ -703,18 +838,6 @@ BEGIN
     );
 END;
 $$;
-
-CREATE POLICY "Reviews Access" ON reviews FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Reputations Access" ON reputations FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Complaints Access" ON complaints FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Disputes Access" ON disputes FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Conversations Access" ON conversations FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Messages Access" ON messages FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Notifications Access" ON notifications FOR ALL USING (true) WITH CHECK (true);
-
--- 15.4 Audit Logs (Vulnerability Prevention: INSERT & SELECT allowed, UPDATE & DELETE Forbidden)
-CREATE POLICY "Audit Logs Read" ON audit_logs FOR SELECT USING (true);
-CREATE POLICY "Audit Logs Insert" ON audit_logs FOR INSERT WITH CHECK (true);
 
 -- ==============================================================================
 -- 16. VALIDATED SEED DATA (100% RFC-4122 Compliant Hex UUIDs)
