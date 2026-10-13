@@ -19,29 +19,34 @@ class DashboardBottomNavBar extends StatelessWidget {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     final isSelected = currentIndex == index;
-    return InkWell(
-      onTap: () => onTabSelected(index),
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isSelected ? AppColors.primarySky : AppColors.textMuted,
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+    return Expanded(
+      child: InkWell(
+        onTap: () => onTabSelected(index),
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 22,
                 color: isSelected ? AppColors.primarySky : AppColors.textMuted,
               ),
-            ),
-          ],
+              const SizedBox(height: 3),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                  color: isSelected ? AppColors.primarySky : AppColors.textMuted,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -51,36 +56,40 @@ class DashboardBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildNavItem(0, Icons.home_rounded, AppLanguageService.tr('home')),
-          _buildNavItem(
-            1,
-            Icons.grid_view_rounded,
-            currentMode == AppRoleMode.customer
-                ? AppLanguageService.tr('services')
-                : AppLanguageService.tr('incoming_requests'),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              _buildNavItem(0, Icons.home_rounded, AppLanguageService.tr('home')),
+              _buildNavItem(
+                1,
+                Icons.grid_view_rounded,
+                currentMode == AppRoleMode.customer
+                    ? AppLanguageService.tr('services')
+                    : AppLanguageService.tr('incoming_requests'),
+              ),
+              _buildNavItem(
+                2,
+                Icons.chat_bubble_outline_rounded,
+                AppLanguageService.tr('messages'),
+              ),
+              _buildNavItem(
+                3,
+                Icons.folder_outlined,
+                AppLanguageService.tr('projects'),
+              ),
+              _buildNavItem(
+                4,
+                Icons.person_outline_rounded,
+                currentMode == AppRoleMode.customer
+                    ? AppLanguageService.tr('profile')
+                    : AppLanguageService.tr('review'),
+              ),
+            ],
           ),
-          _buildNavItem(
-            2,
-            Icons.chat_bubble_outline_rounded,
-            AppLanguageService.tr('messages'),
-          ),
-          _buildNavItem(
-            3,
-            Icons.folder_outlined,
-            AppLanguageService.tr('projects'),
-          ),
-          _buildNavItem(
-            4,
-            Icons.person_outline_rounded,
-            currentMode == AppRoleMode.customer
-                ? AppLanguageService.tr('profile')
-                : AppLanguageService.tr('review'),
-          ),
-        ],
+        ),
       ),
     );
   }

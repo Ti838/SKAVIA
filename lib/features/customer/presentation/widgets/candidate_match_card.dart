@@ -51,40 +51,47 @@ class CandidateMatchCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: isTopMatch
-                      ? AppColors.accent
-                      : AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isTopMatch
-                          ? Icons.workspace_premium_rounded
-                          : Icons.star_rounded,
-                      size: 13,
-                      color: isTopMatch ? Colors.white : AppColors.primary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      isTopMatch
-                          ? 'Top Match #${candidate.rankPosition}'
-                          : 'Rank #${candidate.rankPosition}',
-                      style: AppTypography.caption.copyWith(
+              Flexible(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isTopMatch
+                        ? AppColors.accent
+                        : AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        isTopMatch
+                            ? Icons.workspace_premium_rounded
+                            : Icons.star_rounded,
+                        size: 13,
                         color: isTopMatch ? Colors.white : AppColors.primary,
-                        fontWeight: FontWeight.w800,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          isTopMatch
+                              ? 'Top Match #${candidate.rankPosition}'
+                              : 'Rank #${candidate.rankPosition}',
+                          style: AppTypography.caption.copyWith(
+                            color: isTopMatch ? Colors.white : AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
@@ -136,7 +143,7 @@ class CandidateMatchCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Flexible(
+                        Expanded(
                           child: Text(
                             candidate.workerName,
                             style: AppTypography.titleMedium.copyWith(
@@ -170,11 +177,15 @@ class CandidateMatchCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        Text(
-                          candidate.location,
-                          style: AppTypography.caption.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
+                        Expanded(
+                          child: Text(
+                            candidate.location,
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -225,7 +236,7 @@ class CandidateMatchCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: OutlinedButton(
                   onPressed: () {
                     Navigator.of(context).push(
@@ -238,7 +249,7 @@ class CandidateMatchCard extends StatelessWidget {
                     );
                   },
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
                     side: const BorderSide(color: AppColors.primarySky),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
@@ -246,16 +257,19 @@ class CandidateMatchCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: const Text(
-                    'Scorecard',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primarySky,
+                  child: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Scorecard',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primarySky,
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 flex: 5,
                 child: AppButton(

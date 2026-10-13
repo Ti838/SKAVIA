@@ -99,31 +99,38 @@ class _WorkerDashboardViewState extends State<WorkerDashboardView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: widget.isWorkerAvailable
-                          ? AppColors.successGreen
-                          : Colors.grey,
-                      shape: BoxShape.circle,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: widget.isWorkerAvailable
+                            ? AppColors.successGreen
+                            : Colors.grey,
+                        shape: BoxShape.circle,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    widget.isWorkerAvailable
-                        ? 'Available for Jobs in ${widget.locationZone}'
-                        : 'Currently Offline',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        widget.isWorkerAvailable
+                            ? 'Available for Jobs in ${widget.locationZone}'
+                            : 'Currently Offline',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDark,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Switch.adaptive(
                 value: widget.isWorkerAvailable,
                 activeTrackColor: AppColors.successGreen,

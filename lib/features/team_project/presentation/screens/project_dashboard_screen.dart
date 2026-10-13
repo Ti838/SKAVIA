@@ -213,12 +213,14 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
           'Add New Task',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
-        content: TextField(
-          controller: titleController,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'e.g. Implement payment flow',
-            border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: TextField(
+            controller: titleController,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'e.g. Implement payment flow',
+              border: OutlineInputBorder(),
+            ),
           ),
         ),
         actions: [
@@ -264,25 +266,27 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
           'Add Team Member',
           style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                hintText: 'Member Name',
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  hintText: 'Member Name',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: roleController,
-              decoration: const InputDecoration(
-                hintText: 'Role (e.g. Developer, QA)',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 10),
+              TextField(
+                controller: roleController,
+                decoration: const InputDecoration(
+                  hintText: 'Role (e.g. Developer, QA)',
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(

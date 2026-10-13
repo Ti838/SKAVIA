@@ -305,51 +305,61 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: List.generate(_pinLength, (index) {
-                          return SizedBox(
-                            width: 48,
-                            height: 56,
-                            child: TextField(
-                              controller: _controllers[index],
-                              focusNode: _focusNodes[index],
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              maxLength: 1,
-                              style: const TextStyle(
-                                fontFamily: AppTypography.headingFont,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.primaryRoyal,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                              ],
-                              decoration: InputDecoration(
-                                counterText: '',
-                                contentPadding: EdgeInsets.zero,
-                                filled: true,
-                                fillColor: _controllers[index].text.isNotEmpty
-                                    ? AppColors.primarySky.withValues(
-                                        alpha: 0.08,
-                                      )
-                                    : AppColors.surfaceVariant,
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: _controllers[index].text.isNotEmpty
-                                        ? AppColors.primarySky
-                                        : AppColors.borderLight,
-                                    width: 1.5,
+                          return Flexible(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 48,
+                                  minWidth: 36,
+                                ),
+                                child: SizedBox(
+                                  height: 56,
+                                  child: TextField(
+                                    controller: _controllers[index],
+                                    focusNode: _focusNodes[index],
+                                    keyboardType: TextInputType.number,
+                                    textAlign: TextAlign.center,
+                                    maxLength: 1,
+                                    style: const TextStyle(
+                                      fontFamily: AppTypography.headingFont,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.primaryRoyal,
+                                    ),
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      contentPadding: EdgeInsets.zero,
+                                      filled: true,
+                                      fillColor: _controllers[index].text.isNotEmpty
+                                          ? AppColors.primarySky.withValues(
+                                              alpha: 0.08,
+                                            )
+                                          : AppColors.surfaceVariant,
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: BorderSide(
+                                          color: _controllers[index].text.isNotEmpty
+                                              ? AppColors.primarySky
+                                              : AppColors.borderLight,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(14),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.primarySky,
+                                          width: 2.5,
+                                        ),
+                                      ),
+                                    ),
+                                    onChanged: (val) => _onDigitChanged(index, val),
                                   ),
                                 ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.primarySky,
-                                    width: 2.5,
-                                  ),
-                                ),
                               ),
-                              onChanged: (val) => _onDigitChanged(index, val),
                             ),
                           );
                         }),

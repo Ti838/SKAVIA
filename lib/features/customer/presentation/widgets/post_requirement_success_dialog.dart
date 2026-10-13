@@ -56,12 +56,14 @@ class PostRequirementSuccessDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Text(
-            'Job Posted Successfully',
-            style: TextStyle(
-              fontFamily: AppTypography.headingFont,
-              fontWeight: FontWeight.w800,
-              fontSize: 20,
+          const Expanded(
+            child: Text(
+              'Job Posted Successfully',
+              style: TextStyle(
+                fontFamily: AppTypography.headingFont,
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+              ),
             ),
           ),
         ],

@@ -96,12 +96,14 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 size: 28,
               ),
               const SizedBox(width: 10),
-              Text(
-                'Review Submitted',
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
+              Expanded(
+                child: Text(
+                  'Review Submitted',
+                  style: TextStyle(
+                    fontFamily: AppTypography.headingFont,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
                 ),
               ),
             ],

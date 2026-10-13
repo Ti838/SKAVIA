@@ -55,10 +55,14 @@ class ActiveJobClientCard extends StatelessWidget {
                 color: AppColors.primary,
               ),
               const SizedBox(width: 6),
-              Text(
-                'Client: $clientName',
-                style: AppTypography.bodySmall.copyWith(
-                  fontWeight: FontWeight.w600,
+              Expanded(
+                child: Text(
+                  'Client: $clientName',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],

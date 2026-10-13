@@ -105,43 +105,53 @@ class CatalogServiceCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(
-                Icons.star_rounded,
-                size: 16,
-                color: Color(0xFFF59E0B),
-              ),
-              const SizedBox(width: 3),
-              Text(
-                service.ratingAverage.toStringAsFixed(2),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+              Expanded(
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      size: 15,
+                      color: Color(0xFFF59E0B),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      service.ratingAverage.toStringAsFixed(1),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      '(${service.totalBookings})',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 13,
+                      color: AppColors.textMedium,
+                    ),
+                    const SizedBox(width: 3),
+                    Expanded(
+                      child: Text(
+                        service.estimatedDuration,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textMedium,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 4),
-              Text(
-                '(${service.totalBookings})',
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
-                ),
-              ),
-              const SizedBox(width: 14),
-              const Icon(
-                Icons.access_time_rounded,
-                size: 14,
-                color: AppColors.textMedium,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                service.estimatedDuration,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMedium,
-                ),
-              ),
-              const Spacer(),
+              const SizedBox(width: 8),
               GestureDetector(
                 onTap: onBook,
                 child: Container(

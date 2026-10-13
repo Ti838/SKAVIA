@@ -16,6 +16,7 @@ class DashboardSettingsSheet extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (ctx) =>
           DashboardSettingsSheet(onDeleteAccount: onDeleteAccount),
     );
@@ -30,9 +31,10 @@ class DashboardSettingsSheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
               'Settings',
@@ -74,6 +76,7 @@ class DashboardSettingsSheet extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }

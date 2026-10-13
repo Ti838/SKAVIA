@@ -158,27 +158,33 @@ class JobRequirementFeedCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isBn ? 'বাজেট সীমা' : 'Client Budget',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: AppColors.textMuted,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isBn ? 'বাজেট সীমা' : 'Client Budget',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                      ),
                     ),
-                  ),
-                  Text(
-                    '৳ ${job.budgetMin.toStringAsFixed(0)} – ৳ ${job.budgetMax.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primaryRoyal,
+                    Text(
+                      '৳ ${job.budgetMin.toStringAsFixed(0)} – ৳ ${job.budgetMax.toStringAsFixed(0)}',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primaryRoyal,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Message / Inquiry Button
                   IconButton(

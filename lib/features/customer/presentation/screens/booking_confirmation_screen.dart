@@ -205,6 +205,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Service',
@@ -214,12 +215,18 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        Text(
-                          displayServiceTitle,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.w700,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            displayServiceTitle,
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
