@@ -6,17 +6,12 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_header_widget.dart';
-import '../widgets/role_selection_card.dart';
 
-/// World-Class Enterprise Registration Screen for SKAVIA.
-/// - Strictly complies with SRS Section 2.3 (User Classes) and Section 3.1.A (FR-A01).
-/// - Mandatory Primary Role Selection:
-///   1. Customer
-///   2. Worker
-///   3. Team Leader
-///   4. Business / Organization
-/// - Full credentials input with live validation
-/// - Guaranteed Zero Layout Overflow via responsive layout budgeting
+/// Single unified registration screen for SKAVIA.
+/// - Single-step account creation for all users.
+/// - Seamless role switching (Customer ↔ Worker) enabled within the app.
+/// - Full credentials input with live validation.
+/// - Responsive layout budgeting with zero overflow.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -32,9 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authController = AuthController();
-
-  String _selectedRole = 'Customer';
-  bool _showForm = false;
 
   @override
   void dispose() {
@@ -59,13 +51,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
       phone: formattedPhone,
-      primaryRole: _selectedRole,
+      primaryRole: 'Individual Customer',
     );
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Account created as $_selectedRole!'),
+        const SnackBar(
+          content: Text('Account created successfully!'),
           backgroundColor: AppColors.success,
         ),
       );
@@ -100,59 +92,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       subtitle: 'Join SKAVIA and get started',
                     ),
                     const SizedBox(height: 24),
-
-                    // "I am a" Section
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'I am a',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // 4 Role Selection Cards matching Reference Screen 3
-                    RoleSelectionCard(
-                      id: 'Customer',
-                      title: 'Customer',
-                      desc: 'Request services and hire talent',
-                      icon: Icons.person_outline_rounded,
-                      isSelected: _selectedRole == 'Customer',
-                      onSelect: (val) => setState(() => _selectedRole = val),
-                    ),
-                    const SizedBox(height: 10),
-                    RoleSelectionCard(
-                      id: 'Worker',
-                      title: 'Worker',
-                      desc: 'Earn by providing your skills',
-                      icon: Icons.handyman_outlined,
-                      isSelected: _selectedRole == 'Worker',
-                      onSelect: (val) => setState(() => _selectedRole = val),
-                    ),
-                    const SizedBox(height: 10),
-                    RoleSelectionCard(
-                      id: 'Team Leader',
-                      title: 'Team Leader',
-                      desc: 'Manage teams and projects',
-                      icon: Icons.groups_outlined,
-                      isSelected: _selectedRole == 'Team Leader',
-                      onSelect: (val) => setState(() => _selectedRole = val),
-                    ),
-                    const SizedBox(height: 10),
-                    RoleSelectionCard(
-                      id: 'Business / Organization',
-                      title: 'Business / Organization',
-                      desc: 'Find teams and solutions',
-                      icon: Icons.domain_outlined,
-                      isSelected: _selectedRole == 'Business / Organization',
-                      onSelect: (val) => setState(() => _selectedRole = val),
-                    ),
-
-                    const SizedBox(height: 18),
 
                     // Error Banner if exists
                     ListenableBuilder(
@@ -195,110 +134,112 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    // Step 2 Form Details
-                    if (_showForm) ...[
-                      AppTextField(
-                        controller: _fullNameController,
-                        label: 'Full Name',
-                        hint: 'Your Full Name',
-                        prefixIcon: const Icon(
-                          Icons.badge_outlined,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Full name is required';
-                          }
-                          return null;
-                        },
+                    // Full Name Input
+                    AppTextField(
+                      controller: _fullNameController,
+                      label: 'Full Name',
+                      hint: 'Your Full Name',
+                      prefixIcon: const Icon(
+                        Icons.badge_outlined,
+                        color: AppColors.textMedium,
+                        size: 20,
                       ),
-                      const SizedBox(height: 14),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Full name is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
 
-                      AppTextField(
-                        controller: _emailController,
-                        label: 'Email Address',
-                        hint: 'name@example.com',
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: const Icon(
-                          Icons.alternate_email_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Email is required';
-                          }
-                          if (!val.contains('@')) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
+                    // Email Address Input
+                    AppTextField(
+                      controller: _emailController,
+                      label: 'Email Address',
+                      hint: 'name@example.com',
+                      keyboardType: TextInputType.emailAddress,
+                      prefixIcon: const Icon(
+                        Icons.alternate_email_rounded,
+                        color: AppColors.textMedium,
+                        size: 20,
                       ),
-                      const SizedBox(height: 14),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Email is required';
+                        }
+                        if (!val.contains('@')) {
+                          return 'Enter a valid email address';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
 
-                      AppTextField(
-                        controller: _phoneController,
-                        label: 'Phone Number',
-                        hint: '01700-000000',
-                        keyboardType: TextInputType.phone,
-                        prefixIcon: const Icon(
-                          Icons.phone_iphone_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Phone number is required';
-                          }
-                          return null;
-                        },
+                    // Phone Number Input
+                    AppTextField(
+                      controller: _phoneController,
+                      label: 'Phone Number',
+                      hint: '01700-000000',
+                      keyboardType: TextInputType.phone,
+                      prefixIcon: const Icon(
+                        Icons.phone_iphone_rounded,
+                        color: AppColors.textMedium,
+                        size: 20,
                       ),
-                      const SizedBox(height: 14),
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) {
+                          return 'Phone number is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
 
-                      AppTextField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        hint: '••••••••',
-                        isPassword: true,
-                        prefixIcon: const Icon(
-                          Icons.lock_outline_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Password is required';
-                          }
-                          if (val.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
+                    // Password Input
+                    AppTextField(
+                      controller: _passwordController,
+                      label: 'Password',
+                      hint: '••••••••',
+                      isPassword: true,
+                      prefixIcon: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: AppColors.textMedium,
+                        size: 20,
                       ),
-                      const SizedBox(height: 14),
+                      validator: (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Password is required';
+                        }
+                        if (val.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
 
-                      AppTextField(
-                        controller: _confirmPasswordController,
-                        label: 'Confirm Password',
-                        hint: '••••••••',
-                        isPassword: true,
-                        prefixIcon: const Icon(
-                          Icons.lock_reset_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
+                    // Confirm Password Input
+                    AppTextField(
+                      controller: _confirmPasswordController,
+                      label: 'Confirm Password',
+                      hint: '••••••••',
+                      isPassword: true,
+                      prefixIcon: const Icon(
+                        Icons.lock_reset_rounded,
+                        color: AppColors.textMedium,
+                        size: 20,
                       ),
-                      const SizedBox(height: 20),
-                    ],
+                      validator: (val) {
+                        if (val != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
 
-                    // Next / Submit Blue Pill Button
+                    // Submit Blue Pill Button
                     ListenableBuilder(
                       listenable: _authController,
                       builder: (context, _) {
@@ -308,13 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           child: ElevatedButton(
                             onPressed: _authController.isLoading
                                 ? null
-                                : () {
-                                    if (!_showForm) {
-                                      setState(() => _showForm = true);
-                                    } else {
-                                      _handleRegister();
-                                    }
-                                  },
+                                : _handleRegister,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primarySky,
                               foregroundColor: Colors.white,
@@ -334,9 +269,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ),
                                     ),
                                   )
-                                : Text(
-                                    _showForm ? 'Create Account' : 'Next',
-                                    style: const TextStyle(
+                                : const Text(
+                                    'Create Account',
+                                    style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                       letterSpacing: 0.2,
