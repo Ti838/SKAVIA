@@ -75,6 +75,7 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
   }
 
   Future<void> _runAiDiagnosis() async {
+    if (_isDiagnosing) return; // Prevent duplicate submissions
     final text = _descriptionController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -98,17 +99,16 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
             diag['technical_summary'] as String? ?? 'Analysis complete';
 
         setState(() {
-          if (catId != null &&
-              CategoryModel.defaultCategories.any(
-                (c) => c.categoryId == catId,
-              )) {
+          if (catId != null) {
             _selectedCategory = catId;
           }
           if (title != null && title.isNotEmpty) {
             _titleController.text = title;
           }
           if (budget != null) {
-            _budgetController.text = budget.toString();
+            _budgetController.text = (budget is num)
+                ? budget.toStringAsFixed(0)
+                : budget.toString();
           }
         });
 
@@ -119,45 +119,68 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
             duration: const Duration(seconds: 4),
           ),
         );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'AI diagnosis returned empty result. Please enter details manually.',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
-    } catch (_) {}
-    if (mounted) setState(() => _isDiagnosing = false);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('AI Diagnosis Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isDiagnosing = false);
+    }
   }
 
   Future<void> _handleSubmitRequirement() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSubmitting) return;
+
+    final user = _authController.user;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please sign in to post a service requirement.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     setState(() => _isSubmitting = true);
 
     try {
-      final user = _authController.user;
       final budget = double.tryParse(_budgetController.text.trim()) ?? 1500.0;
 
-      // Submit to Supabase `requirements` table (SRS Section 3.1.D)
-      try {
-        await Supabase.instance.client.from(DatabaseTables.requirements).insert(
-          {
-            'user_id': user?.uid ?? 'guest_client',
-            'category_id': _selectedCategory,
-            'title': _titleController.text.trim(),
-            'description': _descriptionController.text.trim(),
-            'requirement_type': _requirementType,
-            'budget_min': budget * 0.9,
-            'budget_max': budget * 1.2,
-            'location': _selectedLocation,
-            'status': 'Open',
-            'created_at': DateTime.now().toIso8601String(),
-          },
-        );
-      } catch (e) {
-        debugPrint('[PostRequirement Supabase Info]: $e');
-      }
+      // Submit to Supabase `requirements` table (SRS Section 3.1.D & 4.4)
+      await Supabase.instance.client.from(DatabaseTables.requirements).insert({
+        'submitted_by': user.uid,
+        'category_id': _selectedCategory,
+        'title': _titleController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'requirement_type': _requirementType,
+        'budget': budget,
+        'location': _selectedLocation,
+        'status': 'Open',
+        'created_at': DateTime.now().toIso8601String(),
+      });
 
       if (!mounted) return;
 
       setState(() => _isSubmitting = false);
 
-      // Show Success Dialog
+      // Show Success Dialog only on genuine database success
       await PostRequirementSuccessDialog.show(
         context,
         title: _titleController.text.trim(),
@@ -170,7 +193,7 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error posting requirement: $e'),
+            content: Text('Failed to post requirement: $e'),
             backgroundColor: AppColors.error,
           ),
         );

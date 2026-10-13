@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../../core/services/app_language_service.dart';
 
-/// Screen 4 Popular Services row section with See All
+/// Screen 4 Popular Services row section aligned with SKAVIA SRS Section 3.1.C trade categories
 class PopularServicesSection extends StatelessWidget {
   final VoidCallback? onSeeAll;
 
@@ -11,25 +12,28 @@ class PopularServicesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBn = AppLanguageService.isBengali;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Popular Services',
+            Text(
+              isBn ? 'জনপ্রিয় সার্ভিসসমূহ' : 'Popular Services',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
+                color: colorScheme.onSurface,
               ),
             ),
             GestureDetector(
               onTap: onSeeAll,
-              child: const Text(
-                'See All',
-                style: TextStyle(
+              child: Text(
+                AppLanguageService.tr('see_all'),
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: AppColors.primaryRoyal,
@@ -44,35 +48,35 @@ class PopularServicesSection extends StatelessWidget {
           children: [
             _buildCategoryIconItem(
               context: context,
-              icon: Icons.palette_outlined,
-              label: 'Design',
+              icon: Icons.electric_bolt_rounded,
+              label: isBn ? 'ইলেকট্রিক্যাল' : 'Electrical',
               bgColor: const Color(0xFFEFF6FF),
               iconColor: const Color(0xFF2563EB),
-              categoryKey: 'design',
+              categoryId: 'cat_electrical',
             ),
             _buildCategoryIconItem(
               context: context,
-              icon: Icons.code_rounded,
-              label: 'Development',
+              icon: Icons.plumbing_rounded,
+              label: isBn ? 'প্লাম্বিং' : 'Plumbing',
               bgColor: const Color(0xFFF0FDF4),
               iconColor: const Color(0xFF16A34A),
-              categoryKey: 'development',
+              categoryId: 'cat_plumbing',
             ),
             _buildCategoryIconItem(
               context: context,
-              icon: Icons.campaign_outlined,
-              label: 'Marketing',
+              icon: Icons.ac_unit_rounded,
+              label: isBn ? 'এসি কুলিং' : 'AC Cooling',
               bgColor: const Color(0xFFFEF2F2),
               iconColor: const Color(0xFFEF4444),
-              categoryKey: 'marketing',
+              categoryId: 'cat_ac_hvac',
             ),
             _buildCategoryIconItem(
               context: context,
-              icon: Icons.edit_note_rounded,
-              label: 'Writing',
+              icon: Icons.carpenter_rounded,
+              label: isBn ? 'কার্পেন্ট্রি' : 'Carpentry',
               bgColor: const Color(0xFFFAF5FF),
               iconColor: const Color(0xFF9333EA),
-              categoryKey: 'writing',
+              categoryId: 'cat_civil_carpentry',
             ),
           ],
         ),
@@ -86,14 +90,19 @@ class PopularServicesSection extends StatelessWidget {
     required String label,
     required Color bgColor,
     required Color iconColor,
-    required String categoryKey,
+    required String categoryId,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final itemBg = isDark ? iconColor.withValues(alpha: 0.15) : bgColor;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
           context,
           AppRoutes.categoryCatalog,
-          arguments: {'categoryId': 'cat_it_creative', 'searchQuery': label},
+          arguments: {'categoryId': categoryId},
         );
       },
       child: Column(
@@ -102,18 +111,21 @@ class PopularServicesSection extends StatelessWidget {
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: bgColor,
+              color: itemBg,
               borderRadius: BorderRadius.circular(16),
+              border: isDark
+                  ? Border.all(color: iconColor.withValues(alpha: 0.25))
+                  : null,
             ),
             child: Icon(icon, color: iconColor, size: 28),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
             ),
           ),
         ],

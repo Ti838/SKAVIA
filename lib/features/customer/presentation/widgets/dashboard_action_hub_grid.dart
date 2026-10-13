@@ -11,29 +11,39 @@ class DashboardActionHubGrid extends StatelessWidget {
   const DashboardActionHubGrid({super.key, required this.onBookService});
 
   Widget _buildActionTile({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required Color bgColor,
     required Color iconColor,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final tileBg = isDark ? iconColor.withValues(alpha: 0.15) : bgColor;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: bgColor,
+          color: tileBg,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: iconColor.withValues(alpha: 0.15)),
+          border: Border.all(
+            color: isDark
+                ? iconColor.withValues(alpha: 0.3)
+                : iconColor.withValues(alpha: 0.15),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               padding: const EdgeInsets.all(9),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: isDark ? colorScheme.surfaceContainerHigh : Colors.white,
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: iconColor, size: 20),
@@ -41,10 +51,10 @@ class DashboardActionHubGrid extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
               maxLines: 1,
@@ -62,6 +72,7 @@ class DashboardActionHubGrid extends StatelessWidget {
       children: [
         Expanded(
           child: _buildActionTile(
+            context: context,
             icon: Icons.handyman_rounded,
             label: AppLanguageService.tr('book_service'),
             bgColor: const Color(0xFFEFF6FF), // Soft Blue
@@ -72,6 +83,7 @@ class DashboardActionHubGrid extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _buildActionTile(
+            context: context,
             icon: Icons.post_add_rounded,
             label: AppLanguageService.tr('post_job'),
             bgColor: const Color(0xFFFFF7ED), // Soft Peach
@@ -83,6 +95,7 @@ class DashboardActionHubGrid extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _buildActionTile(
+            context: context,
             icon: Icons.dynamic_feed_rounded,
             label: AppLanguageService.tr('live_job_feed'),
             bgColor: const Color(0xFFF0FDF4), // Soft Mint
@@ -93,6 +106,7 @@ class DashboardActionHubGrid extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: _buildActionTile(
+            context: context,
             icon: Icons.auto_awesome_rounded,
             label: AppLanguageService.tr('skavia_ai'),
             bgColor: const Color(0xFFF5F3FF), // Soft Violet

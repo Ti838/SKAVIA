@@ -47,6 +47,7 @@ abstract class AppRouter {
           builder: (_) => OtpVerificationScreen(
             phoneNumber: args?['phoneNumber'] as String?,
             fullName: args?['fullName'] as String?,
+            verificationId: args?['verificationId'] as String?,
           ),
         );
 

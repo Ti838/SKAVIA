@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/services/app_language_service.dart';
 
 /// Trust, Turnkey Hub Banner, and Verified Safety widgets for Dashboard
 class DashboardTrustSafetySection extends StatelessWidget {
@@ -123,32 +124,34 @@ class DashboardTrustSafetySection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            'Business & Office Turnkey Hub',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
+                          Flexible(
+                            child: Text(
+                              AppLanguageService.tr('turnkey_title'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
                           ),
-                          SizedBox(width: 6),
-                          Icon(
+                          const SizedBox(width: 6),
+                          const Icon(
                             Icons.stars_rounded,
                             color: AppColors.accentPeach,
                             size: 16,
                           ),
                         ],
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
-                        'Full setup for Office, Showroom or IT Hub with a Dedicated Team Leader.',
-                        style: TextStyle(
+                        AppLanguageService.tr('turnkey_desc'),
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 11,
                           height: 1.3,
@@ -177,7 +180,7 @@ class DashboardTrustSafetySection extends StatelessWidget {
               child: _buildTrustItem(
                 context,
                 icon: Icons.shield_rounded,
-                title: '100% NID Verified',
+                title: AppLanguageService.tr('nid_verified'),
                 color: AppColors.primaryRoyal,
                 onTap: () => _showTrustDialog(
                   context,
@@ -191,7 +194,7 @@ class DashboardTrustSafetySection extends StatelessWidget {
               child: _buildTrustItem(
                 context,
                 icon: Icons.lock_outline_rounded,
-                title: 'Escrow Protected',
+                title: AppLanguageService.tr('escrow_protected'),
                 color: AppColors.successGreen,
                 onTap: () => _showTrustDialog(
                   context,
@@ -205,7 +208,7 @@ class DashboardTrustSafetySection extends StatelessWidget {
               child: _buildTrustItem(
                 context,
                 icon: Icons.support_agent_rounded,
-                title: '24/7 Helpline',
+                title: AppLanguageService.tr('helpline'),
                 color: AppColors.accentCoral,
                 onTap: onCallHelpline,
               ),
@@ -225,24 +228,30 @@ class KycTrustCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.sheetSurfaceSubtle,
+        color: isDark
+            ? colorScheme.surfaceContainerHighest
+            : AppColors.sheetSurfaceSubtle,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primarySky.withValues(alpha: 0.3)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.primaryRoyal.withValues(alpha: 0.1),
+              color: colorScheme.primary.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.verified_user_rounded,
-              color: AppColors.primaryRoyal,
+              color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
               size: 24,
             ),
           ),
@@ -251,18 +260,18 @@ class KycTrustCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
                     Text(
-                      'SKAVIA Verified Shield',
+                      AppLanguageService.tr('verified_shield'),
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                    SizedBox(width: 6),
-                    Icon(
+                    const SizedBox(width: 6),
+                    const Icon(
                       Icons.check_circle_rounded,
                       color: AppColors.successGreen,
                       size: 14,
@@ -271,10 +280,10 @@ class KycTrustCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Connected as ${userIdentifier ?? 'Active User'} • Escrow Protection Active',
-                  style: const TextStyle(
+                  'Connected as ${userIdentifier ?? 'Active User'} • ${AppLanguageService.tr('escrow_active')}',
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textMedium,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,

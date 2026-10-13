@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../../core/services/app_language_service.dart';
 
-/// Screen 4 Hero Banner Card: "Turn Your Ideas Into Reality"
+/// Screen 4 Hero Banner Card: "Turn Your Ideas Into Reality" with bilingual support
 class HeroBannerCard extends StatelessWidget {
   final VoidCallback? onRequestService;
 
@@ -12,6 +13,8 @@ class HeroBannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBn = AppLanguageService.isBengali;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
@@ -36,9 +39,11 @@ class HeroBannerCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Turn Your Ideas\nInto Reality',
-                  style: TextStyle(
+                Text(
+                  isBn
+                      ? 'আপনার প্রজেক্ট ও কাজ\nদক্ষ হাতে সমাধান'
+                      : 'Turn Your Ideas\nInto Reality',
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
@@ -47,7 +52,9 @@ class HeroBannerCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Find skilled workers or teams for your next project.',
+                  isBn
+                      ? 'ঢাকার সেরা ভেরিফায়েড কারিগর ও টেকনিক্যাল টিম ডাকুন।'
+                      : 'Find skilled workers or teams for your next project.',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w400,
@@ -75,9 +82,12 @@ class HeroBannerCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: const Text(
-                    'Request Service',
-                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  child: Text(
+                    isBn ? 'সার্ভিস রিকোয়েস্ট' : 'Request Service',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],

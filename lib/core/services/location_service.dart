@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -92,7 +93,64 @@ class LocationService {
     }
   }
 
+  /// Calculates Haversine distance in kilometers between two GPS coordinate pairs
+  static double calculateDistanceKm(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    const double p = 0.017453292519943295; // Math.PI / 180
+    final double a = 0.5 -
+        math.cos((lat2 - lat1) * p) / 2 +
+        math.cos(lat1 * p) *
+            math.cos(lat2 * p) *
+            (1 - math.cos((lon2 - lon1) * p)) /
+            2;
+    return 12742 * math.asin(math.sqrt(a)); // 2 * R * asin...
+  }
+
+  /// Forward geocode address query to real GPS coordinates using OpenStreetMap Nominatim
+  static Future<Map<String, double>?> geocodeAddress(String query) async {
+    try {
+      final encoded = Uri.encodeComponent('$query, Bangladesh');
+      final url = Uri.parse(
+        'https://nominatim.openstreetmap.org/search?q=$encoded&format=json&limit=1',
+      );
+      final response = await http
+          .get(
+            url,
+            headers: {
+              'User-Agent': 'SKAVIA_Mobile_App/1.0 (contact@skavia.com)',
+            },
+          )
+          .timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final list = jsonDecode(response.body) as List<dynamic>;
+        if (list.isNotEmpty) {
+          final first = list.first as Map<String, dynamic>;
+          final lat = double.tryParse(first['lat']?.toString() ?? '');
+          final lon = double.tryParse(first['lon']?.toString() ?? '');
+          if (lat != null && lon != null) {
+            return {'latitude': lat, 'longitude': lon};
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('[LocationService] Forward geocode error: $e');
+    }
+    return null;
+  }
+
   /// Reverse geocodes lat/lng into human-readable Dhaka address using OpenStreetMap
+  static Future<Map<String, String>> reverseGeocode(
+    double lat,
+    double lon,
+  ) async {
+    return _reverseGeocode(lat, lon);
+  }
+
   static Future<Map<String, String>> _reverseGeocode(
     double lat,
     double lon,

@@ -28,11 +28,11 @@ class ProjectTasksTabView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
           child: Row(
             children: [
-              _buildTaskSubTab(0, 'Tasks'),
+              _buildTaskSubTab(context, 0, 'Tasks'),
               const SizedBox(width: 10),
-              _buildTaskSubTab(1, 'Files'),
+              _buildTaskSubTab(context, 1, 'Files'),
               const SizedBox(width: 10),
-              _buildTaskSubTab(2, 'Milestones'),
+              _buildTaskSubTab(context, 2, 'Milestones'),
             ],
           ),
         ),
@@ -84,19 +84,25 @@ class ProjectTasksTabView extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskSubTab(int index, String title) {
+  Widget _buildTaskSubTab(BuildContext context, int index, String title) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final isSelected = selectedTaskFilter == index;
+
     return GestureDetector(
       onTap: () => onFilterChanged(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent,
+          color: isSelected
+              ? (isDark ? colorScheme.surfaceContainerHighest : const Color(0xFFEFF6FF))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFFE2E8F0),
+                ? colorScheme.primary
+                : colorScheme.outlineVariant,
           ),
         ),
         child: Text(
@@ -105,8 +111,8 @@ class ProjectTasksTabView extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isSelected
-                ? const Color(0xFF2563EB)
-                : const Color(0xFF64748B),
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant,
           ),
         ),
       ),

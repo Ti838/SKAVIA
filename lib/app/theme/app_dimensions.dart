@@ -17,6 +17,7 @@ abstract class AppDimensions {
   // Corner Radii
   static const double radius8 = 8.0;
   static const double radius12 = 12.0;
+  static const double radius14 = 14.0;
   static const double radius16 = 16.0;
   static const double radius20 = 20.0;
   static const double radius24 = 24.0;

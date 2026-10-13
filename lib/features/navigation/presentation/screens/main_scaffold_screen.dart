@@ -11,13 +11,13 @@ import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../customer/presentation/screens/category_catalog_screen.dart';
 import '../../../customer/presentation/widgets/account_deletion_dialog.dart';
 import '../../../customer/presentation/widgets/avatar_picker_sheet.dart';
+import '../../../customer/data/models/requirement_model.dart';
 import '../../../customer/presentation/widgets/customer_dashboard_view.dart';
 import '../../../customer/presentation/widgets/dashboard_location_sheet.dart';
 import '../../../customer/presentation/widgets/dashboard_notifications_sheet.dart';
 import '../../../customer/presentation/widgets/job_otp_dialog.dart';
 import '../../../customer/presentation/widgets/quick_booking_sheet.dart';
 import '../../../customer/presentation/widgets/unified_profile_view.dart';
-import '../../../reviews/presentation/screens/worker_reputation_screen.dart';
 import '../../../team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../../worker/presentation/screens/incoming_requests_screen.dart';
 import '../../../worker/presentation/widgets/worker_dashboard_view.dart';
@@ -61,8 +61,11 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   // Search Query Controller
   final TextEditingController _searchController = TextEditingController();
 
+  // Live Requirements
+  List<JobRequirementItem> _liveRequirements = [];
+
   // Notifications State
-  bool _hasUnreadNotifications = true;
+  bool _hasUnreadNotifications = false;
 
   @override
   void initState() {
@@ -117,18 +120,30 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
           .limit(1)
           .maybeSingle();
 
-      // Check current user profile avatar
+      // Fetch user record: avatar, persisted active_mode, and location
       final userRecord = await client
           .from('users')
-          .select('avatar_url')
+          .select('avatar_url, active_mode, location')
           .eq('user_id', user.uid)
           .maybeSingle();
 
       if (mounted) {
         setState(() {
           _activeClientBooking = activeBookingRes;
-          if (userRecord != null && userRecord['avatar_url'] != null) {
-            _customAvatarUrl = userRecord['avatar_url'] as String?;
+          if (userRecord != null) {
+            if (userRecord['avatar_url'] != null) {
+              _customAvatarUrl = userRecord['avatar_url'] as String?;
+            }
+            final modeStr = userRecord['active_mode']?.toString().toLowerCase();
+            if (modeStr == 'worker') {
+              _currentMode = AppRoleMode.worker;
+            } else if (modeStr == 'client') {
+              _currentMode = AppRoleMode.customer;
+            }
+            if (userRecord['location'] != null &&
+                (userRecord['location'] as String).isNotEmpty) {
+              _currentFormattedLocation = userRecord['location'] as String;
+            }
           }
         });
       }
@@ -181,6 +196,59 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
           });
         }
       }
+
+      // 4. Fetch real live open requirements for customer dashboard
+      try {
+        final reqRes = await client
+            .from('requirements')
+            .select(
+              'requirement_id, title, description, location, budget, status, created_at, category_id, submitted_by',
+            )
+            .eq('status', 'Open')
+            .order('created_at', ascending: false)
+            .limit(5);
+
+        final List<JobRequirementItem> items = [];
+        for (final row in reqRes) {
+          items.add(
+            JobRequirementItem(
+              id: row['requirement_id']?.toString() ?? '',
+              title: row['title']?.toString() ?? 'Requirement',
+              category: 'Trade & Service',
+              categoryId: row['category_id']?.toString() ?? 'cat_electrical',
+              description: row['description']?.toString() ?? '',
+              location: row['location']?.toString() ?? 'Dhaka, Bangladesh',
+              budgetMin: (row['budget'] as num?)?.toDouble() ?? 1200.0,
+              budgetMax: ((row['budget'] as num?)?.toDouble() ?? 1200.0) * 1.25,
+              urgency: 'Standard',
+              timeAgo: 'Recent',
+              clientName: 'Verified Member',
+            ),
+          );
+        }
+
+        if (mounted) {
+          setState(() {
+            _liveRequirements = items;
+          });
+        }
+      } catch (_) {}
+
+      // 5. Fetch real unread notifications badge status
+      try {
+        final notifRes = await client
+            .from('notifications')
+            .select('notification_id')
+            .eq('user_id', user.uid)
+            .eq('is_read', false)
+            .limit(1);
+
+        if (mounted) {
+          setState(() {
+            _hasUnreadNotifications = (notifRes as List).isNotEmpty;
+          });
+        }
+      } catch (_) {}
     } catch (_) {}
   }
 
@@ -219,6 +287,16 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   }
 
   Future<void> _handleLogout() async {
+    setState(() {
+      _activeClientBooking = null;
+      _workerEarnings = 0.0;
+      _workerCompletedJobs = 0;
+      _workerRating = 5.0;
+      _liveJobRequests = [];
+      _customAvatarUrl = null;
+      _currentMode = AppRoleMode.customer;
+      _navIndex = 0;
+    });
     await _authController.logout();
     if (mounted) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.login);
@@ -347,6 +425,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                   onCallHelpline: _callHelpline,
                   onQuickBookService: (name, catId, rate) =>
                       _showQuickBookingSheet(name, catId, rate),
+                  liveRequirements: _liveRequirements,
                 )
               : WorkerDashboardView(
                   workerEarnings: _workerEarnings,
@@ -369,29 +448,25 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       case 3:
         return const ProjectDashboardScreen();
       case 4:
-        if (_currentMode == AppRoleMode.customer) {
-          return UnifiedProfileView(
-            authController: _authController,
-            customAvatarUrl: _customAvatarUrl,
-            isCustomerMode: _currentMode == AppRoleMode.customer,
-            onAvatarPick: _showAvatarPickerModal,
-            onOpenSettings: _showSettingsModal,
-            onOpenServices: () => setState(() => _navIndex = 1),
-            onOpenProjects: () => setState(() => _navIndex = 3),
-            onCallHelpline: _callHelpline,
-            onSwitchRole: () {
-              _switchMode(
-                _currentMode == AppRoleMode.customer
-                    ? AppRoleMode.worker
-                    : AppRoleMode.customer,
-              );
-              setState(() => _navIndex = 0);
-            },
-            onLogout: _handleLogout,
-          );
-        } else {
-          return const WorkerReputationScreen();
-        }
+        return UnifiedProfileView(
+          authController: _authController,
+          customAvatarUrl: _customAvatarUrl,
+          isCustomerMode: _currentMode == AppRoleMode.customer,
+          onAvatarPick: _showAvatarPickerModal,
+          onOpenSettings: _showSettingsModal,
+          onOpenServices: () => setState(() => _navIndex = 1),
+          onOpenProjects: () => setState(() => _navIndex = 3),
+          onCallHelpline: _callHelpline,
+          onSwitchRole: () {
+            _switchMode(
+              _currentMode == AppRoleMode.customer
+                  ? AppRoleMode.worker
+                  : AppRoleMode.customer,
+            );
+            setState(() => _navIndex = 0);
+          },
+          onLogout: _handleLogout,
+        );
       default:
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
@@ -417,6 +492,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
             onCallHelpline: _callHelpline,
             onQuickBookService: (name, catId, rate) =>
                 _showQuickBookingSheet(name, catId, rate),
+            liveRequirements: _liveRequirements,
           ),
         );
     }
@@ -428,7 +504,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       valueListenable: AppLanguageService.localeNotifier,
       builder: (context, currentLang, _) {
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           body: SafeArea(
             bottom: false,
             child: Column(

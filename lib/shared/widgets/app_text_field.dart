@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 
 class AppTextField extends StatefulWidget {
@@ -44,6 +43,10 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return TextFormField(
       controller: widget.controller,
       obscureText: _obscureText,
@@ -52,14 +55,22 @@ class _AppTextFieldState extends State<AppTextField> {
       validator: widget.validator,
       onChanged: widget.onChanged,
       enabled: widget.enabled,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w500,
-        color: AppColors.textDark,
+        color: colorScheme.onSurface,
       ),
       decoration: InputDecoration(
         labelText: widget.label,
+        labelStyle: TextStyle(
+          color: colorScheme.onSurfaceVariant,
+          fontSize: 14,
+        ),
         hintText: widget.hint,
+        hintStyle: TextStyle(
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+          fontSize: 14,
+        ),
         prefixIcon: widget.prefixIcon != null
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -76,7 +87,7 @@ class _AppTextFieldState extends State<AppTextField> {
                   _obscureText
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: AppColors.textMuted,
+                  color: colorScheme.onSurfaceVariant,
                   size: 20,
                 ),
                 onPressed: () {
@@ -87,36 +98,47 @@ class _AppTextFieldState extends State<AppTextField> {
               )
             : null,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark
+            ? colorScheme.surfaceContainerHighest
+            : Colors.white,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 22,
-          vertical: 16,
+          horizontal: 16,
+          vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: AppDimensions.roundedPill,
-          borderSide: const BorderSide(
-            color: AppColors.borderLight,
-            width: 1.5,
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+            width: 1,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.roundedPill,
-          borderSide: const BorderSide(
-            color: AppColors.borderLight,
-            width: 1.5,
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
+            width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.roundedPill,
-          borderSide: const BorderSide(color: AppColors.primarySky, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          borderSide: BorderSide(
+            color: colorScheme.primary,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.roundedPill,
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: 1,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: AppDimensions.roundedPill,
-          borderSide: const BorderSide(color: AppColors.error, width: 2),
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          borderSide: BorderSide(
+            color: colorScheme.error,
+            width: 1.5,
+          ),
         ),
       ),
     );

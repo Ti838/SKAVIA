@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/services/skavia_ai_service.dart';
@@ -127,13 +126,14 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
         });
         _scrollToBottom();
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           _messages.add({
             'role': 'assistant',
             'content':
-                'I have noted your requirement for "$trimmed". Connecting you with top-rated SKAVIA verified professionals in your Dhaka area right now.',
+                '⚠️ Unable to reach SKAVIA AI ($e). Please verify backend credentials (GROQ_API_KEY or OPENROUTER_API_KEY) or check your internet connection.',
+            'isError': 'true',
           });
           _isGenerating = false;
         });
@@ -183,16 +183,21 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: false,
+        titleSpacing: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
             size: 20,
           ),
           onPressed: () => Navigator.of(context).pop(),
@@ -221,38 +226,45 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'SKAVIA AI',
-                  style: TextStyle(
-                    fontFamily: AppTypography.headingFont,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textDark,
-                    letterSpacing: 0.3,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'SKAVIA AI',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: AppTypography.headingFont,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                ),
-                Text(
-                  _currentMode == AiScreenMode.chat
-                      ? 'Groq Llama 3.3 • Online'
-                      : 'Diagnostic Assistant',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF10B981),
+                  Text(
+                    _currentMode == AiScreenMode.chat
+                        ? 'Copilot • Online'
+                        : 'Diagnostic Mode',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF10B981),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
         actions: [
           Container(
-            margin: const EdgeInsets.only(right: 14),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: const Color(0xFFF1F5F9),
               borderRadius: BorderRadius.circular(20),
@@ -285,7 +297,6 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 4),
                 GestureDetector(
                   onTap: () =>
                       setState(() => _currentMode = AiScreenMode.analyzing),

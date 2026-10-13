@@ -62,13 +62,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       );
       Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+    } else if (mounted && _authController.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -288,11 +297,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           'Already have an account? ',
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textMedium,
+                            color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

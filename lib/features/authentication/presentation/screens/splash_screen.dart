@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -71,106 +72,130 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF071228),
-              Color(0xFF0B1D47),
-              Color(0xFF0F3277),
-              Color(0xFF1E40AF),
-            ],
-            stops: [0.0, 0.35, 0.7, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Official SKAVIA Emblem / Logo
-                      Hero(
-                        tag: 'app_logo',
-                        child: Container(
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.08),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF3898EC)
-                                    .withValues(alpha: 0.25),
-                                blurRadius: 40,
-                                spreadRadius: 10,
-                              ),
-                            ],
-                          ),
-                          child: Image.asset(
-                            AppAssets.emblem,
-                            width: 88,
-                            height: 88,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.engineering_rounded,
-                                size: 64,
-                                color: Colors.white,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        AppStrings.appName,
-                        style: TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 3.5,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        AppStrings.appTagline,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white.withValues(alpha: 0.85),
-                          letterSpacing: 0.6,
-                        ),
-                      ),
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? const [
+                      Color(0xFF071228),
+                      Color(0xFF0B1D47),
+                      Color(0xFF0F3277),
+                      Color(0xFF1E40AF),
+                    ]
+                  : const [
+                      Color(0xFFF8FAFC),
+                      Color(0xFFEFF6FF),
+                      Color(0xFFDBEAFE),
+                      Color(0xFFBFDBFE),
                     ],
+              stops: const [0.0, 0.35, 0.7, 1.0],
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                const Spacer(flex: 2),
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Official SKAVIA Emblem / Logo
+                        Hero(
+                          tag: 'app_logo',
+                          child: Container(
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isDark
+                                      ? const Color(0xFF3898EC)
+                                          .withValues(alpha: 0.25)
+                                      : const Color(0xFF2563EB)
+                                          .withValues(alpha: 0.20),
+                                  blurRadius: 40,
+                                  spreadRadius: 8,
+                                ),
+                              ],
+                            ),
+                            child: Image.asset(
+                              AppAssets.emblem,
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.engineering_rounded,
+                                  size: 64,
+                                  color: isDark
+                                      ? Colors.white
+                                      : const Color(0xFF1D4ED8),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          AppStrings.appName,
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w900,
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
+                            letterSpacing: 3.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          AppStrings.appTagline,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.85)
+                                : const Color(0xFF334155),
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(flex: 2),
-              // Bottom Modern Workforce Illustration from Assets
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Opacity(
-                  opacity: 0.9,
-                  child: Image.asset(
-                    AppAssets.techniciansConsole,
-                    height: 180,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                const Spacer(flex: 2),
+                // Bottom Modern Workforce Illustration from Assets
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Opacity(
+                    opacity: isDark ? 0.9 : 0.95,
+                    child: Image.asset(
+                      AppAssets.techniciansConsole,
+                      height: 180,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

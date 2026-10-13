@@ -102,14 +102,19 @@ class AiResultsView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Text(
-                'Recommended Team',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+              Expanded(
+                child: Text(
+                  'Recommended Team',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                  ),
                 ),
               ),
+              SizedBox(width: 8),
               Text(
                 '(3-5 members)',
                 style: TextStyle(
@@ -155,12 +160,16 @@ class AiResultsView extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    Text(
-                      member['role']!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
+                    Expanded(
+                      child: Text(
+                        member['role']!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDark,
+                        ),
                       ),
                     ),
                   ],

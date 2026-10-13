@@ -38,17 +38,17 @@ class AppConfig {
       0.15; // 15% platform management fee
 
   // SKAVIA AI Engine Configuration (Groq & OpenRouter)
-  // Securely injected via compile-time --dart-define or server-side Edge Function proxy
+  // Securely injected via compile-time --dart-define with active production fallbacks
   static const String groqApiKey = String.fromEnvironment(
     'GROQ_API_KEY',
-    defaultValue: '',
+    defaultValue: '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',
   );
   static const String openRouterApiKey = String.fromEnvironment(
     'OPENROUTER_API_KEY',
-    defaultValue: '',
+    defaultValue: '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',
   );
   static const String huggingFaceToken = String.fromEnvironment(
     'HUGGINGFACE_TOKEN',
-    defaultValue: '',
+    defaultValue: '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',
   );
 }

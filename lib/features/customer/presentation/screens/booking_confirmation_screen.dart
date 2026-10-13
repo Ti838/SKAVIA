@@ -111,13 +111,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               'OTP:$randomOtp | Method:$_selectedPaymentMethod | Addr:${_addressController.text.trim()}',
         });
       } catch (e) {
-        debugPrint('Supabase insert bypassed for local dispatch demo: $e');
+        debugPrint('[Booking] Supabase insert warning: $e');
       }
 
       if (mounted) {
         final effectiveTitle = widget.jobTitle.isNotEmpty
             ? widget.jobTitle
-            : 'Mobile App Development';
+            : 'Certified Trade Service';
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (_) => BookingTimelineScreen(

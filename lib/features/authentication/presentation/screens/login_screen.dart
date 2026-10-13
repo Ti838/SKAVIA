@@ -46,8 +46,16 @@ class _LoginScreenState extends State<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+    } else if (_authController.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -63,19 +71,42 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final success = await _authController.sendPhoneOtp(rawPhone);
+    // Ensure phone number has country code prefix
+    final formattedPhone =
+        rawPhone.startsWith('+') ? rawPhone : '+88$rawPhone';
+
+    final success = await _authController.sendPhoneOtp(formattedPhone);
     if (success && mounted) {
       Navigator.of(context).pushNamed(
         AppRoutes.otpVerification,
-        arguments: {'phone': rawPhone, 'isLogin': true},
+        arguments: {
+          'phoneNumber': formattedPhone,
+          'verificationId': _authController.verificationId,
+          'isLogin': true,
+        },
+      );
+    } else if (mounted && _authController.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
 
   Future<void> _handleGoogleSignIn() async {
     final success = await _authController.signInWithGoogle();
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+    } else if (_authController.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_authController.errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
+      );
     }
   }
 
@@ -89,8 +120,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -232,12 +266,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'Remember me',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textMedium,
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -314,13 +348,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Align(
+                      Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'A 6-digit OTP code will be sent to your mobile phone via SMS.',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textMedium,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ),
@@ -372,7 +406,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const SizedBox(height: 24),
 
-                    // Social Sign In (Google & GitHub)
+                    // Social Sign In (Google)
                     SocialAuthButtonsRow(onGoogleSignIn: _handleGoogleSignIn),
 
                     const SizedBox(height: 32),
@@ -381,11 +415,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
+                        Text(
                           "Don't have an account? ",
                           style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textMedium,
+                            color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

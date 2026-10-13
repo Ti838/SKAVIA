@@ -54,6 +54,8 @@ class AppLanguageService {
       'verified_shield': 'SKAVIA Verified Shield',
       'escrow_active': 'Escrow Protection Active',
       'featured_services': 'Featured Services',
+      'popular_services': 'Popular Services',
+      'featured_specialists': 'Featured Specialists',
       'see_all': 'See All',
       'electrical_title': 'Electrical Repair & Wiring',
       'electrical_desc': 'Certified Master Electricians',
@@ -61,8 +63,11 @@ class AppLanguageService {
       'ac_desc': 'Gas Refill, Servicing & Repair',
       'plumbing_title': 'Sanitary & Plumbing',
       'plumbing_desc': 'Pipe Fitting & Water Systems',
+      'carpentry_title': 'Civil & Carpentry',
+      'carpentry_desc': 'Furniture, Door Locks & Woodcraft',
       'turnkey_title': 'Business & Office Turnkey Hub',
-      'turnkey_desc': 'Full setup for Office, Showroom or IT Hub with a Dedicated Team Leader.',
+      'turnkey_desc':
+          'Full setup for Office, Showroom or IT Hub with a Dedicated Team Leader.',
       'nid_verified': '100% NID Verified',
       'escrow_protected': 'Escrow Protected',
       'helpline': '24/7 Helpline',
@@ -103,6 +108,32 @@ class AppLanguageService {
       'browse_jobs': 'Browse Jobs',
       'open_jobs': 'Open Opportunities',
       'projects': 'Projects',
+      'services_and_categories': 'Services & Categories',
+      'all_services': 'All Services',
+      'available_services': 'Available Services',
+      'reset_filter': 'Reset Filter',
+      'browse_by_trade': 'Browse by Trade Specialization',
+      'search_service_hint': 'Search service or keyword...',
+      'request_service': 'Request Service',
+      'verified': 'Verified',
+      'verified_balance': 'Verified balance',
+      'zero_balance': 'Zero balance',
+      'worker_verification_bio': 'Worker Verification & Bio',
+      'worker_verification_desc':
+          'Upload NID, set hourly rate & working zones',
+      'open_jobs_feed': 'Open Jobs Feed',
+      'no_pending_requests': 'No pending job requests',
+      'radar_alert_desc':
+          'Radar active • You will be alerted when a client books nearby',
+      'rating': 'Rating',
+      'jobs': 'Jobs',
+      'days_su': 'Su',
+      'days_mo': 'Mo',
+      'days_tu': 'Tu',
+      'days_we': 'We',
+      'days_th': 'Th',
+      'days_fr': 'Fr',
+      'days_sa': 'Sa',
     },
     'bn': {
       'app_name': 'স্ক্যাভিয়া',
@@ -113,7 +144,8 @@ class AppLanguageService {
       'hello': 'হ্যালো',
       'welcome_subtitle': 'ভেরিফায়েড অন-ডিমান্ড সার্ভিসেস —',
       'worker_hub_title': 'ওয়ার্কার ও ক্লায়েন্ট হাব',
-      'worker_hub_subtitle': 'শিফট, লাইভ রিকোয়েস্ট ও উপার্জন পরিচালনা করুন',
+      'worker_hub_subtitle':
+          'শিফট, লাইভ রিকোয়েস্ট ও উপার্জন পরিচালনা করুন',
       'search_hint': 'সার্ভিস, স্কিল বা কর্মী খুঁজুন...',
       'radar_title': 'রাডার',
       'pros_active': 'জন কারিগর সক্রিয়',
@@ -131,6 +163,8 @@ class AppLanguageService {
       'verified_shield': 'স্ক্যাভিয়া ভেরিফায়েড শিল্ড',
       'escrow_active': 'এসক্রো সুরক্ষা সক্রিয়',
       'featured_services': 'জনপ্রিয় সার্ভিসসমূহ',
+      'popular_services': 'জনপ্রিয় সার্ভিসসমূহ',
+      'featured_specialists': 'শীর্ষ দক্ষ কারিগর',
       'see_all': 'সবগুলো দেখুন',
       'electrical_title': 'ইলেকট্রিক্যাল মেরামত ও ওয়্যারিং',
       'electrical_desc': 'সনদপ্রাপ্ত মাস্টার ইলেকট্রিশিয়ান',
@@ -138,6 +172,8 @@ class AppLanguageService {
       'ac_desc': 'গ্যাস রিফিল, সার্ভিসিং ও মেরামত',
       'plumbing_title': 'স্যানিটারি ও প্লাম্বিং',
       'plumbing_desc': 'পাইপ ফিটিং ও পানির মোটর সিস্টেম',
+      'carpentry_title': 'সিভিল ও কার্পেন্ট্রি',
+      'carpentry_desc': 'ফার্নিচার, দরজার লক ও কাঠের কাজ',
       'turnkey_title': 'টার্নকি অফিস ও বাণিজ্যিক সলিউশন',
       'turnkey_desc':
           'অফিস, শোরুম বা আইটি হাব সম্পূর্ণ সেটআপ—ডেডিকেটেড টিম লিডারসহ।',
@@ -180,6 +216,32 @@ class AppLanguageService {
       'browse_jobs': 'সব কাজ ব্রাউজ করুন',
       'open_jobs': 'কাজের সুযোগ',
       'projects': 'প্রজেক্ট',
+      'services_and_categories': 'সার্ভিস ও ক্যাটাগরি',
+      'all_services': 'সব সার্ভিস',
+      'available_services': 'উপলব্ধ সার্ভিসসমূহ',
+      'reset_filter': 'ফিল্টার রিসেট',
+      'browse_by_trade': 'ট্রেড অনুযায়ী ব্রাউজ করুন',
+      'search_service_hint': 'সার্ভিস বা কাজের নাম খুঁজুন...',
+      'request_service': 'সার্ভিস রিকোয়েস্ট',
+      'verified': 'যাচাইকৃত',
+      'verified_balance': 'ভেরিফায়েড ব্যালেন্স',
+      'zero_balance': 'শূন্য ব্যালেন্স',
+      'worker_verification_bio': 'ওয়ার্কার ভেরিফিকেশন ও বায়ো',
+      'worker_verification_desc':
+          'এনআইডি আপলোড, ঘণ্টা প্রতি রেট ও কাজের এলাকা নির্ধারণ',
+      'open_jobs_feed': 'সব কাজ দেখুন',
+      'no_pending_requests': 'কোনো পেন্ডিং কাজের রিকোয়েস্ট নেই',
+      'radar_alert_desc':
+          'রাডার সক্রিয় • ক্লায়েন্ট ডাকলে তাৎক্ষণিক অ্যালার্ট পাবেন',
+      'rating': 'রেটিং',
+      'jobs': 'টি কাজ',
+      'days_su': 'রবি',
+      'days_mo': 'সোম',
+      'days_tu': 'মঙ্গল',
+      'days_we': 'বুধ',
+      'days_th': 'বৃহঃ',
+      'days_fr': 'শুক্র',
+      'days_sa': 'শনি',
     },
   };
 
@@ -187,5 +249,35 @@ class AppLanguageService {
   static String tr(String key) {
     final lang = localeNotifier.value;
     return _localizedValues[lang]?[key] ?? _localizedValues['en']?[key] ?? key;
+  }
+
+  /// Helper to localize trade category names
+  static String getCategoryName(String slug, String defaultName) {
+    if (!isBengali) return defaultName;
+    final normalized = slug.toLowerCase();
+    if (normalized.contains('elec')) return 'ইলেকট্রিক্যাল ও পাওয়ার';
+    if (normalized.contains('plumb')) return 'প্লাম্বিং ও স্যানিটারি';
+    if (normalized.contains('ac') || normalized.contains('hvac') || normalized.contains('cool')) {
+      return 'এসি ও এইচভিএসি কুলিং';
+    }
+    if (normalized.contains('carpenter') || normalized.contains('civil')) {
+      return 'সিভিল ও কার্পেন্ট্রি';
+    }
+    if (normalized.contains('appliance') || normalized.contains('home')) {
+      return 'হোম অ্যাপ্লায়েন্স সার্ভিসিং';
+    }
+    if (normalized.contains('it') || normalized.contains('soft') || normalized.contains('sec')) {
+      return 'আইটি ও সিসিটিভি সিকিউরিটি';
+    }
+    if (normalized.contains('auto') || normalized.contains('car')) {
+      return 'অটোমোবাইল মেকানিক্স';
+    }
+    if (normalized.contains('indus') || normalized.contains('mach')) {
+      return 'ইন্ডাস্ট্রিয়াল মেশিনারি';
+    }
+    if (normalized.contains('paint') || normalized.contains('renov')) {
+      return 'রং ও ইন্টেরিয়র রেনোভেশন';
+    }
+    return defaultName;
   }
 }

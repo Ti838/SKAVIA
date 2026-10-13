@@ -14,8 +14,14 @@ import '../controllers/auth_controller.dart';
 class OtpVerificationScreen extends StatefulWidget {
   final String? phoneNumber;
   final String? fullName;
+  final String? verificationId;
 
-  const OtpVerificationScreen({super.key, this.phoneNumber, this.fullName});
+  const OtpVerificationScreen({
+    super.key,
+    this.phoneNumber,
+    this.fullName,
+    this.verificationId,
+  });
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -34,6 +40,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.verificationId != null) {
+      _authController.verificationId = widget.verificationId;
+    }
     _controllers = List.generate(_pinLength, (_) => TextEditingController());
     _focusNodes = List.generate(_pinLength, (_) => FocusNode());
     _startCountdown();
@@ -253,12 +262,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
             ),
 
-            // 32dp Curved White Sheet
+            // 32dp Curved Sheet (Theme-Aware)
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.sheetBackground,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: AppDimensions.roundedSheetTop,
                 ),
                 child: SingleChildScrollView(
@@ -287,7 +296,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           fontFamily: AppTypography.headingFont,
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -296,7 +305,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         style: TextStyle(
                           fontFamily: AppTypography.bodyFont,
                           fontSize: 13,
-                          color: AppColors.textMedium,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -305,6 +314,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: List.generate(_pinLength, (index) {
+                          final colorScheme = Theme.of(context).colorScheme;
                           return Flexible(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 3),
@@ -321,11 +331,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                     keyboardType: TextInputType.number,
                                     textAlign: TextAlign.center,
                                     maxLength: 1,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontFamily: AppTypography.headingFont,
                                       fontSize: 20,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.primaryRoyal,
+                                      color: colorScheme.primary,
                                     ),
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
@@ -335,23 +345,23 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                       contentPadding: EdgeInsets.zero,
                                       filled: true,
                                       fillColor: _controllers[index].text.isNotEmpty
-                                          ? AppColors.primarySky.withValues(
-                                              alpha: 0.08,
+                                          ? colorScheme.primary.withValues(
+                                              alpha: 0.10,
                                             )
-                                          : AppColors.surfaceVariant,
+                                          : colorScheme.surfaceContainerHighest,
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
                                           color: _controllers[index].text.isNotEmpty
-                                              ? AppColors.primarySky
-                                              : AppColors.borderLight,
+                                              ? colorScheme.primary
+                                              : colorScheme.outlineVariant,
                                           width: 1.5,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
-                                        borderSide: const BorderSide(
-                                          color: AppColors.primarySky,
+                                        borderSide: BorderSide(
+                                          color: colorScheme.primary,
                                           width: 2.5,
                                         ),
                                       ),

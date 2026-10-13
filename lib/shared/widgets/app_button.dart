@@ -27,6 +27,10 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
     Color backgroundColor;
     Color foregroundColor;
     BorderSide? borderSide;
@@ -39,18 +43,26 @@ class AppButton extends StatelessWidget {
         break;
       case AppButtonVariant.secondary:
         backgroundColor = AppColors.accentPeach;
-        foregroundColor = AppColors.textDark;
+        foregroundColor = const Color(0xFF0F172A);
         borderSide = BorderSide.none;
         break;
       case AppButtonVariant.whitePill:
-        backgroundColor = Colors.white;
-        foregroundColor = AppColors.textDark;
-        borderSide = const BorderSide(color: AppColors.borderLight, width: 1.5);
+        backgroundColor = isDark
+            ? colorScheme.surfaceContainerHighest
+            : Colors.white;
+        foregroundColor = colorScheme.onSurface;
+        borderSide = BorderSide(
+          color: colorScheme.outlineVariant,
+          width: 1.5,
+        );
         break;
       case AppButtonVariant.outline:
         backgroundColor = Colors.transparent;
-        foregroundColor = AppColors.textDark;
-        borderSide = const BorderSide(color: AppColors.borderLight, width: 1.5);
+        foregroundColor = colorScheme.onSurface;
+        borderSide = BorderSide(
+          color: colorScheme.outlineVariant,
+          width: 1.5,
+        );
         break;
     }
 

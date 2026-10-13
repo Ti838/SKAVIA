@@ -62,7 +62,7 @@ Deno.serve(async (req: any) => {
             "User-Agent": "SKAVIA-Backend/1.0",
           },
           body: JSON.stringify({
-            model: "qwen/qwen3.8-27b",
+            model: "llama-3.3-70b-versatile",
             messages: [
               { role: "system", content: SYSTEM_PROMPT },
               { role: "user", content: description },

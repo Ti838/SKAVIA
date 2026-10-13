@@ -22,27 +22,31 @@ class ProjectTaskItemCard extends StatelessWidget {
     final isCompleted = status == 'Completed';
     final isInProgress = status == 'In Progress';
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     Color statusColor;
     Color statusBg;
 
     if (isCompleted) {
       statusColor = const Color(0xFF10B981);
-      statusBg = const Color(0xFFECFDF5);
+      statusBg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5);
     } else if (isInProgress) {
       statusColor = const Color(0xFF2563EB);
-      statusBg = const Color(0xFFEFF6FF);
+      statusBg = isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.4) : const Color(0xFFEFF6FF);
     } else {
       statusColor = const Color(0xFFF59E0B);
-      statusBg = const Color(0xFFFFFBEB);
+      statusBg = isDark ? const Color(0xFF78350F).withValues(alpha: 0.4) : const Color(0xFFFFFBEB);
     }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -57,7 +61,7 @@ class ProjectTaskItemCard extends StatelessWidget {
                 border: Border.all(
                   color: isCompleted
                       ? const Color(0xFF10B981)
-                      : const Color(0xFFCBD5E1),
+                      : colorScheme.outlineVariant,
                   width: 2,
                 ),
                 color: isCompleted
@@ -80,8 +84,8 @@ class ProjectTaskItemCard extends StatelessWidget {
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
                     color: isCompleted
-                        ? const Color(0xFF94A3B8)
-                        : AppColors.textDark,
+                        ? colorScheme.onSurfaceVariant
+                        : colorScheme.onSurface,
                     decoration: isCompleted ? TextDecoration.lineThrough : null,
                   ),
                 ),

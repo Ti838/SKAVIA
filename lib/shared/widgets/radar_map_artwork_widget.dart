@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/services/app_language_service.dart';
 
 /// High-performance GPU CustomPainter widget rendering a live vector radar map of Dhaka,
 /// displaying user GPS pulse pin and nearby active trade technicians (⚡, ❄️, 🔧).
@@ -45,7 +46,7 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 148,
+      height: 152,
       decoration: BoxDecoration(
         color: const Color(0xFF0F1E36), // Deep Night Radar Slate
         borderRadius: BorderRadius.circular(22),
@@ -66,7 +67,7 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
               animation: _pulseController,
               builder: (context, child) {
                 return CustomPaint(
-                  size: const Size(double.infinity, 148),
+                  size: const Size(double.infinity, 152),
                   painter: _RadarMapPainter(
                     animationValue: _pulseController.value,
                   ),
@@ -88,119 +89,132 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
               ),
             ),
 
-            // Top Status Badge: Zone & Active Count
+            // Top Status Header: Zone & Active Count + Expand Action (Zero Overflow Row)
             Positioned(
-              top: 12,
-              left: 14,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.22),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.accentAqua,
-                        shape: BoxShape.circle,
+              top: 10,
+              left: 12,
+              right: 12,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.22),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.accentAqua,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              '${widget.locationZone} ${AppLanguageService.tr('radar_title')} • ${widget.activeTechCount} ${AppLanguageService.tr('pros_active')}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '${widget.locationZone} Radar • ${widget.activeTechCount} Pros Active',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
+                  ),
+                  if (widget.onExpand != null) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: widget.onExpand,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySky.withValues(alpha: 0.3),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.primarySky.withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.fullscreen_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              AppLanguageService.tr('expand_radar'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
             ),
 
-            // Expand Map Action Button
-            if (widget.onExpand != null)
-              Positioned(
-                top: 10,
-                right: 12,
-                child: GestureDetector(
-                  onTap: widget.onExpand,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primarySky.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.primarySky.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.fullscreen_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'Radar',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-            // Bottom Info Chip: Avg Dispatch Time
+            // Bottom Info Row: Trade Chips & Arrival Time (Zero Overflow Guaranteed)
             Positioned(
-              bottom: 12,
-              left: 14,
-              right: 14,
+              bottom: 10,
+              left: 12,
+              right: 12,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      _buildTechMarkerChip(
-                        Icons.electric_bolt_rounded,
-                        AppColors.accentPeach,
-                        'Electricians',
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
+                        children: [
+                          _buildTechMarkerChip(
+                            Icons.electric_bolt_rounded,
+                            AppColors.accentPeach,
+                            AppLanguageService.isBengali ? 'ইলেকট্রিশিয়ান' : 'Electricians',
+                          ),
+                          const SizedBox(width: 6),
+                          _buildTechMarkerChip(
+                            Icons.ac_unit_rounded,
+                            AppColors.primarySky,
+                            AppLanguageService.isBengali ? 'এসি টেকনিশিয়ান' : 'HVAC',
+                          ),
+                          const SizedBox(width: 6),
+                          _buildTechMarkerChip(
+                            Icons.plumbing_rounded,
+                            AppColors.accentAqua,
+                            AppLanguageService.isBengali ? 'প্লাম্বার' : 'Plumbers',
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                      _buildTechMarkerChip(
-                        Icons.ac_unit_rounded,
-                        AppColors.primarySky,
-                        'HVAC',
-                      ),
-                      const SizedBox(width: 6),
-                      _buildTechMarkerChip(
-                        Icons.plumbing_rounded,
-                        AppColors.accentAqua,
-                        'Plumbers',
-                      ),
-                    ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -210,9 +224,9 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                       color: AppColors.successGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
-                      '~15 min arrival',
-                      style: TextStyle(
+                    child: Text(
+                      '~15 ${AppLanguageService.tr('min_arrival')}',
+                      style: const TextStyle(
                         color: AppColors.accentAqua,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../chat/data/datasources/chat_remote_datasource.dart';
 
 /// Reusable team member tile for Project Management board
 class TeamMemberTile extends StatelessWidget {
@@ -101,16 +103,26 @@ class TeamMemberTile extends StatelessWidget {
                 size: 20,
                 color: Color(0xFF2563EB),
               ),
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.chatRoom,
-                  arguments: {
-                    'conversationId': 'conv_$name',
-                    'otherParticipantName': name,
-                    'otherParticipantId': 'user_$name',
-                  },
+              onPressed: () async {
+                final currentUserId =
+                    FirebaseAuth.instance.currentUser?.uid ?? 'guest_user';
+                final otherId =
+                    'user_${name.replaceAll(' ', '_').toLowerCase()}';
+                final conv = await ChatRemoteDataSource().getOrCreateConversation(
+                  currentUserId: currentUserId,
+                  otherUserId: otherId,
                 );
+                if (context.mounted) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.chatRoom,
+                    arguments: {
+                      'conversationId': conv.conversationId,
+                      'otherParticipantName': name,
+                      'otherParticipantId': otherId,
+                    },
+                  );
+                }
               },
             )
           else if (isLeader)

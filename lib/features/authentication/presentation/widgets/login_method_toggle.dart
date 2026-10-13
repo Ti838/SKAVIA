@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 
 /// Reusable pill switch toggle between Email and Phone OTP authentication modes.
@@ -16,10 +15,16 @@ class LoginMethodToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: isDark
+            ? colorScheme.surfaceContainerHighest
+            : const Color(0xFFF1F5F9),
         borderRadius: AppDimensions.roundedPill,
       ),
       child: Row(
@@ -31,12 +36,14 @@ class LoginMethodToggle extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: selectedIndex == 0 ? Colors.white : Colors.transparent,
+                  color: selectedIndex == 0
+                      ? (isDark ? colorScheme.surface : Colors.white)
+                      : Colors.transparent,
                   borderRadius: AppDimensions.roundedPill,
                   boxShadow: selectedIndex == 0
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -50,8 +57,8 @@ class LoginMethodToggle extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: selectedIndex == 0
-                          ? AppColors.primaryRoyal
-                          : AppColors.textMedium,
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -65,12 +72,14 @@ class LoginMethodToggle extends StatelessWidget {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 decoration: BoxDecoration(
-                  color: selectedIndex == 1 ? Colors.white : Colors.transparent,
+                  color: selectedIndex == 1
+                      ? (isDark ? colorScheme.surface : Colors.white)
+                      : Colors.transparent,
                   borderRadius: AppDimensions.roundedPill,
                   boxShadow: selectedIndex == 1
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
+                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -84,8 +93,8 @@ class LoginMethodToggle extends StatelessWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                       color: selectedIndex == 1
-                          ? AppColors.primaryRoyal
-                          : AppColors.textMedium,
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),

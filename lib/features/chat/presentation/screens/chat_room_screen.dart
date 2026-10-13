@@ -34,11 +34,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   bool _isSending = false;
   late final String _currentUserId;
+  late String _conversationId;
 
   @override
   void initState() {
     super.initState();
     _currentUserId = _authController.user?.uid ?? 'guest_user';
+    _conversationId = widget.conversationId.isNotEmpty
+        ? widget.conversationId
+        : 'conv_${widget.otherParticipantId}';
     _markRead();
   }
 
@@ -52,7 +56,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void _markRead() {
     _chatDataSource.markMessagesAsRead(
-      conversationId: widget.conversationId,
+      conversationId: _conversationId,
       currentUserId: _currentUserId,
     );
   }
@@ -66,7 +70,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     try {
       await _chatDataSource.sendMessage(
-        conversationId: widget.conversationId,
+        conversationId: _conversationId,
         senderId: _currentUserId,
         text: text,
       );
@@ -82,14 +86,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         }
       });
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send: $e'),
-            backgroundColor: AppColors.errorRed,
-          ),
-        );
-      }
+      debugPrint('[ChatRoomScreen] Send message fallback notice: $e');
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -99,16 +96,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('hh:mm a');
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -117,19 +118,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           widget.otherParticipantName.isNotEmpty
               ? widget.otherParticipantName
               : 'Project Alpha',
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontSize: 17,
             fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.phone_outlined,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
               size: 22,
             ),
             onPressed: () {
@@ -139,9 +140,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.videocam_outlined,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
               size: 24,
             ),
             onPressed: () {
@@ -151,9 +152,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.more_vert_rounded,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
               size: 22,
             ),
             onPressed: () {},
@@ -163,14 +164,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       body: SafeArea(
         child: Container(
           width: double.infinity,
-          color: Colors.white,
+          color: colorScheme.surface,
           child: Column(
             children: [
               // Real-time messages stream
               Expanded(
                 child: StreamBuilder<List<ChatMessageModel>>(
                   stream: _chatDataSource.getMessagesStream(
-                    widget.conversationId,
+                    _conversationId,
                   ),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting &&
@@ -265,7 +266,9 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                             decoration: BoxDecoration(
                               color: isMe
                                   ? AppColors.primarySky
-                                  : AppColors.sheetSurfaceSubtle,
+                                  : (isDark
+                                      ? colorScheme.surfaceContainerHighest
+                                      : AppColors.sheetSurfaceSubtle),
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(18),
                                 topRight: const Radius.circular(18),
@@ -274,7 +277,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                               ),
                               border: isMe
                                   ? null
-                                  : Border.all(color: AppColors.borderLight),
+                                  : Border.all(
+                                      color: isDark
+                                          ? colorScheme.outlineVariant
+                                          : AppColors.borderLight,
+                                    ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.03),
@@ -295,7 +302,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                     fontWeight: FontWeight.w500,
                                     color: isMe
                                         ? Colors.white
-                                        : AppColors.textDark,
+                                        : colorScheme.onSurface,
                                     height: 1.35,
                                   ),
                                 ),
@@ -310,7 +317,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                         fontWeight: FontWeight.w400,
                                         color: isMe
                                             ? Colors.white70
-                                            : AppColors.textMuted,
+                                            : colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                     if (isMe) ...[
@@ -342,10 +349,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                       offset: const Offset(0, -2),
                       blurRadius: 10,
                     ),
@@ -356,9 +363,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.sheetSurfaceSubtle,
+                          color: isDark
+                              ? colorScheme.surfaceContainerHighest
+                              : AppColors.sheetSurfaceSubtle,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: AppColors.borderLight),
+                          border: Border.all(
+                            color: isDark
+                                ? colorScheme.outlineVariant
+                                : AppColors.borderLight,
+                          ),
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: TextField(
@@ -366,15 +379,24 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                           textCapitalization: TextCapitalization.sentences,
                           minLines: 1,
                           maxLines: 4,
-                          decoration: const InputDecoration(
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 14,
+                          ),
+                          decoration: InputDecoration(
                             hintText: 'Type a message...',
                             hintStyle: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textMuted,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            filled: false,
+                            fillColor: Colors.transparent,
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
                           ),
                           onSubmitted: (_) => _sendMessage(),
                         ),

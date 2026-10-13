@@ -37,9 +37,18 @@ class DashboardTopAppBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final isBn = AppLanguageService.isBengali;
+
+    final pillBg = isDark
+        ? colorScheme.surfaceContainerHighest
+        : AppColors.sheetSurfaceSubtle;
+    final pillBorder = colorScheme.outlineVariant;
+
     return Container(
-      color: Colors.white,
+      color: colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         children: [
@@ -57,10 +66,10 @@ class DashboardTopAppBar extends StatelessWidget {
                       ? NetworkImage(customAvatarUrl!)
                       : null,
                   child: customAvatarUrl == null
-                      ? const Icon(
+                      ? Icon(
                           Icons.person_rounded,
                           size: 20,
-                          color: AppColors.primaryRoyal,
+                          color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
                         )
                       : null,
                 ),
@@ -82,17 +91,17 @@ class DashboardTopAppBar extends StatelessWidget {
                       errorBuilder: (_, _, _) => const Icon(
                         Icons.engineering_rounded,
                         size: 20,
-                        color: AppColors.primaryRoyal,
+                        color: AppColors.primarySky,
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Text(
+                    Text(
                       'SKAVIA',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.2,
-                        color: AppColors.primaryRoyal,
+                        color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
                       ),
                     ),
                   ],
@@ -107,14 +116,14 @@ class DashboardTopAppBar extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: AppColors.sheetSurfaceSubtle,
+                        color: pillBg,
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.borderLight),
+                        border: Border.all(color: pillBorder),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.notifications_none_rounded,
                         size: 20,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     if (hasUnreadNotifications)
@@ -152,20 +161,20 @@ class DashboardTopAppBar extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.sheetSurfaceSubtle,
+                      color: pillBg,
                       borderRadius: AppDimensions.roundedPill,
-                      border: Border.all(color: AppColors.borderLight),
+                      border: Border.all(color: pillBorder),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (isLocating)
-                          const SizedBox(
+                          SizedBox(
                             width: 10,
                             height: 10,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: AppColors.primaryRoyal,
+                              color: colorScheme.primary,
                             ),
                           )
                         else
@@ -174,21 +183,21 @@ class DashboardTopAppBar extends StatelessWidget {
                             size: 13,
                             color: isGpsVerified
                                 ? AppColors.accentAqua
-                                : AppColors.primaryRoyal,
+                                : colorScheme.primary,
                           ),
                         const SizedBox(width: 4),
                         Text(
                           currentLocationZone,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(
+                        Icon(
                           Icons.arrow_drop_down_rounded,
-                          color: AppColors.textMedium,
+                          color: colorScheme.onSurfaceVariant,
                           size: 16,
                         ),
                       ],
@@ -202,9 +211,9 @@ class DashboardTopAppBar extends StatelessWidget {
                   height: 28,
                   padding: const EdgeInsets.all(2),
                   decoration: BoxDecoration(
-                    color: AppColors.sheetSurfaceSubtle,
+                    color: pillBg,
                     borderRadius: AppDimensions.roundedPill,
-                    border: Border.all(color: AppColors.borderLight),
+                    border: Border.all(color: pillBorder),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -215,7 +224,7 @@ class DashboardTopAppBar extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.customer
-                                ? AppColors.primaryRoyal
+                                ? (isDark ? colorScheme.primary : AppColors.primaryRoyal)
                                 : Colors.transparent,
                             borderRadius: AppDimensions.roundedPill,
                           ),
@@ -227,7 +236,7 @@ class DashboardTopAppBar extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                               color: currentMode == AppRoleMode.customer
                                   ? Colors.white
-                                  : AppColors.textMedium,
+                                  : colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -238,7 +247,7 @@ class DashboardTopAppBar extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.worker
-                                ? AppColors.primaryRoyal
+                                ? (isDark ? colorScheme.primary : AppColors.primaryRoyal)
                                 : Colors.transparent,
                             borderRadius: AppDimensions.roundedPill,
                           ),
@@ -250,7 +259,7 @@ class DashboardTopAppBar extends StatelessWidget {
                               fontWeight: FontWeight.w800,
                               color: currentMode == AppRoleMode.worker
                                   ? Colors.white
-                                  : AppColors.textMedium,
+                                  : colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -269,14 +278,14 @@ class DashboardTopAppBar extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.sheetSurfaceSubtle,
+                      color: pillBg,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.borderLight),
+                      border: Border.all(color: pillBorder),
                     ),
                     child: Text(
                       isBn ? 'Eng' : 'বাংলা',
-                      style: const TextStyle(
-                        color: AppColors.textDark,
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                       ),
@@ -294,23 +303,25 @@ class DashboardTopAppBar extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F3FF),
+                      color: isDark ? const Color(0xFF2E1065) : const Color(0xFFF5F3FF),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: const Color(0xFFDDD6FE)),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF6B21A8) : const Color(0xFFDDD6FE),
+                      ),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.auto_awesome,
                           size: 11,
-                          color: Color(0xFF7C3AED),
+                          color: isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
                         ),
-                        SizedBox(width: 3),
+                        const SizedBox(width: 3),
                         Text(
                           'SKAVIA AI',
                           style: TextStyle(
-                            color: Color(0xFF7C3AED),
+                            color: isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
                           ),

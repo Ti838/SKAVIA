@@ -20,29 +20,32 @@ class RadarMapFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: AppColors.sheetSurfaceSubtle,
+      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
       child: Row(
         children: [
           // Radius Chips
-          _buildRadiusChip(3, '3 km'),
+          _buildRadiusChip(context, 3, '3 km'),
           const SizedBox(width: 6),
-          _buildRadiusChip(5, '5 km'),
+          _buildRadiusChip(context, 5, '5 km'),
           const SizedBox(width: 6),
-          _buildRadiusChip(10, isBn ? '১০+ কিমি' : '10+ km'),
+          _buildRadiusChip(context, 10, isBn ? '১০+ কিমি' : '10+ km'),
           const Spacer(),
           // Trade Filter Popup/Dropdown
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderLight),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: selectedTradeFilter,
+                dropdownColor: colorScheme.surface,
                 isDense: true,
                 style: const TextStyle(
                   fontSize: 11,
@@ -74,17 +77,18 @@ class RadarMapFilterBar extends StatelessWidget {
     );
   }
 
-  Widget _buildRadiusChip(int km, String label) {
+  Widget _buildRadiusChip(BuildContext context, int km, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = selectedRadiusKm == km;
     return GestureDetector(
       onTap: () => onRadiusChanged(km),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryRoyal : Colors.white,
+          color: isSelected ? AppColors.primaryRoyal : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : AppColors.borderLight,
+            color: isSelected ? AppColors.primaryRoyal : colorScheme.outlineVariant,
           ),
         ),
         child: Text(
@@ -92,7 +96,7 @@ class RadarMapFilterBar extends StatelessWidget {
           style: TextStyle(
             fontSize: 11,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            color: isSelected ? Colors.white : AppColors.textDark,
+            color: isSelected ? Colors.white : colorScheme.onSurface,
           ),
         ),
       ),

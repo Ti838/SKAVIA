@@ -18,16 +18,20 @@ class CatalogServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderLight.withValues(alpha: 0.6)),
+        border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -68,11 +72,11 @@ class CatalogServiceCard extends StatelessWidget {
                     ],
                     Text(
                       service.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: AppTypography.headingFont,
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -82,11 +86,11 @@ class CatalogServiceCard extends StatelessWidget {
               // Base Price
               Text(
                 '৳ ${service.basePrice.toStringAsFixed(0)}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.headingFont,
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.primaryRoyal,
+                  color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
                 ),
               ),
             ],
@@ -96,9 +100,9 @@ class CatalogServiceCard extends StatelessWidget {
             service.description,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12.5,
-              color: AppColors.textMedium,
+              color: colorScheme.onSurfaceVariant,
               height: 1.35,
             ),
           ),
@@ -116,33 +120,33 @@ class CatalogServiceCard extends StatelessWidget {
                     const SizedBox(width: 3),
                     Text(
                       service.ratingAverage.toStringAsFixed(1),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(width: 3),
                     Text(
                       '(${service.totalBookings})',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textMuted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(
+                    Icon(
                       Icons.access_time_rounded,
                       size: 13,
-                      color: AppColors.textMedium,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 3),
                     Expanded(
                       child: Text(
                         service.estimatedDuration,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textMedium,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

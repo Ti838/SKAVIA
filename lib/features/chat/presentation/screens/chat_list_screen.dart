@@ -68,6 +68,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
       return name.contains(q) || msg.contains(q);
     }).toList();
 
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -80,32 +84,32 @@ class _ChatListScreenState extends State<ChatListScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Direct Messages',
                     style: TextStyle(
                       fontFamily: AppTypography.headingFont,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                       letterSpacing: -0.4,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.refresh_rounded,
-                      color: AppColors.primarySky,
+                      color: colorScheme.primary,
                     ),
                     onPressed: _loadConversations,
                   ),
                 ],
               ),
               const SizedBox(height: 2),
-              const Text(
+              Text(
                 'Instant coordination between clients & verified specialists',
                 style: TextStyle(
                   fontFamily: AppTypography.bodyFont,
                   fontSize: 13,
-                  color: AppColors.textMedium,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -117,40 +121,51 @@ class _ChatListScreenState extends State<ChatListScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
           child: Container(
             decoration: BoxDecoration(
-              color: AppColors.sheetSurfaceSubtle,
+              color: isDark
+                  ? colorScheme.surfaceContainerHighest
+                  : AppColors.sheetSurfaceSubtle,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderLight),
+              border: Border.all(color: colorScheme.outlineVariant),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.search_rounded,
-                  color: AppColors.textMuted,
+                  color: colorScheme.onSurfaceVariant,
                   size: 20,
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     onChanged: (v) => setState(() => _searchQuery = v),
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
+                    ),
+                    decoration: InputDecoration(
                       hintText: 'Search chats or names...',
                       hintStyle: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textMuted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                   ),
                 ),
                 if (_searchQuery.isNotEmpty)
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.clear,
                       size: 18,
-                      color: AppColors.textMuted,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     onPressed: () => setState(() => _searchQuery = ''),
                   ),
@@ -261,10 +276,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                                 child: Text(
                                                   item.otherParticipantName ??
                                                       'SKAVIA Member',
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 15,
                                                     fontWeight: FontWeight.w700,
-                                                    color: AppColors.textDark,
+                                                    color: colorScheme.onSurface,
                                                   ),
                                                   overflow:
                                                       TextOverflow.ellipsis,
@@ -272,9 +287,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                               ),
                                               Text(
                                                 timeStr,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                   fontSize: 11,
-                                                  color: AppColors.textMuted,
+                                                  color: colorScheme.onSurfaceVariant,
                                                 ),
                                               ),
                                             ],
@@ -293,8 +308,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
                                                         ? FontWeight.w700
                                                         : FontWeight.w400,
                                                     color: item.unreadCount > 0
-                                                        ? AppColors.textDark
-                                                        : AppColors.textMedium,
+                                                        ? colorScheme.onSurface
+                                                        : colorScheme.onSurfaceVariant,
                                                   ),
                                                   maxLines: 1,
                                                   overflow:
@@ -344,28 +359,28 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
 
     if (widget.isTab) {
-      return Container(color: Colors.white, child: content);
+      return Container(color: colorScheme.surface, child: content);
     }
 
     return Scaffold(
-      backgroundColor: AppColors.canvasBlue,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: AppColors.canvasBlue,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
+            color: colorScheme.onSurface,
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Messages',
           style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: colorScheme.onSurface,
           ),
         ),
       ),
@@ -373,8 +388,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
         child: Container(
           width: double.infinity,
           margin: const EdgeInsets.only(top: 8),
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
             borderRadius: AppDimensions.roundedSheet,
           ),
           child: ClipRRect(
@@ -387,6 +402,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return ListView(
       children: [
         const SizedBox(height: 80),
@@ -397,34 +416,36 @@ class _ChatListScreenState extends State<ChatListScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBlueTint,
+                  color: isDark
+                      ? colorScheme.surfaceContainerHighest
+                      : AppColors.cardBlueTint,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.forum_outlined,
                   size: 48,
-                  color: AppColors.primarySky,
+                  color: colorScheme.primary,
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'No Conversations Yet',
                 style: TextStyle(
                   fontFamily: AppTypography.headingFont,
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 8),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   'When you book a specialist, post a requirement, or accept a job assignment, your direct real-time communication will be listed here.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textMedium,
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.45,
                   ),
                 ),

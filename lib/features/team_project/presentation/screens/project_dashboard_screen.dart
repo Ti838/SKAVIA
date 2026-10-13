@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../widgets/project_overview_tab_view.dart';
 import '../widgets/project_tasks_tab_view.dart';
@@ -320,16 +319,20 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
             size: 20,
           ),
           onPressed: () {
@@ -340,16 +343,16 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
         ),
         title: Text(
           _title,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontWeight: FontWeight.w700,
             fontSize: 17,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: AppColors.textDark, size: 24),
+            icon: Icon(Icons.add, color: colorScheme.onSurface, size: 24),
             onPressed: () {
               if (_selectedTopTab == 1) {
                 _addNewTaskDialog();
@@ -361,8 +364,8 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+          ? Center(
+              child: CircularProgressIndicator(color: colorScheme.primary),
             )
           : Column(
               children: [
@@ -375,7 +378,9 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: isDark
+                          ? colorScheme.surfaceContainerHighest
+                          : const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Row(
@@ -402,19 +407,25 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
   }
 
   Widget _buildTopTabItem(int index, String title) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final isSelected = _selectedTopTab == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTopTab = index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected
+                ? (isDark ? colorScheme.surface : Colors.white)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -428,7 +439,7 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
                 fontFamily: AppTypography.bodyFont,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 fontSize: 13,
-                color: isSelected ? AppColors.textDark : AppColors.textMuted,
+                color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
               ),
             ),
           ),

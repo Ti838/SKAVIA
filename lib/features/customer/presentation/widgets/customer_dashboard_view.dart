@@ -13,6 +13,7 @@ import 'featured_service_pill.dart';
 import 'featured_workers_section.dart';
 import 'hero_banner_card.dart';
 import 'popular_services_section.dart';
+import '../../data/models/requirement_model.dart';
 
 /// Customer Mode Dashboard View (matching Reference Screen 4 architecture)
 class CustomerDashboardView extends StatelessWidget {
@@ -30,6 +31,7 @@ class CustomerDashboardView extends StatelessWidget {
     double startingRate,
   )
   onQuickBookService;
+  final List<JobRequirementItem> liveRequirements;
 
   const CustomerDashboardView({
     super.key,
@@ -42,22 +44,29 @@ class CustomerDashboardView extends StatelessWidget {
     required this.onViewOtp,
     required this.onCallHelpline,
     required this.onQuickBookService,
+    this.liveRequirements = const [],
   });
 
   Widget _buildUniversalSearchBar(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.sheetSurfaceSubtle,
+        color: isDark
+            ? colorScheme.surfaceContainerHighest
+            : AppColors.sheetSurfaceSubtle,
         borderRadius: AppDimensions.roundedPill,
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 16),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
             child: Icon(
               Icons.search_rounded,
-              color: AppColors.primarySky,
+              color: colorScheme.primary,
               size: 22,
             ),
           ),
@@ -65,13 +74,22 @@ class CustomerDashboardView extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: searchController,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurface,
+              ),
               decoration: InputDecoration(
                 hintText: AppLanguageService.tr('search_hint'),
-                hintStyle: const TextStyle(
+                hintStyle: TextStyle(
                   fontSize: 13,
-                  color: AppColors.textMedium,
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                filled: false,
+                fillColor: Colors.transparent,
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -87,9 +105,9 @@ class CustomerDashboardView extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.tune_rounded,
-              color: AppColors.textMedium,
+              color: colorScheme.onSurfaceVariant,
               size: 20,
             ),
             onPressed: () {
@@ -167,10 +185,10 @@ class CustomerDashboardView extends StatelessWidget {
           children: [
             Text(
               AppLanguageService.tr('featured_services'),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             GestureDetector(
@@ -179,17 +197,21 @@ class CustomerDashboardView extends StatelessWidget {
                 children: [
                   Text(
                     AppLanguageService.tr('see_all'),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.primaryRoyal,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Theme.of(context).colorScheme.primary
+                          : AppColors.primaryRoyal,
                     ),
                   ),
                   const SizedBox(width: 2),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 12,
-                    color: AppColors.primaryRoyal,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(context).colorScheme.primary
+                        : AppColors.primaryRoyal,
                   ),
                 ],
               ),
@@ -248,10 +270,12 @@ class CustomerDashboardView extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: AppColors.sheetSurfaceSubtle,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Theme.of(context).colorScheme.surfaceContainerHighest
+                  : AppColors.sheetSurfaceSubtle,
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: AppColors.primarySky.withValues(alpha: 0.3),
+                color: Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
             child: Row(
@@ -259,12 +283,14 @@ class CustomerDashboardView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryRoyal.withValues(alpha: 0.1),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.dynamic_feed_rounded,
-                    color: AppColors.primaryRoyal,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Theme.of(context).colorScheme.primary
+                        : AppColors.primaryRoyal,
                     size: 22,
                   ),
                 ),
@@ -279,10 +305,10 @@ class CustomerDashboardView extends StatelessWidget {
                             AppLanguageService.isBengali
                                 ? 'লাইভ কাজের ফিড'
                                 : 'Live Jobs & Requests Feed',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textDark,
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(width: 6),
@@ -315,9 +341,9 @@ class CustomerDashboardView extends StatelessWidget {
                         AppLanguageService.isBengali
                             ? 'সারা দেশের ক্লায়েন্টদের পোস্ট করা কাজ দেখুন ও সরাসরি বিড করুন'
                             : 'Explore open requirements across Bangladesh and submit direct bids',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textMedium,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -325,10 +351,12 @@ class CustomerDashboardView extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 14,
-                  color: AppColors.primaryRoyal,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Theme.of(context).colorScheme.primary
+                      : AppColors.primaryRoyal,
                 ),
               ],
             ),

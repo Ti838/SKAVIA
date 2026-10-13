@@ -84,9 +84,11 @@ class _ForgotPasswordModalSheetState extends State<ForgotPasswordModalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
         borderRadius: AppDimensions.roundedSheet,
       ),
       padding: EdgeInsets.fromLTRB(
@@ -112,20 +114,20 @@ class _ForgotPasswordModalSheetState extends State<ForgotPasswordModalSheet> {
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'Reset Account Password',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: AppColors.textDark,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Enter your registered email address to receive password reset instructions.',
               style: TextStyle(
                 fontSize: 13,
-                color: AppColors.textMedium,
+                color: colorScheme.onSurfaceVariant,
                 height: 1.4,
               ),
             ),

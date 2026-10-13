@@ -109,10 +109,12 @@ class QuickBookingSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.zero,
       child: SafeArea(
@@ -133,7 +135,7 @@ class QuickBookingSheet extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -148,10 +150,10 @@ class QuickBookingSheet extends StatelessWidget {
                       children: [
                         Text(
                           serviceName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         Text(
@@ -170,13 +172,13 @@ class QuickBookingSheet extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close_rounded,
                         size: 20,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -191,9 +193,9 @@ class QuickBookingSheet extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.sheetSurfaceSubtle,
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Row(
                   children: [
@@ -206,10 +208,10 @@ class QuickBookingSheet extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Dispatching to: $currentFormattedLocation',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textDark,
+                          color: colorScheme.onSurface,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -223,10 +225,10 @@ class QuickBookingSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.cardPeachTint,
+                  color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: AppColors.accentPeach.withValues(alpha: 0.5),
+                    color: AppColors.accentPeach.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
@@ -241,19 +243,19 @@ class QuickBookingSheet extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Estimated Dispatch Time',
                             style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.textMedium,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                           Text(
                             'Immediate • Within 30-45 mins in $currentLocationZone',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textDark,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],

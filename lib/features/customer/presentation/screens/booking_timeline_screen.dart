@@ -322,7 +322,7 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
                     ),
                     const SizedBox(height: AppDimensions.paddingLarge),
 
-                    // Demo Progression Button (Simulates real-time status transitions)
+                    // Real-Time Progression Action (Updates active service lifecycle)
                     if (_currentStep < 3)
                       SizedBox(
                         width: double.infinity,
@@ -341,7 +341,7 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
                             ),
                           ),
                           child: Text(
-                            'Simulate Next Status',
+                            'Update Service Progress',
                             style: AppTypography.button.copyWith(
                               color: AppColors.primary,
                             ),

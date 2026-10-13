@@ -36,10 +36,12 @@ class DashboardLocationSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.zero,
       child: SafeArea(
@@ -55,7 +57,7 @@ class DashboardLocationSheet extends StatelessWidget {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: colorScheme.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -64,12 +66,12 @@ class DashboardLocationSheet extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Select Service Location',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   GestureDetector(
@@ -77,22 +79,22 @@ class DashboardLocationSheet extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: colorScheme.surfaceContainerHighest,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close_rounded,
                         size: 20,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'SKAVIA dispatches verified local technicians across Dhaka metropolitan zones.',
-                style: TextStyle(fontSize: 12, color: AppColors.textMedium),
+                style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
 
@@ -130,11 +132,11 @@ class DashboardLocationSheet extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Detect Real GPS Location',
                               style: TextStyle(
                                 fontSize: 13,
@@ -146,7 +148,7 @@ class DashboardLocationSheet extends StatelessWidget {
                               'Auto-locate via hardware GPS sensor',
                               style: TextStyle(
                                 fontSize: 11,
-                                color: AppColors.textMedium,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -163,12 +165,12 @@ class DashboardLocationSheet extends StatelessWidget {
               ),
               const SizedBox(height: 18),
 
-              const Text(
+              Text(
                 'Dhaka Operating Zones',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 10),
@@ -191,17 +193,17 @@ class DashboardLocationSheet extends StatelessWidget {
                     },
                     selectedColor: AppColors.primaryRoyal,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textDark,
+                      color: isSelected ? Colors.white : colorScheme.onSurface,
                       fontWeight: isSelected
                           ? FontWeight.w800
                           : FontWeight.w600,
                       fontSize: 12,
                     ),
-                    backgroundColor: AppColors.sheetSurfaceSubtle,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
                     side: BorderSide(
                       color: isSelected
                           ? AppColors.primaryRoyal
-                          : AppColors.borderLight,
+                          : colorScheme.outlineVariant,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

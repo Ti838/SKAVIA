@@ -6,6 +6,8 @@ import 'package:skavia/features/customer/presentation/widgets/catalog_service_ca
 import 'package:skavia/features/matching/domain/entities/match_result_entity.dart';
 import 'package:skavia/features/navigation/presentation/screens/main_scaffold_screen.dart';
 import 'package:skavia/features/navigation/presentation/widgets/dashboard_bottom_nav_bar.dart';
+import 'package:skavia/features/ai_assistant/presentation/screens/skavia_ai_screen.dart';
+import 'package:skavia/features/ai_assistant/presentation/widgets/ai_results_view.dart';
 import 'package:skavia/features/team_project/presentation/widgets/team_member_tile.dart';
 import 'package:skavia/shared/widgets/app_button.dart';
 
@@ -145,5 +147,53 @@ void main() {
       expect(find.byType(TeamMemberTile), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('SkaviaAiScreen AppBar and ChatView render on 320dp screen with zero overflow', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: SkaviaAiScreen(
+            initialMode: AiScreenMode.chat,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SkaviaAiScreen), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('AiResultsView renders long role titles on 320dp screen with zero overflow', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AiResultsView(
+              requiredSkills: const [
+                'Lead Flutter Architecture',
+                'Advanced Node.js Backend',
+                'UI/UX Design Systems (optional)',
+              ],
+              recommendedTeam: const [
+                {'role': 'Senior Principal Full-Stack Enterprise Software Engineer', 'index': '1'},
+                {'role': 'Executive Digital Brand & Human-Centered Design Director', 'index': '2'},
+              ],
+              onEditRequest: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AiResultsView), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }
+

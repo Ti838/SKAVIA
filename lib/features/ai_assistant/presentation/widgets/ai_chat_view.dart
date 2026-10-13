@@ -24,15 +24,19 @@ class AiChatView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Column(
       key: const ValueKey('chat_view'),
       children: [
         // Quick suggestions bar
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+          decoration: BoxDecoration(
+            color: isDark ? colorScheme.surfaceContainerHighest : const Color(0xFFF8FAFC),
+            border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -41,21 +45,24 @@ class AiChatView extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ActionChip(
+                    visualDensity: VisualDensity.compact,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     avatar: Icon(
                       suggestion['icon'] as IconData,
                       size: 14,
-                      color: AppColors.primaryRoyal,
+                      color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
                     ),
                     label: Text(
                       suggestion['label'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                    backgroundColor: colorScheme.surface,
+                    side: BorderSide(color: colorScheme.outlineVariant),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -95,7 +102,9 @@ class AiChatView extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isUser
                         ? const Color(0xFF2563EB)
-                        : const Color(0xFFF1F5F9),
+                        : (isDark
+                            ? colorScheme.surfaceContainerHighest
+                            : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -104,7 +113,7 @@ class AiChatView extends StatelessWidget {
                     ),
                     border: isUser
                         ? null
-                        : Border.all(color: const Color(0xFFE2E8F0)),
+                        : Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,10 +147,11 @@ class AiChatView extends StatelessWidget {
                       ],
                       Text(
                         content,
+                        softWrap: true,
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
-                          color: isUser ? Colors.white : AppColors.textDark,
+                          color: isUser ? Colors.white : colorScheme.onSurface,
                           height: 1.4,
                         ),
                       ),
@@ -158,20 +168,20 @@ class AiChatView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             alignment: Alignment.centerLeft,
-            child: const Row(
+            child: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'SKAVIA AI is analyzing...',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2563EB),
+                    color: isDark ? colorScheme.primary : const Color(0xFF2563EB),
                   ),
                 ),
               ],
@@ -181,33 +191,44 @@ class AiChatView extends StatelessWidget {
         // Chat Input bar
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+          decoration: BoxDecoration(
+            color: colorScheme.surface,
+            border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: isDark
+                        ? colorScheme.surfaceContainerHighest
+                        : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: textController,
                     minLines: 1,
                     maxLines: 4,
-                    decoration: const InputDecoration(
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
+                    ),
+                    decoration: InputDecoration(
                       hintText: 'Ask SKAVIA AI anything...',
                       hintStyle: TextStyle(
                         fontSize: 13,
-                        color: AppColors.textMuted,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                      filled: false,
+                      fillColor: Colors.transparent,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onSubmitted: onSendMessage,
                   ),

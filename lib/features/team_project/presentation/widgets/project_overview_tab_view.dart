@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import 'team_member_tile.dart';
 import 'team_progress_bar.dart';
 
@@ -34,10 +33,10 @@ class ProjectOverviewTabView extends StatelessWidget {
             children: [
               Text(
                 'Team Members (${teamMembers.length})',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               InkWell(

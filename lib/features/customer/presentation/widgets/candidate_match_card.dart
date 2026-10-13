@@ -23,17 +23,18 @@ class CandidateMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTopMatch = candidate.rankPosition == 1;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingMedium),
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
         border: Border.all(
           color: isTopMatch
               ? AppColors.accent
-              : Colors.black.withValues(alpha: 0.06),
+              : colorScheme.outlineVariant,
           width: isTopMatch ? 2.0 : 1.0,
         ),
         boxShadow: [
@@ -148,7 +149,7 @@ class CandidateMatchCard extends StatelessWidget {
                             candidate.workerName,
                             style: AppTypography.titleMedium.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+                              color: colorScheme.onSurface,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -168,7 +169,7 @@ class CandidateMatchCard extends StatelessWidget {
                     Text(
                       candidate.tradeTitle,
                       style: AppTypography.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                        color: colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -181,7 +182,7 @@ class CandidateMatchCard extends StatelessWidget {
                           child: Text(
                             candidate.location,
                             style: AppTypography.caption.copyWith(
-                              color: AppColors.textSecondary,
+                              color: colorScheme.onSurfaceVariant,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -198,7 +199,7 @@ class CandidateMatchCard extends StatelessWidget {
                         Text(
                           '${candidate.rating.toStringAsFixed(1)} (${candidate.completedJobs} jobs)',
                           style: AppTypography.caption.copyWith(
-                            color: AppColors.textSecondary,
+                            color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -217,14 +218,17 @@ class CandidateMatchCard extends StatelessWidget {
             runSpacing: 6,
             children: [
               _buildMetricChip(
+                context,
                 'Skill Match',
                 '${candidate.skillScore.toStringAsFixed(0)}%',
               ),
               _buildMetricChip(
+                context,
                 'Proximity',
                 '${candidate.distanceScore.toStringAsFixed(0)}%',
               ),
               _buildMetricChip(
+                context,
                 'Hourly Rate',
                 '৳ ${candidate.hourlyRate.toStringAsFixed(0)}/hr',
               ),
@@ -298,17 +302,19 @@ class CandidateMatchCard extends StatelessWidget {
     );
   }
 
-  Widget _buildMetricChip(String label, String value) {
+  Widget _buildMetricChip(BuildContext context, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         '$label: $value',
         style: AppTypography.caption.copyWith(
-          color: AppColors.textPrimary,
+          color: colorScheme.onSurface,
           fontWeight: FontWeight.w600,
         ),
       ),

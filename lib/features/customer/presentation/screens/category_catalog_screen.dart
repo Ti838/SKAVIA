@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/services/app_language_service.dart';
 import '../../data/models/service_model.dart';
 import '../controllers/catalog_controller.dart';
 import '../widgets/catalog_service_card.dart';
@@ -56,8 +57,12 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -70,22 +75,22 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                   if (!widget.isTab) ...[
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                         size: 20,
                       ),
                     ),
                     const SizedBox(width: 4),
                   ] else
                     const SizedBox(width: 8),
-                  const Text(
-                    'Services & Categories',
+                  Text(
+                    AppLanguageService.tr('services_and_categories'),
                     style: TextStyle(
                       fontFamily: AppTypography.headingFont,
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const Spacer(),
@@ -99,35 +104,37 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.sheetSurfaceSubtle,
+                  color: isDark
+                      ? colorScheme.surfaceContainerHighest
+                      : AppColors.sheetSurfaceSubtle,
                   borderRadius: AppDimensions.roundedPill,
-                  border: Border.all(color: AppColors.borderLight),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: (val) => _controller.search(val),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: AppTypography.bodyFont,
                     fontSize: 14,
-                    color: AppColors.textDark,
+                    color: colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Search for services...',
-                    hintStyle: const TextStyle(
+                    hintText: AppLanguageService.tr('search_service_hint'),
+                    hintStyle: TextStyle(
                       fontSize: 13,
-                      color: AppColors.textMedium,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    prefixIcon: const Icon(
+                    prefixIcon: Icon(
                       Icons.search_rounded,
-                      color: AppColors.textMedium,
+                      color: colorScheme.onSurfaceVariant,
                       size: 20,
                     ),
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.close_rounded,
                               size: 20,
-                              color: AppColors.textMedium,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             onPressed: () {
                               _searchController.clear();
@@ -136,17 +143,22 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                           )
                         : null,
                     border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
                     contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
             ),
 
-            // White Sheet Content
+            // Content Area
             Expanded(
               child: Container(
                 width: double.infinity,
-                color: Colors.white,
+                color: colorScheme.surface,
                 child: ListenableBuilder(
                   listenable: _controller,
                   builder: (context, _) {
@@ -175,14 +187,17 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                               children: [
                                 _buildFilterPill(
                                   id: 'all',
-                                  label: 'All Services',
+                                  label: AppLanguageService.tr('all_services'),
                                   isSelected:
                                       _controller.selectedCategoryId == 'all',
                                 ),
                                 ..._controller.categories.map((cat) {
                                   return _buildFilterPill(
                                     id: cat.categoryId,
-                                    label: cat.name,
+                                    label: AppLanguageService.getCategoryName(
+                                      cat.slug,
+                                      cat.name,
+                                    ),
                                     isSelected:
                                         _controller.selectedCategoryId ==
                                         cat.categoryId,
@@ -203,24 +218,24 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Available Services (${_controller.services.length})',
-                                  style: const TextStyle(
+                                  '${AppLanguageService.tr('available_services')} (${_controller.services.length})',
+                                  style: TextStyle(
                                     fontFamily: AppTypography.headingFont,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textDark,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                                 if (_controller.selectedCategoryId != 'all')
                                   GestureDetector(
                                     onTap: () =>
                                         _controller.filterByCategory('all'),
-                                    child: const Text(
-                                      'Reset Filter',
+                                    child: Text(
+                                      AppLanguageService.tr('reset_filter'),
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.primarySky,
+                                        color: isDark ? colorScheme.primary : AppColors.primarySky,
                                       ),
                                     ),
                                   ),
@@ -244,27 +259,27 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                   Icon(
                                     Icons.search_off_rounded,
                                     size: 64,
-                                    color: AppColors.textMuted.withValues(
+                                    color: colorScheme.onSurfaceVariant.withValues(
                                       alpha: 0.5,
                                     ),
                                   ),
                                   const SizedBox(height: 14),
-                                  const Text(
+                                  Text(
                                     'No services found',
                                     style: TextStyle(
                                       fontFamily: AppTypography.headingFont,
                                       fontSize: 17,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.textDark,
+                                      color: colorScheme.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 6),
-                                  const Text(
+                                  Text(
                                     'Try searching for different keywords like AC, electric, plumbing...',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: AppColors.textMedium,
+                                      color: colorScheme.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
@@ -291,16 +306,16 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                         const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
                         // Categories Showcase Header
-                        const SliverToBoxAdapter(
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Text(
-                              'Browse by Trade Specialization',
+                              AppLanguageService.tr('browse_by_trade'),
                               style: TextStyle(
                                 fontFamily: AppTypography.headingFont,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textDark,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                           ),
@@ -347,16 +362,26 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
     required String label,
     required bool isSelected,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
+    final unselectedBg = isDark
+        ? colorScheme.surfaceContainerHighest
+        : Colors.white;
+    final unselectedBorder = colorScheme.outlineVariant;
+    final unselectedText = colorScheme.onSurface;
+
     return GestureDetector(
       onTap: () => _controller.filterByCategory(id),
       child: Container(
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryRoyal : Colors.white,
+          color: isSelected ? AppColors.primaryRoyal : unselectedBg,
           borderRadius: AppDimensions.roundedPill,
           border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : AppColors.borderLight,
+            color: isSelected ? AppColors.primaryRoyal : unselectedBorder,
             width: 1.2,
           ),
           boxShadow: isSelected
@@ -376,7 +401,7 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
               fontFamily: AppTypography.bodyFont,
               fontSize: 12.5,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected ? Colors.white : AppColors.textDark,
+              color: isSelected ? Colors.white : unselectedText,
             ),
           ),
         ),

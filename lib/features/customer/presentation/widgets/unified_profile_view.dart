@@ -35,6 +35,7 @@ class UnifiedProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = authController.user;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -47,9 +48,9 @@ class UnifiedProfileView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.settings_outlined,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                   size: 22,
                 ),
                 onPressed: onOpenSettings,
@@ -98,16 +99,16 @@ class UnifiedProfileView extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             user?.displayName ?? 'Timon Biswas',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             user?.email ?? 'timon.biswas@gmail.com',
-            style: const TextStyle(fontSize: 12, color: AppColors.textMedium),
+            style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 8),
 
@@ -133,9 +134,9 @@ class UnifiedProfileView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.borderLight),
+              border: Border.all(color: colorScheme.outlineVariant),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
@@ -147,11 +148,11 @@ class UnifiedProfileView extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildProfileStatColumn('3', 'Services'),
-                Container(height: 32, width: 1, color: AppColors.borderLight),
-                _buildProfileStatColumn('2', 'Projects'),
-                Container(height: 32, width: 1, color: AppColors.borderLight),
-                _buildProfileStatColumn('4.8', 'Rating'),
+                _buildProfileStatColumn(context, '3', 'Services'),
+                Container(height: 32, width: 1, color: colorScheme.outlineVariant),
+                _buildProfileStatColumn(context, '2', 'Projects'),
+                Container(height: 32, width: 1, color: colorScheme.outlineVariant),
+                _buildProfileStatColumn(context, '4.8', 'Rating'),
               ],
             ),
           ),
@@ -159,6 +160,7 @@ class UnifiedProfileView extends StatelessWidget {
 
           // Screen 16 Menu Items
           _buildProfileTile(
+            context: context,
             icon: Icons.edit_outlined,
             title: 'Edit Profile',
             subtitle: 'Update your name and photo',
@@ -166,6 +168,7 @@ class UnifiedProfileView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
+            context: context,
             icon: Icons.grid_view_outlined,
             title: 'My Services',
             subtitle: 'View booking history and services',
@@ -173,6 +176,7 @@ class UnifiedProfileView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
+            context: context,
             icon: Icons.folder_outlined,
             title: 'My Projects',
             subtitle: 'Enterprise deliverables & team leader milestones',
@@ -180,6 +184,7 @@ class UnifiedProfileView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
+            context: context,
             icon: Icons.account_balance_wallet_outlined,
             title: 'Wallet & Payment',
             subtitle: 'Automated payout & payment methods',
@@ -187,22 +192,35 @@ class UnifiedProfileView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
+            context: context,
             icon: Icons.settings_outlined,
             title: 'Settings',
-            subtitle: 'Preferences and language options',
+            subtitle: 'Preferences, theme & language options',
             onTap: onOpenSettings,
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
+            context: context,
             icon: Icons.help_outline_rounded,
             title: 'Help & Support',
             subtitle: 'Call emergency dispatch support line: 16524',
             onTap: onCallHelpline,
           ),
+          if (!isCustomerMode) ...[
+            const SizedBox(height: 8),
+            _buildProfileTile(
+              context: context,
+              icon: Icons.workspace_premium_outlined,
+              title: 'Worker Reputation & Badges',
+              subtitle: 'View your verified rating, trust tier & reviews',
+              onTap: () => Navigator.pushNamed(context, AppRoutes.workerReputation),
+            ),
+          ],
           const SizedBox(height: 16),
 
           // Switch Role Mode Tile
           _buildProfileTile(
+            context: context,
             icon: Icons.swap_horiz_rounded,
             title: isCustomerMode
                 ? AppLanguageService.tr('switch_to_worker')
@@ -239,24 +257,26 @@ class UnifiedProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileStatColumn(String value, String label) {
+  Widget _buildProfileStatColumn(BuildContext context, String value, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textMedium,
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -264,12 +284,15 @@ class UnifiedProfileView extends StatelessWidget {
   }
 
   Widget _buildProfileTile({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
     bool isDestructive = false,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -278,12 +301,12 @@ class UnifiedProfileView extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDestructive
               ? AppColors.errorRed.withValues(alpha: 0.05)
-              : AppColors.sheetSurfaceSubtle,
+              : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDestructive
                 ? AppColors.errorRed.withValues(alpha: 0.2)
-                : AppColors.borderLight,
+                : colorScheme.outlineVariant,
           ),
         ),
         child: Row(
@@ -293,7 +316,7 @@ class UnifiedProfileView extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isDestructive
                     ? AppColors.errorRed.withValues(alpha: 0.12)
-                    : Colors.white,
+                    : colorScheme.surface,
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -316,7 +339,7 @@ class UnifiedProfileView extends StatelessWidget {
                       fontWeight: FontWeight.w800,
                       color: isDestructive
                           ? AppColors.errorRed
-                          : AppColors.textDark,
+                          : colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -327,7 +350,7 @@ class UnifiedProfileView extends StatelessWidget {
                       fontSize: 11,
                       color: isDestructive
                           ? AppColors.errorRed.withValues(alpha: 0.8)
-                          : AppColors.textMedium,
+                          : colorScheme.onSurfaceVariant,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -338,7 +361,7 @@ class UnifiedProfileView extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 12,
-              color: isDestructive ? AppColors.errorRed : AppColors.textMuted,
+              color: isDestructive ? AppColors.errorRed : colorScheme.onSurfaceVariant,
             ),
           ],
         ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../chat/data/datasources/chat_remote_datasource.dart';
 
 /// Worker Profile Screen matching Screen 13 of SKAVIA reference design board.
 /// Displays Rahul Ahmed's profile (or passed specialist), stats, skills, and direct Message/Hire CTAs.
@@ -145,17 +147,27 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.chatRoom,
-                          arguments: {
-                            'conversationId': 'conv_rahul',
-                            'otherParticipantName': widget.name,
-                            'otherParticipantAvatar': widget.avatarUrl,
-                            'otherParticipantId': 'user_rahul',
-                          },
+                      onPressed: () async {
+                        final currentUserId =
+                            FirebaseAuth.instance.currentUser?.uid ?? 'guest_user';
+                        final otherId =
+                            'worker_${widget.name.replaceAll(' ', '_').toLowerCase()}';
+                        final conv = await ChatRemoteDataSource().getOrCreateConversation(
+                          currentUserId: currentUserId,
+                          otherUserId: otherId,
                         );
+                        if (context.mounted) {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.chatRoom,
+                            arguments: {
+                              'conversationId': conv.conversationId,
+                              'otherParticipantName': widget.name,
+                              'otherParticipantAvatar': widget.avatarUrl,
+                              'otherParticipantId': otherId,
+                            },
+                          );
+                        }
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 13),

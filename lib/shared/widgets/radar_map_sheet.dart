@@ -19,17 +19,20 @@ export '../models/radar_technician.dart';
 class RadarMapSheet extends StatefulWidget {
   final String locationZone;
   final Function(RadarTechnician tech)? onSelectTechnician;
+  final ValueChanged<String>? onLocationSelected;
 
   const RadarMapSheet({
     super.key,
     required this.locationZone,
     this.onSelectTechnician,
+    this.onLocationSelected,
   });
 
   static void show(
     BuildContext context, {
     required String locationZone,
     Function(RadarTechnician)? onSelectTechnician,
+    ValueChanged<String>? onLocationSelected,
   }) {
     showModalBottomSheet(
       context: context,
@@ -38,6 +41,7 @@ class RadarMapSheet extends StatefulWidget {
       builder: (ctx) => RadarMapSheet(
         locationZone: locationZone,
         onSelectTechnician: onSelectTechnician,
+        onLocationSelected: onLocationSelected,
       ),
     );
   }
@@ -59,6 +63,11 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   ); // Default Dhanmondi, Dhaka
   bool _isLocatingUser = false;
   double _currentZoom = 13.5;
+
+  // Custom User Map Tap Pin & Reverse Geocode State
+  LatLng? _selectedCustomPoint;
+  String? _selectedPointAddress;
+  bool _isReverseGeocoding = false;
 
   late final List<RadarTechnician> _allTechnicians;
 
@@ -103,7 +112,14 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
 
   List<RadarTechnician> get _filteredTechnicians {
     return _allTechnicians.where((tech) {
-      if (_selectedRadiusKm < 10 && tech.distanceKm > _selectedRadiusKm) {
+      // Calculate real physical distance from user position
+      final realDist = LocationService.calculateDistanceKm(
+        _userPosition.latitude,
+        _userPosition.longitude,
+        tech.latitude,
+        tech.longitude,
+      );
+      if (_selectedRadiusKm < 10 && realDist > _selectedRadiusKm) {
         return false;
       }
       if (_selectedTradeFilter == 'Electrical' &&
@@ -127,13 +143,14 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
+    final colorScheme = Theme.of(context).colorScheme;
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Container(
       height: screenHeight * 0.90,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         children: [
@@ -147,7 +164,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                     width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -178,19 +195,19 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                               isBn
                                   ? 'লাইভ গুগল ম্যাপ ও রাডার'
                                   : 'Live Street Map & Radar',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textDark,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                             Text(
                               isBn
                                   ? 'সারা দেশব্যাপী ভেরিফায়েড টেকনিশিয়ান'
                                   : 'Nationwide Verified Technicians • ${widget.locationZone}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11,
-                                color: AppColors.textMedium,
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -198,9 +215,9 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                       ],
                     ),
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.close_rounded,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       onPressed: () => Navigator.pop(context),
                     ),
@@ -234,6 +251,22 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all,
                     ),
+                    onTap: (tapPosition, point) async {
+                      setState(() {
+                        _selectedCustomPoint = point;
+                        _isReverseGeocoding = true;
+                      });
+                      final geo = await LocationService.reverseGeocode(
+                        point.latitude,
+                        point.longitude,
+                      );
+                      if (mounted) {
+                        setState(() {
+                          _selectedPointAddress = geo['formatted'];
+                          _isReverseGeocoding = false;
+                        });
+                      }
+                    },
                   ),
                   children: [
                     // Real OpenStreetMap Tile Layer (Global & Bangladesh Street View)
@@ -247,6 +280,24 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                     // User Location & Nearby Technician Markers
                     MarkerLayer(
                       markers: [
+                        // Custom Tapped Location Pin Marker
+                        if (_selectedCustomPoint != null)
+                          Marker(
+                            point: _selectedCustomPoint!,
+                            width: 50,
+                            height: 50,
+                            child: const Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  color: AppColors.accentCoral,
+                                  size: 38,
+                                ),
+                              ],
+                            ),
+                          ),
+
                         // Live User Location Marker (Pulsing Blue Beacon)
                         Marker(
                           point: _userPosition,
@@ -361,6 +412,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                   child: Column(
                     children: [
                       _buildFloatingControlBtn(
+                        context: context,
                         icon: _isLocatingUser
                             ? Icons.hourglass_top_rounded
                             : Icons.my_location_rounded,
@@ -369,12 +421,14 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                       ),
                       const SizedBox(height: 8),
                       _buildFloatingControlBtn(
+                        context: context,
                         icon: Icons.add,
                         tooltip: 'Zoom In',
                         onTap: _zoomIn,
                       ),
                       const SizedBox(height: 8),
                       _buildFloatingControlBtn(
+                        context: context,
                         icon: Icons.remove,
                         tooltip: 'Zoom Out',
                         onTap: _zoomOut,
@@ -393,8 +447,9 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: colorScheme.outlineVariant),
                       boxShadow: const [
                         BoxShadow(
                           color: Colors.black12,
@@ -417,10 +472,10 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                         const SizedBox(width: 6),
                         Text(
                           '${_filteredTechnicians.length} ${isBn ? "কারিগর অনলাইন" : "Pros Online"}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -431,7 +486,94 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
             ),
           ),
 
-          // 4. Selected Technician Bottom Preview & Action Card
+          // 4. Selected Tap Location Action Banner
+          if (_selectedCustomPoint != null)
+            Container(
+              margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.canvasBlue,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primarySky.withValues(alpha: 0.35),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.pin_drop_rounded,
+                    color: AppColors.accentCoral,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _isReverseGeocoding
+                              ? (isBn ? 'ঠিকানা খোঁজা হচ্ছে...' : 'Resolving street address...')
+                              : (_selectedPointAddress ?? 'Selected Coordinates'),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textDark,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${_selectedCustomPoint!.latitude.toStringAsFixed(4)}, ${_selectedCustomPoint!.longitude.toStringAsFixed(4)}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryRoyal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () {
+                      final chosenAddress = _selectedPointAddress ??
+                          '${_selectedCustomPoint!.latitude}, ${_selectedCustomPoint!.longitude}';
+                      LocationService.syncLocationToSupabase(chosenAddress);
+                      widget.onLocationSelected?.call(chosenAddress);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isBn
+                                ? 'নির্বাচিত এলাকা সংরক্ষিত হয়েছে: $chosenAddress'
+                                : 'Location saved: $chosenAddress',
+                          ),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      isBn ? 'এই লোকেশন নিন' : 'Set Location',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // 5. Selected Technician Bottom Preview & Action Card
           if (_selectedTech != null)
             RadarTechnicianCard(
               technician: _selectedTech!,
@@ -449,17 +591,21 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   }
 
   Widget _buildFloatingControlBtn({
+    required BuildContext context,
     required IconData icon,
     required String tooltip,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           shape: BoxShape.circle,
+          border: Border.all(color: colorScheme.outlineVariant),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.15),

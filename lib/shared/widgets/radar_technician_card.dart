@@ -48,12 +48,14 @@ class RadarTechnicianCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
+    final colorScheme = Theme.of(context).colorScheme;
     final tech = technician;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -88,10 +90,10 @@ class RadarTechnicianCard extends StatelessWidget {
                           Flexible(
                             child: Text(
                               tech.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
-                                color: AppColors.textDark,
+                                color: colorScheme.onSurface,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -108,9 +110,9 @@ class RadarTechnicianCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '${tech.trade} • ${tech.zone}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: AppColors.textMedium,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -126,17 +128,18 @@ class RadarTechnicianCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             tech.rating.toStringAsFixed(1),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '${tech.jobs} ${isBn ? "কাজ সম্পন্ন" : "Jobs"}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.textMedium,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -170,9 +173,9 @@ class RadarTechnicianCard extends StatelessWidget {
                   children: [
                     Text(
                       isBn ? 'শুরুর রেট' : 'Starting',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     Text(

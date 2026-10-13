@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../screens/main_scaffold_screen.dart';
 
@@ -17,8 +16,12 @@ class DashboardBottomNavBar extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(BuildContext context, int index, IconData icon, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = currentIndex == index;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
+
     return Expanded(
       child: InkWell(
         onTap: () => onTabSelected(index),
@@ -31,7 +34,7 @@ class DashboardBottomNavBar extends StatelessWidget {
               Icon(
                 icon,
                 size: 22,
-                color: isSelected ? AppColors.primarySky : AppColors.textMuted,
+                color: isSelected ? activeColor : inactiveColor,
               ),
               const SizedBox(height: 3),
               Text(
@@ -42,7 +45,7 @@ class DashboardBottomNavBar extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected ? AppColors.primarySky : AppColors.textMuted,
+                  color: isSelected ? activeColor : inactiveColor,
                 ),
               ),
             ],
@@ -54,16 +57,27 @@ class DashboardBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+            width: 1,
+          ),
+        ),
+      ),
       child: SafeArea(
         top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              _buildNavItem(0, Icons.home_rounded, AppLanguageService.tr('home')),
+              _buildNavItem(context, 0, Icons.home_rounded, AppLanguageService.tr('home')),
               _buildNavItem(
+                context,
                 1,
                 Icons.grid_view_rounded,
                 currentMode == AppRoleMode.customer
@@ -71,16 +85,19 @@ class DashboardBottomNavBar extends StatelessWidget {
                     : AppLanguageService.tr('incoming_requests'),
               ),
               _buildNavItem(
+                context,
                 2,
                 Icons.chat_bubble_outline_rounded,
                 AppLanguageService.tr('messages'),
               ),
               _buildNavItem(
+                context,
                 3,
                 Icons.folder_outlined,
                 AppLanguageService.tr('projects'),
               ),
               _buildNavItem(
+                context,
                 4,
                 Icons.person_outline_rounded,
                 currentMode == AppRoleMode.customer

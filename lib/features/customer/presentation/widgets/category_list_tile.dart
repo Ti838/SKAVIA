@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/services/app_language_service.dart';
 import '../../data/models/category_model.dart';
 
 /// Row tile for a category in the catalog list
@@ -42,16 +43,18 @@ class CategoryListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : AppColors.borderLight,
+            color: isSelected ? AppColors.primaryRoyal : colorScheme.outlineVariant,
             width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: [
@@ -83,31 +86,36 @@ class CategoryListTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    category.name,
+                    AppLanguageService.getCategoryName(
+                      category.slug,
+                      category.name,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: AppTypography.headingFont,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '${category.serviceCount > 0 ? category.serviceCount : 80}+ services',
-                    style: const TextStyle(
+                    AppLanguageService.isBengali
+                        ? '${category.serviceCount > 0 ? category.serviceCount : 24}+ টি সার্ভিস'
+                        : '${category.serviceCount > 0 ? category.serviceCount : 24}+ services',
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textMedium,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
               size: 20,
-              color: AppColors.textMuted,
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),

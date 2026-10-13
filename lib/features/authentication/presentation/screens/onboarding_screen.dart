@@ -20,13 +20,17 @@ class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   void _showInfoDrawer(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: isDark ? colorScheme.surface : Colors.white,
           borderRadius: AppDimensions.roundedSheet,
         ),
         child: SafeArea(
@@ -42,7 +46,7 @@ class OnboardingScreen extends StatelessWidget {
                     width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.borderLight,
+                      color: colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -61,13 +65,13 @@ class OnboardingScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'SKAVIA Platform Ecosystem',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -76,26 +80,29 @@ class OnboardingScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                const Text(
+                Text(
                   'A solution-oriented service & workforce platform connecting customers and enterprises with verified trade specialists across Dhaka.',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textMedium,
+                    color: colorScheme.onSurfaceVariant,
                     height: 1.45,
                   ),
                 ),
                 const SizedBox(height: 20),
                 _buildDrawerItem(
+                  context: context,
                   icon: Icons.electric_bolt_rounded,
                   title: '8 Certified Trade Taxonomies',
                   desc: 'Electrical, HVAC, Plumbing, Carpentry, IT and more.',
                 ),
                 _buildDrawerItem(
+                  context: context,
                   icon: Icons.verified_user_rounded,
                   title: 'Police & NID KYC Verification',
                   desc: 'Every master technician is vetted for maximum trust.',
                 ),
                 _buildDrawerItem(
+                  context: context,
                   icon: Icons.security_rounded,
                   title: 'Transparent Escrow & Dual OTP',
                   desc:
@@ -110,7 +117,7 @@ class OnboardingScreen extends StatelessWidget {
                       backgroundColor: AppColors.primarySky,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
+                      shape: const RoundedRectangleBorder(
                         borderRadius: AppDimensions.roundedPill,
                       ),
                     ),
@@ -130,10 +137,14 @@ class OnboardingScreen extends StatelessWidget {
   }
 
   static Widget _buildDrawerItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String desc,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -142,10 +153,16 @@ class OnboardingScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.cardBlueTint,
+              color: isDark
+                  ? colorScheme.primaryContainer
+                  : AppColors.cardBlueTint,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: AppColors.primarySky, size: 20),
+            child: Icon(
+              icon,
+              color: isDark ? colorScheme.primary : AppColors.primarySky,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -154,17 +171,17 @@ class OnboardingScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   desc,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textMedium,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -177,8 +194,12 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppColors.canvasBlue,
+      backgroundColor: isDark ? const Color(0xFF0B1426) : AppColors.canvasBlue,
       body: SafeArea(
         bottom: false,
         child: LayoutBuilder(
@@ -200,18 +221,22 @@ class OnboardingScreen extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            // Pill Logo Badge (Exact Reference Art)
+                            // Pill Logo Badge
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: isDark
+                                    ? colorScheme.surfaceContainerHighest
+                                    : Colors.white,
                                 borderRadius: AppDimensions.roundedPill,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.08),
+                                    color: Colors.black.withValues(
+                                      alpha: isDark ? 0.3 : 0.08,
+                                    ),
                                     blurRadius: 12,
                                     offset: const Offset(0, 4),
                                   ),
@@ -232,12 +257,14 @@ class OnboardingScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 8),
-                                  const Text(
+                                  Text(
                                     AppStrings.appName,
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.w900,
-                                      color: AppColors.primaryRoyal,
+                                      color: isDark
+                                          ? colorScheme.primary
+                                          : AppColors.primaryRoyal,
                                       letterSpacing: 0.8,
                                     ),
                                   ),
@@ -245,7 +272,7 @@ class OnboardingScreen extends StatelessWidget {
                               ),
                             ),
 
-                            // Hamburger Menu Icon (White 3 Lines)
+                            // Hamburger Menu Icon
                             IconButton(
                               onPressed: () => _showInfoDrawer(context),
                               icon: const Icon(
@@ -293,7 +320,7 @@ class OnboardingScreen extends StatelessWidget {
 
                       const SizedBox(height: 8),
 
-                      // Technicians Artwork (Authentic Reference Artwork from skavia_exact_reference_ui.png)
+                      // Technicians Artwork
                       Expanded(
                         child: Center(
                           child: Padding(
@@ -317,14 +344,16 @@ class OnboardingScreen extends StatelessWidget {
                         children: [
                           Container(
                             width: double.infinity,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
+                            decoration: BoxDecoration(
+                              color: isDark ? colorScheme.surface : Colors.white,
                               borderRadius: AppDimensions.roundedSheet,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Color(0x15000000),
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.35 : 0.08,
+                                  ),
                                   blurRadius: 20,
-                                  offset: Offset(0, -6),
+                                  offset: const Offset(0, -6),
                                 ),
                               ],
                             ),
@@ -336,13 +365,31 @@ class OnboardingScreen extends StatelessWidget {
                                 // 1. Continue with Google (Instant 1-Tap Auth)
                                 InkWell(
                                   onTap: () async {
-                                    final success = await AuthController()
-                                        .loginWithGoogle();
-                                    if (success && context.mounted) {
-                                      Navigator.of(context)
-                                          .pushReplacementNamed(
-                                            AppRoutes.appShell,
+                                    final authController = AuthController();
+                                    try {
+                                      final success =
+                                          await authController.loginWithGoogle();
+                                      if (success && context.mounted) {
+                                        Navigator.of(context)
+                                            .pushReplacementNamed(
+                                              AppRoutes.appShell,
+                                            );
+                                      } else if (context.mounted) {
+                                        final errorMsg =
+                                            authController.errorMessage;
+                                        if (errorMsg != null) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                              content: Text(errorMsg),
+                                              backgroundColor:
+                                                  AppColors.error,
+                                            ),
                                           );
+                                        }
+                                      }
+                                    } finally {
+                                      authController.dispose();
                                     }
                                   },
                                   borderRadius: BorderRadius.circular(30),
@@ -350,16 +397,20 @@ class OnboardingScreen extends StatelessWidget {
                                     width: double.infinity,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color: Colors.white,
+                                      color: isDark
+                                          ? colorScheme.surfaceContainerHighest
+                                          : Colors.white,
                                       borderRadius: BorderRadius.circular(30),
                                       border: Border.all(
-                                        color: AppColors.borderLight,
+                                        color: isDark
+                                            ? colorScheme.outlineVariant
+                                            : AppColors.borderLight,
                                         width: 1.4,
                                       ),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withValues(
-                                            alpha: 0.05,
+                                            alpha: isDark ? 0.2 : 0.05,
                                           ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
@@ -381,12 +432,12 @@ class OnboardingScreen extends StatelessWidget {
                                           ),
                                         ),
                                         const SizedBox(width: 12),
-                                        const Text(
+                                        Text(
                                           'Continue with Google',
                                           style: TextStyle(
                                             fontSize: 15,
                                             fontWeight: FontWeight.w700,
-                                            color: Color(0xFF0F172A),
+                                            color: colorScheme.onSurface,
                                             letterSpacing: 0.2,
                                           ),
                                         ),
@@ -397,7 +448,7 @@ class OnboardingScreen extends StatelessWidget {
 
                                 const SizedBox(height: 12),
 
-                                // 2. Sign In with Email / Phone (Exact Reference Pill)
+                                // 2. Sign In with Email / Phone
                                 InkWell(
                                   onTap: () {
                                     Navigator.of(context)
@@ -408,12 +459,14 @@ class OnboardingScreen extends StatelessWidget {
                                     width: double.infinity,
                                     height: 50,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF0F172A),
+                                      color: isDark
+                                          ? colorScheme.primary
+                                          : const Color(0xFF0F172A),
                                       borderRadius: BorderRadius.circular(30),
                                       boxShadow: [
                                         BoxShadow(
                                           color: Colors.black.withValues(
-                                            alpha: 0.1,
+                                            alpha: 0.15,
                                           ),
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
@@ -440,11 +493,11 @@ class OnboardingScreen extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'New to SKAVIA? ',
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: AppColors.textMedium,
+                                        color: colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                     GestureDetector(
@@ -452,12 +505,14 @@ class OnboardingScreen extends StatelessWidget {
                                         Navigator.of(context)
                                             .pushNamed(AppRoutes.register);
                                       },
-                                      child: const Text(
+                                      child: Text(
                                         'Create Account',
                                         style: TextStyle(
                                           fontSize: 13,
                                           fontWeight: FontWeight.w800,
-                                          color: AppColors.primaryRoyal,
+                                          color: isDark
+                                              ? colorScheme.primary
+                                              : AppColors.primaryRoyal,
                                         ),
                                       ),
                                     ),

@@ -27,19 +27,21 @@ class FeaturedServicePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.cardBlueTint.withValues(alpha: 0.5),
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(AppDimensions.radius20),
-        border: Border.all(color: AppColors.borderLight),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(
-              color: Colors.white,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: AppColors.primaryRoyal, size: 20),
@@ -59,10 +61,10 @@ class FeaturedServicePill extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -70,9 +72,9 @@ class FeaturedServicePill extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     'From ৳ ${startingRate.toStringAsFixed(0)} • $subtitle',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textMedium,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
