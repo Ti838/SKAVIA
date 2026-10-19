@@ -112,41 +112,26 @@ abstract class AppTypography {
   }
 
   // Static Standalone Style Accessors (Theme-Adaptive - inherits ambient color)
-  static TextStyle get headingLarge => GoogleFonts.plusJakartaSans(
-    fontSize: 26,
-    fontWeight: FontWeight.w800,
-  );
+  static TextStyle get headingLarge =>
+      GoogleFonts.plusJakartaSans(fontSize: 26, fontWeight: FontWeight.w800);
 
-  static TextStyle get headingMedium => GoogleFonts.plusJakartaSans(
-    fontSize: 22,
-    fontWeight: FontWeight.w700,
-  );
+  static TextStyle get headingMedium =>
+      GoogleFonts.plusJakartaSans(fontSize: 22, fontWeight: FontWeight.w700);
 
-  static TextStyle get headingSmall => GoogleFonts.plusJakartaSans(
-    fontSize: 18,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle get headingSmall =>
+      GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w600);
 
-  static TextStyle get titleLarge => GoogleFonts.plusJakartaSans(
-    fontSize: 18,
-    fontWeight: FontWeight.w700,
-  );
+  static TextStyle get titleLarge =>
+      GoogleFonts.plusJakartaSans(fontSize: 18, fontWeight: FontWeight.w700);
 
-  static TextStyle get titleMedium => GoogleFonts.plusJakartaSans(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle get titleMedium =>
+      GoogleFonts.plusJakartaSans(fontSize: 16, fontWeight: FontWeight.w600);
 
-  static TextStyle get titleSmall => GoogleFonts.plusJakartaSans(
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle get titleSmall =>
+      GoogleFonts.plusJakartaSans(fontSize: 14, fontWeight: FontWeight.w600);
 
-  static TextStyle get bodyLarge => GoogleFonts.inter(
-    fontSize: 15,
-    fontWeight: FontWeight.w400,
-    height: 1.5,
-  );
+  static TextStyle get bodyLarge =>
+      GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w400, height: 1.5);
 
   static TextStyle get bodyMedium => GoogleFonts.inter(
     fontSize: 13,
@@ -154,10 +139,8 @@ abstract class AppTypography {
     height: 1.45,
   );
 
-  static TextStyle get bodySmall => GoogleFonts.inter(
-    fontSize: 11,
-    fontWeight: FontWeight.w400,
-  );
+  static TextStyle get bodySmall =>
+      GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w400);
 
   static TextStyle get button => GoogleFonts.plusJakartaSans(
     fontSize: 15,
@@ -165,8 +148,6 @@ abstract class AppTypography {
     color: Colors.white,
   );
 
-  static TextStyle get caption => GoogleFonts.inter(
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-  );
+  static TextStyle get caption =>
+      GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w500);
 }

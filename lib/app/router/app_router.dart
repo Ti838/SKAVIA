@@ -5,6 +5,7 @@ import '../../features/authentication/presentation/screens/onboarding_screen.dar
 import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/authentication/presentation/screens/register_screen.dart';
 import '../../features/authentication/presentation/screens/otp_verification_screen.dart';
+import '../../features/authentication/presentation/screens/role_selection_screen.dart';
 import '../../features/customer/presentation/screens/category_catalog_screen.dart';
 import '../../features/customer/presentation/screens/post_requirement_screen.dart';
 import '../../features/customer/presentation/screens/candidate_matches_screen.dart';
@@ -13,10 +14,15 @@ import '../../features/worker/presentation/screens/worker_edit_profile_screen.da
 import '../../features/worker/presentation/screens/worker_profile_detail_screen.dart';
 import '../../features/worker/presentation/screens/incoming_requests_screen.dart';
 import '../../features/worker/presentation/screens/worker_earnings_screen.dart';
+import '../../features/worker/presentation/screens/availability_calendar_screen.dart';
+import '../../features/worker/presentation/screens/portfolio_management_screen.dart';
 import '../../features/team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../features/team_project/presentation/screens/team_discovery_screen.dart';
 import '../../features/team_project/presentation/screens/project_showcase_screen.dart';
 import '../../features/team_project/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/team_project/presentation/screens/task_board_screen.dart';
+import '../../features/team_project/presentation/screens/assign_task_screen.dart';
+import '../../features/team_project/presentation/screens/team_roster_screen.dart';
 import '../../features/navigation/presentation/screens/main_scaffold_screen.dart';
 import '../../features/chat/presentation/screens/chat_list_screen.dart';
 import '../../features/chat/presentation/screens/chat_room_screen.dart';
@@ -24,6 +30,12 @@ import '../../features/reviews/presentation/screens/submit_review_screen.dart';
 import '../../features/reviews/presentation/screens/worker_reputation_screen.dart';
 import '../../features/ai_assistant/presentation/screens/skavia_ai_screen.dart';
 import '../../features/customer/presentation/screens/live_job_feed_screen.dart';
+import '../../features/billing/presentation/screens/simulated_checkout_screen.dart';
+import '../../features/billing/presentation/screens/invoice_screen.dart';
+import '../../features/billing/presentation/screens/payment_success_screen.dart';
+import '../../features/admin/presentation/screens/verification_queue_screen.dart';
+import '../../features/admin/presentation/screens/dispute_resolution_screen.dart';
+import '../../features/admin/presentation/screens/team_assembly_screen.dart';
 import 'app_routes.dart';
 
 abstract class AppRouter {
@@ -40,6 +52,9 @@ abstract class AppRouter {
 
       case AppRoutes.register:
         return MaterialPageRoute(builder: (_) => const RegisterScreen());
+
+      case AppRoutes.roleSelection:
+        return MaterialPageRoute(builder: (_) => const RoleSelectionScreen());
 
       case AppRoutes.otpVerify:
         final args = settings.arguments as Map<String, dynamic>?;
@@ -97,7 +112,7 @@ abstract class AppRouter {
             reviewsCount: (args?['reviewsCount'] as num?)?.toInt() ?? 32,
             experience: args?['experience'] as String? ?? '2+ years',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
-            hourlyRate: args?['hourlyRate'] as String? ?? '\$15/hr',
+            hourlyRate: args?['hourlyRate'] as String? ?? '৳ 1,500/hr',
           ),
         );
 
@@ -109,6 +124,16 @@ abstract class AppRouter {
       case AppRoutes.workerEarnings:
         return MaterialPageRoute(builder: (_) => const WorkerEarningsScreen());
 
+      case AppRoutes.availabilityCalendar:
+        return MaterialPageRoute(
+          builder: (_) => const AvailabilityCalendarScreen(),
+        );
+
+      case AppRoutes.portfolioManagement:
+        return MaterialPageRoute(
+          builder: (_) => const PortfolioManagementScreen(),
+        );
+
       case AppRoutes.projectDashboard:
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
@@ -117,6 +142,31 @@ abstract class AppRouter {
             projectTitle:
                 args?['projectTitle'] as String? ??
                 'Complete Turnkey Business Project',
+          ),
+        );
+
+      case AppRoutes.taskBoard:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => TaskBoardScreen(
+            projectId: args?['projectId'] as String? ?? 'proj_001',
+            projectTitle: args?['projectTitle'] as String? ?? 'Project Tasks',
+          ),
+        );
+
+      case AppRoutes.assignTask:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => AssignTaskScreen(
+            projectId: args?['projectId'] as String? ?? 'proj_001',
+          ),
+        );
+
+      case AppRoutes.teamRoster:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => TeamRosterScreen(
+            projectId: args?['projectId'] as String? ?? 'proj_001',
           ),
         );
 
@@ -179,6 +229,56 @@ abstract class AppRouter {
           ),
         );
 
+      case AppRoutes.checkout:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => SimulatedCheckoutScreen(
+            title: args?['title'] as String? ?? 'On-Demand Service',
+            amount: (args?['amount'] as num?)?.toDouble() ?? 1000.0,
+            serviceRequestId: args?['serviceRequestId'] as String?,
+            projectId: args?['projectId'] as String?,
+            workerProfileId: args?['workerProfileId'] as String?,
+            specialistName:
+                args?['specialistName'] as String? ?? 'SKAVIA Specialist',
+            location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
+          ),
+        );
+
+      case AppRoutes.invoice:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => InvoiceScreen(
+            invoiceNumber: args?['invoiceNumber'] as String? ?? 'INV-1001',
+            serviceTitle:
+                args?['serviceTitle'] as String? ?? 'General Technical Service',
+            clientName: args?['clientName'] as String? ?? 'Valued Client',
+            clientPhone: args?['clientPhone'] as String? ?? '01700000000',
+            specialistName:
+                args?['specialistName'] as String? ?? 'SKAVIA Specialist',
+            baseAmount: (args?['baseAmount'] as num?)?.toDouble() ?? 1000.0,
+            platformFee: (args?['platformFee'] as num?)?.toDouble() ?? 150.0,
+            totalAmount: (args?['totalAmount'] as num?)?.toDouble() ?? 1150.0,
+            paymentMethod: args?['paymentMethod'] as String? ?? 'bKash',
+            transactionId: args?['transactionId'] as String? ?? 'TRX-1001',
+            paidAt: args?['paidAt'] as DateTime? ?? DateTime.now(),
+          ),
+        );
+
+      case AppRoutes.paymentSuccess:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => PaymentSuccessScreen(
+            amount: (args?['amount'] as num?)?.toDouble() ?? 1150.0,
+            transactionId: args?['transactionId'] as String? ?? 'TRX-1001',
+            paymentMethod: args?['paymentMethod'] as String? ?? 'bKash',
+            jobTitle: args?['jobTitle'] as String? ?? 'Service',
+            specialistName: args?['specialistName'] as String? ?? 'Specialist',
+            serviceRequestId: args?['serviceRequestId'] as String?,
+            projectId: args?['projectId'] as String?,
+            onViewInvoice: () {},
+          ),
+        );
+
       case AppRoutes.teamDiscovery:
         return MaterialPageRoute(builder: (_) => const TeamDiscoveryScreen());
 
@@ -187,6 +287,19 @@ abstract class AppRouter {
 
       case AppRoutes.adminDashboard:
         return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
+
+      case AppRoutes.verificationQueue:
+        return MaterialPageRoute(
+          builder: (_) => const VerificationQueueScreen(),
+        );
+
+      case AppRoutes.disputeResolution:
+        return MaterialPageRoute(
+          builder: (_) => const DisputeResolutionScreen(),
+        );
+
+      case AppRoutes.teamAssembly:
+        return MaterialPageRoute(builder: (_) => const TeamAssemblyScreen());
 
       case AppRoutes.appShell:
         return MaterialPageRoute(builder: (_) => const MainScaffoldScreen());

@@ -101,7 +101,8 @@ class LocationService {
     double lon2,
   ) {
     const double p = 0.017453292519943295; // Math.PI / 180
-    final double a = 0.5 -
+    final double a =
+        0.5 -
         math.cos((lat2 - lat1) * p) / 2 +
         math.cos(lat1 * p) *
             math.cos(lat2 * p) *

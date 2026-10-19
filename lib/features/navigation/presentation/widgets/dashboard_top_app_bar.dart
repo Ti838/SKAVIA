@@ -69,7 +69,9 @@ class DashboardTopAppBar extends StatelessWidget {
                       ? Icon(
                           Icons.person_rounded,
                           size: 20,
-                          color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                          color: isDark
+                              ? colorScheme.primary
+                              : AppColors.primaryRoyal,
                         )
                       : null,
                 ),
@@ -101,7 +103,9 @@ class DashboardTopAppBar extends StatelessWidget {
                         fontSize: 18,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 1.2,
-                        color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                        color: isDark
+                            ? colorScheme.primary
+                            : AppColors.primaryRoyal,
                       ),
                     ),
                   ],
@@ -224,7 +228,9 @@ class DashboardTopAppBar extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.customer
-                                ? (isDark ? colorScheme.primary : AppColors.primaryRoyal)
+                                ? (isDark
+                                      ? colorScheme.primary
+                                      : AppColors.primaryRoyal)
                                 : Colors.transparent,
                             borderRadius: AppDimensions.roundedPill,
                           ),
@@ -247,7 +253,9 @@ class DashboardTopAppBar extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.worker
-                                ? (isDark ? colorScheme.primary : AppColors.primaryRoyal)
+                                ? (isDark
+                                      ? colorScheme.primary
+                                      : AppColors.primaryRoyal)
                                 : Colors.transparent,
                             borderRadius: AppDimensions.roundedPill,
                           ),
@@ -303,10 +311,14 @@ class DashboardTopAppBar extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF2E1065) : const Color(0xFFF5F3FF),
+                      color: isDark
+                          ? const Color(0xFF2E1065)
+                          : const Color(0xFFF5F3FF),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF6B21A8) : const Color(0xFFDDD6FE),
+                        color: isDark
+                            ? const Color(0xFF6B21A8)
+                            : const Color(0xFFDDD6FE),
                       ),
                     ),
                     child: Row(
@@ -315,13 +327,17 @@ class DashboardTopAppBar extends StatelessWidget {
                         Icon(
                           Icons.auto_awesome,
                           size: 11,
-                          color: isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+                          color: isDark
+                              ? const Color(0xFFC084FC)
+                              : const Color(0xFF7C3AED),
                         ),
                         const SizedBox(width: 3),
                         Text(
                           'SKAVIA AI',
                           style: TextStyle(
-                            color: isDark ? const Color(0xFFC084FC) : const Color(0xFF7C3AED),
+                            color: isDark
+                                ? const Color(0xFFC084FC)
+                                : const Color(0xFF7C3AED),
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
                           ),

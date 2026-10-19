@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/router/app_routes.dart';
@@ -21,6 +20,7 @@ import '../../../customer/presentation/widgets/unified_profile_view.dart';
 import '../../../team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../../worker/presentation/screens/incoming_requests_screen.dart';
 import '../../../worker/presentation/widgets/worker_dashboard_view.dart';
+import '../../data/repositories/dashboard_repository.dart';
 import '../widgets/dashboard_bottom_nav_bar.dart';
 import '../widgets/dashboard_settings_sheet.dart';
 import '../widgets/dashboard_top_app_bar.dart';
@@ -38,6 +38,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   AppRoleMode _currentMode = AppRoleMode.customer;
   int _navIndex = 0;
   final AuthController _authController = AuthController();
+  final DashboardRepository _dashboardRepository = DashboardRepository();
 
   // Profile Avatar & Identity
   String? _customAvatarUrl;
@@ -99,33 +100,22 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     }
   }
 
-  /// 2. Load Real Supabase Data for Dashboard
+  /// 2. Load Real Supabase Data for Dashboard via DashboardRepository
   Future<void> _loadDashboardData() async {
     final user = _authController.user;
     if (user == null) return;
 
     try {
-      final client = Supabase.instance.client;
-
-      // Check for active client booking (Requested, Accepted, or In Progress)
-      final activeBookingRes = await client
-          .from('service_requests')
-          .select(
-            'service_request_id, agreed_price, service_notes, scheduled_at, status, '
-            'worker_profiles ( title, rating_average, users ( full_name, phone_number, avatar_url ) )',
-          )
-          .eq('client_id', user.uid)
-          .inFilter('status', ['Requested', 'Accepted', 'In Progress'])
-          .order('scheduled_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-
-      // Fetch user record: avatar, persisted active_mode, and location
-      final userRecord = await client
-          .from('users')
-          .select('avatar_url, active_mode, location')
-          .eq('user_id', user.uid)
-          .maybeSingle();
+      final activeBookingRes = await _dashboardRepository
+          .getActiveClientBooking(user.uid);
+      final userRecord = await _dashboardRepository.getUserProfileRecord(
+        user.uid,
+      );
+      final workerStats = await _dashboardRepository.getWorkerStats(user.uid);
+      final liveReqs = await _dashboardRepository.getOpenRequirements();
+      final hasUnread = await _dashboardRepository.hasUnreadNotifications(
+        user.uid,
+      );
 
       if (mounted) {
         setState(() {
@@ -145,110 +135,15 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
               _currentFormattedLocation = userRecord['location'] as String;
             }
           }
+          _workerCompletedJobs = workerStats.completedJobs;
+          _workerRating = workerStats.ratingAverage;
+          _workerEarnings = workerStats.totalEarnings;
+          _isWorkerAvailable = workerStats.isAvailable;
+          _liveJobRequests = workerStats.incomingRequests;
+          _liveRequirements = liveReqs;
+          _hasUnreadNotifications = hasUnread;
         });
       }
-
-      // Load worker stats
-      final workerProfile = await client
-          .from('worker_profiles')
-          .select(
-            'worker_profile_id, completed_jobs, rating_average, is_available',
-          )
-          .eq('user_id', user.uid)
-          .maybeSingle();
-
-      if (workerProfile != null) {
-        final wpId = workerProfile['worker_profile_id'];
-        final jobs = (workerProfile['completed_jobs'] as num?)?.toInt() ?? 0;
-        final rating =
-            (workerProfile['rating_average'] as num?)?.toDouble() ?? 5.0;
-        final available = workerProfile['is_available'] as bool? ?? true;
-
-        final earningsRes = await client
-            .from('worker_earnings')
-            .select('net_amount')
-            .eq('worker_profile_id', wpId)
-            .eq('status', 'Credited');
-
-        double earningsSum = 0.0;
-        if (earningsRes.isNotEmpty) {
-          for (final row in earningsRes) {
-            earningsSum += (row['net_amount'] as num?)?.toDouble() ?? 0.0;
-          }
-        }
-
-        final requestsRes = await client
-            .from('service_requests')
-            .select(
-              'service_request_id, agreed_price, service_notes, scheduled_at, location',
-            )
-            .eq('worker_profile_id', wpId)
-            .eq('status', 'Requested')
-            .limit(5);
-
-        if (mounted) {
-          setState(() {
-            _workerCompletedJobs = jobs;
-            _workerRating = rating;
-            _workerEarnings = earningsSum;
-            _isWorkerAvailable = available;
-            _liveJobRequests = List<Map<String, dynamic>>.from(requestsRes);
-          });
-        }
-      }
-
-      // 4. Fetch real live open requirements for customer dashboard
-      try {
-        final reqRes = await client
-            .from('requirements')
-            .select(
-              'requirement_id, title, description, location, budget, status, created_at, category_id, submitted_by',
-            )
-            .eq('status', 'Open')
-            .order('created_at', ascending: false)
-            .limit(5);
-
-        final List<JobRequirementItem> items = [];
-        for (final row in reqRes) {
-          items.add(
-            JobRequirementItem(
-              id: row['requirement_id']?.toString() ?? '',
-              title: row['title']?.toString() ?? 'Requirement',
-              category: 'Trade & Service',
-              categoryId: row['category_id']?.toString() ?? 'cat_electrical',
-              description: row['description']?.toString() ?? '',
-              location: row['location']?.toString() ?? 'Dhaka, Bangladesh',
-              budgetMin: (row['budget'] as num?)?.toDouble() ?? 1200.0,
-              budgetMax: ((row['budget'] as num?)?.toDouble() ?? 1200.0) * 1.25,
-              urgency: 'Standard',
-              timeAgo: 'Recent',
-              clientName: 'Verified Member',
-            ),
-          );
-        }
-
-        if (mounted) {
-          setState(() {
-            _liveRequirements = items;
-          });
-        }
-      } catch (_) {}
-
-      // 5. Fetch real unread notifications badge status
-      try {
-        final notifRes = await client
-            .from('notifications')
-            .select('notification_id')
-            .eq('user_id', user.uid)
-            .eq('is_read', false)
-            .limit(1);
-
-        if (mounted) {
-          setState(() {
-            _hasUnreadNotifications = (notifRes as List).isNotEmpty;
-          });
-        }
-      } catch (_) {}
     } catch (_) {}
   }
 
@@ -259,30 +154,19 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
 
     final user = _authController.user;
     if (user != null) {
-      try {
-        Supabase.instance.client
-            .from('users')
-            .update({
-              'active_mode': mode == AppRoleMode.customer ? 'client' : 'worker',
-            })
-            .eq('user_id', user.uid)
-            .then((_) {})
-            .catchError((_) {});
-      } catch (_) {}
+      _dashboardRepository.updateActiveMode(
+        user.uid,
+        mode == AppRoleMode.customer ? 'client' : 'worker',
+      );
     }
   }
 
-  /// Toggle Worker online availability status in Supabase
+  /// Toggle Worker online availability status via DashboardRepository
   Future<void> _toggleWorkerAvailability(bool val) async {
     setState(() => _isWorkerAvailable = val);
     final user = _authController.user;
     if (user != null) {
-      try {
-        await Supabase.instance.client
-            .from('worker_profiles')
-            .update({'is_available': val})
-            .eq('user_id', user.uid);
-      } catch (_) {}
+      await _dashboardRepository.updateWorkerAvailability(user.uid, val);
     }
   }
 

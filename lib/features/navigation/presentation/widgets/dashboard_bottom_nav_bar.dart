@@ -4,6 +4,7 @@ import '../../../../core/services/app_language_service.dart';
 import '../screens/main_scaffold_screen.dart';
 
 /// 5-Tab Bottom Navigation Bar matching the SKAVIA Reference Design
+/// Features pixel-perfect selected/unselected icon pairs, touch targets, and accessibility semantics.
 class DashboardBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final AppRoleMode currentMode;
@@ -16,39 +17,56 @@ class DashboardBottomNavBar extends StatelessWidget {
     required this.onTabSelected,
   });
 
-  Widget _buildNavItem(BuildContext context, int index, IconData icon, String label) {
+  Widget _buildNavItem(
+    BuildContext context, {
+    required int index,
+    required IconData activeIcon,
+    required IconData inactiveIcon,
+    required String label,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final isSelected = currentIndex == index;
     final activeColor = colorScheme.primary;
     final inactiveColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
 
     return Expanded(
-      child: InkWell(
-        onTap: () => onTabSelected(index),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 22,
-                color: isSelected ? activeColor : inactiveColor,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                  color: isSelected ? activeColor : inactiveColor,
+      child: Semantics(
+        label: label,
+        selected: isSelected,
+        button: true,
+        child: InkWell(
+          onTap: () => onTabSelected(index),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, anim) =>
+                      ScaleTransition(scale: anim, child: child),
+                  child: Icon(
+                    isSelected ? activeIcon : inactiveIcon,
+                    key: ValueKey<bool>(isSelected),
+                    size: 22,
+                    color: isSelected ? activeColor : inactiveColor,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                    color: isSelected ? activeColor : inactiveColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -75,32 +93,42 @@ class DashboardBottomNavBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              _buildNavItem(context, 0, Icons.home_rounded, AppLanguageService.tr('home')),
               _buildNavItem(
                 context,
-                1,
-                Icons.grid_view_rounded,
-                currentMode == AppRoleMode.customer
+                index: 0,
+                activeIcon: Icons.home_rounded,
+                inactiveIcon: Icons.home_outlined,
+                label: AppLanguageService.tr('home'),
+              ),
+              _buildNavItem(
+                context,
+                index: 1,
+                activeIcon: Icons.grid_view_rounded,
+                inactiveIcon: Icons.grid_view_outlined,
+                label: currentMode == AppRoleMode.customer
                     ? AppLanguageService.tr('services')
                     : AppLanguageService.tr('incoming_requests'),
               ),
               _buildNavItem(
                 context,
-                2,
-                Icons.chat_bubble_outline_rounded,
-                AppLanguageService.tr('messages'),
+                index: 2,
+                activeIcon: Icons.chat_bubble_rounded,
+                inactiveIcon: Icons.chat_bubble_outline_rounded,
+                label: AppLanguageService.tr('messages'),
               ),
               _buildNavItem(
                 context,
-                3,
-                Icons.folder_outlined,
-                AppLanguageService.tr('projects'),
+                index: 3,
+                activeIcon: Icons.folder_rounded,
+                inactiveIcon: Icons.folder_outlined,
+                label: AppLanguageService.tr('projects'),
               ),
               _buildNavItem(
                 context,
-                4,
-                Icons.person_outline_rounded,
-                currentMode == AppRoleMode.customer
+                index: 4,
+                activeIcon: Icons.person_rounded,
+                inactiveIcon: Icons.person_outline_rounded,
+                label: currentMode == AppRoleMode.customer
                     ? AppLanguageService.tr('profile')
                     : AppLanguageService.tr('review'),
               ),

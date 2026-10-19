@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/app_theme_service.dart';
+import 'legal_policies_sheet.dart';
+import 'theme_picker_sheet.dart';
 
-/// Settings modal bottom sheet with Language, Theme Mode, and Account deletion
+/// Settings modal bottom sheet with Language, Theme Mode, Legal & Policies, and Account deletion.
+/// Fulfills Section 14 (Product Owner Decision Authority) for transparent marketplace rules,
+/// explicit consent, and data protection disclosures.
 class DashboardSettingsSheet extends StatelessWidget {
   final VoidCallback onDeleteAccount;
 
@@ -20,93 +24,6 @@ class DashboardSettingsSheet extends StatelessWidget {
       isScrollControlled: true,
       builder: (ctx) =>
           DashboardSettingsSheet(onDeleteAccount: onDeleteAccount),
-    );
-  }
-
-  void _showThemePicker(BuildContext context) {
-    final isBn = AppLanguageService.isBengali;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isBn ? 'থিম নির্বাচন করুন' : 'Select Theme',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  leading: const Icon(
-                    Icons.brightness_auto_rounded,
-                    color: AppColors.primarySky,
-                  ),
-                  title: Text(
-                    isBn ? 'সিস্টেম অটো (স্বয়ংক্রিয়)' : 'System Default (Auto)',
-                    style: TextStyle(color: colorScheme.onSurface),
-                  ),
-                  trailing: AppThemeService.isSystem
-                      ? const Icon(Icons.check_rounded, color: AppColors.primarySky)
-                      : null,
-                  onTap: () {
-                    AppThemeService.setThemeMode(ThemeMode.system);
-                    Navigator.pop(ctx);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.light_mode_rounded,
-                    color: Color(0xFFF59E0B),
-                  ),
-                  title: Text(
-                    isBn ? 'লাইট মোড (উজ্জ্বল)' : 'Light Mode',
-                    style: TextStyle(color: colorScheme.onSurface),
-                  ),
-                  trailing: AppThemeService.isLight
-                      ? const Icon(Icons.check_rounded, color: AppColors.primarySky)
-                      : null,
-                  onTap: () {
-                    AppThemeService.setThemeMode(ThemeMode.light);
-                    Navigator.pop(ctx);
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(
-                    Icons.dark_mode_rounded,
-                    color: Color(0xFF6366F1),
-                  ),
-                  title: Text(
-                    isBn ? 'ডার্ক মোড (অন্ধকার)' : 'Dark Mode',
-                    style: TextStyle(color: colorScheme.onSurface),
-                  ),
-                  trailing: AppThemeService.isDark
-                      ? const Icon(Icons.check_rounded, color: AppColors.primarySky)
-                      : null,
-                  onTap: () {
-                    AppThemeService.setThemeMode(ThemeMode.dark);
-                    Navigator.pop(ctx);
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -147,6 +64,7 @@ class DashboardSettingsSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+
               // Theme Mode Selector
               ValueListenableBuilder<ThemeMode>(
                 valueListenable: AppThemeService.themeModeNotifier,
@@ -154,8 +72,8 @@ class DashboardSettingsSheet extends StatelessWidget {
                   final icon = mode == ThemeMode.dark
                       ? Icons.dark_mode_rounded
                       : mode == ThemeMode.light
-                          ? Icons.light_mode_rounded
-                          : Icons.brightness_auto_rounded;
+                      ? Icons.light_mode_rounded
+                      : Icons.brightness_auto_rounded;
 
                   return ListTile(
                     leading: Icon(icon, color: AppColors.primaryRoyal),
@@ -174,19 +92,19 @@ class DashboardSettingsSheet extends StatelessWidget {
                       ),
                     ),
                     trailing: const Icon(Icons.chevron_right_rounded),
-                    onTap: () => _showThemePicker(context),
+                    onTap: () => ThemePickerSheet.show(context),
                   );
                 },
               ),
+
+              // Language Toggle
               ListTile(
                 leading: const Icon(
                   Icons.language_rounded,
                   color: AppColors.primaryRoyal,
                 ),
                 title: Text(
-                  isBn
-                      ? 'Switch to English'
-                      : 'বাংলা ভাষায় পরিবর্তন করুন',
+                  isBn ? 'Switch to English' : 'বাংলা ভাষায় পরিবর্তন করুন',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
@@ -198,6 +116,36 @@ class DashboardSettingsSheet extends StatelessWidget {
                   AppLanguageService.toggleLanguage();
                 },
               ),
+
+              // Legal & Policies Section (Fulfills Section 14)
+              ListTile(
+                leading: const Icon(
+                  Icons.policy_rounded,
+                  color: AppColors.primarySky,
+                ),
+                title: Text(
+                  isBn
+                      ? 'আইনি নীতিমালা ও স্বচ্ছ ফি'
+                      : 'Legal & Platform Policies',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  isBn
+                      ? 'শর্তাবলী, গোপনীয়তা, ১৫% স্বচ্ছ ফি'
+                      : 'Terms, Privacy, 15% Fee Schedule',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => LegalPoliciesSheet.show(context),
+              ),
+
+              // Account Deletion Action
               ListTile(
                 leading: const Icon(
                   Icons.delete_forever_rounded,

@@ -196,19 +196,25 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                           _buildTechMarkerChip(
                             Icons.electric_bolt_rounded,
                             AppColors.accentPeach,
-                            AppLanguageService.isBengali ? 'ইলেকট্রিশিয়ান' : 'Electricians',
+                            AppLanguageService.isBengali
+                                ? 'ইলেকট্রিশিয়ান'
+                                : 'Electricians',
                           ),
                           const SizedBox(width: 6),
                           _buildTechMarkerChip(
                             Icons.ac_unit_rounded,
                             AppColors.primarySky,
-                            AppLanguageService.isBengali ? 'এসি টেকনিশিয়ান' : 'HVAC',
+                            AppLanguageService.isBengali
+                                ? 'এসি টেকনিশিয়ান'
+                                : 'HVAC',
                           ),
                           const SizedBox(width: 6),
                           _buildTechMarkerChip(
                             Icons.plumbing_rounded,
                             AppColors.accentAqua,
-                            AppLanguageService.isBengali ? 'প্লাম্বার' : 'Plumbers',
+                            AppLanguageService.isBengali
+                                ? 'প্লাম্বার'
+                                : 'Plumbers',
                           ),
                         ],
                       ),

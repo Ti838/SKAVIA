@@ -98,17 +98,11 @@ abstract class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: const BorderSide(
-            color: AppColors.borderLight,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: const BorderSide(
-            color: AppColors.borderLight,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),

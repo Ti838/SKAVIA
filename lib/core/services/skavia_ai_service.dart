@@ -113,9 +113,10 @@ Key Knowledge & Guidelines:
   ) async {
     // 1. Try Supabase Edge Function (Zero API key exposure)
     try {
+      final baseUrl = AppConfig.supabaseUrl.replaceAll(RegExp(r'/+$'), '');
       final edgeRes = await http
           .post(
-            Uri.parse('${AppConfig.supabaseUrl}/functions/v1/analyze-requirement'),
+            Uri.parse('$baseUrl/functions/v1/analyze-requirement'),
             headers: {
               'Content-Type': 'application/json',
               'apikey': AppConfig.supabaseAnonKey,
@@ -126,7 +127,8 @@ Key Knowledge & Guidelines:
           .timeout(const Duration(seconds: 8));
 
       if (edgeRes.statusCode == 200) {
-        final parsed = jsonDecode(utf8.decode(edgeRes.bodyBytes)) as Map<String, dynamic>;
+        final parsed =
+            jsonDecode(utf8.decode(edgeRes.bodyBytes)) as Map<String, dynamic>;
         final catName = parsed['category_name']?.toString() ?? '';
         String catId = 'cat_electrical';
         if (catName.contains('HVAC') || catName.contains('Cooling')) {
@@ -137,16 +139,21 @@ Key Knowledge & Guidelines:
           catId = 'cat_civil_carpentry';
         }
 
-        final candidateSkills = (parsed['candidate_skills'] as List?)
+        final candidateSkills =
+            (parsed['candidate_skills'] as List?)
                 ?.map((e) => e.toString())
                 .toList() ??
             [];
-        final estBudget = (parsed['estimated_budget'] as num?)?.toDouble() ?? 1500.0;
+        final estBudget =
+            (parsed['estimated_budget'] as num?)?.toDouble() ?? 1500.0;
 
         return {
           'category_id': catId,
-          'category_name': catName.isNotEmpty ? catName : 'Electrical Solutions',
-          'suggested_title': parsed['suggested_title'] ?? 'Certified Trade Requirement',
+          'category_name': catName.isNotEmpty
+              ? catName
+              : 'Electrical Solutions',
+          'suggested_title':
+              parsed['suggested_title'] ?? 'Certified Trade Requirement',
           'budget_estimate': estBudget,
           'urgency': parsed['urgency'] ?? 'Standard',
           'skills': candidateSkills,
@@ -161,7 +168,8 @@ Key Knowledge & Guidelines:
     }
 
     // 2. Direct Groq / OpenRouter Fallback if compile-time keys provided
-    if (AppConfig.groqApiKey.isNotEmpty || AppConfig.openRouterApiKey.isNotEmpty) {
+    if (AppConfig.groqApiKey.isNotEmpty ||
+        AppConfig.openRouterApiKey.isNotEmpty) {
       const diagnosticPrompt = '''
 Analyze the user's service requirement in Bangladesh. Return ONLY a valid JSON object without markdown fences:
 {
@@ -196,7 +204,8 @@ Analyze the user's service requirement in Bangladesh. Return ONLY a valid JSON o
           'budget_estimate':
               parsed['budget_estimate'] ?? ruleFallback['budget_estimate'],
           'urgency': parsed['urgency'] ?? ruleFallback['urgency'],
-          'skills': (parsed['skills'] is List &&
+          'skills':
+              (parsed['skills'] is List &&
                   (parsed['skills'] as List).isNotEmpty)
               ? (parsed['skills'] as List).map((e) => e.toString()).toList()
               : ruleFallback['skills'],
@@ -281,7 +290,8 @@ Analyze the user's service requirement in Bangladesh. Return ONLY a valid JSON o
   /// Grounded Dhaka trade & turnkey project knowledge assistant (zero-latency fallback)
   String _generateGroundedTradeResponse(String prompt) {
     final lower = prompt.toLowerCase();
-    final isBengali = RegExp(r'[\u0980-\u09FF]').hasMatch(prompt) ||
+    final isBengali =
+        RegExp(r'[\u0980-\u09FF]').hasMatch(prompt) ||
         lower.contains('khoroch') ||
         lower.contains('lagbe') ||
         lower.contains('koto') ||
@@ -449,4 +459,3 @@ Please describe your technical requirement or question, and I will assist you im
     }
   }
 }
-

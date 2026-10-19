@@ -88,7 +88,9 @@ class RadarMapFilterBar extends StatelessWidget {
           color: isSelected ? AppColors.primaryRoyal : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : colorScheme.outlineVariant,
+            color: isSelected
+                ? AppColors.primaryRoyal
+                : colorScheme.outlineVariant,
           ),
         ),
         child: Text(

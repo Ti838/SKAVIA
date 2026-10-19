@@ -98,47 +98,30 @@ class _AppTextFieldState extends State<AppTextField> {
               )
             : null,
         filled: true,
-        fillColor: isDark
-            ? colorScheme.surfaceContainerHighest
-            : Colors.white,
+        fillColor: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 1.5,
-          ),
+          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(
-            color: colorScheme.error,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: colorScheme.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(
-            color: colorScheme.error,
-            width: 1.5,
-          ),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
         ),
       ),
     );

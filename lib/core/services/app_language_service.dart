@@ -66,8 +66,7 @@ class AppLanguageService {
       'carpentry_title': 'Civil & Carpentry',
       'carpentry_desc': 'Furniture, Door Locks & Woodcraft',
       'turnkey_title': 'Business & Office Turnkey Hub',
-      'turnkey_desc':
-          'Full setup for Office, Showroom or IT Hub with a Dedicated Team Leader.',
+      'turnkey_desc': 'Full setup for Office, Showroom or IT Hub with a Dedicated Team Leader.',
       'nid_verified': '100% NID Verified',
       'escrow_protected': 'Escrow Protected',
       'helpline': '24/7 Helpline',
@@ -119,8 +118,7 @@ class AppLanguageService {
       'verified_balance': 'Verified balance',
       'zero_balance': 'Zero balance',
       'worker_verification_bio': 'Worker Verification & Bio',
-      'worker_verification_desc':
-          'Upload NID, set hourly rate & working zones',
+      'worker_verification_desc': 'Upload NID, set hourly rate & working zones',
       'open_jobs_feed': 'Open Jobs Feed',
       'no_pending_requests': 'No pending job requests',
       'radar_alert_desc':
@@ -144,8 +142,7 @@ class AppLanguageService {
       'hello': 'হ্যালো',
       'welcome_subtitle': 'ভেরিফায়েড অন-ডিমান্ড সার্ভিসেস —',
       'worker_hub_title': 'ওয়ার্কার ও ক্লায়েন্ট হাব',
-      'worker_hub_subtitle':
-          'শিফট, লাইভ রিকোয়েস্ট ও উপার্জন পরিচালনা করুন',
+      'worker_hub_subtitle': 'শিফট, লাইভ রিকোয়েস্ট ও উপার্জন পরিচালনা করুন',
       'search_hint': 'সার্ভিস, স্কিল বা কর্মী খুঁজুন...',
       'radar_title': 'রাডার',
       'pros_active': 'জন কারিগর সক্রিয়',
@@ -257,7 +254,9 @@ class AppLanguageService {
     final normalized = slug.toLowerCase();
     if (normalized.contains('elec')) return 'ইলেকট্রিক্যাল ও পাওয়ার';
     if (normalized.contains('plumb')) return 'প্লাম্বিং ও স্যানিটারি';
-    if (normalized.contains('ac') || normalized.contains('hvac') || normalized.contains('cool')) {
+    if (normalized.contains('ac') ||
+        normalized.contains('hvac') ||
+        normalized.contains('cool')) {
       return 'এসি ও এইচভিএসি কুলিং';
     }
     if (normalized.contains('carpenter') || normalized.contains('civil')) {
@@ -266,7 +265,9 @@ class AppLanguageService {
     if (normalized.contains('appliance') || normalized.contains('home')) {
       return 'হোম অ্যাপ্লায়েন্স সার্ভিসিং';
     }
-    if (normalized.contains('it') || normalized.contains('soft') || normalized.contains('sec')) {
+    if (normalized.contains('it') ||
+        normalized.contains('soft') ||
+        normalized.contains('sec')) {
       return 'আইটি ও সিসিটিভি সিকিউরিটি';
     }
     if (normalized.contains('auto') || normalized.contains('car')) {

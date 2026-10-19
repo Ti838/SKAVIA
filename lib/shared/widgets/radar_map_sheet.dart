@@ -4,14 +4,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../../app/theme/app_colors.dart';
 import '../../../core/services/app_language_service.dart';
 import '../../../core/services/location_service.dart';
 import '../models/radar_technician.dart';
+import 'radar_location_banner.dart';
+import 'radar_map_controls.dart';
 import 'radar_map_filter_bar.dart';
+import 'radar_map_header.dart';
 import 'radar_technician_card.dart';
 
 export '../models/radar_technician.dart';
+export 'radar_location_banner.dart';
+export 'radar_map_controls.dart';
+export 'radar_map_filter_bar.dart';
+export 'radar_map_header.dart';
+export 'radar_technician_card.dart';
 
 /// Real Interactive Google-Style Street Map Bottom Sheet
 /// Powered by live OpenStreetMap street tiles, real GPS centering,
@@ -69,15 +79,91 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   String? _selectedPointAddress;
   bool _isReverseGeocoding = false;
 
-  late final List<RadarTechnician> _allTechnicians;
+  List<RadarTechnician> _allTechnicians = List<RadarTechnician>.from(
+    RadarTechnician.seedTechnicians,
+  );
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-    _allTechnicians = RadarTechnician.seedTechnicians;
     _selectedTech = _allTechnicians.first;
     _fetchRealUserLocation();
+    _fetchRemoteTechnicians();
+  }
+
+  Future<void> _fetchRemoteTechnicians() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('worker_profiles')
+          .select(
+            'worker_profile_id, title, expected_rate, rating_average, completed_jobs, location, users(full_name)',
+          )
+          .eq('is_available', true)
+          .limit(20);
+
+      if (res.isNotEmpty && mounted) {
+        final List<RadarTechnician> remote = [];
+        for (final row in res) {
+          final id = row['worker_profile_id']?.toString() ?? '';
+          final title = row['title']?.toString() ?? 'Specialist';
+          final userMap = row['users'] as Map<String, dynamic>?;
+          final name =
+              userMap?['full_name']?.toString() ?? 'Verified Specialist';
+          final rate = (row['expected_rate'] as num?)?.toDouble() ?? 500.0;
+          final rating = (row['rating_average'] as num?)?.toDouble() ?? 5.0;
+          final jobs = (row['completed_jobs'] as num?)?.toInt() ?? 0;
+          final loc = row['location']?.toString() ?? 'Dhaka';
+
+          final double lat =
+              23.7461 +
+              (remote.length * 0.012 * (remote.length.isEven ? 1 : -1));
+          final double lng =
+              90.3742 +
+              (remote.length * 0.015 * (remote.length.isOdd ? 1 : -1));
+
+          IconData icon = Icons.build_rounded;
+          Color color = AppColors.primarySky;
+          if (title.toLowerCase().contains('electr')) {
+            icon = Icons.electric_bolt_rounded;
+            color = AppColors.accentPeach;
+          } else if (title.toLowerCase().contains('ac') ||
+              title.toLowerCase().contains('hvac')) {
+            icon = Icons.ac_unit_rounded;
+            color = AppColors.primarySky;
+          } else if (title.toLowerCase().contains('plumb')) {
+            icon = Icons.plumbing_rounded;
+            color = AppColors.accentAqua;
+          }
+
+          remote.add(
+            RadarTechnician(
+              id: id,
+              name: name,
+              trade: title,
+              icon: icon,
+              color: color,
+              rating: rating,
+              jobs: jobs,
+              distanceKm: 1.5 + (remote.length * 0.4),
+              startingRate: rate,
+              latitude: lat,
+              longitude: lng,
+              zone: loc,
+            ),
+          );
+        }
+
+        if (remote.isNotEmpty) {
+          setState(() {
+            _allTechnicians = remote;
+            _selectedTech = remote.first;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('[RadarMapSheet Remote Tech Notice]: $e');
+    }
   }
 
   Future<void> _fetchRealUserLocation() async {
@@ -112,7 +198,6 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
 
   List<RadarTechnician> get _filteredTechnicians {
     return _allTechnicians.where((tech) {
-      // Calculate real physical distance from user position
       final realDist = LocationService.calculateDistanceKm(
         _userPosition.latitude,
         _userPosition.longitude,
@@ -155,76 +240,9 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
       child: Column(
         children: [
           // 1. Sheet Grabber & Header Bar
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
-            child: Column(
-              children: [
-                Center(
-                  child: Container(
-                    width: 44,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: colorScheme.outlineVariant,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            color: AppColors.primarySky.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.map_rounded,
-                            color: AppColors.primaryRoyal,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              isBn
-                                  ? 'লাইভ গুগল ম্যাপ ও রাডার'
-                                  : 'Live Street Map & Radar',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w800,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            Text(
-                              isBn
-                                  ? 'সারা দেশব্যাপী ভেরিফায়েড টেকনিশিয়ান'
-                                  : 'Nationwide Verified Technicians • ${widget.locationZone}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          RadarMapHeader(
+            locationZone: widget.locationZone,
+            onClose: () => Navigator.pop(context),
           ),
 
           // 2. Radius & Trade Filter Horizontal Strips
@@ -269,18 +287,14 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                     },
                   ),
                   children: [
-                    // Real OpenStreetMap Tile Layer (Global & Bangladesh Street View)
                     TileLayer(
                       urlTemplate:
                           'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.skavia.app',
                       maxZoom: 19,
                     ),
-
-                    // User Location & Nearby Technician Markers
                     MarkerLayer(
                       markers: [
-                        // Custom Tapped Location Pin Marker
                         if (_selectedCustomPoint != null)
                           Marker(
                             point: _selectedCustomPoint!,
@@ -297,8 +311,6 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                               ],
                             ),
                           ),
-
-                        // Live User Location Marker (Pulsing Blue Beacon)
                         Marker(
                           point: _userPosition,
                           width: 52,
@@ -352,8 +364,6 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                             ),
                           ),
                         ),
-
-                        // Filtered Technician Markers
                         ..._filteredTechnicians.map((tech) {
                           final isSelected = _selectedTech?.id == tech.id;
                           return Marker(
@@ -409,31 +419,11 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                 Positioned(
                   top: 14,
                   right: 14,
-                  child: Column(
-                    children: [
-                      _buildFloatingControlBtn(
-                        context: context,
-                        icon: _isLocatingUser
-                            ? Icons.hourglass_top_rounded
-                            : Icons.my_location_rounded,
-                        tooltip: 'Recenter to My GPS Location',
-                        onTap: _recenterToUser,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildFloatingControlBtn(
-                        context: context,
-                        icon: Icons.add,
-                        tooltip: 'Zoom In',
-                        onTap: _zoomIn,
-                      ),
-                      const SizedBox(height: 8),
-                      _buildFloatingControlBtn(
-                        context: context,
-                        icon: Icons.remove,
-                        tooltip: 'Zoom Out',
-                        onTap: _zoomOut,
-                      ),
-                    ],
+                  child: RadarMapControls(
+                    isLocatingUser: _isLocatingUser,
+                    onRecenter: _recenterToUser,
+                    onZoomIn: _zoomIn,
+                    onZoomOut: _zoomOut,
                   ),
                 ),
 
@@ -488,89 +478,11 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
 
           // 4. Selected Tap Location Action Banner
           if (_selectedCustomPoint != null)
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.canvasBlue,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.primarySky.withValues(alpha: 0.35),
-                ),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.pin_drop_rounded,
-                    color: AppColors.accentCoral,
-                    size: 22,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _isReverseGeocoding
-                              ? (isBn ? 'ঠিকানা খোঁজা হচ্ছে...' : 'Resolving street address...')
-                              : (_selectedPointAddress ?? 'Selected Coordinates'),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textDark,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          '${_selectedCustomPoint!.latitude.toStringAsFixed(4)}, ${_selectedCustomPoint!.longitude.toStringAsFixed(4)}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textMedium,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryRoyal,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    onPressed: () {
-                      final chosenAddress = _selectedPointAddress ??
-                          '${_selectedCustomPoint!.latitude}, ${_selectedCustomPoint!.longitude}';
-                      LocationService.syncLocationToSupabase(chosenAddress);
-                      widget.onLocationSelected?.call(chosenAddress);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            isBn
-                                ? 'নির্বাচিত এলাকা সংরক্ষিত হয়েছে: $chosenAddress'
-                                : 'Location saved: $chosenAddress',
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      isBn ? 'এই লোকেশন নিন' : 'Set Location',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            RadarLocationBanner(
+              selectedPoint: _selectedCustomPoint!,
+              selectedAddress: _selectedPointAddress,
+              isReverseGeocoding: _isReverseGeocoding,
+              onLocationSelected: widget.onLocationSelected,
             ),
 
           // 5. Selected Technician Bottom Preview & Action Card
@@ -586,35 +498,6 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
               },
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingControlBtn({
-    required BuildContext context,
-    required IconData icon,
-    required String tooltip,
-    required VoidCallback onTap,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          shape: BoxShape.circle,
-          border: Border.all(color: colorScheme.outlineVariant),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(icon, size: 20, color: AppColors.primaryRoyal),
       ),
     );
   }

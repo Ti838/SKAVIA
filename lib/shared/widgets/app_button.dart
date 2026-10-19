@@ -51,18 +51,12 @@ class AppButton extends StatelessWidget {
             ? colorScheme.surfaceContainerHighest
             : Colors.white;
         foregroundColor = colorScheme.onSurface;
-        borderSide = BorderSide(
-          color: colorScheme.outlineVariant,
-          width: 1.5,
-        );
+        borderSide = BorderSide(color: colorScheme.outlineVariant, width: 1.5);
         break;
       case AppButtonVariant.outline:
         backgroundColor = Colors.transparent;
         foregroundColor = colorScheme.onSurface;
-        borderSide = BorderSide(
-          color: colorScheme.outlineVariant,
-          width: 1.5,
-        );
+        borderSide = BorderSide(color: colorScheme.outlineVariant, width: 1.5);
         break;
     }
 
