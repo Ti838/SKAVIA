@@ -718,14 +718,36 @@ CREATE POLICY "Service Requests Update" ON service_requests FOR UPDATE
 DROP POLICY IF EXISTS "Projects Access" ON projects;
 CREATE POLICY "Projects Access" ON projects FOR ALL USING (client_id = auth.uid()::text) WITH CHECK (client_id = auth.uid()::text);
 
+DROP POLICY IF EXISTS "User Roles Read" ON user_roles;
+CREATE POLICY "User Roles Read" ON user_roles FOR SELECT USING (user_id = auth.uid()::text);
+
+DROP POLICY IF EXISTS "User Roles Modify" ON user_roles;
+CREATE POLICY "User Roles Modify" ON user_roles FOR ALL USING (false);
+
+-- Teams: Project client or assigned team member
 DROP POLICY IF EXISTS "Teams Read" ON teams;
-CREATE POLICY "Teams Read" ON teams FOR SELECT USING (true);
+CREATE POLICY "Teams Read" ON teams FOR SELECT 
+    USING (
+        EXISTS (SELECT 1 FROM projects p WHERE p.project_id = teams.project_id AND p.client_id = auth.uid()::text)
+        OR EXISTS (SELECT 1 FROM team_members tm JOIN worker_profiles wp ON tm.worker_profile_id = wp.worker_profile_id WHERE tm.team_id = teams.team_id AND wp.user_id = auth.uid()::text)
+    );
 
+-- Team Members: Project client or member themselves
 DROP POLICY IF EXISTS "Team Members Read" ON team_members;
-CREATE POLICY "Team Members Read" ON team_members FOR SELECT USING (true);
+CREATE POLICY "Team Members Read" ON team_members FOR SELECT 
+    USING (
+        EXISTS (SELECT 1 FROM teams t JOIN projects p ON t.project_id = p.project_id WHERE t.team_id = team_members.team_id AND p.client_id = auth.uid()::text)
+        OR EXISTS (SELECT 1 FROM worker_profiles wp WHERE wp.worker_profile_id = team_members.worker_profile_id AND wp.user_id = auth.uid()::text)
+    );
 
+-- Tasks: Project client, assigned team member, or any team member on project
 DROP POLICY IF EXISTS "Tasks Read" ON tasks;
-CREATE POLICY "Tasks Read" ON tasks FOR SELECT USING (true);
+CREATE POLICY "Tasks Read" ON tasks FOR SELECT 
+    USING (
+        EXISTS (SELECT 1 FROM projects p WHERE p.project_id = tasks.project_id AND p.client_id = auth.uid()::text)
+        OR EXISTS (SELECT 1 FROM team_members tm JOIN worker_profiles wp ON tm.worker_profile_id = wp.worker_profile_id WHERE tm.team_member_id = tasks.assigned_team_member_id AND wp.user_id = auth.uid()::text)
+        OR EXISTS (SELECT 1 FROM teams t JOIN team_members tm ON t.team_id = tm.team_id JOIN worker_profiles wp ON tm.worker_profile_id = wp.worker_profile_id WHERE t.project_id = tasks.project_id AND wp.user_id = auth.uid()::text)
+    );
 
 -- 15.3 Financial Transparency & Anti-Tampering Protections
 -- Payments: Client can view their own payments; worker can view payments related to their booked jobs
