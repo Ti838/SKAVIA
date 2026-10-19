@@ -5,6 +5,9 @@ import 'dart:math';
 class UuidUtil {
   static final Random _secureRandom = Random.secure();
 
+  /// Alias for generateV4()
+  static String generateUuidV4() => generateV4();
+
   /// Generates a crypto-random RFC 4122 Version 4 UUID string
   static String generateV4() {
     final bytes = List<int>.generate(16, (_) => _secureRandom.nextInt(256));

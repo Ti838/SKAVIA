@@ -28,7 +28,9 @@ class ActiveBookingCard extends StatelessWidget {
         worker?['users']?['full_name']?.toString() ??
         'Assigned Master Technician';
     final techPhone =
-        worker?['users']?['phone_number']?.toString() ?? '01700000000';
+        worker?['users']?['phone']?.toString() ??
+        worker?['users']?['phone_number']?.toString() ??
+        '01700000000';
 
     return Container(
       padding: const EdgeInsets.all(16),

@@ -5,6 +5,8 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/chat_remote_datasource.dart';
 import '../../data/models/chat_message_model.dart';
+import '../widgets/chat_input_bar.dart';
+import '../widgets/chat_message_bubble.dart';
 
 import 'package:intl/intl.dart';
 
@@ -98,7 +100,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -170,9 +171,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               // Real-time messages stream
               Expanded(
                 child: StreamBuilder<List<ChatMessageModel>>(
-                  stream: _chatDataSource.getMessagesStream(
-                    _conversationId,
-                  ),
+                  stream: _chatDataSource.getMessagesStream(_conversationId),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting &&
                         !snapshot.hasData) {
@@ -249,92 +248,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                         final msg = messages[index];
                         final isMe = msg.senderId == _currentUserId;
 
-                        return Align(
-                          alignment: isMe
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.76,
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? AppColors.primarySky
-                                  : (isDark
-                                      ? colorScheme.surfaceContainerHighest
-                                      : AppColors.sheetSurfaceSubtle),
-                              borderRadius: BorderRadius.only(
-                                topLeft: const Radius.circular(18),
-                                topRight: const Radius.circular(18),
-                                bottomLeft: Radius.circular(isMe ? 18 : 4),
-                                bottomRight: Radius.circular(isMe ? 4 : 18),
-                              ),
-                              border: isMe
-                                  ? null
-                                  : Border.all(
-                                      color: isDark
-                                          ? colorScheme.outlineVariant
-                                          : AppColors.borderLight,
-                                    ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: isMe
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  msg.messageText,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: isMe
-                                        ? Colors.white
-                                        : colorScheme.onSurface,
-                                    height: 1.35,
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      timeFormat.format(msg.createdAt),
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w400,
-                                        color: isMe
-                                            ? Colors.white70
-                                            : colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                    if (isMe) ...[
-                                      const SizedBox(width: 4),
-                                      Icon(
-                                        msg.isRead
-                                            ? Icons.done_all_rounded
-                                            : Icons.done_rounded,
-                                        size: 13,
-                                        color: Colors.white70,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                        return ChatMessageBubble(
+                          message: msg,
+                          isMe: isMe,
+                          timeFormat: timeFormat,
                         );
                       },
                     );
@@ -343,93 +260,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               ),
 
               // Bottom Input Control
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                      offset: const Offset(0, -2),
-                      blurRadius: 10,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? colorScheme.surfaceContainerHighest
-                              : AppColors.sheetSurfaceSubtle,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: isDark
-                                ? colorScheme.outlineVariant
-                                : AppColors.borderLight,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: TextField(
-                          controller: _messageController,
-                          textCapitalization: TextCapitalization.sentences,
-                          minLines: 1,
-                          maxLines: 4,
-                          style: TextStyle(
-                            color: colorScheme.onSurface,
-                            fontSize: 14,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Type a message...',
-                            hintStyle: TextStyle(
-                              fontSize: 14,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            filled: false,
-                            fillColor: Colors.transparent,
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
-                          onSubmitted: (_) => _sendMessage(),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: AppColors.primarySky,
-                        shape: BoxShape.circle,
-                      ),
-                      child: IconButton(
-                        icon: _isSending
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : const Icon(
-                                Icons.send_rounded,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                        onPressed: _sendMessage,
-                      ),
-                    ),
-                  ],
-                ),
+              ChatInputBar(
+                controller: _messageController,
+                isSending: _isSending,
+                onSend: _sendMessage,
               ),
             ],
           ),

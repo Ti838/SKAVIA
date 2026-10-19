@@ -34,9 +34,9 @@ Key Knowledge & Guidelines:
       {'role': 'user', 'content': prompt},
     ];
 
-    // 1. Try Groq (Ultra-fast LLM inference)
+    // 1. Try Groq (Ultra-fast LLM inference with official models)
     if (AppConfig.groqApiKey.isNotEmpty) {
-      for (final modelName in ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b']) {
+      for (final modelName in ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']) {
         try {
           final response = await http
               .post(
@@ -87,7 +87,7 @@ Key Knowledge & Guidelines:
                 'max_tokens': 1024,
               }),
             )
-            .timeout(const Duration(seconds: 12));
+            .timeout(const Duration(seconds: 8));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(utf8.decode(response.bodyBytes));
@@ -101,7 +101,31 @@ Key Knowledge & Guidelines:
       }
     }
 
-    // 3. Resilient Grounded Trade Knowledge Engine (Dhaka Trade & Escrow Intelligence)
+    // 3. Global Free Ultra-Fast Public LLM Inference via Pollinations AI
+    // Zero API key required, zero authentication gate, handles Bengali & English fluently
+    try {
+      final encodedPrompt = Uri.encodeComponent(prompt);
+      final encodedSystem = Uri.encodeComponent(_defaultSystemPrompt);
+      final pollinationsUrl = Uri.parse(
+        'https://text.pollinations.ai/$encodedPrompt?system=$encodedSystem&model=openai',
+      );
+      final response = await http
+          .get(pollinationsUrl)
+          .timeout(const Duration(seconds: 12));
+
+      if (response.statusCode == 200) {
+        final bodyText = utf8.decode(response.bodyBytes).trim();
+        if (bodyText.isNotEmpty &&
+            !bodyText.toLowerCase().contains('free limit reached') &&
+            !bodyText.toLowerCase().contains('rate limit')) {
+          return bodyText;
+        }
+      }
+    } catch (e) {
+      debugPrint('[SkaviaAiService Pollinations notice]: $e');
+    }
+
+    // 4. Resilient Grounded Trade & Conversational Intelligence Engine (Zero Latency)
     return _generateGroundedTradeResponse(prompt);
   }
 
@@ -297,6 +321,72 @@ Analyze the user's service requirement in Bangladesh. Return ONLY a valid JSON o
         lower.contains('koto') ||
         lower.contains('ki vabe');
 
+    // 0. Greetings & Casual conversational queries
+    if (lower == 'hi' ||
+        lower == 'hello' ||
+        lower == 'hey' ||
+        lower.contains('kire') ||
+        lower.contains('kemon') ||
+        lower.contains('kemon aso') ||
+        lower.contains('kemon acho') ||
+        lower.contains('salam') ||
+        lower.contains('assalamu') ||
+        lower.contains('ki obostha') ||
+        lower.contains('ki korso')) {
+      if (isBengali) {
+        return 'ওয়ালাইকুমুস সালাম! আমি SKAVIA AI — আলহামদুলিল্লাহ্‌ বেশ ভালো আছি! 😊\n\nআপনার বাসা বা অফিসের কোনো টেকনিক্যাল সার্ভিস (ইলেকট্রিশিয়ান, এসি, প্লাম্বিং, কাঠের কাজ) বা প্রজেক্ট সম্পর্কিত বিষয়ে কি সহযোগিতা করতে পারি? যেকোনো প্রশ্ন নির্দ্বিধায় জিজ্ঞাসা করুন!';
+      } else {
+        return 'Hello! I am SKAVIA AI, feeling great and ready to assist you! 😊\n\nHow can I help you today? Whether you need price estimation, technical diagnostics for AC/Electrical/Plumbing, or verified technicians in Dhaka, I am right here!';
+      }
+    }
+
+    // 0b. Platform Creator & Info
+    if (lower.contains('timon') ||
+        lower.contains('biswas') ||
+        lower.contains('তিমোন') ||
+        lower.contains('creator') ||
+        lower.contains('banise') ||
+        lower.contains('who made')) {
+      return isBengali
+          ? '🌟 **SKAVIA** প্ল্যাটফর্মটি **তিমোন বিশ্বাস (Timon Biswas)** কর্তৃক একক দক্ষতায় সম্পূর্ণ আর্কিটেক্টেড ও ডেভেলপ করা হয়েছে। এটি বাংলাদেশের অন-ডিমান্ড টেকনিক্যাল ওয়ার্কফোর্স ও টার্নকি প্রজেক্ট ব্যবস্থাপনার একটি প্রিমিয়াম প্ল্যাটফর্ম।'
+          : '🌟 **SKAVIA** is envisioned, architected, and built by **Timon Biswas** as a high-integrity on-demand skilled workforce and turnkey project platform for Bangladesh.';
+    }
+
+    // 0c. General Rate Card & Pricing
+    if (lower.contains('rate') ||
+        lower.contains('dam') ||
+        lower.contains('khoroch') ||
+        lower.contains('koto taka') ||
+        lower.contains('price') ||
+        lower.contains('charge') ||
+        lower.contains('খরচ') ||
+        lower.contains('দাম কত')) {
+      if (isBengali) {
+        return '''📊 **SKAVIA অফিসিয়াল রেট কার্ড (ঢাকা মেট্রো):**
+
+1. ⚡ **ইলেকট্রিক্যাল সার্ভিস:**
+   - বেসিক ভিজিট ও ফল্ট ডায়াগনস্টিক: ৳ ৩০০ – ৫০০
+   - গ্যাং সুইচ / পাওয়ার সকেট ফিটিং: ৳ ২০০ – ৩৫০
+   - সার্কিট ব্রেকার / DB মেরামত: ৳ ৮০০ – ১,৫০০
+
+2. ❄️ **এসি (AC) সার্ভিসিং:**
+   - ইনডোর-আউটডোর জেট ওয়াশ: ৳ ৮০০ – ১,২০০
+   - ফ্রিন গ্যাস রিফিল (R32 / R410A): ৳ ২,০০০ – ৩,২০০
+   - কম্প্রেসর ও ক্যাপাসিটর মেরামত: ৳ ১,২০০ – ১,৮০০
+
+3. 🚰 **প্লাম্বিং ও স্যানিটারি:**
+   - পাইপ লিকেজ মেরামত: ৳ ৫০০ – ৮০০
+   - ট্যাপ, শাওয়ার বা কমোড ফিটিং: ৳ ৪০০ – ৭০০
+   - পানির মোটর ও পাম্প ইন্সটলেশন: ৳ ১,০০০ – ১,৮০০
+
+4. 🪚 **সিভিল ও কার্পেন্ট্রি:**
+   - দরজার লক ও হ্যান্ডেল ফিটিং: ৳ ৪০০ – ৬০০
+   - ফার্নিচার মেরামত ও পলিশ: ৳ ১,২০০ – ৩,০০০
+
+🛡️ **১০০% এসক্রো সুরক্ষা:** কাজ সম্পূর্ণ হওয়ার আগে নগদ টাকা দেওয়ার কোনো ঝামেলা নেই। ওটিপি দিয়ে কাজ ভেরিফাই করার পরেই টাকা রিলিজ হয়।''';
+      }
+    }
+
     if (lower.contains('ac') ||
         lower.contains('cool') ||
         lower.contains('গরম') ||
@@ -435,27 +525,11 @@ SKAVIA enables you to assemble agile teams with certified developers, designers,
     }
 
     if (isBengali) {
-      return '''✨ **SKAVIA AI — আপনার বিশ্বস্ত প্রজেক্ট ও ট্রেড সহকারী**
-
-আমি SKAVIA AI। ঢাকা ও সারাদেশে দক্ষ টেকনিশিয়ান (ইলেকট্রিশিয়ান, এসি ইঞ্জিনিয়ার, প্লাম্বার, কার্পেন্টার) এবং আইটি/বিজনেস প্রজেক্টের সমাধান দিতে প্রস্তুত।
-
-💡 **আপনি কী জানতে চান?**
-- এসি, ওয়্যারিং বা প্লাম্বিং সমস্যার সমাধান ও বাজারমূল্য (৳ BDT)
-- বাসা বা অফিসের জন্য প্রজেক্ট টিম গঠন ও বাজেট এস্টিমেশন
-- এসক্রো (Escrow) পেমেন্ট নিরাপত্তা ও ৪-ডিজিট জব ওটিপি ভেরিফিকেশন
-
-আপনার নির্দিষ্ট প্রয়োজন বা সমস্যাটি লিখুন, আমি তৎক্ষণাৎ সমাধান ও সহায়তা প্রদান করছি!''';
+      return 'ধন্যবাদ আপনার মেসেজের জন্য! আমি SKAVIA AI।\n\n'
+          'আপনার বাসা বা অফিসের যেকোনো টেকনিক্যাল সমস্যা (যেমন: এসি কুলিং বা গ্যাস, ইলেকট্রিক ব্রেকার বা ওয়্যারিং, পানির মোটর বা পাইপ লিকেজ, কাঠের কাজ) অথবা যেকোনো কাজের বাজেট জানতে চাইলে বলুন। আমি সঠিক ঢাকা মার্কেট রেট ও সমাধান জানিয়ে দিচ্ছি!';
     } else {
-      return '''✨ **SKAVIA AI — Your Intelligent Trade & Project Assistant**
-
-I am SKAVIA AI, your enterprise copilot for skilled workforce matching and turnkey project execution across Bangladesh.
-
-💡 **How can I assist you today?**
-- Real-time diagnostic guidance and Dhaka rate cards (৳ BDT) for AC, Electrical, Plumbing & Carpentry
-- Project team composition matching for turnkey residential & commercial renovations
-- Safe job transactions backed by 100% Escrow Protection and 4-digit verification OTP
-
-Please describe your technical requirement or question, and I will assist you immediately!''';
+      return 'Thank you for your message! I am SKAVIA AI.\n\n'
+          'I am ready to help you with technical diagnostics, service rate cards in Dhaka (AC, Electrical, Plumbing, Carpentry, IT), or booking certified technicians with 100% Escrow Protection. Please describe your requirement, and I will assist you immediately!';
     }
   }
 }

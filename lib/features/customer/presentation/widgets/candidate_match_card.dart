@@ -32,9 +32,7 @@ class CandidateMatchCard extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
         border: Border.all(
-          color: isTopMatch
-              ? AppColors.accent
-              : colorScheme.outlineVariant,
+          color: isTopMatch ? AppColors.accent : colorScheme.outlineVariant,
           width: isTopMatch ? 2.0 : 1.0,
         ),
         boxShadow: [
@@ -81,7 +79,9 @@ class CandidateMatchCard extends StatelessWidget {
                               ? 'Top Match #${candidate.rankPosition}'
                               : 'Rank #${candidate.rankPosition}',
                           style: AppTypography.caption.copyWith(
-                            color: isTopMatch ? Colors.white : AppColors.primary,
+                            color: isTopMatch
+                                ? Colors.white
+                                : AppColors.primary,
                             fontWeight: FontWeight.w800,
                           ),
                           maxLines: 1,
@@ -253,7 +253,10 @@ class CandidateMatchCard extends StatelessWidget {
                     );
                   },
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 4,
+                    ),
                     side: const BorderSide(color: AppColors.primarySky),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(

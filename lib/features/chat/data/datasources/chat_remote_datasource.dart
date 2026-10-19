@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -27,18 +28,20 @@ class ChatRemoteDataSource {
     // If conversationId is not a valid UUID, Supabase stream will reject it with 22P02.
     // In that case, return a reactive local stream!
     if (!UuidUtil.isValidUuid(conversationId)) {
-      debugPrint('[ChatRemoteDataSource] Non-UUID conversation id "$conversationId", using reactive local stream.');
+      debugPrint(
+        '[ChatRemoteDataSource] Non-UUID conversation id "$conversationId", using reactive local stream.',
+      );
       final controller = StreamController<List<ChatMessageModel>>();
       controller.add(List<ChatMessageModel>.from(localList));
 
       final sub = _optimisticMessageBus.stream
           .where((m) => m.conversationId == conversationId)
           .listen((newMsg) {
-        if (!localList.any((m) => m.messageId == newMsg.messageId)) {
-          localList.add(newMsg);
-        }
-        controller.add(List<ChatMessageModel>.from(localList));
-      });
+            if (!localList.any((m) => m.messageId == newMsg.messageId)) {
+              localList.add(newMsg);
+            }
+            controller.add(List<ChatMessageModel>.from(localList));
+          });
 
       controller.onCancel = () => sub.cancel();
       return controller.stream;
@@ -51,7 +54,9 @@ class ChatRemoteDataSource {
           .eq('conversation_id', conversationId)
           .order('created_at', ascending: true)
           .map((rows) {
-            final remoteMsgs = rows.map((r) => ChatMessageModel.fromJson(r)).toList();
+            final remoteMsgs = rows
+                .map((r) => ChatMessageModel.fromJson(r))
+                .toList();
             // Merge with any local optimistic messages not yet acknowledged by remote
             final combined = List<ChatMessageModel>.from(remoteMsgs);
             final pending = _localMessages[conversationId] ?? [];

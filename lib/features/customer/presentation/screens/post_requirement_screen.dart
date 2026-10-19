@@ -9,6 +9,8 @@ import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../core/services/skavia_ai_service.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/models/category_model.dart';
+import '../widgets/post_requirement_ai_button.dart';
+import '../widgets/post_requirement_deadline_selector.dart';
 import '../widgets/post_requirement_location_budget_picker.dart';
 import '../widgets/post_requirement_stepper.dart';
 import '../widgets/post_requirement_success_dialog.dart';
@@ -348,119 +350,19 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
                       const SizedBox(height: 8),
 
                       // SKAVIA AI Auto-Diagnose Button
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: InkWell(
-                          onTap: _isDiagnosing ? null : _runAiDiagnosis,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryRoyal.withValues(
-                                alpha: 0.1,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: AppColors.primarySky.withValues(
-                                  alpha: 0.4,
-                                ),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (_isDiagnosing)
-                                  const SizedBox(
-                                    width: 12,
-                                    height: 12,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 1.5,
-                                    ),
-                                  )
-                                else
-                                  const Icon(
-                                    Icons.auto_awesome,
-                                    color: AppColors.primaryRoyal,
-                                    size: 14,
-                                  ),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  'Auto-Diagnose with SKAVIA AI',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.primaryRoyal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                      PostRequirementAiButton(
+                        isDiagnosing: _isDiagnosing,
+                        onDiagnose: _runAiDiagnosis,
                       ),
 
                       const SizedBox(height: 16),
 
-                      // Deadline matching Screen 6
-                      const Text(
-                        'Deadline',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate:
-                                _selectedDeadline ??
-                                DateTime.now().add(const Duration(days: 7)),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(
-                              const Duration(days: 365),
-                            ),
-                          );
-                          if (picked != null) {
-                            setState(() => _selectedDeadline = picked);
-                          }
+                      // Deadline Selector
+                      PostRequirementDeadlineSelector(
+                        selectedDeadline: _selectedDeadline,
+                        onDeadlineSelected: (picked) {
+                          setState(() => _selectedDeadline = picked);
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.sheetSurfaceSubtle,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.borderLight),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.calendar_today_outlined,
-                                size: 18,
-                                color: AppColors.textMedium,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                _selectedDeadline != null
-                                    ? '${_selectedDeadline!.day}/${_selectedDeadline!.month}/${_selectedDeadline!.year}'
-                                    : 'Select deadline',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: _selectedDeadline != null
-                                      ? AppColors.textDark
-                                      : AppColors.textMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
 
                       const SizedBox(height: 16),

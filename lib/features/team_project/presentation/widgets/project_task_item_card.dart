@@ -31,13 +31,19 @@ class ProjectTaskItemCard extends StatelessWidget {
 
     if (isCompleted) {
       statusColor = const Color(0xFF10B981);
-      statusBg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.4) : const Color(0xFFECFDF5);
+      statusBg = isDark
+          ? const Color(0xFF064E3B).withValues(alpha: 0.4)
+          : const Color(0xFFECFDF5);
     } else if (isInProgress) {
       statusColor = const Color(0xFF2563EB);
-      statusBg = isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.4) : const Color(0xFFEFF6FF);
+      statusBg = isDark
+          ? const Color(0xFF1E3A8A).withValues(alpha: 0.4)
+          : const Color(0xFFEFF6FF);
     } else {
       statusColor = const Color(0xFFF59E0B);
-      statusBg = isDark ? const Color(0xFF78350F).withValues(alpha: 0.4) : const Color(0xFFFFFBEB);
+      statusBg = isDark
+          ? const Color(0xFF78350F).withValues(alpha: 0.4)
+          : const Color(0xFFFFFBEB);
     }
 
     return Container(

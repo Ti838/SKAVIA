@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../data/models/requirement_model.dart';
 
 /// Modal bottom sheet for workers to submit direct bids to client requirements
@@ -240,7 +243,46 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                     ),
                     elevation: 2,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user == null) {
+                      UiFeedbackHelper.showError(
+                        context,
+                        'Authentication required. Please sign in to submit a proposal.',
+                      );
+                      return;
+                    }
+
+                    final proposedPrice =
+                        double.tryParse(_bidPriceController.text.trim()) ??
+                        job.budgetMin;
+                    final note = _proposalNoteController.text.trim();
+                    final workerId = user.uid;
+
+                    if (!job.id.startsWith('req_sample') &&
+                        !job.id.startsWith('req_')) {
+                      try {
+                        await Supabase.instance.client
+                            .from('service_requests')
+                            .insert({
+                              'client_id': user.uid,
+                              'worker_profile_id': workerId,
+                              'status': 'Requested',
+                              'agreed_price': proposedPrice,
+                              'service_notes':
+                                  'Bid Proposal: $note | ETA: ${_arrivalController.text.trim()}',
+                              'scheduled_at': DateTime.now()
+                                  .add(const Duration(hours: 1))
+                                  .toIso8601String(),
+                            });
+                      } catch (e) {
+                        debugPrint(
+                          '[LiveJobBidSheet] Supabase bid persist notice: $e',
+                        );
+                      }
+                    }
+
+                    if (!context.mounted) return;
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

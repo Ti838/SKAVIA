@@ -26,6 +26,17 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!-- Apple Privacy & Permissions Description Keys -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SKAVIA requires your location to display nearby verified service technicians and calculate dispatch distance.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>SKAVIA uses your location to keep you updated on job arrivals and dispatch tracking.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>SKAVIA needs camera access so you can take and share photos of service issues, completed work, and verification documents.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SKAVIA needs access to your photo library to let you upload job references, portfolio photos, and profile pictures.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>SKAVIA needs microphone access for sending voice messages during service communication.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

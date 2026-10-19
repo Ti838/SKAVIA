@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
+
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../chat/data/datasources/chat_remote_datasource.dart';
 
 /// Worker Profile Screen matching Screen 13 of SKAVIA reference design board.
@@ -148,14 +150,22 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
-                        final currentUserId =
-                            FirebaseAuth.instance.currentUser?.uid ?? 'guest_user';
+                        final currentUid =
+                            FirebaseAuth.instance.currentUser?.uid;
+                        if (currentUid == null) {
+                          UiFeedbackHelper.showError(
+                            context,
+                            'Please sign in to message this specialist.',
+                          );
+                          return;
+                        }
                         final otherId =
                             'worker_${widget.name.replaceAll(' ', '_').toLowerCase()}';
-                        final conv = await ChatRemoteDataSource().getOrCreateConversation(
-                          currentUserId: currentUserId,
-                          otherUserId: otherId,
-                        );
+                        final conv = await ChatRemoteDataSource()
+                            .getOrCreateConversation(
+                              currentUserId: currentUid,
+                              otherUserId: otherId,
+                            );
                         if (context.mounted) {
                           Navigator.pushNamed(
                             context,

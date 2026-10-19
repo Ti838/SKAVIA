@@ -13,7 +13,11 @@ import 'featured_service_pill.dart';
 import 'featured_workers_section.dart';
 import 'hero_banner_card.dart';
 import 'popular_services_section.dart';
+import '../../data/datasources/job_feed_seed_data.dart';
 import '../../data/models/requirement_model.dart';
+import 'feed_composer_prompt_card.dart';
+import 'job_requirement_feed_card.dart';
+import 'post_composer_sheet.dart';
 
 /// Customer Mode Dashboard View (matching Reference Screen 4 architecture)
 class CustomerDashboardView extends StatelessWidget {
@@ -74,10 +78,7 @@ class CustomerDashboardView extends StatelessWidget {
           Expanded(
             child: TextField(
               controller: searchController,
-              style: TextStyle(
-                fontSize: 14,
-                color: colorScheme.onSurface,
-              ),
+              style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
               decoration: InputDecoration(
                 hintText: AppLanguageService.tr('search_hint'),
                 hintStyle: TextStyle(
@@ -121,12 +122,36 @@ class CustomerDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isBn = AppLanguageService.isBengali;
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final feedItems = liveRequirements.isNotEmpty
+        ? liveRequirements.take(3).toList()
+        : JobFeedSeedData.seedJobs.take(3).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 1. Universal Search Bar ("Search services, skills, or people...")
         _buildUniversalSearchBar(context),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
+
+        // 1b. Facebook-Style Post Composer Prompt Card
+        FeedComposerPromptCard(
+          userInitial: (userIdentifier?.isNotEmpty ?? false)
+              ? userIdentifier![0].toUpperCase()
+              : 'U',
+          onOpenComposer: () {
+            PostComposerSheet.show(
+              context,
+              onPostCreated: (_) =>
+                  Navigator.pushNamed(context, AppRoutes.liveJobFeed),
+            );
+          },
+          isBn: isBn,
+        ),
+        const SizedBox(height: 14),
 
         // 2. Hero Banner Card ("Turn Your Ideas Into Reality")
         HeroBannerCard(
@@ -264,104 +289,104 @@ class CustomerDashboardView extends StatelessWidget {
         ),
         const SizedBox(height: 18),
 
-        // Live Marketplace Jobs Feed Banner
-        GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppRoutes.liveJobFeed),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Theme.of(context).colorScheme.surfaceContainerHighest
-                  : AppColors.sheetSurfaceSubtle,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
-            ),
-            child: Row(
+        // 9. Facebook-Style Live Community & Jobs Feed Stream
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.dynamic_feed_rounded,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Theme.of(context).colorScheme.primary
-                        : AppColors.primaryRoyal,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            AppLanguageService.isBengali
-                                ? 'লাইভ কাজের ফিড'
-                                : 'Live Jobs & Requests Feed',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.successGreen.withValues(
-                                alpha: 0.15,
-                              ),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              AppLanguageService.isBengali
-                                  ? '১৮+ সক্রিয়'
-                                  : '18+ Open',
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.successGreen,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        AppLanguageService.isBengali
-                            ? 'সারা দেশের ক্লায়েন্টদের পোস্ট করা কাজ দেখুন ও সরাসরি বিড করুন'
-                            : 'Explore open requirements across Bangladesh and submit direct bids',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
                 Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 14,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Theme.of(context).colorScheme.primary
-                      : AppColors.primaryRoyal,
+                  Icons.dynamic_feed_rounded,
+                  color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isBn ? 'লাইভ সোশ্যাল ও কাজের ফিড' : 'Live Marketplace Feed',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.successGreen.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    isBn ? '১৮+ সক্রিয়' : '18+ Open',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.successGreen,
+                    ),
+                  ),
                 ),
               ],
             ),
+            TextButton.icon(
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.liveJobFeed),
+              icon: Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 13,
+                color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+              ),
+              label: Text(
+                isBn ? 'সম্পূর্ণ ফিড' : 'View All',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+
+        // Stream of interactive Facebook-style feed cards
+        ...feedItems.map(
+          (job) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: JobRequirementFeedCard(
+              job: job,
+              onApply: () =>
+                  Navigator.pushNamed(context, AppRoutes.postRequirement),
+              onMessage: onOpenChat,
+            ),
           ),
         ),
+
+        // Bottom CTA to open full-screen feed
+        Center(
+          child: OutlinedButton.icon(
+            onPressed: () =>
+                Navigator.pushNamed(context, AppRoutes.liveJobFeed),
+            icon: const Icon(Icons.explore_outlined, size: 16),
+            label: Text(
+              isBn
+                  ? 'আরও ১৮+ লাইভ সোশ্যাল পোস্ট ব্রাউজ করুন'
+                  : 'Explore All 18+ Live Marketplace Posts',
+              style: const TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
         const SizedBox(height: 18),
 
         // Turnkey Business & Trust Safety Section

@@ -19,7 +19,7 @@ import '../../features/worker/presentation/screens/portfolio_management_screen.d
 import '../../features/team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../features/team_project/presentation/screens/team_discovery_screen.dart';
 import '../../features/team_project/presentation/screens/project_showcase_screen.dart';
-import '../../features/team_project/presentation/screens/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/screens/admin_dashboard_screen.dart';
 import '../../features/team_project/presentation/screens/task_board_screen.dart';
 import '../../features/team_project/presentation/screens/assign_task_screen.dart';
 import '../../features/team_project/presentation/screens/team_roster_screen.dart';
@@ -36,6 +36,12 @@ import '../../features/billing/presentation/screens/payment_success_screen.dart'
 import '../../features/admin/presentation/screens/verification_queue_screen.dart';
 import '../../features/admin/presentation/screens/dispute_resolution_screen.dart';
 import '../../features/admin/presentation/screens/team_assembly_screen.dart';
+import '../../features/notifications/presentation/screens/notification_center_screen.dart';
+import '../../features/profile/presentation/controllers/profile_controller.dart';
+import '../../features/profile/presentation/screens/edit_detailed_profile_screen.dart';
+import '../../features/profile/presentation/screens/notification_preferences_screen.dart';
+import '../../features/profile/presentation/screens/privacy_security_screen.dart';
+import '../../features/profile/presentation/screens/saved_addresses_screen.dart';
 import 'app_routes.dart';
 
 abstract class AppRouter {
@@ -303,6 +309,40 @@ abstract class AppRouter {
 
       case AppRoutes.appShell:
         return MaterialPageRoute(builder: (_) => const MainScaffoldScreen());
+
+      case AppRoutes.editDetailedProfile:
+        final controller =
+            (settings.arguments as ProfileController?) ?? ProfileController();
+        return MaterialPageRoute(
+          builder: (_) => EditDetailedProfileScreen(controller: controller),
+        );
+
+      case AppRoutes.savedAddresses:
+        final controller =
+            (settings.arguments as ProfileController?) ?? ProfileController();
+        return MaterialPageRoute(
+          builder: (_) => SavedAddressesScreen(controller: controller),
+        );
+
+      case AppRoutes.notificationPreferences:
+        final controller =
+            (settings.arguments as ProfileController?) ?? ProfileController();
+        return MaterialPageRoute(
+          builder: (_) =>
+              NotificationPreferencesScreen(controller: controller),
+        );
+
+      case AppRoutes.privacySecurity:
+        final controller =
+            (settings.arguments as ProfileController?) ?? ProfileController();
+        return MaterialPageRoute(
+          builder: (_) => PrivacySecurityScreen(controller: controller),
+        );
+
+      case AppRoutes.notificationCenter:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationCenterScreen(),
+        );
 
       default:
         return MaterialPageRoute(

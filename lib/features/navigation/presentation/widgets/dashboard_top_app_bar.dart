@@ -210,7 +210,7 @@ class DashboardTopAppBar extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
 
-                // Mode Switcher Pill (Customer | Worker)
+                // Mode Switcher Pill (Customer | Business | Worker)
                 Container(
                   height: 28,
                   padding: const EdgeInsets.all(2),
@@ -222,10 +222,11 @@ class DashboardTopAppBar extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // 1. Client
                       GestureDetector(
                         onTap: () => onModeSwitch(AppRoleMode.customer),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.customer
                                 ? (isDark
@@ -247,15 +248,42 @@ class DashboardTopAppBar extends StatelessWidget {
                           ),
                         ),
                       ),
+                      // 2. Business / Corporate
+                      GestureDetector(
+                        onTap: () => onModeSwitch(AppRoleMode.enterprise),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
+                          decoration: BoxDecoration(
+                            color: currentMode == AppRoleMode.enterprise
+                                ? (isDark
+                                      ? colorScheme.primary
+                                      : AppColors.successGreen)
+                                : Colors.transparent,
+                            borderRadius: AppDimensions.roundedPill,
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            AppLanguageService.tr('business'),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: currentMode == AppRoleMode.enterprise
+                                  ? Colors.white
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // 3. Worker
                       GestureDetector(
                         onTap: () => onModeSwitch(AppRoleMode.worker),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 7),
                           decoration: BoxDecoration(
                             color: currentMode == AppRoleMode.worker
                                 ? (isDark
                                       ? colorScheme.primary
-                                      : AppColors.primaryRoyal)
+                                      : AppColors.accent)
                                 : Colors.transparent,
                             borderRadius: AppDimensions.roundedPill,
                           ),
@@ -273,6 +301,45 @@ class DashboardTopAppBar extends StatelessWidget {
                         ),
                       ),
                     ],
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // Live Feed Shortcut Pill
+                GestureDetector(
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.liveJobFeed),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: pillBg,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: pillBorder),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.dynamic_feed_rounded,
+                          size: 11,
+                          color: isDark
+                              ? colorScheme.primary
+                              : AppColors.primaryRoyal,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isBn ? 'ফিড' : 'Feed',
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 6),

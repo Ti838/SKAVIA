@@ -54,7 +54,9 @@ class CategoryListTile extends StatelessWidget {
           color: colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : colorScheme.outlineVariant,
+            color: isSelected
+                ? AppColors.primaryRoyal
+                : colorScheme.outlineVariant,
             width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: [

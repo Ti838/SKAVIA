@@ -94,7 +94,10 @@ class DashboardLocationSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'SKAVIA dispatches verified local technicians across Dhaka metropolitan zones.',
-                style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 16),
 

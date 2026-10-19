@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../data/models/service_model.dart';
 import '../controllers/catalog_controller.dart';
+import '../widgets/catalog_filter_pill.dart';
+import '../widgets/catalog_search_bar.dart';
 import '../widgets/catalog_service_card.dart';
 import '../widgets/catalog_service_detail_sheet.dart';
 import '../widgets/category_list_tile.dart';
@@ -99,59 +100,13 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
             ),
 
             // Search Bar Area matching Screen 5
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? colorScheme.surfaceContainerHighest
-                      : AppColors.sheetSurfaceSubtle,
-                  borderRadius: AppDimensions.roundedPill,
-                  border: Border.all(color: colorScheme.outlineVariant),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (val) => _controller.search(val),
-                  style: TextStyle(
-                    fontFamily: AppTypography.bodyFont,
-                    fontSize: 14,
-                    color: colorScheme.onSurface,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: AppLanguageService.tr('search_service_hint'),
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: colorScheme.onSurfaceVariant,
-                      size: 20,
-                    ),
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.close_rounded,
-                              size: 20,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            onPressed: () {
-                              _searchController.clear();
-                              _controller.clearSearch();
-                            },
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    disabledBorder: InputBorder.none,
-                    filled: false,
-                    fillColor: Colors.transparent,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
-              ),
+            CatalogSearchBar(
+              controller: _searchController,
+              onChanged: (val) => _controller.search(val),
+              onClear: () {
+                _searchController.clear();
+                _controller.clearSearch();
+              },
             ),
 
             // Content Area
@@ -185,14 +140,16 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                 horizontal: 20,
                               ),
                               children: [
-                                _buildFilterPill(
+                                CatalogFilterPill(
                                   id: 'all',
                                   label: AppLanguageService.tr('all_services'),
                                   isSelected:
                                       _controller.selectedCategoryId == 'all',
+                                  onSelected: (id) =>
+                                      _controller.filterByCategory(id),
                                 ),
                                 ..._controller.categories.map((cat) {
-                                  return _buildFilterPill(
+                                  return CatalogFilterPill(
                                     id: cat.categoryId,
                                     label: AppLanguageService.getCategoryName(
                                       cat.slug,
@@ -201,6 +158,8 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                     isSelected:
                                         _controller.selectedCategoryId ==
                                         cat.categoryId,
+                                    onSelected: (id) =>
+                                        _controller.filterByCategory(id),
                                   );
                                 }),
                               ],
@@ -235,7 +194,9 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
-                                        color: isDark ? colorScheme.primary : AppColors.primarySky,
+                                        color: isDark
+                                            ? colorScheme.primary
+                                            : AppColors.primarySky,
                                       ),
                                     ),
                                   ),
@@ -259,9 +220,8 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                   Icon(
                                     Icons.search_off_rounded,
                                     size: 64,
-                                    color: colorScheme.onSurfaceVariant.withValues(
-                                      alpha: 0.5,
-                                    ),
+                                    color: colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.5),
                                   ),
                                   const SizedBox(height: 14),
                                   Text(
@@ -352,58 +312,6 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String id,
-    required String label,
-    required bool isSelected,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final colorScheme = theme.colorScheme;
-
-    final unselectedBg = isDark
-        ? colorScheme.surfaceContainerHighest
-        : Colors.white;
-    final unselectedBorder = colorScheme.outlineVariant;
-    final unselectedText = colorScheme.onSurface;
-
-    return GestureDetector(
-      onTap: () => _controller.filterByCategory(id),
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryRoyal : unselectedBg,
-          borderRadius: AppDimensions.roundedPill,
-          border: Border.all(
-            color: isSelected ? AppColors.primaryRoyal : unselectedBorder,
-            width: 1.2,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryRoyal.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontFamily: AppTypography.bodyFont,
-              fontSize: 12.5,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected ? Colors.white : unselectedText,
-            ),
-          ),
         ),
       ),
     );

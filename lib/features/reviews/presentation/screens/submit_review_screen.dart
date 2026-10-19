@@ -6,6 +6,9 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/review_remote_datasource.dart';
+import '../widgets/review_compliments_section.dart';
+import '../widgets/review_rating_selector.dart';
+import '../widgets/review_worker_card.dart';
 
 class SubmitReviewScreen extends StatefulWidget {
   final String workerProfileId;
@@ -142,23 +145,6 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
     }
   }
 
-  String _getRatingLabel(int r) {
-    switch (r) {
-      case 5:
-        return 'Outstanding & Flawless';
-      case 4:
-        return 'Very Good & Professional';
-      case 3:
-        return 'Satisfactory Work';
-      case 2:
-        return 'Needs Improvement';
-      case 1:
-        return 'Unsatisfactory Experience';
-      default:
-        return '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,191 +185,34 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   // Worker profile summary card
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.sheetSurfaceSubtle,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.borderLight),
-                    ),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: AppColors.primarySky.withValues(
-                            alpha: 0.15,
-                          ),
-                          backgroundImage: widget.workerAvatar != null
-                              ? NetworkImage(widget.workerAvatar!)
-                              : null,
-                          child: widget.workerAvatar == null
-                              ? Text(
-                                  widget.workerName.isNotEmpty
-                                      ? widget.workerName[0].toUpperCase()
-                                      : 'W',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primaryRoyal,
-                                  ),
-                                )
-                              : null,
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.workerName,
-                                style: const TextStyle(
-                                  fontFamily: AppTypography.headingFont,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.successGreen.withValues(
-                                    alpha: 0.12,
-                                  ),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.check_circle_rounded,
-                                      size: 12,
-                                      color: AppColors.successGreen,
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'Service Completed',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.successGreen,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  ReviewWorkerCard(
+                    workerName: widget.workerName,
+                    workerAvatar: widget.workerAvatar,
                   ),
 
                   const SizedBox(height: 28),
 
                   // Rating Section
-                  const Text(
-                    'How was your service experience?',
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Interactive Star Selector
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(5, (index) {
-                      final starValue = index + 1;
-                      return GestureDetector(
-                        onTap: () => setState(() => _rating = starValue),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            starValue <= _rating
-                                ? Icons.star_rounded
-                                : Icons.star_outline_rounded,
-                            size: 42,
-                            color: starValue <= _rating
-                                ? AppColors.warningAmber
-                                : AppColors.textMuted,
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 8),
-
-                  Text(
-                    _getRatingLabel(_rating),
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.primarySky,
-                    ),
+                  ReviewRatingSelector(
+                    rating: _rating,
+                    onRatingChanged: (val) => setState(() => _rating = val),
                   ),
 
                   const SizedBox(height: 28),
 
                   // Compliments / Tags
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'What stood out the most?',
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _complimentTags.map((tag) {
-                      final isSelected = _selectedCompliments.contains(tag);
-                      return FilterChip(
-                        label: Text(tag),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          setState(() {
-                            if (selected) {
-                              _selectedCompliments.add(tag);
-                            } else {
-                              _selectedCompliments.remove(tag);
-                            }
-                          });
-                        },
-                        selectedColor: AppColors.cardBlueTint,
-                        checkmarkColor: AppColors.primarySky,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                          color: isSelected
-                              ? AppColors.primarySky
-                              : AppColors.textDark,
-                        ),
-                        backgroundColor: AppColors.sheetSurfaceSubtle,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.primarySky
-                                : AppColors.borderLight,
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                  ReviewComplimentsSection(
+                    availableTags: _complimentTags,
+                    selectedTags: _selectedCompliments,
+                    onTagToggled: (tag) {
+                      setState(() {
+                        if (_selectedCompliments.contains(tag)) {
+                          _selectedCompliments.remove(tag);
+                        } else {
+                          _selectedCompliments.add(tag);
+                        }
+                      });
+                    },
                   ),
 
                   const SizedBox(height: 24),

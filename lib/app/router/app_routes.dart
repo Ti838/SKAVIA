@@ -42,4 +42,11 @@ abstract class AppRoutes {
   static const String teamAssembly = '/team-assembly';
 
   static const String appShell = '/app';
+
+  // Profile Lifecycle & Notifications
+  static const String editDetailedProfile = '/edit-detailed-profile';
+  static const String savedAddresses = '/saved-addresses';
+  static const String notificationPreferences = '/notification-preferences';
+  static const String privacySecurity = '/privacy-security';
+  static const String notificationCenter = '/notifications';
 }

@@ -5,6 +5,9 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../widgets/booking_timeline_step.dart';
+import '../widgets/job_otp_banner_card.dart';
+import '../widgets/timeline_worker_card.dart';
 
 /// Live booking timeline screen showing real-time service lifecycle and anti-fraud Job OTP.
 /// Aligned with SRS Section 3.1.E (FR-H03 - FR-H05) and Section 3.1.Q.
@@ -17,6 +20,7 @@ class BookingTimelineScreen extends StatefulWidget {
   final double totalPrice;
   final String jobOtp;
   final String address;
+  final String? workerPhone;
 
   const BookingTimelineScreen({
     super.key,
@@ -28,6 +32,7 @@ class BookingTimelineScreen extends StatefulWidget {
     required this.totalPrice,
     required this.jobOtp,
     required this.address,
+    this.workerPhone,
   });
 
   @override
@@ -68,80 +73,7 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
       body: Column(
         children: [
           // Header Job OTP Security Card
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingLarge,
-              vertical: AppDimensions.paddingSmall,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.lock_clock_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.paddingMedium),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Completion Job OTP (Secret)',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          widget.jobOtp,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 4.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Anti-Fraud',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          JobOtpBannerCard(jobOtp: widget.jobOtp),
           const SizedBox(height: AppDimensions.paddingSmall),
 
           // Main 32dp Curved White Content Sheet
@@ -158,91 +90,11 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Worker Summary Card
-                    Container(
-                      padding: const EdgeInsets.all(
-                        AppDimensions.paddingMedium,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(
-                          AppDimensions.radiusLarge,
-                        ),
-                        border: Border.all(
-                          color: Colors.black.withValues(alpha: 0.06),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.03),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundColor: AppColors.primary.withValues(
-                              alpha: 0.1,
-                            ),
-                            child: const Icon(
-                              Icons.person,
-                              color: AppColors.primary,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: AppDimensions.paddingMedium),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.workerName,
-                                  style: AppTypography.titleMedium.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  widget.tradeTitle,
-                                  style: AppTypography.bodySmall.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.phone_in_talk_rounded,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Calling specialist via encrypted SKAVIA VoIP...',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              color: AppColors.primary,
-                            ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Opening live in-app messaging channel...',
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
+                    TimelineWorkerCard(
+                      workerName: widget.workerName,
+                      tradeTitle: widget.tradeTitle,
+                      requestId: widget.requestId,
+                      workerPhone: widget.workerPhone,
                     ),
                     const SizedBox(height: AppDimensions.paddingLarge),
 
@@ -255,28 +107,32 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
                     ),
                     const SizedBox(height: AppDimensions.paddingMedium),
 
-                    _buildTimelineStep(
+                    BookingTimelineStep(
                       stepIndex: 0,
+                      currentStep: _currentStep,
                       title: '1. Request Dispatched',
                       subtitle:
                           'Sent to matched specialist on ${widget.scheduledSlot}',
                       icon: Icons.send_rounded,
                     ),
-                    _buildTimelineStep(
+                    BookingTimelineStep(
                       stepIndex: 1,
+                      currentStep: _currentStep,
                       title: '2. Request Accepted',
                       subtitle:
                           '${widget.workerName} accepted and is preparing tools',
                       icon: Icons.check_circle_rounded,
                     ),
-                    _buildTimelineStep(
+                    BookingTimelineStep(
                       stepIndex: 2,
+                      currentStep: _currentStep,
                       title: '3. Specialist On Site / In Progress',
                       subtitle: 'Active labor at ${widget.address}',
                       icon: Icons.handyman_rounded,
                     ),
-                    _buildTimelineStep(
+                    BookingTimelineStep(
                       stepIndex: 3,
+                      currentStep: _currentStep,
                       title: '4. Service Completed & Verified',
                       subtitle: 'Job OTP verified, escrow payment released',
                       icon: Icons.task_alt_rounded,
@@ -377,80 +233,6 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildTimelineStep({
-    required int stepIndex,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    bool isLast = false,
-  }) {
-    final isDone = _currentStep >= stepIndex;
-    final isCurrent = _currentStep == stepIndex;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: isDone
-                    ? (isCurrent ? AppColors.accent : AppColors.primary)
-                    : Colors.black.withValues(alpha: 0.05),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isDone ? Colors.white : AppColors.textDisabled,
-                size: 18,
-              ),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 48,
-                color: isDone
-                    ? AppColors.primary
-                    : Colors.black.withValues(alpha: 0.1),
-              ),
-          ],
-        ),
-        const SizedBox(width: AppDimensions.paddingMedium),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.titleSmall.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: isDone
-                        ? AppColors.textPrimary
-                        : AppColors.textDisabled,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: isDone
-                        ? AppColors.textSecondary
-                        : AppColors.textDisabled,
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

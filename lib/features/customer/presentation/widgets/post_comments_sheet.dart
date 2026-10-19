@@ -12,11 +12,7 @@ class PostCommentsSheet extends StatefulWidget {
   final JobRequirementItem job;
   final VoidCallback? onCommentAdded;
 
-  const PostCommentsSheet({
-    super.key,
-    required this.job,
-    this.onCommentAdded,
-  });
+  const PostCommentsSheet({super.key, required this.job, this.onCommentAdded});
 
   static void show(
     BuildContext context, {
@@ -27,10 +23,8 @@ class PostCommentsSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => PostCommentsSheet(
-        job: job,
-        onCommentAdded: onCommentAdded,
-      ),
+      builder: (ctx) =>
+          PostCommentsSheet(job: job, onCommentAdded: onCommentAdded),
     );
   }
 
@@ -63,7 +57,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
     try {
       final res = await Supabase.instance.client
           .from('messages')
-          .select('message_id, sender_id, message_text, created_at, users(full_name)')
+          .select(
+            'message_id, sender_id, message_text, created_at, users(full_name)',
+          )
           .eq('conversation_id', widget.job.id)
           .order('created_at', ascending: true)
           .limit(50);
@@ -109,7 +105,8 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
     }
 
     setState(() => _isSending = true);
-    final userName = user.displayName ?? user.email?.split('@').first ?? 'Member';
+    final userName =
+        user.displayName ?? user.email?.split('@').first ?? 'Member';
 
     // Optimistically add to UI
     setState(() {
@@ -195,7 +192,10 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close_rounded, color: colorScheme.onSurfaceVariant),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -208,89 +208,95 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _comments.isEmpty
-                      ? Center(
-                          child: Text(
-                            isBn
-                                ? 'এখনও কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!'
-                                : 'No comments yet. Be the first to inquire!',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: colorScheme.onSurfaceVariant,
+                  ? Center(
+                      child: Text(
+                        isBn
+                            ? 'এখনও কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!'
+                            : 'No comments yet. Be the first to inquire!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
+                      itemCount: _comments.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 14),
+                      itemBuilder: (context, idx) {
+                        final c = _comments[idx];
+                        return Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: AppColors.primarySky.withValues(
+                                alpha: 0.15,
+                              ),
+                              child: Text(
+                                (c['author'] as String).isNotEmpty
+                                    ? (c['author'] as String)[0].toUpperCase()
+                                    : 'U',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primaryRoyal,
+                                  fontSize: 12,
+                                ),
+                              ),
                             ),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
-                          itemCount: _comments.length,
-                          separatorBuilder: (_, _) => const SizedBox(height: 14),
-                          itemBuilder: (context, idx) {
-                            final c = _comments[idx];
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: AppColors.primarySky.withValues(alpha: 0.15),
-                                  child: Text(
-                                    (c['author'] as String).isNotEmpty
-                                        ? (c['author'] as String)[0].toUpperCase()
-                                        : 'U',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.primaryRoyal,
-                                      fontSize: 12,
-                                    ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: colorScheme.outlineVariant,
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(color: colorScheme.outlineVariant),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              c['author'] as String,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: colorScheme.onSurface,
-                                              ),
-                                            ),
-                                            Text(
-                                              c['time'] as String,
-                                              style: TextStyle(
-                                                fontSize: 10,
-                                                color: colorScheme.onSurfaceVariant,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 4),
                                         Text(
-                                          c['body'] as String,
+                                          c['author'] as String,
                                           style: TextStyle(
                                             fontSize: 12,
+                                            fontWeight: FontWeight.w700,
                                             color: colorScheme.onSurface,
-                                            height: 1.35,
+                                          ),
+                                        ),
+                                        Text(
+                                          c['time'] as String,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: colorScheme.onSurfaceVariant,
                                           ),
                                         ),
                                       ],
                                     ),
-                                  ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      c['body'] as String,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: colorScheme.onSurface,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            );
-                          },
-                        ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
             ),
 
             // Comment Input Field
@@ -298,7 +304,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
               padding: EdgeInsets.fromLTRB(16, 10, 16, 12 + bottomInset),
               decoration: BoxDecoration(
                 color: colorScheme.surface,
-                border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
+                border: Border(
+                  top: BorderSide(color: colorScheme.outlineVariant),
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
@@ -318,10 +326,18 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
                         controller: _commentController,
-                        style: TextStyle(fontSize: 13, color: colorScheme.onSurface),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colorScheme.onSurface,
+                        ),
                         decoration: InputDecoration(
-                          hintText: isBn ? 'একটি প্রশ্ন বা প্রস্তাব লিখুন...' : 'Write an inquiry or comment...',
-                          hintStyle: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
+                          hintText: isBn
+                              ? 'একটি প্রশ্ন বা প্রস্তাব লিখুন...'
+                              : 'Write an inquiry or comment...',
+                          hintStyle: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                           border: InputBorder.none,
                         ),
                         onSubmitted: (_) => _sendComment(),
@@ -336,7 +352,10 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(Icons.send_rounded, color: AppColors.primaryRoyal),
+                        : const Icon(
+                            Icons.send_rounded,
+                            color: AppColors.primaryRoyal,
+                          ),
                     onPressed: _sendComment,
                   ),
                 ],

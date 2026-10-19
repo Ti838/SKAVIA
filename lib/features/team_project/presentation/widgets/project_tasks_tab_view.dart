@@ -96,7 +96,9 @@ class ProjectTasksTabView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? colorScheme.surfaceContainerHighest : const Color(0xFFEFF6FF))
+              ? (isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : const Color(0xFFEFF6FF))
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(

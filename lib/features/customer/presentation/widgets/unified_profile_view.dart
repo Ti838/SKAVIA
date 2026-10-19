@@ -4,12 +4,16 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
+import '../../../navigation/presentation/screens/main_scaffold_screen.dart';
+import '../../../profile/data/models/user_profile_model.dart';
+import '../../../profile/domain/services/profile_completion_engine.dart';
+import '../../../profile/presentation/widgets/profile_completion_banner_card.dart';
 
 /// Screen 16 Complete Unified Profile View with 3 stats and menu tiles
 class UnifiedProfileView extends StatelessWidget {
   final AuthController authController;
   final String? customAvatarUrl;
-  final bool isCustomerMode;
+  final AppRoleMode currentMode;
   final VoidCallback onAvatarPick;
   final VoidCallback onOpenSettings;
   final VoidCallback onOpenServices;
@@ -22,7 +26,7 @@ class UnifiedProfileView extends StatelessWidget {
     super.key,
     required this.authController,
     this.customAvatarUrl,
-    required this.isCustomerMode,
+    required this.currentMode,
     required this.onAvatarPick,
     required this.onOpenSettings,
     required this.onOpenServices,
@@ -31,6 +35,8 @@ class UnifiedProfileView extends StatelessWidget {
     required this.onSwitchRole,
     required this.onLogout,
   });
+
+  bool get isCustomerMode => currentMode == AppRoleMode.customer;
 
   @override
   Widget build(BuildContext context) {
@@ -120,9 +126,17 @@ class UnifiedProfileView extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Text(
-              isCustomerMode ? 'Customer' : 'Worker',
-              style: const TextStyle(
-                color: AppColors.primaryRoyal,
+              currentMode == AppRoleMode.worker
+                  ? (AppLanguageService.isBengali ? 'দক্ষ কারিগর' : 'Specialist Worker')
+                  : (currentMode == AppRoleMode.enterprise
+                        ? (AppLanguageService.isBengali ? 'কর্পোরেট ক্লায়েন্ট' : 'Corporate Client')
+                        : (AppLanguageService.isBengali ? 'ব্যক্তিগত গ্রাহক' : 'Individual Customer')),
+              style: TextStyle(
+                color: currentMode == AppRoleMode.worker
+                    ? AppColors.accent
+                    : (currentMode == AppRoleMode.enterprise
+                          ? AppColors.successGreen
+                          : AppColors.primaryRoyal),
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
@@ -149,22 +163,74 @@ class UnifiedProfileView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildProfileStatColumn(context, '3', 'Services'),
-                Container(height: 32, width: 1, color: colorScheme.outlineVariant),
+                Container(
+                  height: 32,
+                  width: 1,
+                  color: colorScheme.outlineVariant,
+                ),
                 _buildProfileStatColumn(context, '2', 'Projects'),
-                Container(height: 32, width: 1, color: colorScheme.outlineVariant),
+                Container(
+                  height: 32,
+                  width: 1,
+                  color: colorScheme.outlineVariant,
+                ),
                 _buildProfileStatColumn(context, '4.8', 'Rating'),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+
+          // Profile Strength & Dynamic Completion Intelligence Banner
+          Builder(
+            builder: (context) {
+              final result = ProfileCompletionEngine.evaluate(
+                UserProfileModel(
+                  id: user?.uid ?? 'guest',
+                  email: user?.email ?? '',
+                  fullName: user?.displayName ?? 'SKAVIA Member',
+                  avatarUrl: customAvatarUrl,
+                  phone: user?.phoneNumber,
+                ),
+              );
+              return ProfileCompletionBannerCard(result: result);
+            },
+          ),
+          const SizedBox(height: 16),
 
           // Screen 16 Menu Items
           _buildProfileTile(
             context: context,
             icon: Icons.edit_outlined,
-            title: 'Edit Profile',
-            subtitle: 'Update your name and photo',
-            onTap: onAvatarPick,
+            title: 'Edit Personal Details',
+            subtitle: 'Update your name, birthday & emergency contact',
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.editDetailedProfile),
+          ),
+          const SizedBox(height: 8),
+          _buildProfileTile(
+            context: context,
+            icon: Icons.location_on_outlined,
+            title: 'Saved Delivery Addresses',
+            subtitle: 'Manage home, office and dispatch locations',
+            onTap: () => Navigator.pushNamed(context, AppRoutes.savedAddresses),
+          ),
+          const SizedBox(height: 8),
+          _buildProfileTile(
+            context: context,
+            icon: Icons.notifications_none_rounded,
+            title: 'Notification Preferences',
+            subtitle: 'Push alerts, SMS text, email receipts & gifts',
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.notificationPreferences),
+          ),
+          const SizedBox(height: 8),
+          _buildProfileTile(
+            context: context,
+            icon: Icons.shield_outlined,
+            title: 'Privacy & Security',
+            subtitle: 'Device sessions, data consent & account controls',
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.privacySecurity),
           ),
           const SizedBox(height: 8),
           _buildProfileTile(
@@ -213,7 +279,8 @@ class UnifiedProfileView extends StatelessWidget {
               icon: Icons.workspace_premium_outlined,
               title: 'Worker Reputation & Badges',
               subtitle: 'View your verified rating, trust tier & reviews',
-              onTap: () => Navigator.pushNamed(context, AppRoutes.workerReputation),
+              onTap: () =>
+                  Navigator.pushNamed(context, AppRoutes.workerReputation),
             ),
           ],
           const SizedBox(height: 16),
@@ -222,10 +289,10 @@ class UnifiedProfileView extends StatelessWidget {
           _buildProfileTile(
             context: context,
             icon: Icons.swap_horiz_rounded,
-            title: isCustomerMode
-                ? AppLanguageService.tr('switch_to_worker')
-                : 'Switch to Customer Mode',
-            subtitle: 'Toggle between client and worker tools',
+            title: AppLanguageService.tr('switch_mode'),
+            subtitle: AppLanguageService.isBengali
+                ? 'ব্যক্তিগত, কর্পোরেট ও কারিগর মোড পরিবর্তন করুন'
+                : 'Toggle between Customer, Business and Specialist modes',
             onTap: onSwitchRole,
           ),
           const SizedBox(height: 24),
@@ -257,7 +324,11 @@ class UnifiedProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileStatColumn(BuildContext context, String value, String label) {
+  Widget _buildProfileStatColumn(
+    BuildContext context,
+    String value,
+    String label,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
@@ -361,7 +432,9 @@ class UnifiedProfileView extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios_rounded,
               size: 12,
-              color: isDestructive ? AppColors.errorRed : colorScheme.onSurfaceVariant,
+              color: isDestructive
+                  ? AppColors.errorRed
+                  : colorScheme.onSurfaceVariant,
             ),
           ],
         ),

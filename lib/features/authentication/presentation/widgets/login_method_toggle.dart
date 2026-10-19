@@ -43,7 +43,9 @@ class LoginMethodToggle extends StatelessWidget {
                   boxShadow: selectedIndex == 0
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.25 : 0.06,
+                            ),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),
@@ -79,7 +81,9 @@ class LoginMethodToggle extends StatelessWidget {
                   boxShadow: selectedIndex == 1
                       ? [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0.25 : 0.06,
+                            ),
                             blurRadius: 6,
                             offset: const Offset(0, 2),
                           ),

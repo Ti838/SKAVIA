@@ -8,24 +8,25 @@ import '../../../../core/services/location_service.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../customer/presentation/screens/category_catalog_screen.dart';
+import '../../../customer/presentation/screens/live_job_feed_screen.dart';
 import '../../../customer/presentation/widgets/account_deletion_dialog.dart';
 import '../../../customer/presentation/widgets/avatar_picker_sheet.dart';
-import '../../../customer/data/models/requirement_model.dart';
 import '../../../customer/presentation/widgets/customer_dashboard_view.dart';
 import '../../../customer/presentation/widgets/dashboard_location_sheet.dart';
-import '../../../customer/presentation/widgets/dashboard_notifications_sheet.dart';
 import '../../../customer/presentation/widgets/job_otp_dialog.dart';
 import '../../../customer/presentation/widgets/quick_booking_sheet.dart';
 import '../../../customer/presentation/widgets/unified_profile_view.dart';
 import '../../../team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../../worker/presentation/screens/incoming_requests_screen.dart';
 import '../../../worker/presentation/widgets/worker_dashboard_view.dart';
+import '../../../../shared/widgets/offline_sync_banner.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import '../widgets/dashboard_bottom_nav_bar.dart';
 import '../widgets/dashboard_settings_sheet.dart';
 import '../widgets/dashboard_top_app_bar.dart';
+import '../widgets/role_switch_bottom_sheet.dart';
 
-enum AppRoleMode { customer, worker }
+enum AppRoleMode { customer, enterprise, worker }
 
 class MainScaffoldScreen extends StatefulWidget {
   const MainScaffoldScreen({super.key});
@@ -67,12 +68,33 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
 
   // Notifications State
   bool _hasUnreadNotifications = false;
+  bool _initializedFromArgs = false;
 
   @override
   void initState() {
     super.initState();
     _initRealTimeLocation();
     _loadDashboardData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initializedFromArgs) {
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final modeStr = args?['initialMode']?.toString().toLowerCase();
+      if (modeStr != null) {
+        if (modeStr == 'worker') {
+          _currentMode = AppRoleMode.worker;
+        } else if (modeStr == 'enterprise' || modeStr == 'business') {
+          _currentMode = AppRoleMode.enterprise;
+        } else {
+          _currentMode = AppRoleMode.customer;
+        }
+      }
+      _initializedFromArgs = true;
+    }
   }
 
   @override
@@ -127,7 +149,9 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
             final modeStr = userRecord['active_mode']?.toString().toLowerCase();
             if (modeStr == 'worker') {
               _currentMode = AppRoleMode.worker;
-            } else if (modeStr == 'client') {
+            } else if (modeStr == 'enterprise' || modeStr == 'business') {
+              _currentMode = AppRoleMode.enterprise;
+            } else if (modeStr == 'client' || modeStr == 'customer') {
               _currentMode = AppRoleMode.customer;
             }
             if (userRecord['location'] != null &&
@@ -147,17 +171,17 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     } catch (_) {}
   }
 
-  /// Switch between Client and Worker mode
+  /// Switch between Customer, Enterprise and Worker mode
   void _switchMode(AppRoleMode mode) {
     setState(() => _currentMode = mode);
     _loadDashboardData();
 
     final user = _authController.user;
     if (user != null) {
-      _dashboardRepository.updateActiveMode(
-        user.uid,
-        mode == AppRoleMode.customer ? 'client' : 'worker',
-      );
+      final modeStr = mode == AppRoleMode.worker
+          ? 'worker'
+          : (mode == AppRoleMode.enterprise ? 'enterprise' : 'customer');
+      _dashboardRepository.updateActiveMode(user.uid, modeStr);
     }
   }
 
@@ -220,15 +244,6 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     JobOtpDialog.show(context, bookingId: bookingId, otpCode: otpCode);
   }
 
-  void _showNotificationsSheet() {
-    DashboardNotificationsSheet.show(
-      context,
-      locationZone: _currentLocationZone,
-      hasUnread: _hasUnreadNotifications,
-      onMarkAllRead: () => setState(() => _hasUnreadNotifications = false),
-    );
-  }
-
   void _showQuickBookingSheet(
     String serviceName,
     String categoryId,
@@ -283,6 +298,9 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   Widget _buildCurrentTabContent() {
     switch (_navIndex) {
       case 0:
+        if (_currentMode == AppRoleMode.enterprise) {
+          return const ProjectDashboardScreen();
+        }
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
@@ -330,24 +348,30 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       case 2:
         return const ChatListScreen(isTab: true);
       case 3:
-        return const ProjectDashboardScreen();
+        if (_currentMode == AppRoleMode.customer) {
+          return const LiveJobFeedScreen(isTab: true);
+        } else {
+          return const ProjectDashboardScreen();
+        }
       case 4:
         return UnifiedProfileView(
           authController: _authController,
           customAvatarUrl: _customAvatarUrl,
-          isCustomerMode: _currentMode == AppRoleMode.customer,
+          currentMode: _currentMode,
           onAvatarPick: _showAvatarPickerModal,
           onOpenSettings: _showSettingsModal,
           onOpenServices: () => setState(() => _navIndex = 1),
           onOpenProjects: () => setState(() => _navIndex = 3),
           onCallHelpline: _callHelpline,
           onSwitchRole: () {
-            _switchMode(
-              _currentMode == AppRoleMode.customer
-                  ? AppRoleMode.worker
-                  : AppRoleMode.customer,
+            RoleSwitchBottomSheet.show(
+              context,
+              currentMode: _currentMode,
+              onRoleSelected: (newMode) {
+                _switchMode(newMode);
+                setState(() => _navIndex = 0);
+              },
             );
-            setState(() => _navIndex = 0);
           },
           onLogout: _handleLogout,
         );
@@ -402,12 +426,16 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                   isGpsVerified: _isGpsVerified,
                   currentMode: _currentMode,
                   onAvatarTap: () => setState(() => _navIndex = 4),
-                  onNotificationsTap: _showNotificationsSheet,
+                  onNotificationsTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.notificationCenter),
                   onLocationTap: _showLocationPickerSheet,
                   onModeSwitch: _switchMode,
                 ),
 
-                // 2. Tab Content View
+                // 2. Real-time Offline Connectivity & Synchronization Banner
+                const OfflineSyncBanner(),
+
+                // 3. Tab Content View
                 Expanded(child: _buildCurrentTabContent()),
               ],
             ),

@@ -48,10 +48,7 @@ class SocialAuthButtonsRow extends StatelessWidget {
                   ? colorScheme.surfaceContainerHighest
                   : Colors.white,
               foregroundColor: colorScheme.onSurface,
-              side: BorderSide(
-                color: colorScheme.outlineVariant,
-                width: 1.2,
-              ),
+              side: BorderSide(color: colorScheme.outlineVariant, width: 1.2),
               shape: const RoundedRectangleBorder(
                 borderRadius: AppDimensions.roundedPill,
               ),

@@ -9,6 +9,7 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../controllers/auth_controller.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -169,11 +170,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           backgroundColor: AppColors.statusActive,
         ),
       );
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppRoutes.appShell,
-        (route) => false,
-      );
+      final user = _authController.user;
+      String? activeMode;
+      if (user != null) {
+        final profile =
+            await DashboardRepository().getUserProfileRecord(user.uid);
+        activeMode = profile?['active_mode']?.toString();
+      }
+      if (!mounted) return;
+      if (activeMode != null && activeMode.isNotEmpty) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.appShell,
+          (route) => false,
+          arguments: {'initialMode': activeMode},
+        );
+      } else {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.roleSelection,
+          (route) => false,
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -317,7 +335,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           final colorScheme = Theme.of(context).colorScheme;
                           return Flexible(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 3,
+                              ),
                               child: ConstrainedBox(
                                 constraints: const BoxConstraints(
                                   maxWidth: 48,
@@ -344,7 +364,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                       counterText: '',
                                       contentPadding: EdgeInsets.zero,
                                       filled: true,
-                                      fillColor: _controllers[index].text.isNotEmpty
+                                      fillColor:
+                                          _controllers[index].text.isNotEmpty
                                           ? colorScheme.primary.withValues(
                                               alpha: 0.10,
                                             )
@@ -352,7 +373,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: _controllers[index].text.isNotEmpty
+                                          color:
+                                              _controllers[index]
+                                                  .text
+                                                  .isNotEmpty
                                               ? colorScheme.primary
                                               : colorScheme.outlineVariant,
                                           width: 1.5,
@@ -366,7 +390,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                         ),
                                       ),
                                     ),
-                                    onChanged: (val) => _onDigitChanged(index, val),
+                                    onChanged: (val) =>
+                                        _onDigitChanged(index, val),
                                   ),
                                 ),
                               ),

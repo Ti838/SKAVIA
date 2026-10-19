@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimensions.dart';
-import '../../../../shared/widgets/app_text_field.dart';
+import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_header_widget.dart';
+import '../widgets/email_login_form.dart';
 import '../widgets/forgot_password_modal_sheet.dart';
 import '../widgets/login_method_toggle.dart';
+import '../widgets/phone_login_form.dart';
 import '../widgets/social_auth_buttons_row.dart';
 
 /// World-Class Enterprise Sign In Screen for SKAVIA.
@@ -48,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     if (!mounted) return;
     if (success) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+      await _navigateToAppropriateScreen();
     } else if (_authController.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -72,8 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     // Ensure phone number has country code prefix
-    final formattedPhone =
-        rawPhone.startsWith('+') ? rawPhone : '+88$rawPhone';
+    final formattedPhone = rawPhone.startsWith('+') ? rawPhone : '+88$rawPhone';
 
     final success = await _authController.sendPhoneOtp(formattedPhone);
     if (success && mounted) {
@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final success = await _authController.signInWithGoogle();
     if (!mounted) return;
     if (success) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+      await _navigateToAppropriateScreen();
     } else if (_authController.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -107,6 +107,25 @@ class _LoginScreenState extends State<LoginScreen> {
           backgroundColor: AppColors.error,
         ),
       );
+    }
+  }
+
+  Future<void> _navigateToAppropriateScreen() async {
+    final user = _authController.user;
+    if (user != null) {
+      final profile =
+          await DashboardRepository().getUserProfileRecord(user.uid);
+      final activeMode = profile?['active_mode']?.toString();
+      if (activeMode != null && activeMode.isNotEmpty && mounted) {
+        Navigator.of(context).pushReplacementNamed(
+          AppRoutes.appShell,
+          arguments: {'initialMode': activeMode},
+        );
+        return;
+      }
+    }
+    if (mounted) {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.roleSelection);
     }
   }
 
@@ -198,215 +217,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
 
-                    if (_selectedMethodIndex == 0) ...[
-                      // Email Field
-                      AppTextField(
-                        controller: _emailController,
-                        label: 'Email or Phone',
-                        hint: 'name@example.com',
-                        keyboardType: TextInputType.emailAddress,
-                        prefixIcon: const Icon(
-                          Icons.mail_outline_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty) {
-                            return 'Email is required';
-                          }
-                          if (!val.contains('@')) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
+                    if (_selectedMethodIndex == 0)
+                      EmailLoginForm(
+                        emailController: _emailController,
+                        passwordController: _passwordController,
+                        rememberMe: _rememberMe,
+                        onRememberMeChanged: (v) =>
+                            setState(() => _rememberMe = v),
+                        onForgotPassword: _showForgotPasswordModal,
+                        authController: _authController,
+                        onLogin: _handleLogin,
+                      )
+                    else
+                      PhoneLoginForm(
+                        phoneController: _phoneController,
+                        authController: _authController,
+                        onSendOtp: _handlePhoneOtpSend,
                       ),
-                      const SizedBox(height: 16),
-
-                      // Password Field
-                      AppTextField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        hint: '••••••••',
-                        isPassword: true,
-                        prefixIcon: const Icon(
-                          Icons.lock_outline_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                        validator: (val) {
-                          if (val == null || val.isEmpty) {
-                            return 'Password is required';
-                          }
-                          if (val.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Remember Me & Forgot Password Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (v) =>
-                                      setState(() => _rememberMe = v ?? true),
-                                  activeColor: AppColors.primarySky,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Remember me',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                          GestureDetector(
-                            onTap: _showForgotPasswordModal,
-                            child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primarySky,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 22),
-
-                      // Primary Blue Sign In Pill Button
-                      ListenableBuilder(
-                        listenable: _authController,
-                        builder: (context, _) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _authController.isLoading
-                                  ? null
-                                  : _handleLogin,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primarySky,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: AppDimensions.roundedPill,
-                                ),
-                              ),
-                              child: _authController.isLoading
-                                  ? const SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Sign In',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                            ),
-                          );
-                        },
-                      ),
-                    ] else ...[
-                      // Phone Number Field
-                      AppTextField(
-                        controller: _phoneController,
-                        label: 'Phone Number',
-                        hint: '+880 1700-000000',
-                        keyboardType: TextInputType.phone,
-                        prefixIcon: const Icon(
-                          Icons.phone_iphone_rounded,
-                          color: AppColors.textMedium,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'A 6-digit OTP code will be sent to your mobile phone via SMS.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 22),
-
-                      ListenableBuilder(
-                        listenable: _authController,
-                        builder: (context, _) {
-                          return SizedBox(
-                            width: double.infinity,
-                            height: 52,
-                            child: ElevatedButton(
-                              onPressed: _authController.isLoading
-                                  ? null
-                                  : _handlePhoneOtpSend,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primarySky,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: AppDimensions.roundedPill,
-                                ),
-                              ),
-                              child: _authController.isLoading
-                                  ? const SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                      ),
-                                    )
-                                  : const Text(
-                                      'Send Verification Code',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
 
                     const SizedBox(height: 24),
 
-                    // Social Sign In (Google)
+                    // Sign In (Google)
                     SocialAuthButtonsRow(onGoogleSignIn: _handleGoogleSignIn),
 
                     const SizedBox(height: 32),

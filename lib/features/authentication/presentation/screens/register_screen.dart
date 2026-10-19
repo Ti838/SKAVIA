@@ -57,11 +57,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Account created successfully!'),
+          content: Text('Account created successfully! Choose your account mode.'),
           backgroundColor: AppColors.success,
         ),
       );
-      Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+      Navigator.of(context).pushReplacementNamed(AppRoutes.roleSelection);
     } else if (mounted && _authController.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

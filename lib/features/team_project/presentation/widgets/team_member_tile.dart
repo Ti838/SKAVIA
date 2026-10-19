@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../chat/data/datasources/chat_remote_datasource.dart';
 
 /// Reusable team member tile for Project Management board
@@ -104,14 +105,21 @@ class TeamMemberTile extends StatelessWidget {
                 color: Color(0xFF2563EB),
               ),
               onPressed: () async {
-                final currentUserId =
-                    FirebaseAuth.instance.currentUser?.uid ?? 'guest_user';
+                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                if (currentUid == null) {
+                  UiFeedbackHelper.showError(
+                    context,
+                    'Please sign in to chat with team members.',
+                  );
+                  return;
+                }
                 final otherId =
                     'user_${name.replaceAll(' ', '_').toLowerCase()}';
-                final conv = await ChatRemoteDataSource().getOrCreateConversation(
-                  currentUserId: currentUserId,
-                  otherUserId: otherId,
-                );
+                final conv = await ChatRemoteDataSource()
+                    .getOrCreateConversation(
+                      currentUserId: currentUid,
+                      otherUserId: otherId,
+                    );
                 if (context.mounted) {
                   Navigator.pushNamed(
                     context,

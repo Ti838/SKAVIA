@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
@@ -144,13 +145,16 @@ class CatalogServiceDetailSheet extends StatelessWidget {
                 text: 'Proceed to Schedule & Match',
                 onPressed: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Selected ${service.name}. Matching certified technicians...',
-                      ),
-                      backgroundColor: AppColors.statusActive,
-                    ),
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.bookingConfirmation,
+                    arguments: {
+                      'workerProfileId': 'wp_verified_pool',
+                      'workerName': 'Certified SKAVIA Specialist',
+                      'tradeTitle': service.name,
+                      'hourlyRate': service.basePrice,
+                      'jobTitle': service.name,
+                      'location': 'Dhaka, Bangladesh',
+                    },
                   );
                 },
               ),

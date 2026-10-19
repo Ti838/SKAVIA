@@ -5,44 +5,47 @@ import 'package:skavia/features/customer/data/models/requirement_model.dart';
 
 void main() {
   group('SKAVIA Social Feed & Map Location Unit Tests', () {
-    test('JobRequirementItem copyWith correctly updates like and comment counters', () {
-      final initialJob = JobRequirementItem(
-        id: 'job_001',
-        title: 'Emergency AC Repair',
-        category: 'HVAC & AC',
-        categoryId: 'cat_ac_hvac',
-        description: 'AC compressor not cooling, urgent fix needed',
-        location: 'Gulshan 2, Dhaka',
-        budgetMin: 1500,
-        budgetMax: 2500,
-        urgency: 'Emergency (2 hours)',
-        timeAgo: '10m ago',
-        clientName: 'Tanvir Hossain',
-        likesCount: 5,
-        isLikedByMe: false,
-        commentsCount: 2,
-        isSavedByMe: false,
-      );
+    test(
+      'JobRequirementItem copyWith correctly updates like and comment counters',
+      () {
+        final initialJob = JobRequirementItem(
+          id: 'job_001',
+          title: 'Emergency AC Repair',
+          category: 'HVAC & AC',
+          categoryId: 'cat_ac_hvac',
+          description: 'AC compressor not cooling, urgent fix needed',
+          location: 'Gulshan 2, Dhaka',
+          budgetMin: 1500,
+          budgetMax: 2500,
+          urgency: 'Emergency (2 hours)',
+          timeAgo: '10m ago',
+          clientName: 'Tanvir Hossain',
+          likesCount: 5,
+          isLikedByMe: false,
+          commentsCount: 2,
+          isSavedByMe: false,
+        );
 
-      final likedJob = initialJob.copyWith(
-        isLikedByMe: true,
-        likesCount: initialJob.likesCount + 1,
-      );
+        final likedJob = initialJob.copyWith(
+          isLikedByMe: true,
+          likesCount: initialJob.likesCount + 1,
+        );
 
-      expect(likedJob.isLikedByMe, isTrue);
-      expect(likedJob.likesCount, equals(6));
-      expect(likedJob.commentsCount, equals(2));
+        expect(likedJob.isLikedByMe, isTrue);
+        expect(likedJob.likesCount, equals(6));
+        expect(likedJob.commentsCount, equals(2));
 
-      final commentedJob = likedJob.copyWith(
-        commentsCount: likedJob.commentsCount + 1,
-      );
+        final commentedJob = likedJob.copyWith(
+          commentsCount: likedJob.commentsCount + 1,
+        );
 
-      expect(commentedJob.commentsCount, equals(3));
-      expect(commentedJob.isSavedByMe, isFalse);
+        expect(commentedJob.commentsCount, equals(3));
+        expect(commentedJob.isSavedByMe, isFalse);
 
-      final bookmarkedJob = commentedJob.copyWith(isSavedByMe: true);
-      expect(bookmarkedJob.isSavedByMe, isTrue);
-    });
+        final bookmarkedJob = commentedJob.copyWith(isSavedByMe: true);
+        expect(bookmarkedJob.isSavedByMe, isTrue);
+      },
+    );
 
     test('LocationService.calculateDistanceKm accurately calculates Dhaka geographical distances', () {
       // Dhanmondi 27 (23.7540, 90.3742) to Gulshan 1 (23.7925, 90.4078)

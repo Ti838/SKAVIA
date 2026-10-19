@@ -35,8 +35,12 @@ class AiChatView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isDark ? colorScheme.surfaceContainerHighest : const Color(0xFFF8FAFC),
-            border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
+            color: isDark
+                ? colorScheme.surfaceContainerHighest
+                : const Color(0xFFF8FAFC),
+            border: Border(
+              bottom: BorderSide(color: colorScheme.outlineVariant),
+            ),
           ),
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -47,11 +51,16 @@ class AiChatView extends StatelessWidget {
                   child: ActionChip(
                     visualDensity: VisualDensity.compact,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
                     avatar: Icon(
                       suggestion['icon'] as IconData,
                       size: 14,
-                      color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                      color: isDark
+                          ? colorScheme.primary
+                          : AppColors.primaryRoyal,
                     ),
                     label: Text(
                       suggestion['label'] as String,
@@ -103,8 +112,8 @@ class AiChatView extends StatelessWidget {
                     color: isUser
                         ? const Color(0xFF2563EB)
                         : (isDark
-                            ? colorScheme.surfaceContainerHighest
-                            : const Color(0xFFF1F5F9)),
+                              ? colorScheme.surfaceContainerHighest
+                              : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(18),
                       topRight: const Radius.circular(18),
@@ -181,7 +190,9 @@ class AiChatView extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? colorScheme.primary : const Color(0xFF2563EB),
+                    color: isDark
+                        ? colorScheme.primary
+                        : const Color(0xFF2563EB),
                   ),
                 ),
               ],

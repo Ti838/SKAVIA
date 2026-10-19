@@ -126,8 +126,7 @@ class AuthController extends ChangeNotifier {
       String message;
       switch (e.code) {
         case 'account-exists-with-different-credential':
-          message =
-              'An account already exists with the same email. Try signing in with email/password.';
+          message = 'An account already exists with the same email. Try signing in with email/password.';
           break;
         case 'invalid-credential':
           message = 'Invalid credentials. Please try again.';

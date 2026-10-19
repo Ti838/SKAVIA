@@ -37,23 +37,29 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      final workerId = user?.uid;
+      if (user == null) {
+        if (mounted) {
+          setState(() {
+            _requests = [];
+            _isLoading = false;
+          });
+        }
+        return;
+      }
+
+      final workerId = user.uid;
 
       try {
         final client = Supabase.instance.client;
-        var query = client
+        final res = await client
             .from('service_requests')
             .select(
               'service_request_id, client_id, status, scheduled_at, agreed_price, service_notes, created_at',
             )
-            .eq('status', 'Requested');
-
-        if (workerId != null) {
-          // If real worker logged in
-          query = query.filter('worker_profile_id', 'eq', workerId);
-        }
-
-        final res = await query.order('created_at', ascending: false).limit(10);
+            .eq('status', 'Requested')
+            .eq('worker_profile_id', workerId)
+            .order('created_at', ascending: false)
+            .limit(10);
         if (res.isNotEmpty) {
           _requests = List<Map<String, dynamic>>.from(res);
         } else {
@@ -70,7 +76,8 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     }
   }
 
-  void _acceptRequest(Map<String, dynamic> request) {
+  void _acceptRequest(Map<String, dynamic> request) async {
+    final reqId = request['service_request_id']?.toString();
     // Update local list
     setState(() {
       _requests.removeWhere(
@@ -78,6 +85,21 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
       );
     });
 
+    if (reqId != null && !reqId.startsWith('sr_sample')) {
+      try {
+        await Supabase.instance.client
+            .from('service_requests')
+            .update({
+              'status': 'Accepted',
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('service_request_id', reqId);
+      } catch (e) {
+        debugPrint('[IncomingRequests] Supabase accept status notice: $e');
+      }
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -104,13 +126,29 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     );
   }
 
-  void _declineRequest(Map<String, dynamic> request) {
+  void _declineRequest(Map<String, dynamic> request) async {
+    final reqId = request['service_request_id']?.toString();
     setState(() {
       _requests.removeWhere(
         (r) => r['service_request_id'] == request['service_request_id'],
       );
     });
 
+    if (reqId != null && !reqId.startsWith('sr_sample')) {
+      try {
+        await Supabase.instance.client
+            .from('service_requests')
+            .update({
+              'status': 'Cancelled',
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('service_request_id', reqId);
+      } catch (e) {
+        debugPrint('[IncomingRequests] Supabase decline status notice: $e');
+      }
+    }
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text(

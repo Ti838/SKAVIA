@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../chat/presentation/screens/chat_room_screen.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -20,6 +23,7 @@ class ActiveJobScreen extends StatefulWidget {
   final String expectedOtp;
   final String scheduledTime;
   final String serviceNotes;
+  final String? clientPhone;
 
   const ActiveJobScreen({
     super.key,
@@ -31,6 +35,7 @@ class ActiveJobScreen extends StatefulWidget {
     required this.expectedOtp,
     required this.scheduledTime,
     required this.serviceNotes,
+    this.clientPhone,
   });
 
   @override
@@ -240,17 +245,33 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                       jobTitle: widget.jobTitle,
                       clientName: widget.clientName,
                       location: widget.location,
-                      onCallClient: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Connecting phone call to client...'),
-                          ),
-                        );
+                      onCallClient: () async {
+                        final phone = widget.clientPhone?.isNotEmpty == true
+                            ? widget.clientPhone!
+                            : AppConstants.supportHelpline;
+                        final uri = Uri.parse('tel:$phone');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        } else if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                widget.clientPhone?.isNotEmpty == true
+                                    ? 'Dialer unavailable. Dial $phone directly.'
+                                    : 'Client phone not provided. Dialing SKAVIA Support: $phone',
+                              ),
+                            ),
+                          );
+                        }
                       },
                       onChatClient: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Opening live in-app chat...'),
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => ChatRoomScreen(
+                              conversationId: 'req_${widget.requestId}',
+                              otherParticipantName: widget.clientName,
+                              otherParticipantId: 'client_${widget.clientName}',
+                            ),
                           ),
                         );
                       },

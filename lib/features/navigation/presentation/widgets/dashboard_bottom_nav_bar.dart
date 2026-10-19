@@ -105,9 +105,9 @@ class DashboardBottomNavBar extends StatelessWidget {
                 index: 1,
                 activeIcon: Icons.grid_view_rounded,
                 inactiveIcon: Icons.grid_view_outlined,
-                label: currentMode == AppRoleMode.customer
-                    ? AppLanguageService.tr('services')
-                    : AppLanguageService.tr('incoming_requests'),
+                label: currentMode == AppRoleMode.worker
+                    ? AppLanguageService.tr('incoming_requests')
+                    : AppLanguageService.tr('services'),
               ),
               _buildNavItem(
                 context,
@@ -119,18 +119,24 @@ class DashboardBottomNavBar extends StatelessWidget {
               _buildNavItem(
                 context,
                 index: 3,
-                activeIcon: Icons.folder_rounded,
-                inactiveIcon: Icons.folder_outlined,
-                label: AppLanguageService.tr('projects'),
+                activeIcon: currentMode == AppRoleMode.customer
+                    ? Icons.dynamic_feed_rounded
+                    : Icons.folder_rounded,
+                inactiveIcon: currentMode == AppRoleMode.customer
+                    ? Icons.dynamic_feed_outlined
+                    : Icons.folder_outlined,
+                label: currentMode == AppRoleMode.customer
+                    ? (AppLanguageService.isBengali ? 'ফিড' : 'Feed')
+                    : AppLanguageService.tr('projects'),
               ),
               _buildNavItem(
                 context,
                 index: 4,
                 activeIcon: Icons.person_rounded,
                 inactiveIcon: Icons.person_outline_rounded,
-                label: currentMode == AppRoleMode.customer
-                    ? AppLanguageService.tr('profile')
-                    : AppLanguageService.tr('review'),
+                label: currentMode == AppRoleMode.worker
+                    ? AppLanguageService.tr('review')
+                    : AppLanguageService.tr('profile'),
               ),
             ],
           ),

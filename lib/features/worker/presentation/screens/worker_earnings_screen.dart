@@ -7,6 +7,8 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../widgets/earnings_metric_tile.dart';
+import '../widgets/worker_balance_card.dart';
+import '../widgets/worker_withdrawal_sheet.dart';
 
 /// Screen displaying Worker Earnings, Escrow Releases, and bKash/Nagad Payouts.
 /// Aligned with SKAVIA SRS Section 3.1.R and Table 425.
@@ -101,157 +103,17 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
   }
 
   void _showWithdrawModal() {
-    if (_availableBalance <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'No available balance to withdraw. Complete jobs to earn payouts.',
+    WorkerWithdrawalSheet.show(
+      context,
+      availableBalance: _availableBalance,
+      onConfirmWithdrawal: (amount, method) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Withdrawal request of ৳ ${amount.toStringAsFixed(0)} to $method submitted!',
+            ),
+            backgroundColor: AppColors.success,
           ),
-          backgroundColor: AppColors.error,
-        ),
-      );
-      return;
-    }
-
-    final amountController = TextEditingController();
-    String selectedMethod = 'bKash';
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom,
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                ),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 5,
-                          decoration: BoxDecoration(
-                            color: Colors.black12,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.paddingMedium),
-                      const Text(
-                        'Instant Earnings Withdrawal',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Available for payout: ৳ ${_availableBalance.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: ['bKash', 'Nagad', 'Bank Transfer'].map((m) {
-                          final isSel = selectedMethod == m;
-                          return Expanded(
-                            child: InkWell(
-                              onTap: () =>
-                                  setModalState(() => selectedMethod = m),
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: isSel
-                                      ? AppColors.primary.withValues(alpha: 0.1)
-                                      : Colors.black.withValues(alpha: 0.04),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSel
-                                        ? AppColors.primary
-                                        : Colors.transparent,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    m,
-                                    style: TextStyle(
-                                      fontWeight: isSel
-                                          ? FontWeight.w800
-                                          : FontWeight.w500,
-                                      color: isSel
-                                          ? AppColors.primary
-                                          : AppColors.textPrimary,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: amountController,
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          labelText: 'Withdraw Amount (BDT)',
-                          hintText: 'e.g. 1000',
-                          prefixText: '৳ ',
-                          filled: true,
-                          fillColor: AppColors.surfaceVariant,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: 'Confirm Withdrawal',
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Withdrawal request of ৳ ${amountController.text.trim()} to $selectedMethod submitted!',
-                                ),
-                                backgroundColor: AppColors.success,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
         );
       },
     );
@@ -284,60 +146,10 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
       body: Column(
         children: [
           // Header Wallet Balance Card
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingLarge,
-              vertical: AppDimensions.paddingSmall,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-              ),
-              child: Column(
-                children: [
-                  const Text(
-                    'Available Wallet Balance',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '৳ ${_availableBalance.toStringAsFixed(0)}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      EarningsMetricTile(
-                        label: 'Pending Escrow',
-                        value: '৳ ${_pendingEscrow.toStringAsFixed(0)}',
-                      ),
-                      Container(
-                        height: 20,
-                        width: 1,
-                        color: Colors.white24,
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                      ),
-                      EarningsMetricTile(
-                        label: 'Total Lifetime',
-                        value: '৳ ${_totalEarned.toStringAsFixed(0)}',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+          WorkerBalanceCard(
+            availableBalance: _availableBalance,
+            pendingEscrow: _pendingEscrow,
+            totalEarned: _totalEarned,
           ),
           const SizedBox(height: AppDimensions.paddingSmall),
 

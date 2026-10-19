@@ -47,6 +47,12 @@ abstract class DatabaseTables {
   static const String complaints = 'complaints';
   static const String disputes = 'disputes';
 
+  // Identity, Profiles, Addresses & Sessions
+  static const String userAddresses = 'user_addresses';
+  static const String userSessions = 'user_sessions';
+  static const String offlineSyncQueue = 'offline_sync_queue';
+  static const String userNotifications = 'user_notifications';
+
   // Communication & Operations
   static const String conversations = 'conversations';
   static const String messages = 'messages';

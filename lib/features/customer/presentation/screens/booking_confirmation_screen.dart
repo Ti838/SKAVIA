@@ -6,6 +6,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../billing/presentation/screens/simulated_checkout_screen.dart';
+import '../widgets/booking_payment_details_card.dart';
+import '../widgets/booking_payment_method_list.dart';
 import 'booking_timeline_screen.dart';
 
 /// Payment & Escrow Booking Confirmation Screen matching Screen 14 of SKAVIA reference design.
@@ -88,13 +92,28 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   double get _totalPrice => _basePrice + _platformFee;
 
   Future<void> _submitBooking() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      UiFeedbackHelper.showError(
+        context,
+        'Authentication required. Please sign in to book a service.',
+      );
+      return;
+    }
+
+    if (_addressController.text.trim().isEmpty) {
+      UiFeedbackHelper.showError(
+        context,
+        'A valid delivery address is required for doorstep technician dispatch.',
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     final randomOtp = (1000 + Random().nextInt(9000)).toString();
     final requestId = 'sr_${DateTime.now().millisecondsSinceEpoch}';
-    final user = FirebaseAuth.instance.currentUser;
-    final clientId =
-        user?.uid ?? 'guest_client_${DateTime.now().millisecondsSinceEpoch}';
+    final clientId = user.uid;
 
     try {
       try {
@@ -118,24 +137,42 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         final effectiveTitle = widget.jobTitle.isNotEmpty
             ? widget.jobTitle
             : 'Certified Trade Service';
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (_) => BookingTimelineScreen(
-              requestId: requestId,
-              jobTitle: effectiveTitle,
-              workerName: widget.workerName,
-              tradeTitle: widget.tradeTitle.isNotEmpty
-                  ? widget.tradeTitle
-                  : 'Mobile Developer',
-              scheduledSlot: 'Today',
-              totalPrice: _totalPrice,
-              jobOtp: randomOtp,
-              address: _addressController.text.trim().isNotEmpty
-                  ? _addressController.text.trim()
-                  : 'Dhaka, Bangladesh',
+
+        if (_selectedPaymentMethod != 'Cash') {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => SimulatedCheckoutScreen(
+                title: effectiveTitle,
+                amount: _basePrice,
+                serviceRequestId: requestId,
+                workerProfileId: widget.workerProfileId,
+                specialistName: widget.workerName,
+                location: _addressController.text.trim().isNotEmpty
+                    ? _addressController.text.trim()
+                    : 'Dhaka, Bangladesh',
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => BookingTimelineScreen(
+                requestId: requestId,
+                jobTitle: effectiveTitle,
+                workerName: widget.workerName,
+                tradeTitle: widget.tradeTitle.isNotEmpty
+                    ? widget.tradeTitle
+                    : 'Certified Specialist',
+                scheduledSlot: 'Today',
+                totalPrice: _totalPrice,
+                jobOtp: randomOtp,
+                address: _addressController.text.trim().isNotEmpty
+                    ? _addressController.text.trim()
+                    : 'Dhaka, Bangladesh',
+              ),
+            ),
+          );
+        }
       }
     } finally {
       if (mounted) {
@@ -184,164 +221,18 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Payment Details Section
-              const Text(
-                'Payment Details',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Service',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            displayServiceTitle,
-                            textAlign: TextAlign.end,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.textDark,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 22, color: Color(0xFFE2E8F0)),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Amount',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          displayAmount,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Color(0xFF2563EB),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              BookingPaymentDetailsCard(
+                serviceTitle: displayServiceTitle,
+                displayAmount: displayAmount,
               ),
               const SizedBox(height: 26),
 
               // Payment Method Section
-              const Text(
-                'Payment Method',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              Column(
-                children: _paymentOptions.map((opt) {
-                  final id = opt['id'] as String;
-                  final isSelected = _selectedPaymentMethod == id;
-                  final color = opt['color'] as Color;
-                  final icon = opt['icon'] as IconData;
-
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedPaymentMethod = id),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFF2563EB)
-                              : const Color(0xFFE2E8F0),
-                          width: isSelected ? 1.5 : 1.0,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          // Brand icon container
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Icon(icon, color: color, size: 20),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Text(
-                              opt['name'] as String,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFF2563EB)
-                                    : const Color(0xFFCBD5E1),
-                                width: isSelected ? 6 : 2,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+              BookingPaymentMethodList(
+                paymentOptions: _paymentOptions,
+                selectedPaymentMethod: _selectedPaymentMethod,
+                onMethodSelected: (id) =>
+                    setState(() => _selectedPaymentMethod = id),
               ),
               const SizedBox(height: 16),
 

@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../navigation/data/repositories/dashboard_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,8 +51,23 @@ class _SplashScreenState extends State<SplashScreen>
       final supabaseSession = Supabase.instance.client.auth.currentSession;
 
       if (firebaseUser != null || supabaseSession != null) {
-        // Authenticated -> Navigate directly to Main App Shell
-        Navigator.of(context).pushReplacementNamed(AppRoutes.appShell);
+        final uid = firebaseUser?.uid ?? supabaseSession?.user.id;
+        String? activeMode;
+        if (uid != null) {
+          final profile =
+              await DashboardRepository().getUserProfileRecord(uid);
+          activeMode = profile?['active_mode']?.toString();
+        }
+        if (!mounted) return;
+        if (activeMode != null && activeMode.isNotEmpty) {
+          Navigator.of(context).pushReplacementNamed(
+            AppRoutes.appShell,
+            arguments: {'initialMode': activeMode},
+          );
+        } else {
+          // If no role mode configured yet, prompt deliberate role selection
+          Navigator.of(context).pushReplacementNamed(AppRoutes.roleSelection);
+        }
       } else {
         // No session -> Navigate to Onboarding
         Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
@@ -126,9 +142,9 @@ class _SplashScreenState extends State<SplashScreen>
                                 BoxShadow(
                                   color: isDark
                                       ? const Color(0xFF3898EC)
-                                          .withValues(alpha: 0.25)
+                                            .withValues(alpha: 0.25)
                                       : const Color(0xFF2563EB)
-                                          .withValues(alpha: 0.20),
+                                            .withValues(alpha: 0.20),
                                   blurRadius: 40,
                                   spreadRadius: 8,
                                 ),
