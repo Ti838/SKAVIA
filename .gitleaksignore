@@ -5,3 +5,4 @@ lib/firebase_options.dart:gcp-api-key:54
 lib/firebase_options.dart:gcp-api-key:62
 lib/firebase_options.dart:gcp-api-key:71
 lib/firebase_options.dart:gcp-api-key:80
+android/app/google-services.json:gcp-api-key:18

@@ -47,8 +47,22 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/build/
+/android/key.properties
+*.jks
+*.keystore
 .gradle/
 
 
 # Widget Preview related
 .widget_preview/
+
+# Next.js / Node.js Admin Web Portal
+admin-web/node_modules/
+admin-web/.next/
+admin-web/out/
+admin-web/.vercel/
+admin-web/test-results/
+admin-web/playwright-report/
+*.tsbuildinfo
+!.env.example
+
