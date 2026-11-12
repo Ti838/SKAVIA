@@ -1,0 +1,43 @@
+{
+  "name": "skavia-admin-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SKAVIA Enterprise Admin Web Portal (Super Admin, Company Admin, Branch Manager)",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "eslint . --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@simplewebauthn/browser": "^14.0.0",
+    "@simplewebauthn/server": "^14.1.0",
+    "@supabase/supabase-js": "^2.49.1",
+    "firebase": "^11.4.0",
+    "jose": "^6.0.8",
+    "lucide-react": "^0.475.0",
+    "next": "^15.2.3",
+    "nodemailer": "^10.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.1",
+    "@tailwindcss/postcss": "^4.0.12",
+    "@types/node": "^22.13.10",
+    "@types/nodemailer": "^8.0.2",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.22.0",
+    "eslint-config-next": "^15.2.3",
+    "tailwindcss": "^4.0.12",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}

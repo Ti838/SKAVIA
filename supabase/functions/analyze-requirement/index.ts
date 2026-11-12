@@ -3,12 +3,67 @@
 // Strictly implements SRS Section 3.1.F (FR-F01 to FR-F06) & Section 4.1
 // Enterprise Zero-Leak Architecture: All API Keys remain secure on Supabase Cloud.
 
+import { createRemoteJWKSet, jwtVerify } from "https://esm.sh/jose@5.9.6";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.8";
+
 declare const Deno: any;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const FIREBASE_PROJECT_ID = Deno.env.get("FIREBASE_PROJECT_ID") || "skavia-113a3";
+const FIREBASE_JWKS = createRemoteJWKSet(
+  new URL(
+    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
+  )
+);
+
+function buildCorsHeaders(req: Request) {
+  const allowedOrigins = (Deno.env.get("ALLOWED_ORIGINS") || "https://skavia.app,https://admin.skavia.app")
+    .split(",")
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+  const origin = req.headers.get("origin") || "";
+  const allowOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+  return {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
+
+async function verifyCaller(req: Request): Promise<string | null> {
+  const authHeader = req.headers.get("authorization") || "";
+  if (!authHeader.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7).trim();
+  if (!token) return null;
+
+  // 1. Try Firebase ID Token
+  try {
+    const { payload } = await jwtVerify(token, FIREBASE_JWKS, {
+      issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
+      audience: FIREBASE_PROJECT_ID,
+    });
+    if (typeof payload.sub === "string" && payload.sub.length > 0) {
+      return payload.sub;
+    }
+  } catch (_) {
+    // Fall through to Supabase Auth verification
+  }
+
+  // 2. Try Supabase Auth JWT if configured
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      const sb = createClient(supabaseUrl, supabaseAnonKey);
+      const { data, error } = await sb.auth.getUser(token);
+      if (!error && data?.user?.id) {
+        return data.user.id;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+  return null;
+}
 
 const SYSTEM_PROMPT = `
 You are the SKAVIA AI Assistance Layer (SRS Section 3.1.F).
@@ -33,16 +88,25 @@ Strict rules:
 `;
 
 Deno.serve(async (req: any) => {
+  const corsHeaders = buildCorsHeaders(req);
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    const callerUid = await verifyCaller(req);
+    if (!callerUid) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: valid Firebase or Supabase session token required." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { description } = await req.json();
 
-    if (!description || typeof description !== "string") {
+    if (!description || typeof description !== "string" || description.trim().length > 2000) {
       return new Response(
-        JSON.stringify({ error: "Missing or invalid 'description' parameter." }),
+        JSON.stringify({ error: "Missing or invalid 'description' parameter (max 2000 chars)." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

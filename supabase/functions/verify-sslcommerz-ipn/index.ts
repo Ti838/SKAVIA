@@ -146,26 +146,16 @@ serve(async (req: Request) => {
       );
     }
 
-    // 6. Resolve Target Payment ID from Gateway Verified Payload or Request
-    let targetPaymentId = gatewayData.value_a || paymentId;
+    // 6. Resolve Target Payment ID strictly from verified gateway reference (no ambiguous amount-only fallback)
+    const targetPaymentId = gatewayData.value_a || paymentId;
     if (!targetPaymentId) {
-      // Look up payment by transaction reference and exact amount
-      const { data: matchedPayment, error: lookupErr } = await supabase
-        .from("payments")
-        .select("payment_id, total_amount, status")
-        .eq("total_amount", verifiedAmount)
-        .eq("status", "Pending")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (lookupErr || !matchedPayment) {
-        return new Response(
-          JSON.stringify({ error: "Could not correlate gateway transaction with pending payment record" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      targetPaymentId = matchedPayment.payment_id;
+      return new Response(
+        JSON.stringify({
+          error: "Missing payment correlation ID (value_a / payment_id) in gateway callback",
+          tran_id: gatewayData.tran_id || tranId || null,
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // 7. Invoke Backend Settlement RPC (Atomically updates payment, creates transaction & invoice, credits wallet)
