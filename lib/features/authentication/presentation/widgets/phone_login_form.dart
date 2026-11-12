@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../controllers/auth_controller.dart';
 
@@ -31,11 +31,12 @@ class PhoneLoginForm extends StatelessWidget {
           label: 'Phone Number',
           hint: '+880 1700-000000',
           keyboardType: TextInputType.phone,
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.phone_iphone_rounded,
-            color: AppColors.textMedium,
+            color: colorScheme.onSurfaceVariant,
             size: 20,
           ),
+          validator: Validators.bdPhone,
         ),
         const SizedBox(height: 12),
         Align(
@@ -54,38 +55,45 @@ class PhoneLoginForm extends StatelessWidget {
         ListenableBuilder(
           listenable: authController,
           builder: (context, _) {
-            return SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: authController.isLoading ? null : onSendOtp,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primarySky,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: AppDimensions.roundedPill,
+            return ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 52),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: authController.isLoading ? null : onSendOtp,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 16,
+                    ),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    elevation: 0,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppDimensions.roundedPill,
+                    ),
                   ),
-                ),
-                child: authController.isLoading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                  child: authController.isLoading
+                      ? SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.onPrimary,
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Send Verification Code',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                      )
-                    : const Text(
-                        'Send Verification Code',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
+                ),
               ),
             );
           },
@@ -94,4 +102,3 @@ class PhoneLoginForm extends StatelessWidget {
     );
   }
 }
-

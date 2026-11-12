@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_header_widget.dart';
 
-/// Single unified registration screen for SKAVIA.
-/// - Single-step account creation for all users.
-/// - Seamless role switching (Customer ↔ Worker) enabled within the app.
-/// - Full credentials input with live validation.
-/// - Responsive layout budgeting with zero overflow.
+/// Single unified minimal registration screen for SKAVIA.
+/// Preserves fast 5-field signup (`Full Name`, `Email`, `Phone`, `Password`, `Confirm`)
+/// followed by deliberate workspace/role selection and progressive eligibility gating.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -42,9 +43,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final formattedPhone = _phoneController.text.trim().startsWith('+')
-        ? _phoneController.text.trim()
-        : '+88${_phoneController.text.trim()}';
+    final formattedPhone = Validators.normalizeBdPhone(
+      _phoneController.text.trim(),
+    );
 
     final success = await _authController.register(
       fullName: _fullNameController.text.trim(),
@@ -55,6 +56,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
 
     if (success && mounted) {
+      final user = _authController.user;
+      if (user != null) {
+        await ProfileController.shared.loadProfile(
+          user.uid,
+          fallbackEmail: _emailController.text.trim(),
+          fallbackName: _fullNameController.text.trim(),
+          fallbackPhone: formattedPhone,
+        );
+      }
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Account created successfully! Choose your account mode.'),
@@ -75,6 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final skavia = context.skavia;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -95,7 +107,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Header Logo & Greeting
                     const AuthHeaderWidget(
                       title: 'Create Your Account',
                       subtitle: 'Join SKAVIA and get started',
@@ -111,27 +122,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             padding: const EdgeInsets.all(12),
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFEE2E2),
+                              color: colorScheme.error.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppColors.error.withValues(alpha: 0.3),
+                                color: colorScheme.error.withValues(alpha: 0.35),
                               ),
                             ),
                             child: Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.error_outline,
-                                  color: AppColors.error,
+                                  color: colorScheme.error,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     _authController.errorMessage!,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.error,
+                                      color: colorScheme.error,
                                     ),
                                   ),
                                 ),
@@ -143,77 +154,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    // Full Name Input
                     AppTextField(
                       controller: _fullNameController,
                       label: 'Full Name',
                       hint: 'Your Full Name',
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.badge_outlined,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
                       validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Full name is required';
+                        if (val == null || val.trim().length < 3) {
+                          return 'Full name must be at least 3 characters';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 14),
 
-                    // Email Address Input
                     AppTextField(
                       controller: _emailController,
                       label: 'Email Address',
                       hint: 'name@example.com',
                       keyboardType: TextInputType.emailAddress,
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.alternate_email_rounded,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Email is required';
-                        }
-                        if (!val.contains('@')) {
-                          return 'Enter a valid email address';
-                        }
-                        return null;
-                      },
+                      validator: Validators.email,
                     ),
                     const SizedBox(height: 14),
 
-                    // Phone Number Input
                     AppTextField(
                       controller: _phoneController,
                       label: 'Phone Number',
                       hint: '01700-000000',
                       keyboardType: TextInputType.phone,
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.phone_iphone_rounded,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) {
-                          return 'Phone number is required';
-                        }
-                        return null;
-                      },
+                      validator: Validators.bdPhone,
                     ),
                     const SizedBox(height: 14),
 
-                    // Password Input
                     AppTextField(
                       controller: _passwordController,
                       label: 'Password',
                       hint: '••••••••',
                       isPassword: true,
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.lock_outline_rounded,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
                       validator: (val) {
@@ -228,15 +222,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    // Confirm Password Input
                     AppTextField(
                       controller: _confirmPasswordController,
                       label: 'Confirm Password',
                       hint: '••••••••',
                       isPassword: true,
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.lock_reset_rounded,
-                        color: AppColors.textMedium,
+                        color: colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
                       validator: (val) {
@@ -248,44 +241,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // Submit Blue Pill Button
+                    // Submit Pill Button
                     ListenableBuilder(
                       listenable: _authController,
                       builder: (context, _) {
-                        return SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: _authController.isLoading
-                                ? null
-                                : _handleRegister,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primarySky,
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: AppDimensions.roundedPill,
+                        return ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 52),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _authController.isLoading
+                                  ? null
+                                  : _handleRegister,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 16,
+                                ),
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                elevation: 0,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: AppDimensions.roundedPill,
+                                ),
                               ),
-                            ),
-                            child: _authController.isLoading
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
+                              child: _authController.isLoading
+                                  ? SizedBox(
+                                      height: 22,
+                                      width: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                          colorScheme.onPrimary,
+                                        ),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Create Account',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.2,
                                       ),
                                     ),
-                                  )
-                                : const Text(
-                                    'Create Account',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
+                            ),
                           ),
                         );
                       },
@@ -293,12 +293,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 28),
 
-                    // "Already have an account? Login" Footer
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 4,
+                      runSpacing: 4,
                       children: [
                         Text(
-                          'Already have an account? ',
+                          'Already have an account?',
                           style: TextStyle(
                             fontSize: 13,
                             color: colorScheme.onSurfaceVariant,
@@ -307,14 +309,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context)
-                                .pushReplacementNamed(AppRoutes.login);
+                            Navigator.of(context).pushReplacementNamed(
+                              AppRoutes.login,
+                            );
                           },
-                          child: const Text(
+                          child: Text(
                             'Login',
                             style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.primarySky,
+                              color: skavia.brandAccent,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

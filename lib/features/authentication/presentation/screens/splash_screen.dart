@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,6 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../shared/widgets/skavia_brand_image.dart';
+import '../../../app_update/providers/app_update_provider.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -41,6 +45,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkSessionAndNavigate() async {
+    // Trigger non-blocking startup release check immediately during splash
+    unawaited(
+      AppUpdateProvider.instance
+          .checkForUpdates(trigger: 'startup')
+          .then<void>((_) {}, onError: (_, _) {}),
+    );
+
     // Wait for the smooth logo intro animation to play
     await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
@@ -150,8 +161,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ],
                             ),
-                            child: Image.asset(
-                              AppAssets.emblem,
+                            child: SkaviaBrandImage(
+                              assetPath: AppAssets.emblem,
                               width: 88,
                               height: 88,
                               fit: BoxFit.contain,
@@ -201,8 +212,8 @@ class _SplashScreenState extends State<SplashScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Opacity(
                     opacity: isDark ? 0.9 : 0.95,
-                    child: Image.asset(
-                      AppAssets.techniciansConsole,
+                    child: SkaviaBrandImage(
+                      assetPath: AppAssets.techniciansConsole,
                       height: 180,
                       fit: BoxFit.contain,
                       errorBuilder: (_, _, _) => const SizedBox.shrink(),

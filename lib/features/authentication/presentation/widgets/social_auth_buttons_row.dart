@@ -21,14 +21,19 @@ class SocialAuthButtonsRow extends StatelessWidget {
         Row(
           children: [
             Expanded(child: Divider(color: colorScheme.outlineVariant)),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Text(
-                'or continue with',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.onSurfaceVariant,
+            Flexible(
+              flex: 3,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  'or continue with',
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -38,45 +43,56 @@ class SocialAuthButtonsRow extends StatelessWidget {
         const SizedBox(height: 18),
 
         // Google Full-Width Pill Button
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: OutlinedButton(
-            onPressed: onGoogleSignIn,
-            style: OutlinedButton.styleFrom(
-              backgroundColor: isDark
-                  ? colorScheme.surfaceContainerHighest
-                  : Colors.white,
-              foregroundColor: colorScheme.onSurface,
-              side: BorderSide(color: colorScheme.outlineVariant, width: 1.2),
-              shape: const RoundedRectangleBorder(
-                borderRadius: AppDimensions.roundedPill,
+        ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 50),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: onGoogleSignIn,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                backgroundColor: isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : Colors.white,
+                foregroundColor: colorScheme.onSurface,
+                side: BorderSide(color: colorScheme.outlineVariant, width: 1.2),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppDimensions.roundedPill,
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  AppAssets.googleLogo,
-                  height: 20,
-                  width: 20,
-                  errorBuilder: (_, _, _) => const Icon(
-                    Icons.g_mobiledata_rounded,
-                    color: Color(0xFFEA4335),
-                    size: 24,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    AppAssets.googleLogo,
+                    height: 20,
+                    width: 20,
+                    errorBuilder: (_, _, _) => const Icon(
+                      Icons.g_mobiledata_rounded,
+                      color: Color(0xFFEA4335),
+                      size: 24,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Continue with Google',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                    letterSpacing: 0.2,
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      'Continue with Google',
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

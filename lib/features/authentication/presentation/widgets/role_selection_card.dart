@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
-/// Reusable Role Selection Card for registration matching Reference Screen 3
+/// Reusable Role Selection Card for workspace & onboarding role switches.
 class RoleSelectionCard extends StatelessWidget {
   final String id;
   final String title;
@@ -23,6 +23,9 @@ class RoleSelectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final skavia = context.skavia;
+
     return InkWell(
       onTap: () => onSelect(id),
       borderRadius: BorderRadius.circular(16),
@@ -30,16 +33,16 @@ class RoleSelectionCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFEBF5FF) : Colors.white,
+          color: isSelected ? skavia.softBlueBg : skavia.cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.primarySky : AppColors.borderLight,
+            color: isSelected ? colorScheme.primary : skavia.border,
             width: isSelected ? 2.0 : 1.2,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.primarySky.withValues(alpha: 0.1),
+                    color: colorScheme.primary.withValues(alpha: 0.12),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
@@ -51,12 +54,12 @@ class RoleSelectionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white : const Color(0xFFF1F5F9),
+                color: isSelected ? skavia.cardBg : skavia.subtleCardBg,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected ? AppColors.primarySky : AppColors.textMedium,
+                color: isSelected ? colorScheme.primary : skavia.secondaryText,
                 size: 22,
               ),
             ),
@@ -71,16 +74,16 @@ class RoleSelectionCard extends StatelessWidget {
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: isSelected
-                          ? AppColors.primaryRoyal
-                          : AppColors.textDark,
+                          ? skavia.brandAccent
+                          : colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     desc,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textMedium,
+                      color: skavia.secondaryText,
                     ),
                   ),
                 ],

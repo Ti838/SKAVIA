@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 
+import '../../../notifications/presentation/controllers/notification_center_controller.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 
 class AuthController extends ChangeNotifier {
@@ -269,11 +271,15 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  /// Logout
+  /// Logout and wipe session caches & stale OTP verification state
   Future<void> logout() async {
     await _dataSource.signOut();
     _user = null;
     _verificationId = null;
+    _globalVerificationId = null;
+    _errorMessage = null;
+    NotificationCenterController.instance.clearSession();
+    ProfileController.shared.clearSession();
     notifyListeners();
   }
 }

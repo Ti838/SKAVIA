@@ -1,40 +1,47 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
+import '../../../profile/data/datasources/profile_remote_datasource.dart';
 
 class AuthRemoteDataSource {
-  final fb.FirebaseAuth _firebaseAuth = fb.FirebaseAuth.instance;
-  final SupabaseClient _supabase = Supabase.instance.client;
+  fb.FirebaseAuth? get _firebaseAuth {
+    try {
+      return fb.FirebaseAuth.instance;
+    } catch (_) {
+      return null;
+    }
+  }
 
-  /// Google Sign-In configuration.
-  /// On Android, the google_sign_in plugin reads the Web Client ID from
-  /// google-services.json's oauth_client array. If that array is empty
-  /// (SHA-1 fingerprint not yet added in Firebase Console), we must pass
-  /// the Web Client ID explicitly. This ID comes from Google Cloud Console
-  /// → Credentials → OAuth 2.0 Client IDs → Web client (auto created by
-  /// Google Service). It is a *public* identifier, not a secret.
-  ///
-  /// Steps to fix Google Sign-In if it still doesn't work:
-  /// 1. Go to Firebase Console → Project Settings → Your Apps → Android
-  /// 2. Add your debug SHA-1: 40:EF:AD:AA:BC:87:15:A5:8E:3A:14:7A:40:22:99:40:59:F0:A9:B5
-  /// 3. Download the updated google-services.json and replace android/app/google-services.json
-  /// 4. The oauth_client array will now be populated with the Web Client ID
-  late final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: ['email', 'profile'],
-  );
+  SupabaseClient? get _supabase => tryGetSupabaseClient();
 
-  fb.User? get currentFirebaseUser => _firebaseAuth.currentUser;
-  Session? get currentSupabaseSession => _supabase.auth.currentSession;
+  GoogleSignIn? _googleSignInInstance;
+  GoogleSignIn get _googleSignIn =>
+      _googleSignInInstance ??= GoogleSignIn(scopes: ['email', 'profile']);
+
+  fb.User? get currentFirebaseUser => _firebaseAuth?.currentUser;
+  Session? get currentSupabaseSession => _supabase?.auth.currentSession;
+
+  fb.FirebaseAuth _requireFirebaseAuth() {
+    final auth = _firebaseAuth;
+    if (auth == null) {
+      throw fb.FirebaseAuthException(
+        code: 'firebase-not-initialized',
+        message: 'Authentication service is not initialized yet.',
+      );
+    }
+    return auth;
+  }
 
   /// Sign In with Email & Password
   Future<fb.UserCredential> signInWithEmail({
     required String email,
     required String password,
   }) async {
-    final credential = await _firebaseAuth.signInWithEmailAndPassword(
+    final credential = await _requireFirebaseAuth().signInWithEmailAndPassword(
       email: email.trim(),
       password: password,
     );
@@ -57,16 +64,15 @@ class AuthRemoteDataSource {
     String? phone,
     String primaryRole = 'Individual Customer',
   }) async {
-    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-      email: email.trim(),
-      password: password,
-    );
+    final credential = await _requireFirebaseAuth()
+        .createUserWithEmailAndPassword(
+          email: email.trim(),
+          password: password,
+        );
 
     if (credential.user != null) {
-      // Update display name in Firebase
       await credential.user!.updateDisplayName(fullName);
 
-      // Sync user profile to Supabase database with SRS primary role
       await _syncUserToSupabase(
         userId: credential.user!.uid,
         fullName: fullName,
@@ -81,18 +87,14 @@ class AuthRemoteDataSource {
   /// Sign In with Google & Sync to Supabase
   Future<fb.UserCredential?> signInWithGoogle() async {
     try {
-      // Ensure any stale cached account is cleared so the account chooser
-      // always appears and fresh tokens are fetched.
       await _googleSignIn.signOut();
 
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null; // User cancelled
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
 
-      // At minimum one of accessToken / idToken must be non-null.
-      // If both are null, the SHA-1 fingerprint is likely not registered.
       if (googleAuth.accessToken == null && googleAuth.idToken == null) {
         throw fb.FirebaseAuthException(
           code: 'google-sign-in-missing-tokens',
@@ -102,13 +104,12 @@ class AuthRemoteDataSource {
         );
       }
 
-      // Build Firebase credential from Google tokens
       final fb.AuthCredential credential = fb.GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
-      final userCredential = await _firebaseAuth.signInWithCredential(
+      final userCredential = await _requireFirebaseAuth().signInWithCredential(
         credential,
       );
       if (userCredential.user != null) {
@@ -132,7 +133,7 @@ class AuthRemoteDataSource {
     }
   }
 
-  /// Synchronize User Record into Supabase `users`, `customer_profiles`, and `worker_profiles` Tables
+  /// Synchronize User Record into Supabase `users`, `customer_profiles`, `worker_profiles` & `user_sessions`
   Future<void> _syncUserToSupabase({
     required String userId,
     required String fullName,
@@ -140,38 +141,46 @@ class AuthRemoteDataSource {
     String? phone,
     String primaryRole = 'Individual Customer',
   }) async {
+    final supabase = _supabase;
+    if (supabase == null) return;
+
     try {
-      // Check if user record already exists to preserve active_mode and profile state
-      final existingUser = await _supabase
+      final existingUser = await supabase
           .from(DatabaseTables.users)
           .select('user_id, active_mode, full_name')
           .eq('user_id', userId)
           .maybeSingle();
 
       if (existingUser != null) {
-        // User already exists! Preserve their persisted active_mode and profile settings
         final updateMap = <String, dynamic>{
           'updated_at': DateTime.now().toIso8601String(),
         };
         if (email != null && email.isNotEmpty) updateMap['email'] = email;
         if (phone != null && phone.isNotEmpty) updateMap['phone'] = phone;
-        await _supabase
+        await supabase
             .from(DatabaseTables.users)
             .update(updateMap)
             .eq('user_id', userId);
+        await ProfileRemoteDataSource(
+          supabase: supabase,
+        ).registerCurrentSession(userId);
         return;
       }
 
-      final isWorker = primaryRole.toLowerCase().contains('worker');
-      final isBusiness = primaryRole.toLowerCase().contains('business');
-      final isOrg = primaryRole.toLowerCase().contains('organization');
+      final lowerRole = primaryRole.toLowerCase();
+      final isWorker = lowerRole.contains('worker');
+      final isBusiness =
+          lowerRole.contains('business') || lowerRole.contains('enterprise');
+      final isOrg = lowerRole.contains('organization');
       final customerType = isBusiness
-          ? 'Business'
+          ? 'Business Client'
           : (isOrg ? 'Organization' : 'Individual');
-      final defaultMode = isWorker ? 'worker' : 'client';
+      final defaultMode = isWorker
+          ? 'worker'
+          : ((isBusiness || isOrg) ? 'enterprise' : 'client');
 
       // 1. Sync Base User Record for new user
-      await _supabase.from(DatabaseTables.users).insert({
+      await supabase.from(DatabaseTables.users).insert({
         'user_id': userId,
         'full_name': fullName,
         'email': email,
@@ -184,13 +193,13 @@ class AuthRemoteDataSource {
       });
 
       // 2. Ensure Customer Profile exists
-      await _supabase.from(DatabaseTables.customerProfiles).upsert({
+      await supabase.from(DatabaseTables.customerProfiles).upsert({
         'user_id': userId,
         'customer_type': customerType,
       }, onConflict: 'user_id');
 
       // 3. Ensure Worker Profile exists for dual-mode switching
-      await _supabase.from(DatabaseTables.workerProfiles).upsert({
+      await supabase.from(DatabaseTables.workerProfiles).upsert({
         'user_id': userId,
         'title': isWorker
             ? 'Registered Skill Provider'
@@ -205,6 +214,11 @@ class AuthRemoteDataSource {
         'completed_jobs': 0,
         'is_available': true,
       }, onConflict: 'user_id');
+
+      // 4. Register current device session
+      await ProfileRemoteDataSource(
+        supabase: supabase,
+      ).registerCurrentSession(userId);
     } catch (e) {
       debugPrint('[Supabase Sync Warning]: $e');
     }
@@ -219,7 +233,7 @@ class AuthRemoteDataSource {
     onVerificationCompleted,
     void Function(String verificationId)? onCodeAutoRetrievalTimeout,
   }) async {
-    await _firebaseAuth.verifyPhoneNumber(
+    await _requireFirebaseAuth().verifyPhoneNumber(
       phoneNumber: phoneNumber,
       verificationCompleted: onVerificationCompleted,
       verificationFailed: onVerificationFailed,
@@ -238,7 +252,9 @@ class AuthRemoteDataSource {
       verificationId: verificationId,
       smsCode: smsCode.trim(),
     );
-    final userCredential = await _firebaseAuth.signInWithCredential(credential);
+    final userCredential = await _requireFirebaseAuth().signInWithCredential(
+      credential,
+    );
     if (userCredential.user != null) {
       if (fullName != null && fullName.isNotEmpty) {
         await userCredential.user!.updateDisplayName(fullName);
@@ -255,15 +271,19 @@ class AuthRemoteDataSource {
 
   /// Send password reset link to user email
   Future<void> sendPasswordResetEmail({required String email}) async {
-    await _firebaseAuth.sendPasswordResetEmail(email: email.trim());
+    await _requireFirebaseAuth().sendPasswordResetEmail(email: email.trim());
   }
 
   /// Sign Out from all sessions
   Future<void> signOut() async {
-    await Future.wait([
-      _firebaseAuth.signOut(),
-      _googleSignIn.signOut(),
-      _supabase.auth.signOut(),
-    ]);
+    final futures = <Future<void>>[];
+    if (_firebaseAuth != null) {
+      futures.add(_firebaseAuth!.signOut());
+    }
+    futures.add(_googleSignIn.signOut().catchError((_) => null));
+    if (_supabase != null) {
+      futures.add(_supabase!.auth.signOut().catchError((_) {}));
+    }
+    await Future.wait(futures);
   }
 }

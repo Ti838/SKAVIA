@@ -3,13 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
-import '../../../../app/router/app_routes.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/auth_controller.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -56,6 +58,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     });
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
       if (_resendCountdown > 1) {
         setState(() {
           _resendCountdown--;
@@ -87,7 +93,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   void _onDigitChanged(int index, String value) {
     if (value.length > 1) {
-      // Handles copy-paste of multiple digits into one field
       final pasted = value.trim();
       for (int i = 0; i < _pinLength; i++) {
         if (i < pasted.length) {
@@ -121,7 +126,19 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   Future<void> _handleResend() async {
     if (!_canResend) return;
-    final phone = widget.phoneNumber ?? '+8801700000000';
+    final phone = widget.phoneNumber?.trim();
+    if (phone == null || phone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Phone number is missing. Please go back and enter your phone number.',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     final success = await _authController.sendPhoneOtp(phone);
     if (!mounted) return;
     if (success) {
@@ -173,8 +190,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       final user = _authController.user;
       String? activeMode;
       if (user != null) {
-        final profile =
-            await DashboardRepository().getUserProfileRecord(user.uid);
+        await ProfileController.shared.loadProfile(
+          user.uid,
+          fallbackEmail: user.email,
+          fallbackName: user.displayName ?? widget.fullName,
+          fallbackPhone: user.phoneNumber ?? widget.phoneNumber,
+          fallbackAvatarUrl: user.photoURL,
+        );
+        final profile = await DashboardRepository().getUserProfileRecord(
+          user.uid,
+        );
         activeMode = profile?['active_mode']?.toString();
       }
       if (!mounted) return;
@@ -206,257 +231,262 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final displayPhone = widget.phoneNumber ?? '+880 17XX-XXXXXX';
+    final colorScheme = Theme.of(context).colorScheme;
+    final skavia = context.skavia;
+    final displayPhone = (widget.phoneNumber?.trim().isNotEmpty ?? false)
+        ? widget.phoneNumber!.trim()
+        : 'your registered number';
 
     return Scaffold(
-      backgroundColor: AppColors.primarySky,
+      backgroundColor: skavia.canvasBg,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            // Top App Bar Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const Spacer(),
-                  // Brand Emblem
-                  Container(
-                    padding: const EdgeInsets.all(7),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Image.asset(
-                      AppAssets.emblem,
-                      height: 24,
-                      width: 24,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, error, stack) => const Icon(
-                        Icons.engineering_rounded,
-                        size: 20,
-                        color: AppColors.primaryRoyal,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Top Header Title Area
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 28),
+        child: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Verify Phone',
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                  // Top App Bar Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Image.asset(
+                            AppAssets.emblem,
+                            height: 24,
+                            width: 24,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => const Icon(
+                              Icons.engineering_rounded,
+                              size: 20,
+                              color: AppColors.primaryRoyal,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'We sent a 6-digit verification code to $displayPhone',
-                    style: TextStyle(
-                      fontFamily: AppTypography.bodyFont,
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      height: 1.4,
+
+                  // Top Header Title Area
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(28, 8, 28, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Verify Phone',
+                          style: TextStyle(
+                            fontFamily: AppTypography.headingFont,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'We sent a 6-digit verification code to $displayPhone',
+                          style: TextStyle(
+                            fontFamily: AppTypography.bodyFont,
+                            fontSize: 14,
+                            color: Colors.white.withValues(alpha: 0.9),
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
 
-            // 32dp Curved Sheet (Theme-Aware)
-            Expanded(
+            // 32dp Curved Sheet (Theme-Aware & Scroll-Safe)
+            SliverFillRemaining(
+              hasScrollBody: false,
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: colorScheme.surface,
                   borderRadius: AppDimensions.roundedSheetTop,
                 ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 36, 24, 24),
-                  child: Column(
-                    children: [
-                      // Lock & SMS illustration badge
-                      Container(
-                        height: 72,
-                        width: 72,
-                        decoration: BoxDecoration(
-                          color: AppColors.accentPeach.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.sms_rounded,
-                          size: 36,
-                          color: AppColors.accentCoral,
-                        ),
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                child: Column(
+                  children: [
+                    Container(
+                      height: 72,
+                      width: 72,
+                      decoration: BoxDecoration(
+                        color: skavia.softPeachBg,
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(height: 24),
+                      child: const Icon(
+                        Icons.sms_rounded,
+                        size: 36,
+                        color: AppColors.accentCoral,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-                      Text(
-                        'Enter 6-Digit Code',
-                        style: TextStyle(
-                          fontFamily: AppTypography.headingFont,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
+                    Text(
+                      'Enter 6-Digit Code',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Check your SMS inbox for the one-time code',
-                        style: TextStyle(
-                          fontFamily: AppTypography.bodyFont,
-                          fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Check your SMS inbox for the one-time code',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.bodyFont,
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
                       ),
-                      const SizedBox(height: 32),
+                    ),
+                    const SizedBox(height: 28),
 
-                      // 6-Pin Input Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(_pinLength, (index) {
-                          final colorScheme = Theme.of(context).colorScheme;
-                          return Flexible(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 3,
-                              ),
-                              child: ConstrainedBox(
-                                constraints: const BoxConstraints(
-                                  maxWidth: 48,
-                                  minWidth: 36,
+                    // 6-Pin Input Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(_pinLength, (index) {
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 3),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 54),
+                              child: TextField(
+                                controller: _controllers[index],
+                                focusNode: _focusNodes[index],
+                                keyboardType: TextInputType.number,
+                                textAlign: TextAlign.center,
+                                maxLength: 1,
+                                style: TextStyle(
+                                  fontFamily: AppTypography.headingFont,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: skavia.brandAccent,
                                 ),
-                                child: SizedBox(
-                                  height: 56,
-                                  child: TextField(
-                                    controller: _controllers[index],
-                                    focusNode: _focusNodes[index],
-                                    keyboardType: TextInputType.number,
-                                    textAlign: TextAlign.center,
-                                    maxLength: 1,
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.headingFont,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w800,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                ],
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 10,
+                                  ),
+                                  filled: true,
+                                  fillColor: _controllers[index].text.isNotEmpty
+                                      ? colorScheme.primary.withValues(
+                                          alpha: 0.12,
+                                        )
+                                      : colorScheme.surfaceContainerHighest,
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(
+                                      color: _controllers[index].text.isNotEmpty
+                                          ? colorScheme.primary
+                                          : colorScheme.outlineVariant,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                    borderSide: BorderSide(
                                       color: colorScheme.primary,
+                                      width: 2.5,
                                     ),
-                                    inputFormatters: [
-                                      FilteringTextInputFormatter.digitsOnly,
-                                    ],
-                                    decoration: InputDecoration(
-                                      counterText: '',
-                                      contentPadding: EdgeInsets.zero,
-                                      filled: true,
-                                      fillColor:
-                                          _controllers[index].text.isNotEmpty
-                                          ? colorScheme.primary.withValues(
-                                              alpha: 0.10,
-                                            )
-                                          : colorScheme.surfaceContainerHighest,
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color:
-                                              _controllers[index]
-                                                  .text
-                                                  .isNotEmpty
-                                              ? colorScheme.primary
-                                              : colorScheme.outlineVariant,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: colorScheme.primary,
-                                          width: 2.5,
-                                        ),
-                                      ),
-                                    ),
-                                    onChanged: (val) =>
-                                        _onDigitChanged(index, val),
                                   ),
                                 ),
+                                onChanged: (val) => _onDigitChanged(index, val),
                               ),
-                            ),
-                          );
-                        }),
-                      ),
-
-                      const SizedBox(height: 36),
-
-                      // Verify Button
-                      ListenableBuilder(
-                        listenable: _authController,
-                        builder: (context, _) {
-                          return AppButton(
-                            text: 'Verify & Continue',
-                            isLoading: _authController.isLoading,
-                            onPressed: _currentOtp.length == _pinLength
-                                ? _handleVerify
-                                : null,
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Resend Code Section
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Didn't receive the code? ",
-                            style: TextStyle(
-                              fontFamily: AppTypography.bodyFont,
-                              fontSize: 13,
-                              color: AppColors.textMedium,
                             ),
                           ),
-                          _canResend
-                              ? GestureDetector(
-                                  onTap: _handleResend,
-                                  child: const Text(
-                                    'Resend Code',
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.bodyFont,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.primaryRoyal,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                )
-                              : Text(
-                                  'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
-                                  style: const TextStyle(
+                        );
+                      }),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Verify Button
+                    ListenableBuilder(
+                      listenable: _authController,
+                      builder: (context, _) {
+                        return AppButton(
+                          text: 'Verify & Continue',
+                          isLoading: _authController.isLoading,
+                          onPressed: _currentOtp.length == _pinLength
+                              ? _handleVerify
+                              : null,
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Resend Code Section (Wrap avoids 320dp + 2.0x textScale overflow)
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 4,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          "Didn't receive the code?",
+                          style: TextStyle(
+                            fontFamily: AppTypography.bodyFont,
+                            fontSize: 13,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        _canResend
+                            ? GestureDetector(
+                                onTap: _handleResend,
+                                child: Text(
+                                  'Resend Code',
+                                  style: TextStyle(
                                     fontFamily: AppTypography.bodyFont,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.accentCoral,
+                                    color: skavia.brandAccent,
+                                    decoration: TextDecoration.underline,
                                   ),
                                 ),
-                        ],
-                      ),
-                    ],
-                  ),
+                              )
+                            : Text(
+                                'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  fontFamily: AppTypography.bodyFont,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.accentCoral,
+                                ),
+                              ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
