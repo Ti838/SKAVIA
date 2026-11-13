@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -5,21 +7,25 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../../core/utils/job_otp_util.dart';
+import '../../../app_update/presentation/widgets/app_update_banner.dart';
+import '../../../app_update/presentation/widgets/app_update_dialog.dart';
+import '../../../app_update/providers/app_update_provider.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../../chat/presentation/screens/chat_list_screen.dart';
 import '../../../customer/presentation/screens/category_catalog_screen.dart';
 import '../../../customer/presentation/screens/live_job_feed_screen.dart';
-import '../../../customer/presentation/widgets/account_deletion_dialog.dart';
+import '../../../../shared/dialogs/account_deletion_dialog.dart';
+import '../../../../shared/widgets/offline_sync_banner.dart';
 import '../../../customer/presentation/widgets/avatar_picker_sheet.dart';
 import '../../../customer/presentation/widgets/customer_dashboard_view.dart';
 import '../../../customer/presentation/widgets/dashboard_location_sheet.dart';
 import '../../../customer/presentation/widgets/job_otp_dialog.dart';
 import '../../../customer/presentation/widgets/quick_booking_sheet.dart';
-import '../../../customer/presentation/widgets/unified_profile_view.dart';
+import '../../../profile/presentation/widgets/unified_profile_view.dart';
 import '../../../team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../../worker/presentation/screens/incoming_requests_screen.dart';
 import '../../../worker/presentation/widgets/worker_dashboard_view.dart';
-import '../../../../shared/widgets/offline_sync_banner.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import '../widgets/dashboard_bottom_nav_bar.dart';
 import '../widgets/dashboard_settings_sheet.dart';
@@ -35,14 +41,16 @@ class MainScaffoldScreen extends StatefulWidget {
   State<MainScaffoldScreen> createState() => _MainScaffoldScreenState();
 }
 
-class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
+class _MainScaffoldScreenState extends State<MainScaffoldScreen>
+    with WidgetsBindingObserver {
   AppRoleMode _currentMode = AppRoleMode.customer;
   int _navIndex = 0;
   final AuthController _authController = AuthController();
   final DashboardRepository _dashboardRepository = DashboardRepository();
 
-  // Profile Avatar & Identity
+  // Profile Avatar, Cover Banner & Identity
   String? _customAvatarUrl;
+  String? _customCoverUrl;
 
   // Real-Time GPS Location State
   String _currentLocationZone = 'Dhanmondi';
@@ -69,12 +77,73 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   // Notifications State
   bool _hasUnreadNotifications = false;
   bool _initializedFromArgs = false;
+  bool _updatePromptScheduled = false;
+  bool _mandatoryScreenPushed = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    AppUpdateProvider.instance.addListener(_onUpdateStateChanged);
     _initRealTimeLocation();
     _loadDashboardData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _evaluateAndPresentAppUpdate();
+      unawaited(
+        AppUpdateProvider.instance
+            .checkForUpdates(trigger: 'dashboard_mount')
+            .then<void>((_) {}, onError: (_, _) {}),
+      );
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(
+        AppUpdateProvider.instance
+            .checkForUpdates(trigger: 'foreground_resume')
+            .then<void>((_) {}, onError: (_, _) {}),
+      );
+    }
+  }
+
+  void _onUpdateStateChanged() {
+    _evaluateAndPresentAppUpdate();
+  }
+
+  void _evaluateAndPresentAppUpdate() {
+    if (!mounted || _updatePromptScheduled) return;
+    final provider = AppUpdateProvider.instance;
+    final eval = provider.evaluation;
+    if (eval == null) return;
+
+    if (eval.requiresImmediateBlockingUpdate && !_mandatoryScreenPushed) {
+      _mandatoryScreenPushed = true;
+      _updatePromptScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updatePromptScheduled = false;
+        if (!mounted) return;
+        Navigator.of(context).pushNamed(
+          AppRoutes.appUpdate,
+          arguments: {'blocking': true},
+        );
+      });
+      return;
+    }
+
+    if (provider.shouldShowAutomaticDialog && !_mandatoryScreenPushed) {
+      _updatePromptScheduled = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        _updatePromptScheduled = false;
+        if (!mounted) return;
+        await AppUpdateDialog.show(
+          context,
+          evaluation: eval,
+          provider: provider,
+        );
+      });
+    }
   }
 
   @override
@@ -99,6 +168,8 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    AppUpdateProvider.instance.removeListener(_onUpdateStateChanged);
     _authController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -122,9 +193,17 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     }
   }
 
+  dynamic _safeCurrentUser() {
+    try {
+      return _authController.user;
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// 2. Load Real Supabase Data for Dashboard via DashboardRepository
   Future<void> _loadDashboardData() async {
-    final user = _authController.user;
+    final user = _safeCurrentUser();
     if (user == null) return;
 
     try {
@@ -145,6 +224,9 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
           if (userRecord != null) {
             if (userRecord['avatar_url'] != null) {
               _customAvatarUrl = userRecord['avatar_url'] as String?;
+            }
+            if (userRecord['cover_url'] != null) {
+              _customCoverUrl = userRecord['cover_url'] as String?;
             }
             final modeStr = userRecord['active_mode']?.toString().toLowerCase();
             if (modeStr == 'worker') {
@@ -176,7 +258,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     setState(() => _currentMode = mode);
     _loadDashboardData();
 
-    final user = _authController.user;
+    final user = _safeCurrentUser();
     if (user != null) {
       final modeStr = mode == AppRoleMode.worker
           ? 'worker'
@@ -188,7 +270,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
   /// Toggle Worker online availability status via DashboardRepository
   Future<void> _toggleWorkerAvailability(bool val) async {
     setState(() => _isWorkerAvailable = val);
-    final user = _authController.user;
+    final user = _safeCurrentUser();
     if (user != null) {
       await _dashboardRepository.updateWorkerAvailability(user.uid, val);
     }
@@ -202,6 +284,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       _workerRating = 5.0;
       _liveJobRequests = [];
       _customAvatarUrl = null;
+      _customCoverUrl = null;
       _currentMode = AppRoleMode.customer;
       _navIndex = 0;
     });
@@ -215,8 +298,19 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     AvatarPickerSheet.show(
       context,
       currentAvatarUrl: _customAvatarUrl,
-      userId: _authController.user?.uid,
+      userId: _safeCurrentUser()?.uid,
+      slot: ProfileMediaSlot.avatar,
       onAvatarSelected: (url) => setState(() => _customAvatarUrl = url),
+    );
+  }
+
+  void _showCoverPickerModal() {
+    AvatarPickerSheet.show(
+      context,
+      currentAvatarUrl: _customCoverUrl,
+      userId: _safeCurrentUser()?.uid,
+      slot: ProfileMediaSlot.cover,
+      onAvatarSelected: (url) => setState(() => _customCoverUrl = url),
     );
   }
 
@@ -256,7 +350,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       startingRate: startingRate,
       currentLocationZone: _currentLocationZone,
       currentFormattedLocation: _currentFormattedLocation,
-      currentUserId: _authController.user?.uid,
+      currentUserId: _safeCurrentUser()?.uid,
       onBookingSuccess: _loadDashboardData,
     );
   }
@@ -294,42 +388,27 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
     }
   }
 
+  void _handleViewActiveBookingOtp() {
+    final booking = _activeClientBooking;
+    if (booking == null) return;
+    final id = booking['service_request_id']?.toString() ?? 'REQ';
+    final otp = JobOtpUtil.extractOtp(
+      booking['service_notes']?.toString(),
+      fallbackRequestId: id,
+    );
+    _showJobOtpDialog(id, otp);
+  }
+
   /// Current Tab Content Router
   Widget _buildCurrentTabContent() {
+    final currentUser = _safeCurrentUser();
     switch (_navIndex) {
       case 0:
-        if (_currentMode == AppRoleMode.enterprise) {
-          return const ProjectDashboardScreen();
-        }
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-          child: _currentMode == AppRoleMode.customer
-              ? CustomerDashboardView(
-                  searchController: _searchController,
-                  currentLocationZone: _currentLocationZone,
-                  userIdentifier:
-                      _authController.user?.email ??
-                      _authController.user?.phoneNumber,
-                  activeClientBooking: _activeClientBooking,
-                  onSelectServicesTab: () => setState(() => _navIndex = 1),
-                  onOpenChat: () => setState(() => _navIndex = 2),
-                  onViewOtp: () {
-                    final id =
-                        _activeClientBooking!['service_request_id']
-                            ?.toString() ??
-                        'REQ';
-                    final otp = id.length >= 4
-                        ? id.substring(id.length - 4).toUpperCase()
-                        : '4892';
-                    _showJobOtpDialog(id, otp);
-                  },
-                  onCallHelpline: _callHelpline,
-                  onQuickBookService: (name, catId, rate) =>
-                      _showQuickBookingSheet(name, catId, rate),
-                  liveRequirements: _liveRequirements,
-                )
-              : WorkerDashboardView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 88),
+          child: _currentMode == AppRoleMode.worker
+              ? WorkerDashboardView(
                   workerEarnings: _workerEarnings,
                   workerCompletedJobs: _workerCompletedJobs,
                   workerRating: _workerRating,
@@ -337,13 +416,27 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                   locationZone: _currentLocationZone,
                   liveJobRequests: _liveJobRequests,
                   onToggleAvailability: _toggleWorkerAvailability,
+                )
+              : CustomerDashboardView(
+                  searchController: _searchController,
+                  currentLocationZone: _currentLocationZone,
+                  userIdentifier:
+                      currentUser?.email ?? currentUser?.phoneNumber,
+                  activeClientBooking: _activeClientBooking,
+                  onSelectServicesTab: () => setState(() => _navIndex = 1),
+                  onOpenChat: () => setState(() => _navIndex = 2),
+                  onViewOtp: _handleViewActiveBookingOtp,
+                  onCallHelpline: _callHelpline,
+                  onQuickBookService: (name, catId, rate) =>
+                      _showQuickBookingSheet(name, catId, rate),
+                  liveRequirements: _liveRequirements,
                 ),
         );
       case 1:
-        if (_currentMode == AppRoleMode.customer) {
-          return const CategoryCatalogScreen(isTab: true);
-        } else {
+        if (_currentMode == AppRoleMode.worker) {
           return const IncomingRequestsScreen(isTab: true);
+        } else {
+          return const CategoryCatalogScreen(isTab: true);
         }
       case 2:
         return const ChatListScreen(isTab: true);
@@ -351,14 +444,16 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
         if (_currentMode == AppRoleMode.customer) {
           return const LiveJobFeedScreen(isTab: true);
         } else {
-          return const ProjectDashboardScreen();
+          return const ProjectDashboardScreen(isTab: true);
         }
       case 4:
         return UnifiedProfileView(
           authController: _authController,
           customAvatarUrl: _customAvatarUrl,
+          customCoverUrl: _customCoverUrl,
           currentMode: _currentMode,
           onAvatarPick: _showAvatarPickerModal,
+          onCoverPick: _showCoverPickerModal,
           onOpenSettings: _showSettingsModal,
           onOpenServices: () => setState(() => _navIndex = 1),
           onOpenProjects: () => setState(() => _navIndex = 3),
@@ -378,25 +473,15 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
       default:
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 88),
           child: CustomerDashboardView(
             searchController: _searchController,
             currentLocationZone: _currentLocationZone,
-            userIdentifier:
-                _authController.user?.email ??
-                _authController.user?.phoneNumber,
+            userIdentifier: currentUser?.email ?? currentUser?.phoneNumber,
             activeClientBooking: _activeClientBooking,
             onSelectServicesTab: () => setState(() => _navIndex = 1),
             onOpenChat: () => setState(() => _navIndex = 2),
-            onViewOtp: () {
-              final id =
-                  _activeClientBooking!['service_request_id']?.toString() ??
-                  'REQ';
-              final otp = id.length >= 4
-                  ? id.substring(id.length - 4).toUpperCase()
-                  : '4892';
-              _showJobOtpDialog(id, otp);
-            },
+            onViewOtp: _handleViewActiveBookingOtp,
             onCallHelpline: _callHelpline,
             onQuickBookService: (name, catId, rate) =>
                 _showQuickBookingSheet(name, catId, rate),
@@ -435,14 +520,17 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen> {
                 // 2. Real-time Offline Connectivity & Synchronization Banner
                 const OfflineSyncBanner(),
 
-                // 3. Tab Content View
+                // 3. Deferred / Important App Update Banner
+                const AppUpdateBanner(),
+
+                // 4. Tab Content View
                 Expanded(child: _buildCurrentTabContent()),
               ],
             ),
           ),
-          // Floating Action Button in Customer Mode (SRS Section 3.1.E)
+          // Floating Action Button in Customer & Enterprise Home Modes (SRS Section 3.1.E)
           floatingActionButton:
-              (_currentMode == AppRoleMode.customer && _navIndex == 0)
+              (_currentMode != AppRoleMode.worker && _navIndex == 0)
               ? FloatingActionButton.extended(
                   backgroundColor: AppColors.primaryRoyal,
                   elevation: 4,

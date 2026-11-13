@@ -5,9 +5,11 @@
 </p>
 
 <p align="center">
-  <strong>Complete Relational Data Model, Row Level Security (RLS) Architecture & Atomic RPC Settlement</strong><br>
-  <em>Engine: PostgreSQL 15 (Supabase Cloud) • 34 Production Relational Tables • Single-Enterprise Architecture</em>
+  <strong>Complete Relational Data Model, Row Level Security (RLS) Architecture &amp; Atomic RPC Settlement</strong><br>
+  <em>Engine: PostgreSQL 15 (Supabase Cloud) • 34 Base Schema Tables + 24 Migration Tables (58 `CREATE TABLE` Definitions Total across 8 Migrations) • Single-Enterprise Architecture</em>
 </p>
+
+> **Schema Authority Note:** Exact production column names (`user_id`, `service_request_id`, `worker_profile_id`, `payment_id`, etc.) and constraints are governed authoritatively by [`supabase_schema.sql`](file:///c:/Users/TIMON/Desktop/SKAVIA/supabase_schema.sql) and [`supabase/migrations/`](file:///c:/Users/TIMON/Desktop/SKAVIA/supabase/migrations/) (`20261012195500` through `20261114010000`), which also add the **15 admin-governance tables**, **3 invitation/passkey tables**, and **2 app-release/telemetry tables** (`58` total `CREATE TABLE` statements across all files) plus the **9 seeded internal SKAVIA branches**, **performance indexes** (`20261114000000`), and **`users.cover_url`** (`20261114010000`). The conceptual cluster snippets below summarize base entity domains.
 
 ---
 

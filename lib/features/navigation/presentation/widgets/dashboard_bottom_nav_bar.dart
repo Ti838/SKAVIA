@@ -134,9 +134,7 @@ class DashboardBottomNavBar extends StatelessWidget {
                 index: 4,
                 activeIcon: Icons.person_rounded,
                 inactiveIcon: Icons.person_outline_rounded,
-                label: currentMode == AppRoleMode.worker
-                    ? AppLanguageService.tr('review')
-                    : AppLanguageService.tr('profile'),
+                label: AppLanguageService.tr('profile'),
               ),
             ],
           ),

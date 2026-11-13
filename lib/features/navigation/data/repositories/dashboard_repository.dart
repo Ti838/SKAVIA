@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../customer/data/models/requirement_model.dart';
 
 /// Aggregated dashboard data container for worker profile stats
@@ -33,15 +35,18 @@ class DashboardWorkerStats {
 /// Repository responsible for dashboard data aggregation across roles, active bookings,
 /// worker metrics, live requirement feeds, and notification badges.
 class DashboardRepository {
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
 
-  DashboardRepository({SupabaseClient? client})
-    : _client = client ?? Supabase.instance.client;
+  DashboardRepository({SupabaseClient? client}) : _injectedClient = client;
+
+  SupabaseClient? get _client => _injectedClient ?? tryGetSupabaseClient();
 
   /// Loads the most recent active service request for the client (Requested, Accepted, In Progress)
   Future<Map<String, dynamic>?> getActiveClientBooking(String userId) async {
+    final client = _client;
+    if (client == null) return null;
     try {
-      final res = await _client
+      final res = await client
           .from('service_requests')
           .select(
             'service_request_id, agreed_price, service_notes, scheduled_at, status, '
@@ -61,10 +66,12 @@ class DashboardRepository {
 
   /// Fetches basic user profile record (avatar, active role mode, location)
   Future<Map<String, dynamic>?> getUserProfileRecord(String userId) async {
+    final client = _client;
+    if (client == null) return null;
     try {
-      final res = await _client
+      final res = await client
           .from('users')
-          .select('avatar_url, active_mode, location')
+          .select('avatar_url, cover_url, active_mode, location')
           .eq('user_id', userId)
           .maybeSingle();
       return res;
@@ -76,8 +83,10 @@ class DashboardRepository {
 
   /// Fetches worker metrics including completed jobs, rating, earnings, and live incoming requests
   Future<DashboardWorkerStats> getWorkerStats(String userId) async {
+    final client = _client;
+    if (client == null) return DashboardWorkerStats.empty();
     try {
-      final workerProfile = await _client
+      final workerProfile = await client
           .from('worker_profiles')
           .select(
             'worker_profile_id, completed_jobs, rating_average, is_available',
@@ -95,35 +104,51 @@ class DashboardRepository {
           (workerProfile['rating_average'] as num?)?.toDouble() ?? 5.0;
       final available = workerProfile['is_available'] as bool? ?? true;
 
-      // Earnings calculation
+      // Earnings calculation (column is `amount`, status 'Available' / 'Withdrawn')
       double earningsSum = 0.0;
       try {
-        final earningsRes = await _client
+        final earningsRes = await client
             .from('worker_earnings')
-            .select('net_amount')
+            .select('amount')
             .eq('worker_profile_id', wpId)
-            .eq('status', 'Credited');
+            .inFilter('status', ['Available', 'Withdrawn']);
 
         if (earningsRes.isNotEmpty) {
           for (final row in earningsRes) {
-            earningsSum += (row['net_amount'] as num?)?.toDouble() ?? 0.0;
+            earningsSum += (row['amount'] as num?)?.toDouble() ?? 0.0;
           }
         }
       } catch (_) {}
 
-      // Incoming requests
+      // Incoming requests (note: location lives on requirements / client user record)
       List<Map<String, dynamic>> requests = [];
       try {
-        final requestsRes = await _client
+        final requestsRes = await client
             .from('service_requests')
             .select(
-              'service_request_id, agreed_price, service_notes, scheduled_at, location',
+              'service_request_id, agreed_price, service_notes, scheduled_at, status, '
+              'requirements(location, title), users!client_id(location, full_name)',
             )
             .eq('worker_profile_id', wpId)
             .eq('status', 'Requested')
             .limit(5);
-        requests = List<Map<String, dynamic>>.from(requestsRes);
-      } catch (_) {}
+        requests = List<Map<String, dynamic>>.from(requestsRes).map((row) {
+          final normalized = Map<String, dynamic>.from(row);
+          final reqMap = row['requirements'] as Map<String, dynamic>?;
+          final userMap = row['users'] as Map<String, dynamic>?;
+          normalized['location'] =
+              reqMap?['location']?.toString() ??
+              userMap?['location']?.toString() ??
+              'Dhaka';
+          normalized['title'] =
+              reqMap?['title']?.toString() ?? 'Service Request';
+          normalized['client_name'] =
+              userMap?['full_name']?.toString() ?? 'Client';
+          return normalized;
+        }).toList();
+      } catch (e) {
+        debugPrint('[DashboardRepository] incoming requests notice: $e');
+      }
 
       return DashboardWorkerStats(
         completedJobs: jobs,
@@ -140,11 +165,15 @@ class DashboardRepository {
 
   /// Fetches open job requirements for customer dashboard preview
   Future<List<JobRequirementItem>> getOpenRequirements({int limit = 5}) async {
+    final client = _client;
+    if (client == null) return [];
     try {
-      final reqRes = await _client
+      final reqRes = await client
           .from('requirements')
           .select(
-            'requirement_id, title, description, location, budget, status, created_at, category_id, submitted_by',
+            'requirement_id, title, description, location, budget, status, '
+            'urgency, requirement_type, created_at, category_id, submitted_by, '
+            'categories(name, slug), users!submitted_by(full_name)',
           )
           .eq('status', 'Open')
           .order('created_at', ascending: false)
@@ -152,19 +181,29 @@ class DashboardRepository {
 
       final List<JobRequirementItem> items = [];
       for (final row in reqRes) {
+        final catMap = row['categories'] as Map<String, dynamic>?;
+        final userMap = row['users'] as Map<String, dynamic>?;
+        final rawCatId = row['category_id']?.toString() ?? 'cat_electrical';
+        final catName =
+            catMap?['name']?.toString() ??
+            CategoryResolver.displayName(rawCatId);
+        final rawUrgency = row['urgency']?.toString() ?? 'Medium';
+        final urgency = rawUrgency == 'Medium' ? 'Standard' : rawUrgency;
+        final reqType = row['requirement_type']?.toString() ?? 'Simple';
         items.add(
           JobRequirementItem(
             id: row['requirement_id']?.toString() ?? '',
             title: row['title']?.toString() ?? 'Requirement',
-            category: 'Trade & Service',
-            categoryId: row['category_id']?.toString() ?? 'cat_electrical',
+            category: catName,
+            categoryId: rawCatId,
             description: row['description']?.toString() ?? '',
             location: row['location']?.toString() ?? 'Dhaka, Bangladesh',
             budgetMin: (row['budget'] as num?)?.toDouble() ?? 1200.0,
             budgetMax: ((row['budget'] as num?)?.toDouble() ?? 1200.0) * 1.25,
-            urgency: 'Standard',
+            urgency: urgency,
+            postType: reqType == 'Complex' ? 'Job' : 'Service Request',
             timeAgo: 'Recent',
-            clientName: 'Verified Member',
+            clientName: userMap?['full_name']?.toString() ?? 'Verified Member',
           ),
         );
       }
@@ -177,24 +216,35 @@ class DashboardRepository {
 
   /// Checks if current user has any unread notifications
   Future<bool> hasUnreadNotifications(String userId) async {
+    final client = _client;
+    if (client == null) return false;
     try {
-      final notifRes = await _client
+      final notifRes = await client
           .from('notifications')
           .select('notification_id')
           .eq('user_id', userId)
           .eq('is_read', false)
           .limit(1);
-      return (notifRes as List).isNotEmpty;
+      if ((notifRes as List).isNotEmpty) return true;
+      final userNotifRes = await client
+          .from('user_notifications')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_read', false)
+          .limit(1);
+      return (userNotifRes as List).isNotEmpty;
     } catch (e) {
       debugPrint('[DashboardRepository] hasUnreadNotifications error: $e');
       return false;
     }
   }
 
-  /// Updates active user mode ('client' or 'worker') in database
+  /// Updates active user mode ('client' / 'customer' / 'enterprise' / 'worker') in database
   Future<void> updateActiveMode(String userId, String mode) async {
+    final client = _client;
+    if (client == null) return;
     try {
-      await _client
+      await client
           .from('users')
           .update({'active_mode': mode})
           .eq('user_id', userId);
@@ -205,8 +255,10 @@ class DashboardRepository {
 
   /// Toggles worker online availability
   Future<void> updateWorkerAvailability(String userId, bool isAvailable) async {
+    final client = _client;
+    if (client == null) return;
     try {
-      await _client
+      await client
           .from('worker_profiles')
           .update({'is_available': isAvailable})
           .eq('user_id', userId);

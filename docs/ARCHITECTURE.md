@@ -14,18 +14,18 @@
   <img src="https://img.shields.io/badge/State_Management-ChangeNotifier_/_Reactive-02569B?logo=flutter&logoColor=white" alt="State Management"/>
   <img src="https://img.shields.io/badge/Relational_Store-PostgreSQL_15_(Supabase)-3ECF8E?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
   <img src="https://img.shields.io/badge/Media_Storage-Firebase_Storage-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
-  <img src="https://img.shields.io/badge/Auth_Engine-Firebase_+_Supabase_Auth-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
-  <img src="https://img.shields.io/badge/Payment_Gateway-SSLCommerz_v4_Sandbox-success" alt="Payment"/>
-  <img src="https://img.shields.io/badge/Test_Suite-64/64_Passing_(100%25)-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/Auth_Engine-Firebase_+_Session_MFA-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
+  <img src="https://img.shields.io/badge/Payment_Gateway-SSLCommerz_v4-success" alt="Payment"/>
+  <img src="https://img.shields.io/badge/Test_Suite-152_Flutter_+_25_Web_Passing-brightgreen" alt="Tests"/>
 </p>
 
 ---
 
 ## 📑 1. Architectural Philosophy & C4 System Context
 
-SKAVIA is engineered on the foundational principles of **Feature-First Domain-Driven Design (DDD)**, **High Cohesion**, **Loose Coupling**, and **Zero-Trust Cloud Boundaries**. The client mobile application treats the client runtime environment as untrusted, delegating authoritative business validation and financial settlement strictly to PostgreSQL Row Level Security (RLS) policies and transactional database procedures.
+SKAVIA is engineered on the foundational principles of **Feature-First Domain-Driven Design (DDD)**, **High Cohesion**, **Loose Coupling**, and **Zero-Trust Cloud Boundaries**. The client mobile application treats the client runtime environment as untrusted, delegating authoritative business validation and financial settlement strictly to PostgreSQL Row Level Security (RLS) policies, Edge Functions (`service_role`), and transactional database procedures.
 
-SKAVIA is designed as **one unified enterprise** operating internal specialized branches (`SKAVIA Technical`, `SKAVIA Home`, `SKAVIA Corporate`) rather than an external multi-tenant SaaS.
+SKAVIA is designed as **one unified enterprise** operating **9 internal DB specialization branches** (`TECH`, `HOME`, `CORP`, `AGRI`, `LOGI`, `DIGI`, `BIZ`, `CONS`, `EVNT`, with `8` consumer-facing branches presented on the public website and `CORP` representing enterprise operations) across **58 PostgreSQL tables** (34 core schema tables + 24 lifecycle, offline-sync, admin-governance, invitation, passkey, and app-release tables across 8 migrations), rather than an external multi-tenant SaaS. Its web administration and public landing portal live separately in [`admin-web/`](file:///c:/Users/TIMON/Desktop/SKAVIA/admin-web/) (`superadmin.skavia.com`, `admin.skavia.com`, `www.skavia.com`), decoupled from the Flutter consumer/worker mobile application (`lib/`).
 
 ### C4 Model — Level 1: System Context Diagram
 
@@ -85,9 +85,9 @@ graph TB
         RealtimeEngine["Realtime Engine (WebSockets)<br/>(Live Chat, Dispatch Alerts, Status Sync)"]
         
         subgraph PostgreSQL15 ["PostgreSQL 15 Relational Engine"]
-            CoreTables["34 Relational Tables<br/>(users, profiles, requirements, service_requests, projects, tasks, payments, reviews)"]
+            CoreTables["58 Relational Tables<br/>(core marketplace, lifecycle, governance, releases)"]
             RLSFilters["Strict Row Level Security (RLS) Policies"]
-            SettlementRPC["complete_payment_transaction()<br/>(Atomic ACID SECURITY DEFINER RPC)"]
+            SettlementRPC["complete_payment_transaction()<br/>(Atomic ACID SECURITY DEFINER RPC, service_role only)"]
             
             CoreTables --- RLSFilters
             SettlementRPC --> CoreTables
@@ -159,7 +159,7 @@ flowchart TD
 
 ## 🔄 3. Dual-Identity & Authentication Synchronization
 
-SKAVIA unifies **Google Firebase Phone Auth** and **Supabase Database Identity** through an automated client-side bridge:
+SKAVIA separates **Firebase Auth** (Flutter mobile client sessions) and **Supabase PostgreSQL 15** identity records. Note that `/functions/v1/analyze-requirement` already verifies Firebase RS256 ID Tokens directly, whereas direct mobile PostgREST/Storage queries currently use the publishable key without minting a Supabase session JWT (meaning Supabase Third-Party Firebase Auth + `auth.jwt() ->> 'sub'` RLS alignment is an explicit pre-production requirement before enabling strict `auth.uid()` enforcement for mobile clients).
 
 ```mermaid
 sequenceDiagram
@@ -301,12 +301,12 @@ sequenceDiagram
         SSL->>Edge: Dispatches IPN Webhook or Client returns with Transaction ID
         Edge->>SSL: Verifies authenticity with Transaction Validator API
         SSL-->>Edge: Status: VALIDATED
-        Edge->>PostgREST: Calls complete_payment_transaction(p_amount, p_trx_id, 'BDT')
-        Note over PostgREST: Status -> 'confirmed'<br/>Locks row (FOR UPDATE)<br/>Generates Invoice (INV-XXXX)<br/>Credits Worker Pending Ledger
+        Edge->>PostgREST: Calls complete_payment_transaction(p_payment_id, p_gateway_name, p_gateway_tx_id, p_val_id, p_verified_amount)
+        Note over PostgREST: Status -> 'Completed'<br/>Locks row (FOR UPDATE)<br/>Generates Invoice (INV-XXXX)<br/>Credits Worker Earnings Wallet
     end
 
-    App->>PostgREST: Subscribes to payments stream
-    PostgREST-->>App: Emits payment status: 'confirmed'
+    App->>PostgREST: Polls / streams payment settlement
+    PostgREST-->>App: Emits payment status: 'Completed'
     App-->>Client: Displays Escrow Locked & Booking Confirmed
 
     Note over Client,Worker: Specialist arrives on site & performs service
@@ -377,54 +377,54 @@ flowchart TD
 
 ```
 SKAVIA/
-├── android/                 # Android Native Host (Manifest, Permissions, Audio)
+├── admin-web/               # Separate Next.js 15 Public Website, Super Admin & Internal Admin Portals
+├── android/                 # Android Native Host (Manifest, Permissions, FileProvider, Audio)
 ├── ios/                     # iOS Native Host (Info.plist, Permissions, Audio)
 ├── assets/                  # High-density logos, emblems, and audio chimes
-│   ├── images/              # skavia_logo.png, skavia_emblem.png
-│   └── sounds/              # notification.mp3
-├── docs/                    # Complete Engineering & Technical Documentation Suite
+│   ├── images/              # skavia_logo.png, skavia_emblem.png, google_logo.png
+│   └── sounds/              # notification_sound.wav
+├── docs/                    # Consolidated Engineering & Operations Documentation
 │   ├── ARCHITECTURE.md      # This specification
-│   ├── DATABASE_SCHEMA.md   # PostgreSQL 15 ER model (38 tables), RLS & RPC specs
-│   ├── ROUTING_AND_NAVIGATION.md # Navigation topology & RBAC interceptors
-│   ├── API_AND_INTEGRATION_GUIDE.md # APIs, WebSockets & Third-Party Rails
-│   ├── PRODUCT_SPECIFICATION.md # Operational workflows, algorithms & specs
-│   ├── SECURITY_AND_TESTING.md # OWASP MASVS, RLS audit & 77/77 test report
-│   ├── FEATURE_TRACEABILITY_MATRIX.md # Comprehensive SRS functional audit & REA
-│   └── ADMIN_ROADMAP.md     # Future Admin Side UI blueprint
+│   ├── DATABASE_SCHEMA.md   # PostgreSQL 15 ER model (58 tables across 8 migrations), RLS & RPC specs
+│   ├── APP_RELEASE_AND_UPDATE_ARCHITECTURE.md # Signed APK verification, public delivery & in-app auto-update
+│   └── DEPLOYMENT_GUIDE.md  # Supabase migrations, Vercel setup & Android release build instructions
 ├── lib/
 │   ├── app/                 # App lifecycle, router, theme, bootstrap
 │   │   ├── bootstrap.dart   # App initialization, Supabase/Firebase/Notifications/Sync
-│   │   ├── router/          # AppRouter, AppRoutes
-│   │   └── theme/           # AppColors, AppTypography, AppDimensions
+│   │   ├── router/          # AppRouter, AppRoutes, RouteGuards
+│   │   └── theme/           # AppColors, AppTypography, AppDimensions, SkaviaSurfaceTokens
 │   ├── core/                # Core platform services, utilities, and constants
 │   │   ├── constants/       # App-wide fixed definitions
-│   │   ├── network/         # NetworkConnectivityService, OfflineSyncQueueManager
-│   │   ├── services/        # NotificationService, LocationService, FeatureEligibilityService
-│   │   ├── storage/         # LocalCacheService
-│   │   └── utils/           # Formatters, geodetic helpers, UuidUtil
+│   │   ├── network/         # NetworkConnectivityService, OfflineSyncQueueManager, OfflineSyncReplayHandler
+│   │   ├── services/        # NotificationService, LocationService, FeatureEligibilityService, MediaPickerService
+│   │   ├── storage/         # LocalCacheService, SecureStorageService, RemoteStorageDataSource
+│   │   └── utils/           # Formatters, CategoryResolver, JobOtpUtil, UuidUtil, Validators
 │   ├── data/                # Global tables and shared data infrastructure
 │   ├── features/            # Feature-first domain modules
-│   │   ├── admin/           # Administrative controllers & dispute verification
+│   │   ├── admin/           # Mobile admin controllers & governance views (guarded)
 │   │   ├── ai_assistant/    # SKAVIA AI diagnostic assistant
-│   │   ├── authentication/  # Login, OTP verification, onboarding, dual-identity
-│   │   ├── billing/         # Escrow checkout, invoices, fee calculator
+│   │   ├── app_update/      # In-app APK update checker, SHA-256 verifier & installer bridge
+│   │   ├── authentication/  # Login, OTP verification, 4-role onboarding, dual-identity
+│   │   ├── billing/         # Escrow checkout, invoices, transaction history, fee calculator
 │   │   ├── chat/            # WebSocket real-time messaging
-│   │   ├── customer/        # Post requirement, catalog, discovery, booking
+│   │   ├── customer/        # Post requirement, catalog, live job feed, booking
 │   │   ├── matching/        # Algorithmic multi-trade candidate scoring
 │   │   ├── navigation/      # MainScaffoldScreen, role-adaptive switcher
 │   │   ├── notifications/   # In-app notification center, category filters, dedup
-│   │   ├── profile/         # User lifecycle, addresses, completion engine, privacy
-│   │   ├── reviews/         # 1-5 star ratings, feedback, reputation scorecard
+│   │   ├── profile/         # User lifecycle, avatar/cover crop, addresses, completion engine, privacy
+│   │   ├── reviews/         # 1-5 star ratings, complaints, reputation scorecard
 │   │   ├── team_project/    # Turnkey commercial projects, Kanban board, teams
 │   │   └── worker/          # Dispatch feed, active job OTP, earnings, schedule
-│   ├── shared/              # Cross-cutting UI widgets and dialogs
-│   │   ├── dialogs/         # FeatureGateDialog, NotificationPermissionSheet
+│   ├── shared/              # Cross-cutting UI widgets, dialogs, and cropper screen
+│   │   ├── dialogs/         # FeatureGateDialog, NotificationPermissionSheet, AccountDeletionDialog
+│   │   ├── screens/         # ImageCropResizeScreen (1:1 avatar & 16:9 cover crop)
 │   │   └── widgets/         # AppButton, AppTextField, OfflineSyncBanner, RadarMapSheet
 │   └── main.dart            # Application entrypoint
-├── supabase/                # Cloud Supabase configurations & SQL assets
-│   └── migrations/          # Version-controlled idempotent SQL migrations
+├── supabase/                # Cloud Supabase configurations, Edge Functions & SQL assets
+│   ├── functions/           # Deno Edge Functions (analyze-requirement, verify-sslcommerz-ipn)
+│   └── migrations/          # 8 version-controlled idempotent SQL migrations
 ├── test/
-│   └── unit/                # 77 Automated unit, security, and regression tests
+│   └── unit/                # 17 Automated Flutter test suites (152 tests) + admin-web Vitest/Playwright suites (25 tests)
 ├── .env.example             # Environment template
 ├── analysis_options.yaml    # Strict Dart analyzer and linter configuration
 └── pubspec.yaml             # Flutter project manifest & dependency locks

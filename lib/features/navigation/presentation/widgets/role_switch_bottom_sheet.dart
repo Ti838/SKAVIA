@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../screens/main_scaffold_screen.dart';
 
@@ -97,46 +98,50 @@ class RoleSwitchBottomSheet extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag Handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4.5,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                isBn ? 'অ্যাকাউন্ট মোড পরিবর্তন' : 'Switch Account Mode',
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.onSurface,
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  Icons.close_rounded,
-                  color: colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
-                onPressed: () => Navigator.of(context).pop(),
+              const SizedBox(height: 18),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      isBn ? 'অ্যাকাউন্ট মোড পরিবর্তন' : 'Switch Account Mode',
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
               ),
-            ],
-          ),
           Text(
             isBn
                 ? 'আপনার প্রয়োজন অনুযায়ী মোড বেছে নিন — সব ফিচার এই একটি অ্যাপ থেকেই ব্যবহার করতে পারবেন।'
@@ -165,9 +170,7 @@ class RoleSwitchBottomSheet extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isCurrent
                         ? color.withValues(alpha: isDark ? 0.2 : 0.08)
-                        : (isDark
-                              ? colorScheme.surfaceContainerHighest
-                              : Colors.white),
+                        : context.skavia.cardBg,
                     borderRadius: BorderRadius.circular(
                       AppDimensions.radiusMedium,
                     ),
@@ -252,7 +255,9 @@ class RoleSwitchBottomSheet extends StatelessWidget {
               ),
             );
           }),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/app_theme_service.dart';
@@ -143,6 +144,38 @@ class DashboardSettingsSheet extends StatelessWidget {
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => LegalPoliciesSheet.show(context),
+              ),
+
+              // Full Settings & Preferences Screen
+              ListTile(
+                leading: const Icon(
+                  Icons.tune_rounded,
+                  color: AppColors.primaryRoyal,
+                ),
+                title: Text(
+                  isBn
+                      ? 'সব সেটিংস ও পছন্দসমূহ'
+                      : 'All Settings & Preferences',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  isBn
+                      ? 'নিরাপত্তা, বিজ্ঞপ্তি ও অ্যাকাউন্ট নিয়ন্ত্রণ'
+                      : 'Security, notifications & account controls',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  final navigator = Navigator.of(context);
+                  navigator.pop();
+                  navigator.pushNamed(AppRoutes.settings);
+                },
               ),
 
               // Account Deletion Action

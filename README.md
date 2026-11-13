@@ -11,13 +11,12 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter"/>
-  <img src="https://img.shields.io/badge/Dart-3.10+-0175C2?logo=dart&logoColor=white" alt="Dart"/>
+  <img src="https://img.shields.io/badge/Admin_Portal-Next.js_15_%2B_TypeScript-000000?logo=nextdotjs&logoColor=white" alt="Admin Web Portal"/>
   <img src="https://img.shields.io/badge/Architecture-Feature--First_Clean-blueviolet?logo=dart&logoColor=white" alt="Clean Architecture"/>
-  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL_15-3ECF8E?logo=supabase&logoColor=white" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/Auth-Firebase_Phone_SMS_OTP-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
+  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL-3ECF8E?logo=supabase&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Auth-Firebase_%2B_Session_MFA-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
   <img src="https://img.shields.io/badge/Payment-SSLCommerz_+_bKash_+_Nagad-success" alt="Payment"/>
-  <img src="https://img.shields.io/badge/Security-OWASP_MASVS_Hardened-success?logo=owasp&logoColor=white" alt="Security"/>
-  <img src="https://img.shields.io/badge/Tests-77/77_Passing_(100%25)-brightgreen" alt="Tests"/>
+  <img src="https://img.shields.io/badge/Security-RBAC_%2B_ABAC_%2B_RLS-success?logo=owasp&logoColor=white" alt="Security"/>
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/>
 </p>
 
@@ -55,6 +54,8 @@ flowchart TD
 1. **SKAVIA Technical (`TECH`):** Electrical repairs, inverter AC servicing, industrial wiring, CCTV installation, and network setup.
 2. **SKAVIA Home (`HOME`):** Sanitary plumbing, leak repairs, wall painting, waterproofing, and custom wood carpentry.
 3. **SKAVIA Corporate (`CORP`):** Full office renovations, commercial fit-outs, and multi-specialist project teams.
+
+> Beyond the core three (`TECH`, `HOME`, `CORP`), migration [`20261112000000`](supabase/migrations/20261112000000_admin_invitations_passkeys_and_superadmin.sql) seeds 6 additional internal specialization branches (`AGRI`, `LOGI`, `DIGI`, `BIZ`, `CONS`, `EVNT`), totaling **9 database branches** (**8 consumer-facing branches** displayed on the public website).
 
 ---
 
@@ -191,9 +192,9 @@ SKAVIA is built following **Clean Architecture** principles to keep code modular
 ```
 
 * **Frontend:** Flutter 3.38+ with Dart 3.10+ (Null-Safe).
-* **Database & Realtime:** Supabase PostgreSQL 15 with Row Level Security (RLS) on all 34 tables.
-* **Authentication & Media:** Firebase Phone SMS OTP and Firebase Cloud Storage.
-* **Payments:** SSLCommerz, bKash, and Nagad.
+* **Database & Realtime:** Supabase PostgreSQL 15 across **58 tables** (`supabase_schema.sql` + **8 migrations**) with Row Level Security (RLS).
+* **Authentication & Media:** Firebase Auth (SMS OTP, Google, Email/Password) + Firebase Cloud Storage (mobile) and HMAC Session + WebAuthn/TOTP MFA (`admin-web`).
+* **Payments:** SSLCommerz, bKash, and Nagad (verified server-side via `verify-sslcommerz-ipn` Edge Function).
 
 ---
 
@@ -214,8 +215,8 @@ sequenceDiagram
     Pay-->>App: Confirms payment with Transaction ID
     
     critical Secure Escrow Lock
-        App->>DB: Runs complete_payment_transaction()
-        Note over DB: Locks row, checks for duplicates,<br/>credits worker pending wallet (85%),<br/>and generates official invoice
+        Pay-->>DB: IPN Webhook -> Edge Function -> complete_payment_transaction()
+        Note over DB: service_role validates payment,<br/>locks row, credits worker wallet (85%),<br/>and generates official invoice
         DB-->>App: Payment locked in escrow
     end
 
@@ -242,75 +243,57 @@ sequenceDiagram
 
 ---
 
-## 📚 8. Master Documentation Index
+## 📚 8. Core Documentation
 
-All technical documents are stored in the [`docs/`](docs/) directory and written in clean, standard English:
-
-| Document | What It Covers | Link |
-| :--- | :--- | :--- |
-| **System Architecture** | Clean Architecture, folder layout, state controllers, and cloud services | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| **Database Schema** | Complete PostgreSQL schema (38 tables), table relationships, RLS, and stored procedures | [docs/DATABASE_SCHEMA.md](docs/DATABASE_SCHEMA.md) |
-| **Product Specification** | Features, workflows, branches, OTP handshake, and algorithm specs | [docs/PRODUCT_SPECIFICATION.md](docs/PRODUCT_SPECIFICATION.md) |
-| **Project File Directory** | Full categorized inventory of every file in the project and its exact purpose | [docs/PROJECT_FILE_DIRECTORY.md](docs/PROJECT_FILE_DIRECTORY.md) |
-| **API & Integration Guide** | Supabase REST, Realtime WebSockets, Firebase Auth, and SSLCommerz payment APIs | [docs/API_AND_INTEGRATION_GUIDE.md](docs/API_AND_INTEGRATION_GUIDE.md) |
-| **Routing & Navigation** | App routes, role-based navigation guards, and screen transitions | [docs/ROUTING_AND_NAVIGATION.md](docs/ROUTING_AND_NAVIGATION.md) |
-| **Security & Testing** | Security practices, Row Level Security policies, and 77/77 test results | [docs/SECURITY_AND_TESTING.md](docs/SECURITY_AND_TESTING.md) |
-| **Feature Traceability Matrix** | Maps every product feature directly to its Flutter screen and database table | [docs/FEATURE_TRACEABILITY_MATRIX.md](docs/FEATURE_TRACEABILITY_MATRIX.md) |
-| **Admin Roadmap** | Step-by-step roadmap for building the future Super Admin and Branch Manager web portal | [docs/ADMIN_ROADMAP.md](docs/ADMIN_ROADMAP.md) |
+| Document | Coverage |
+| :--- | :--- |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System C4 diagrams, Flutter Clean Architecture, Admin Portal boundaries |
+| [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md) | PostgreSQL schema, RLS policies, atomic settlement RPCs |
+| [`docs/APP_RELEASE_AND_UPDATE_ARCHITECTURE.md`](docs/APP_RELEASE_AND_UPDATE_ARCHITECTURE.md) | Signed APK releases, SHA-256 verification, in-app update checker |
+| [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) | Supabase migrations, Vercel (`admin-web/`) setup, Flutter release builds |
 
 ---
 
-## 🚀 9. How to Run the App
+## 🚀 9. How to Run Both Applications
 
-### Requirements:
-- **Flutter SDK:** Version `3.38+`
-- **Dart SDK:** Version `3.10+`
-- **Android Studio / VS Code / Xcode**
-- **Connected Android or iOS device / emulator**
-
-### Step 1: Set Up Environment Variables
-Create a file named `.env` in the project root:
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_supabase_anon_key
-SSLCOMMERZ_STORE_ID=testbox
-SSLCOMMERZ_STORE_PASSWD=qwerty
-SSLCOMMERZ_IS_SANDBOX=true
-```
-
-### Step 2: Install Packages
-```bash
+### A. Flutter Mobile Application (`lib/`, `test/`)
+1. Copy `.env.example` to `.env` and populate your Supabase & gateway keys.
+2. Run static analysis, tests, and app startup:
+```powershell
 flutter pub get
-```
-
-### Step 3: Check Code Quality and Run Tests
-```bash
-# Check code for any errors or warnings (must show 0 issues)
-flutter analyze
-
-# Run all 77 unit, lifecycle, and security tests
-flutter test test/unit/
-```
-
-### Step 4: Run the Application
-```bash
+flutter analyze --no-fatal-infos
+flutter test
 flutter run
 ```
 
+### B. Admin Web Portal & Public Website (`admin-web/`)
+1. Copy `admin-web/.env.example` to `admin-web/.env.local` and configure Firebase public SDK keys plus server-only `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_SESSION_SECRET`.
+2. Verify, test, build, and run:
+```powershell
+Set-Location admin-web
+npm install
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm run dev      # Starts on http://localhost:3001
+```
+
+See [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) for Vercel deployment, domain configuration, and Supabase migrations.
+
 ---
 
-## 🛡️ 10. Quality & Test Summary
+## 🛡️ 10. Quality & Verification Highlights
 
-```
+```text
 ========================================================================================
-SKAVIA QUALITY & VERIFICATION METRICS
+SKAVIA ECOSYSTEM ARCHITECTURE SUMMARY
 ========================================================================================
-[1] Static Code Analysis (flutter analyze)          : No issues found! (0 warnings)
-[2] Automated Test Suite (flutter test test/unit/)  : 77 / 77 Passed (100% Green)
-[3] Relational Database Schema                      : 38 Tables with Row Level Security
-[4] Financial Settlement                            : Atomic & Idempotent (SEC-13)
-[5] Code Architecture                               : Feature-First Clean Architecture
-[6] Open-Source License                             : MIT License (Open and Permissive)
+[1] Mobile Static Analysis & Tests  : flutter analyze --no-fatal-infos + flutter test (152 tests / 17 files)
+[2] Admin Portal Verification       : tsc --noEmit, eslint (--max-warnings=0), vitest (20 tests), next build, Playwright (5 specs)
+[3] Database & Security             : PostgreSQL RLS + 8 Migrations + Immutable Audit Logs + Maker-Checker
+[4] Modularity                      : Feature-first Flutter (lib/features/*) & Admin Portal (admin-web/src/features/*)
+[5] License                         : MIT License
 ========================================================================================
 ```
 

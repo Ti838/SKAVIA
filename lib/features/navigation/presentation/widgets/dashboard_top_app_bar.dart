@@ -4,7 +4,10 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/widgets/skavia_brand_image.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 import '../screens/main_scaffold_screen.dart';
 
 /// Top App Bar matching Reference Board: User Avatar, SKAVIA Brand Logo,
@@ -57,36 +60,23 @@ class DashboardTopAppBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // User Avatar
-              GestureDetector(
+              UserAvatar(
+                imageUrl: customAvatarUrl,
+                name: 'SKAVIA',
+                radius: 18,
                 onTap: onAvatarTap,
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.primarySky.withValues(alpha: 0.15),
-                  backgroundImage: customAvatarUrl != null
-                      ? NetworkImage(customAvatarUrl!)
-                      : null,
-                  child: customAvatarUrl == null
-                      ? Icon(
-                          Icons.person_rounded,
-                          size: 20,
-                          color: isDark
-                              ? colorScheme.primary
-                              : AppColors.primaryRoyal,
-                        )
-                      : null,
-                ),
               ),
 
               // Centered Official SKAVIA Logo
-              Image.asset(
-                AppAssets.logo,
+              SkaviaBrandImage(
+                assetPath: AppAssets.logo,
                 height: 28,
                 fit: BoxFit.contain,
                 errorBuilder: (_, _, _) => Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      AppAssets.emblem,
+                    SkaviaBrandImage(
+                      assetPath: AppAssets.emblem,
                       height: 22,
                       width: 22,
                       fit: BoxFit.contain,
@@ -378,9 +368,7 @@ class DashboardTopAppBar extends StatelessWidget {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF2E1065)
-                          : const Color(0xFFF5F3FF),
+                      color: context.skavia.softVioletBg,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                         color: isDark

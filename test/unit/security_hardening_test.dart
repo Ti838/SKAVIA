@@ -1,8 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:skavia/app/config/app_config.dart';
+import 'package:skavia/app/router/app_routes.dart';
+import 'package:skavia/app/router/route_guards.dart';
+import 'package:skavia/core/services/feature_eligibility_service.dart';
 import 'package:skavia/features/billing/data/models/payment_transaction_model.dart';
 import 'package:skavia/features/billing/presentation/controllers/payment_controller.dart';
 import 'package:skavia/features/customer/data/models/requirement_model.dart';
+import 'package:skavia/features/profile/data/models/user_profile_model.dart';
 
 void main() {
   group('Phase 10 — SKAVIA Security Hardening & Penetration Verification Suite', () {
@@ -119,6 +124,47 @@ void main() {
       expect(earning.status, equals('Available'));
       expect(earning.amount, equals(2125.0));
       expect(earning.workerProfileId, equals('wp-sec-01'));
+    });
+
+    test('AUDIT-SEC-08: Unverified workers route to profile verification setup, never Admin Queue', () {
+      final unverifiedWorker = UserProfileModel(
+        id: 'worker-unverified-01',
+        email: 'worker@skavia.test',
+        fullName: 'Test Worker',
+        role: 'Worker',
+        verificationStatus: 'unverified',
+      );
+      final res = FeatureEligibilityService.checkEligibility(
+        feature: AppFeature.acceptJob,
+        profile: unverifiedWorker,
+      );
+      expect(res.isEligible, isFalse);
+      expect(res.requiredActionRoute, equals(AppRoutes.editDetailedProfile));
+      expect(res.requiredActionRoute, isNot(equals(AppRoutes.verificationQueue)));
+    });
+
+    test('AUDIT-SEC-09: RouteGuards recognizes exactly the 3 internal SKAVIA admin roles', () {
+      expect(
+        RouteGuards.adminRoleNames,
+        containsAll(['Super Admin', 'Company Admin', 'Branch Manager']),
+      );
+      expect(RouteGuards.hasRole('Branch Manager', ['Branch Manager']), isTrue);
+      expect(RouteGuards.hasRole('Branch Manager', ['Super Admin']), isTrue);
+      expect(RouteGuards.hasRole('Branch Manager', ['Client', 'Worker']), isFalse);
+      expect(RouteGuards.isAuthenticated(), isFalse);
+    });
+
+    testWidgets('AUDIT-SEC-10: ProtectedAdminRoute fails closed when unauthenticated', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: ProtectedAdminRoute(
+            child: Scaffold(body: Text('SECRET_ADMIN_PANEL')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('SECRET_ADMIN_PANEL'), findsNothing);
+      expect(find.text('Authentication Required'), findsOneWidget);
     });
   });
 }
