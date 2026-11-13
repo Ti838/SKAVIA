@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../extensions/context_extensions.dart';
 
 class DevicePermissionService {
   /// Request Camera Permission with user rationale dialog.
@@ -56,7 +57,8 @@ class DevicePermissionService {
 
   /// Request Notification Permission for job alerts, OTPs, and messages.
   static Future<bool> requestNotificationPermission(
-      BuildContext context) async {
+    BuildContext context,
+  ) async {
     final status = await Permission.notification.status;
     if (status.isGranted) return true;
 
@@ -74,9 +76,12 @@ class DevicePermissionService {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        icon: Icon(icon, color: AppColors.primaryRoyal, size: 36),
+        icon: Icon(icon, color: ctx.skavia.brandAccent, size: 36),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-        content: Text(description, style: const TextStyle(fontSize: 13, height: 1.4)),
+        content: Text(
+          description,
+          style: const TextStyle(fontSize: 13, height: 1.4),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -97,8 +102,10 @@ class DevicePermissionService {
   }
 
   static void _showSettingsRedirectDialog(
-      BuildContext context, String permissionName) {
-    showDialog(
+    BuildContext context,
+    String permissionName,
+  ) {
+    showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -128,4 +135,3 @@ class DevicePermissionService {
     );
   }
 }
-

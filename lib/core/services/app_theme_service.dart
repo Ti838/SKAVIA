@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../constants/app_constants.dart';
 
 /// Central reactive theme service for SKAVIA.
-/// Supports Auto (System Default), Light Mode, and Dark Mode.
+/// Supports Auto (System Default), Light Mode, and Dark Mode with disk persistence.
 class AppThemeService {
   static final AppThemeService _instance = AppThemeService._internal();
   factory AppThemeService() => _instance;
   AppThemeService._internal();
 
-  /// Reactive notifier holding currently active ThemeMode
+  /// Reactive notifier holding currently active ThemeMode.
   static final ValueNotifier<ThemeMode> themeModeNotifier =
       ValueNotifier<ThemeMode>(ThemeMode.system);
+
+  static SharedPreferences? _prefs;
 
   static ThemeMode get themeMode => themeModeNotifier.value;
 
@@ -17,21 +22,55 @@ class AppThemeService {
   static bool get isDark => themeModeNotifier.value == ThemeMode.dark;
   static bool get isLight => themeModeNotifier.value == ThemeMode.light;
 
+  /// Restores persisted theme mode preference on app startup.
+  static Future<void> init({SharedPreferences? prefs}) async {
+    try {
+      _prefs = prefs ?? await SharedPreferences.getInstance();
+      final saved = _prefs?.getString(AppConstants.themeStorageKey);
+      if (saved != null) {
+        themeModeNotifier.value = _parseThemeMode(saved);
+      }
+    } catch (e) {
+      debugPrint('[AppThemeService] Init fallback: $e');
+    }
+  }
+
+  static ThemeMode _parseThemeMode(String raw) {
+    switch (raw) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  static Future<void> _persist(ThemeMode mode) async {
+    try {
+      final prefs = _prefs ?? await SharedPreferences.getInstance();
+      _prefs = prefs;
+      await prefs.setString(AppConstants.themeStorageKey, mode.name);
+    } catch (_) {}
+  }
+
   static void setThemeMode(ThemeMode mode) {
     themeModeNotifier.value = mode;
+    _persist(mode);
   }
 
   /// Cycles: System -> Light -> Dark -> System
   static void cycleThemeMode() {
     switch (themeModeNotifier.value) {
       case ThemeMode.system:
-        themeModeNotifier.value = ThemeMode.light;
+        setThemeMode(ThemeMode.light);
         break;
       case ThemeMode.light:
-        themeModeNotifier.value = ThemeMode.dark;
+        setThemeMode(ThemeMode.dark);
         break;
       case ThemeMode.dark:
-        themeModeNotifier.value = ThemeMode.system;
+        setThemeMode(ThemeMode.system);
         break;
     }
   }

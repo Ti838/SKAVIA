@@ -49,33 +49,77 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
       ),
       title: Text(
         title,
-        style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w800),
-      ),
-      content: Text(
-        message,
-        style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+        style: AppTypography.titleMedium.copyWith(
+          fontWeight: FontWeight.w800,
+          color: colorScheme.onSurface,
         ),
       ),
-      actionsPadding: const EdgeInsets.all(AppDimensions.paddingMedium),
-      actions: [
-        TextButton(
-          onPressed: onCancel ?? () => Navigator.of(context).pop(false),
-          child: Text(
-            cancelText,
-            style: const TextStyle(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
+      content: SingleChildScrollView(
+        child: Text(
+          message,
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        AppButton(text: confirmText, onPressed: onConfirm, height: 40),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+      actions: [
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 10,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            TextButton(
+              onPressed: onCancel ?? () => Navigator.of(context).pop(false),
+              child: Text(
+                cancelText,
+                style: TextStyle(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (isDestructive)
+              SizedBox(
+                height: 40,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: AppDimensions.roundedPill,
+                    ),
+                  ),
+                  onPressed: onConfirm,
+                  child: Text(
+                    confirmText,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              )
+            else
+              AppButton(
+                text: confirmText,
+                onPressed: onConfirm,
+                width: null,
+                height: 40,
+              ),
+          ],
+        ),
       ],
     );
   }

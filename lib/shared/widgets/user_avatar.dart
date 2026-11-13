@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
+import '../../core/extensions/context_extensions.dart';
 
-/// Reusable user avatar with verified badge and network image fallback.
+/// Reusable user avatar with verified badge and safe network image fallback.
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String name;
@@ -23,31 +24,58 @@ class UserAvatar extends StatelessWidget {
 
   String get _initials {
     if (name.trim().isEmpty) return '?';
-    final parts = name.trim().split(' ');
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '?';
     if (parts.length > 1) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
     return parts[0][0].toUpperCase();
   }
 
+  Widget _buildInitialsFallback(BuildContext context) {
+    final tokens = context.skavia;
+    return Center(
+      child: Text(
+        _initials,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: radius * 0.75,
+          color: tokens.brandAccent,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget avatar = CircleAvatar(
-      radius: radius,
-      backgroundColor: AppColors.primarySky.withValues(alpha: 0.15),
-      backgroundImage: imageUrl != null && imageUrl!.startsWith('http')
-          ? NetworkImage(imageUrl!)
-          : null,
-      child: imageUrl == null || !imageUrl!.startsWith('http')
-          ? Text(
-              _initials,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: radius * 0.75,
-                color: AppColors.primaryRoyal,
-              ),
+    final tokens = context.skavia;
+    final hasValidUrl =
+        imageUrl != null &&
+        imageUrl!.trim().isNotEmpty &&
+        (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://'));
+
+    final diameter = radius * 2;
+    Widget avatar = Container(
+      width: diameter,
+      height: diameter,
+      decoration: BoxDecoration(
+        color: AppColors.primarySky.withValues(alpha: 0.16),
+        shape: BoxShape.circle,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: hasValidUrl
+          ? Image.network(
+              imageUrl!.trim(),
+              width: diameter,
+              height: diameter,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _buildInitialsFallback(context),
             )
-          : null,
+          : _buildInitialsFallback(context),
     );
 
     if (isVerified || isOnline) {
@@ -61,8 +89,8 @@ class UserAvatar extends StatelessWidget {
               bottom: -2,
               child: Container(
                 padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: tokens.cardBg,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -82,7 +110,7 @@ class UserAvatar extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.successGreen,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
+                  border: Border.all(color: tokens.cardBg, width: 1.5),
                 ),
               ),
             ),

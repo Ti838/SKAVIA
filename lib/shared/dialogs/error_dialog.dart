@@ -38,6 +38,8 @@ class ErrorDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
@@ -55,15 +57,18 @@ class ErrorDialog extends StatelessWidget {
               title,
               style: AppTypography.titleMedium.copyWith(
                 fontWeight: FontWeight.w800,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
         ],
       ),
-      content: Text(
-        message,
-        style: AppTypography.bodyMedium.copyWith(
-          color: AppColors.textSecondary,
+      content: SingleChildScrollView(
+        child: Text(
+          message,
+          style: AppTypography.bodyMedium.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
         ),
       ),
       actionsPadding: const EdgeInsets.all(AppDimensions.paddingMedium),

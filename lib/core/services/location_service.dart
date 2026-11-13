@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../utils/supabase_guard.dart';
 
 class LocationResult {
   final String formattedAddress;
@@ -247,15 +249,27 @@ class LocationService {
     return '';
   }
 
-  /// Updates current user profile location in Supabase
-  static Future<void> syncLocationToSupabase(String locationString) async {
+  /// Updates current user profile location in Supabase using Firebase UID (or Supabase session UID).
+  static Future<void> syncLocationToSupabase(
+    String locationString, {
+    String? userId,
+  }) async {
     try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user != null) {
-        await Supabase.instance.client
+      String? resolvedUserId = userId;
+      if (resolvedUserId == null || resolvedUserId.isEmpty) {
+        try {
+          resolvedUserId = FirebaseAuth.instance.currentUser?.uid;
+        } catch (_) {}
+      }
+      final client = tryGetSupabaseClient();
+      if (client == null) return;
+      resolvedUserId ??= client.auth.currentUser?.id;
+
+      if (resolvedUserId != null && resolvedUserId.isNotEmpty) {
+        await client
             .from('users')
             .update({'location': locationString})
-            .eq('user_id', user.id);
+            .eq('user_id', resolvedUserId);
       }
     } catch (e) {
       debugPrint('[LocationService] Supabase sync error: $e');

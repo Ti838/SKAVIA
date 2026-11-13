@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../widgets/app_button.dart';
 
 class EmptyDataView extends StatelessWidget {
@@ -23,43 +23,62 @@ class EmptyDataView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingXLarge),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 48, color: AppColors.primary),
+    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(AppDimensions.paddingXLarge),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight:
+                  constraints.hasBoundedHeight && constraints.maxHeight > 48
+                  ? constraints.maxHeight - (AppDimensions.paddingXLarge * 2)
+                  : 0,
+              minWidth: double.infinity,
             ),
-            const SizedBox(height: AppDimensions.paddingLarge),
-            Text(
-              title,
-              style: AppTypography.titleMedium.copyWith(
-                fontWeight: FontWeight.w800,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: tokens.brandAccent.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 48, color: tokens.brandAccent),
+                  ),
+                  const SizedBox(height: AppDimensions.paddingLarge),
+                  Text(
+                    title,
+                    style: AppTypography.titleMedium.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    message,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (actionText != null && onAction != null) ...[
+                    const SizedBox(height: AppDimensions.paddingLarge),
+                    AppButton(text: actionText!, onPressed: onAction!, width: 180),
+                  ],
+                ],
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: AppTypography.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            if (actionText != null && onAction != null) ...[
-              const SizedBox(height: AppDimensions.paddingLarge),
-              AppButton(text: actionText!, onPressed: onAction!, width: 180),
-            ],
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

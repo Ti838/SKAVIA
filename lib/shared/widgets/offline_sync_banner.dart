@@ -21,18 +21,19 @@ class OfflineSyncBanner extends StatelessWidget {
         }
 
         Color bgColor;
+        Color fgColor = Colors.white;
         IconData icon;
         String message;
 
         switch (state) {
           case NetworkQualityState.poorNetwork:
-            bgColor = AppColors.warning;
+            bgColor = const Color(0xFFB45309); // High-contrast amber-700
             icon = Icons.network_check_rounded;
             message = 'Slow connection detected — offline drafts active';
             break;
           case NetworkQualityState.offline:
             final count = OfflineSyncQueueManager.instance.pendingCount;
-            bgColor = Colors.blueGrey.shade800;
+            bgColor = const Color(0xFF1E293B);
             icon = Icons.cloud_off_rounded;
             message = count > 0
                 ? 'Offline mode — $count change${count > 1 ? 's' : ''} queued for sync'
@@ -58,30 +59,35 @@ class OfflineSyncBanner extends StatelessWidget {
           color: bgColor,
           child: Row(
             children: [
-              Icon(icon, color: Colors.white, size: 16),
+              Icon(icon, color: fgColor, size: 16),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   message,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: fgColor,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               if (state == NetworkQualityState.syncFailed)
-                GestureDetector(
+                InkWell(
                   onTap: () => OfflineSyncQueueManager.instance.processQueue(),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     child: Text(
                       'RETRY',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: fgColor,
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
                         decoration: TextDecoration.underline,
+                        decorationColor: fgColor,
                       ),
                     ),
                   ),

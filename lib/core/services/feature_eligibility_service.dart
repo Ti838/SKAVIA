@@ -84,8 +84,8 @@ class FeatureEligibilityService {
 
         if (profile.verificationStatus != 'verified') {
           missing.add('National ID (NID) and police clearance verification are required before accepting jobs.');
-          actionRoute = AppRoutes.verificationQueue;
-          actionLabel = 'Verify NID';
+          actionRoute = AppRoutes.editDetailedProfile;
+          actionLabel = 'Complete Profile & Verification';
         }
 
         return FeatureEligibilityResult(

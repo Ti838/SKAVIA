@@ -14,7 +14,7 @@ abstract class Validators {
     if (value == null || value.trim().isEmpty) {
       return 'Email is required';
     }
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final emailRegex = RegExp(r'^[\w\-\.\+]+@([\w\-]+\.)+[\w\-]{2,}$');
     if (!emailRegex.hasMatch(value.trim())) {
       return 'Enter a valid email address';
     }
@@ -27,11 +27,30 @@ abstract class Validators {
     }
     final clean = value.replaceAll(RegExp(r'\D'), '');
     // Standard Bangladesh numbers: 013, 014, 015, 016, 017, 018, 019
-    final bdRegex = RegExp(r'^(?:\+?88)?01[3-9]\d{8}$');
+    final bdRegex = RegExp(r'^(?:88)?01[3-9]\d{8}$');
     if (!bdRegex.hasMatch(clean)) {
       return 'Enter a valid 11-digit Bangladeshi mobile number';
     }
     return null;
+  }
+
+  static String? optionalBdPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    return bdPhone(value);
+  }
+
+  /// Normalizes a valid Bangladeshi phone input into E.164 format (+8801XXXXXXXXX).
+  static String normalizeBdPhone(String value) {
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('01') && digits.length == 11) {
+      return '+88$digits';
+    }
+    if (digits.startsWith('8801') && digits.length == 13) {
+      return '+$digits';
+    }
+    return value.trim();
   }
 
   static String? otp(String? value, [int length = 4]) {

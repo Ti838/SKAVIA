@@ -44,9 +44,13 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
 
   @override
   Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final isLargeText = textScale > 1.3;
+    final radarHeight = isLargeText ? 182.0 : 152.0;
+
     return Container(
       width: double.infinity,
-      height: 152,
+      height: radarHeight,
       decoration: BoxDecoration(
         color: const Color(0xFF0F1E36), // Deep Night Radar Slate
         borderRadius: BorderRadius.circular(22),
@@ -67,7 +71,7 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
               animation: _pulseController,
               builder: (context, child) {
                 return CustomPaint(
-                  size: const Size(double.infinity, 152),
+                  size: Size(double.infinity, radarHeight),
                   painter: _RadarMapPainter(
                     animationValue: _pulseController.value,
                   ),
@@ -140,38 +144,43 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                   ),
                   if (widget.onExpand != null) ...[
                     const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: widget.onExpand,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primarySky.withValues(alpha: 0.3),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.primarySky.withValues(alpha: 0.5),
+                    Flexible(
+                      flex: 0,
+                      child: GestureDetector(
+                        onTap: widget.onExpand,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.fullscreen_rounded,
-                              size: 14,
-                              color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: AppColors.primarySky.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: AppColors.primarySky.withValues(alpha: 0.5),
                             ),
-                            const SizedBox(width: 4),
-                            Text(
-                              AppLanguageService.tr('expand_radar'),
-                              style: const TextStyle(
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.fullscreen_rounded,
+                                size: 14,
                                 color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
-                          ],
+                              if (!isLargeText) ...[
+                                const SizedBox(width: 4),
+                                Text(
+                                  AppLanguageService.tr('expand_radar'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -185,43 +194,9 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
               bottom: 10,
               left: 12,
               right: 12,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: [
-                          _buildTechMarkerChip(
-                            Icons.electric_bolt_rounded,
-                            AppColors.accentPeach,
-                            AppLanguageService.isBengali
-                                ? 'ইলেকট্রিশিয়ান'
-                                : 'Electricians',
-                          ),
-                          const SizedBox(width: 6),
-                          _buildTechMarkerChip(
-                            Icons.ac_unit_rounded,
-                            AppColors.primarySky,
-                            AppLanguageService.isBengali
-                                ? 'এসি টেকনিশিয়ান'
-                                : 'HVAC',
-                          ),
-                          const SizedBox(width: 6),
-                          _buildTechMarkerChip(
-                            Icons.plumbing_rounded,
-                            AppColors.accentAqua,
-                            AppLanguageService.isBengali
-                                ? 'প্লাম্বার'
-                                : 'Plumbers',
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final arrivalPill = Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 4,
@@ -232,14 +207,67 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                     ),
                     child: Text(
                       '~15 ${AppLanguageService.tr('min_arrival')}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: AppColors.accentAqua,
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                ],
+                  );
+
+                  final compactBottom =
+                      constraints.maxWidth < 300 || isLargeText;
+
+                  final chipsStrip = SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        if (compactBottom) ...[
+                          arrivalPill,
+                          const SizedBox(width: 6),
+                        ],
+                        _buildTechMarkerChip(
+                          Icons.electric_bolt_rounded,
+                          AppColors.accentPeach,
+                          AppLanguageService.isBengali
+                              ? 'ইলেকট্রিশিয়ান'
+                              : 'Electricians',
+                        ),
+                        const SizedBox(width: 6),
+                        _buildTechMarkerChip(
+                          Icons.ac_unit_rounded,
+                          AppColors.primarySky,
+                          AppLanguageService.isBengali
+                              ? 'এসি টেকনিশিয়ান'
+                              : 'HVAC',
+                        ),
+                        const SizedBox(width: 6),
+                        _buildTechMarkerChip(
+                          Icons.plumbing_rounded,
+                          AppColors.accentAqua,
+                          AppLanguageService.isBengali
+                              ? 'প্লাম্বার'
+                              : 'Plumbers',
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (compactBottom) {
+                    return chipsStrip;
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: chipsStrip),
+                      const SizedBox(width: 8),
+                      arrivalPill,
+                    ],
+                  );
+                },
               ),
             ),
           ],

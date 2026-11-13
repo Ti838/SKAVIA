@@ -49,4 +49,10 @@ abstract class AppRoutes {
   static const String notificationPreferences = '/notification-preferences';
   static const String privacySecurity = '/privacy-security';
   static const String notificationCenter = '/notifications';
+  static const String settings = '/settings';
+  static const String supportFaq = '/support-faq';
+  static const String aboutSkavia = '/about-skavia';
+  static const String appUpdate = '/app-update';
+  static const String transactionHistory = '/transaction-history';
+  static const String submitComplaint = '/submit-complaint';
 }

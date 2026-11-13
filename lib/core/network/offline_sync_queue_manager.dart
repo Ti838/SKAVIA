@@ -65,6 +65,7 @@ class OfflineSyncQueueManager {
   static const String _queueCacheKey = 'skavia_offline_sync_queue';
   final List<SyncQueueItem> _queue = [];
   bool _isProcessing = false;
+  Future<bool> Function(SyncQueueItem item)? _registeredBackendHandler;
 
   final StreamController<int> _pendingCountController =
       StreamController<int>.broadcast();
@@ -72,6 +73,13 @@ class OfflineSyncQueueManager {
   Stream<int> get pendingCountStream => _pendingCountController.stream;
   int get pendingCount =>
       _queue.where((e) => e.status == SyncItemStatus.pending).length;
+
+  /// Registers a live backend replay handler (set by [AppBootstrap] at runtime).
+  void registerBackendHandler(
+    Future<bool> Function(SyncQueueItem item)? handler,
+  ) {
+    _registeredBackendHandler = handler;
+  }
 
   /// Loads pending items from persistent cache upon startup.
   void initialize() {
@@ -136,8 +144,10 @@ class OfflineSyncQueueManager {
         bool success = false;
         if (customHandler != null) {
           success = await customHandler(item);
+        } else if (_registeredBackendHandler != null) {
+          success = await _registeredBackendHandler!(item);
         } else {
-          // Default: simulate network execution with backoff
+          // Default integrity handler used when no live backend session is attached
           success = await _executeDefaultSync(item);
         }
 
@@ -191,20 +201,34 @@ class OfflineSyncQueueManager {
 
   void _loadFromCache() {
     final raw = LocalCacheService.instance.get(_queueCacheKey);
-    if (raw != null && raw is List) {
+    final List<dynamic>? list = raw is List
+        ? raw
+        : (raw is String ? _tryDecodeList(raw) : null);
+    if (list != null) {
       _queue.clear();
-      for (final json in raw) {
-        if (json is Map<String, dynamic>) {
-          _queue.add(SyncQueueItem.fromJson(json));
+      for (final json in list) {
+        if (json is Map) {
+          _queue.add(
+            SyncQueueItem.fromJson(Map<String, dynamic>.from(json)),
+          );
         }
       }
       _emitPendingCount();
     }
   }
 
+  List<dynamic>? _tryDecodeList(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is List ? decoded : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _saveToCache() {
     final list = _queue.map((e) => e.toJson()).toList();
-    LocalCacheService.instance.put(_queueCacheKey, jsonEncode(list));
+    LocalCacheService.instance.put(_queueCacheKey, list);
   }
 
   void _emitPendingCount() {

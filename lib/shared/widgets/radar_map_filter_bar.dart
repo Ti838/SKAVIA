@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/extensions/context_extensions.dart';
 
 class RadarMapFilterBar extends StatelessWidget {
   final int selectedRadiusKm;
@@ -21,51 +22,72 @@ class RadarMapFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-      child: Row(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: tokens.subtleCardBg,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 8,
+        runSpacing: 8,
         children: [
           // Radius Chips
-          _buildRadiusChip(context, 3, '3 km'),
-          const SizedBox(width: 6),
-          _buildRadiusChip(context, 5, '5 km'),
-          const SizedBox(width: 6),
-          _buildRadiusChip(context, 10, isBn ? '১০+ কিমি' : '10+ km'),
-          const Spacer(),
-          // Trade Filter Popup/Dropdown
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildRadiusChip(context, 3, '3 km'),
+              _buildRadiusChip(context, 5, '5 km'),
+              _buildRadiusChip(context, 10, isBn ? '১০+ কিমি' : '10+ km'),
+            ],
+          ),
+          // Trade Filter Dropdown
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colorScheme.outlineVariant),
+              border: Border.all(color: tokens.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: selectedTradeFilter,
                 dropdownColor: colorScheme.surface,
                 isDense: true,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primaryRoyal,
+                  color: tokens.brandAccent,
                 ),
-                icon: const Icon(
+                icon: Icon(
                   Icons.filter_list_rounded,
                   size: 16,
-                  color: AppColors.primaryRoyal,
+                  color: tokens.brandAccent,
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'All', child: Text('All Trades')),
-                  DropdownMenuItem(
-                    value: 'Electrical',
-                    child: Text('Electrician'),
-                  ),
-                  DropdownMenuItem(value: 'HVAC', child: Text('AC / HVAC')),
-                  DropdownMenuItem(value: 'Plumbing', child: Text('Plumber')),
-                ],
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'All',
+                      child: Text('All Trades', overflow: TextOverflow.ellipsis),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Electrical',
+                      child: Text(
+                        'Electrician',
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    DropdownMenuItem(
+                      value: 'HVAC',
+                      child: Text('AC / HVAC', overflow: TextOverflow.ellipsis),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Plumbing',
+                      child: Text('Plumber', overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
                 onChanged: (val) {
                   if (val != null) onTradeFilterChanged(val);
                 },
@@ -79,6 +101,7 @@ class RadarMapFilterBar extends StatelessWidget {
 
   Widget _buildRadiusChip(BuildContext context, int km, String label) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
     final isSelected = selectedRadiusKm == km;
     return GestureDetector(
       onTap: () => onRadiusChanged(km),
@@ -88,9 +111,7 @@ class RadarMapFilterBar extends StatelessWidget {
           color: isSelected ? AppColors.primaryRoyal : colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primaryRoyal
-                : colorScheme.outlineVariant,
+            color: isSelected ? AppColors.primaryRoyal : tokens.border,
           ),
         ),
         child: Text(

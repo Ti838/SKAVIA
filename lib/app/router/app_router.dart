@@ -33,16 +33,23 @@ import '../../features/customer/presentation/screens/live_job_feed_screen.dart';
 import '../../features/billing/presentation/screens/simulated_checkout_screen.dart';
 import '../../features/billing/presentation/screens/invoice_screen.dart';
 import '../../features/billing/presentation/screens/payment_success_screen.dart';
+import '../../features/billing/presentation/screens/transaction_history_screen.dart';
 import '../../features/admin/presentation/screens/verification_queue_screen.dart';
 import '../../features/admin/presentation/screens/dispute_resolution_screen.dart';
 import '../../features/admin/presentation/screens/team_assembly_screen.dart';
 import '../../features/notifications/presentation/screens/notification_center_screen.dart';
 import '../../features/profile/presentation/controllers/profile_controller.dart';
+import '../../features/profile/presentation/screens/about_skavia_screen.dart';
+import '../../features/app_update/presentation/screens/app_update_screen.dart';
 import '../../features/profile/presentation/screens/edit_detailed_profile_screen.dart';
 import '../../features/profile/presentation/screens/notification_preferences_screen.dart';
 import '../../features/profile/presentation/screens/privacy_security_screen.dart';
 import '../../features/profile/presentation/screens/saved_addresses_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/support_faq_screen.dart';
+import '../../features/reviews/presentation/screens/submit_complaint_screen.dart';
 import 'app_routes.dart';
+import 'route_guards.dart';
 
 abstract class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -112,13 +119,15 @@ abstract class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => WorkerProfileDetailScreen(
-            name: args?['name'] as String? ?? 'Rahul Ahmed',
-            title: args?['title'] as String? ?? 'Flutter Developer',
+            workerProfileId: args?['workerProfileId'] as String?,
+            name: args?['name'] as String? ?? 'SKAVIA Specialist',
+            title: args?['title'] as String? ?? 'Certified Technician',
             rating: (args?['rating'] as num?)?.toDouble() ?? 4.8,
-            reviewsCount: (args?['reviewsCount'] as num?)?.toInt() ?? 32,
+            reviewsCount: (args?['reviewsCount'] as num?)?.toInt() ?? 0,
             experience: args?['experience'] as String? ?? '2+ years',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
             hourlyRate: args?['hourlyRate'] as String? ?? '৳ 1,500/hr',
+            avatarUrl: args?['avatarUrl'] as String? ?? '',
           ),
         );
 
@@ -226,11 +235,12 @@ abstract class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => BookingConfirmationScreen(
+            requirementId: args?['requirementId'] as String?,
             workerProfileId: args?['workerProfileId'] as String? ?? 'wp_001',
-            workerName: args?['workerName'] as String? ?? 'Rahul Ahmed',
-            tradeTitle: args?['tradeTitle'] as String? ?? 'Flutter Developer',
-            hourlyRate: (args?['hourlyRate'] as num?)?.toDouble() ?? 150.0,
-            jobTitle: args?['jobTitle'] as String? ?? 'Mobile App Development',
+            workerName: args?['workerName'] as String? ?? 'SKAVIA Specialist',
+            tradeTitle: args?['tradeTitle'] as String? ?? 'Certified Technician',
+            hourlyRate: (args?['hourlyRate'] as num?)?.toDouble() ?? 1500.0,
+            jobTitle: args?['jobTitle'] as String? ?? 'Technical Service',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
           ),
         );
@@ -272,16 +282,50 @@ abstract class AppRouter {
 
       case AppRoutes.paymentSuccess:
         final args = settings.arguments as Map<String, dynamic>?;
+        final totalAmount = (args?['amount'] as num?)?.toDouble() ?? 1150.0;
+        final baseAmount =
+            (args?['baseAmount'] as num?)?.toDouble() ?? (totalAmount / 1.15);
+        final platformFee =
+            (args?['platformFee'] as num?)?.toDouble() ??
+            (totalAmount - baseAmount);
+        final transactionId =
+            args?['transactionId'] as String? ?? 'TRX-1001';
+        final paymentMethod =
+            args?['paymentMethod'] as String? ?? 'bKash';
+        final jobTitle = args?['jobTitle'] as String? ?? 'Service';
+        final specialistName =
+            args?['specialistName'] as String? ?? 'SKAVIA Specialist';
+
         return MaterialPageRoute(
-          builder: (_) => PaymentSuccessScreen(
-            amount: (args?['amount'] as num?)?.toDouble() ?? 1150.0,
-            transactionId: args?['transactionId'] as String? ?? 'TRX-1001',
-            paymentMethod: args?['paymentMethod'] as String? ?? 'bKash',
-            jobTitle: args?['jobTitle'] as String? ?? 'Service',
-            specialistName: args?['specialistName'] as String? ?? 'Specialist',
+          builder: (routeContext) => PaymentSuccessScreen(
+            amount: totalAmount,
+            transactionId: transactionId,
+            paymentMethod: paymentMethod,
+            jobTitle: jobTitle,
+            specialistName: specialistName,
             serviceRequestId: args?['serviceRequestId'] as String?,
             projectId: args?['projectId'] as String?,
-            onViewInvoice: () {},
+            onViewInvoice: () {
+              Navigator.of(routeContext).pushNamed(
+                AppRoutes.invoice,
+                arguments: {
+                  'invoiceNumber':
+                      args?['invoiceNumber'] as String? ??
+                      'INV-${transactionId.replaceAll(RegExp(r'[^A-Za-z0-9]'), '')}',
+                  'serviceTitle': jobTitle,
+                  'clientName':
+                      args?['clientName'] as String? ?? 'Valued Client',
+                  'clientPhone': args?['clientPhone'] as String? ?? '',
+                  'specialistName': specialistName,
+                  'baseAmount': baseAmount,
+                  'platformFee': platformFee,
+                  'totalAmount': totalAmount,
+                  'paymentMethod': paymentMethod,
+                  'transactionId': transactionId,
+                  'paidAt': args?['paidAt'] as DateTime? ?? DateTime.now(),
+                },
+              );
+            },
           ),
         );
 
@@ -292,41 +336,52 @@ abstract class AppRouter {
         return MaterialPageRoute(builder: (_) => const ProjectShowcaseScreen());
 
       case AppRoutes.adminDashboard:
-        return MaterialPageRoute(builder: (_) => const AdminDashboardScreen());
+        return MaterialPageRoute(
+          builder: (_) =>
+              const ProtectedAdminRoute(child: AdminDashboardScreen()),
+        );
 
       case AppRoutes.verificationQueue:
         return MaterialPageRoute(
-          builder: (_) => const VerificationQueueScreen(),
+          builder: (_) =>
+              const ProtectedAdminRoute(child: VerificationQueueScreen()),
         );
 
       case AppRoutes.disputeResolution:
         return MaterialPageRoute(
-          builder: (_) => const DisputeResolutionScreen(),
+          builder: (_) =>
+              const ProtectedAdminRoute(child: DisputeResolutionScreen()),
         );
 
       case AppRoutes.teamAssembly:
-        return MaterialPageRoute(builder: (_) => const TeamAssemblyScreen());
+        return MaterialPageRoute(
+          builder: (_) =>
+              const ProtectedAdminRoute(child: TeamAssemblyScreen()),
+        );
 
       case AppRoutes.appShell:
         return MaterialPageRoute(builder: (_) => const MainScaffoldScreen());
 
       case AppRoutes.editDetailedProfile:
         final controller =
-            (settings.arguments as ProfileController?) ?? ProfileController();
+            (settings.arguments as ProfileController?) ??
+            ProfileController.shared;
         return MaterialPageRoute(
           builder: (_) => EditDetailedProfileScreen(controller: controller),
         );
 
       case AppRoutes.savedAddresses:
         final controller =
-            (settings.arguments as ProfileController?) ?? ProfileController();
+            (settings.arguments as ProfileController?) ??
+            ProfileController.shared;
         return MaterialPageRoute(
           builder: (_) => SavedAddressesScreen(controller: controller),
         );
 
       case AppRoutes.notificationPreferences:
         final controller =
-            (settings.arguments as ProfileController?) ?? ProfileController();
+            (settings.arguments as ProfileController?) ??
+            ProfileController.shared;
         return MaterialPageRoute(
           builder: (_) =>
               NotificationPreferencesScreen(controller: controller),
@@ -334,7 +389,8 @@ abstract class AppRouter {
 
       case AppRoutes.privacySecurity:
         final controller =
-            (settings.arguments as ProfileController?) ?? ProfileController();
+            (settings.arguments as ProfileController?) ??
+            ProfileController.shared;
         return MaterialPageRoute(
           builder: (_) => PrivacySecurityScreen(controller: controller),
         );
@@ -342,6 +398,37 @@ abstract class AppRouter {
       case AppRoutes.notificationCenter:
         return MaterialPageRoute(
           builder: (_) => const NotificationCenterScreen(),
+        );
+
+      case AppRoutes.settings:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+
+      case AppRoutes.supportFaq:
+        return MaterialPageRoute(builder: (_) => const SupportFaqScreen());
+
+      case AppRoutes.aboutSkavia:
+        return MaterialPageRoute(builder: (_) => const AboutSkaviaScreen());
+
+      case AppRoutes.appUpdate:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => AppUpdateScreen(
+            blockingMode: args?['blocking'] as bool? ?? false,
+          ),
+        );
+
+      case AppRoutes.transactionHistory:
+        return MaterialPageRoute(
+          builder: (_) => const TransactionHistoryScreen(),
+        );
+
+      case AppRoutes.submitComplaint:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => SubmitComplaintScreen(
+            serviceRequestId: args?['serviceRequestId'] as String?,
+            projectId: args?['projectId'] as String?,
+          ),
         );
 
       default:

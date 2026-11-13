@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../../app/theme/app_colors.dart';
 import '../../../core/services/app_language_service.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/utils/supabase_guard.dart';
 import '../models/radar_technician.dart';
 import 'radar_location_banner.dart';
 import 'radar_map_canvas.dart';
@@ -94,11 +93,13 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   }
 
   Future<void> _fetchRemoteTechnicians() async {
+    final client = tryGetSupabaseClient();
+    if (client == null) return;
     try {
-      final res = await Supabase.instance.client
-          .from('worker_profiles')
+      final res = await client
+          .from('marketplace_public_profiles')
           .select(
-            'worker_profile_id, title, expected_rate, rating_average, completed_jobs, location, users(full_name)',
+            'worker_profile_id, display_name, title, expected_rate, rating_average, completed_jobs, location',
           )
           .eq('is_available', true)
           .limit(20);
@@ -108,20 +109,21 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
         for (final row in res) {
           final id = row['worker_profile_id']?.toString() ?? '';
           final title = row['title']?.toString() ?? 'Specialist';
-          final userMap = row['users'] as Map<String, dynamic>?;
           final name =
-              userMap?['full_name']?.toString() ?? 'Verified Specialist';
+              row['display_name']?.toString() ?? 'Verified Specialist';
           final rate = (row['expected_rate'] as num?)?.toDouble() ?? 500.0;
           final rating = (row['rating_average'] as num?)?.toDouble() ?? 5.0;
           final jobs = (row['completed_jobs'] as num?)?.toInt() ?? 0;
           final loc = row['location']?.toString() ?? 'Dhaka';
 
-          final double lat =
-              23.7461 +
-              (remote.length * 0.012 * (remote.length.isEven ? 1 : -1));
-          final double lng =
-              90.3742 +
-              (remote.length * 0.015 * (remote.length.isOdd ? 1 : -1));
+          // Map text zone to canonical Dhaka operating coordinates cleanly
+          final anchor = _resolveDhakaZoneCoords(loc, remote.length);
+          final realDist = LocationService.calculateDistanceKm(
+            _userPosition.latitude,
+            _userPosition.longitude,
+            anchor.latitude,
+            anchor.longitude,
+          );
 
           IconData icon = Icons.build_rounded;
           Color color = AppColors.primarySky;
@@ -146,10 +148,10 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
               color: color,
               rating: rating,
               jobs: jobs,
-              distanceKm: 1.5 + (remote.length * 0.4),
+              distanceKm: realDist,
               startingRate: rate,
-              latitude: lat,
-              longitude: lng,
+              latitude: anchor.latitude,
+              longitude: anchor.longitude,
               zone: loc,
             ),
           );
@@ -165,6 +167,35 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
     } catch (e) {
       debugPrint('[RadarMapSheet Remote Tech Notice]: $e');
     }
+  }
+
+  static const Map<String, LatLng> _dhakaZoneCoordinates = {
+    'dhanmondi': LatLng(23.7465, 90.3760),
+    'gulshan': LatLng(23.7925, 90.4078),
+    'banani': LatLng(23.7937, 90.4043),
+    'mirpur': LatLng(23.8071, 90.3686),
+    'uttara': LatLng(23.8759, 90.3795),
+    'mohakhali': LatLng(23.7782, 90.4050),
+    'bashundhara': LatLng(23.8191, 90.4526),
+    'mohammadpur': LatLng(23.7658, 90.3586),
+    'badda': LatLng(23.7806, 90.4267),
+    'baridhara': LatLng(23.8012, 90.4222),
+    'tejgaon': LatLng(23.7598, 90.3929),
+    'motijheel': LatLng(23.7330, 90.4172),
+    'khilgaon': LatLng(23.7567, 90.4316),
+    'malibagh': LatLng(23.7509, 90.4150),
+    'lalbagh': LatLng(23.7196, 90.3881),
+  };
+
+  LatLng _resolveDhakaZoneCoords(String locationText, int index) {
+    final lower = locationText.toLowerCase();
+    for (final entry in _dhakaZoneCoordinates.entries) {
+      if (lower.contains(entry.key)) {
+        return entry.value;
+      }
+    }
+    final fallbackValues = _dhakaZoneCoordinates.values.toList();
+    return fallbackValues[index % fallbackValues.length];
   }
 
   Future<void> _fetchRealUserLocation() async {
@@ -184,7 +215,8 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   }
 
   void _recenterToUser() {
-    _mapController.move(_userPosition, 14.5);
+    setState(() => _currentZoom = 14.5);
+    _mapController.move(_userPosition, _currentZoom);
   }
 
   void _zoomIn() {
@@ -193,7 +225,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   }
 
   void _zoomOut() {
-    setState(() => _currentZoom = math.max(_currentZoom - 1.0, 5.0));
+    setState(() => _currentZoom = math.max(_currentZoom - 1.0, 4.0));
     _mapController.move(_mapController.camera.center, _currentZoom);
   }
 
@@ -285,10 +317,13 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                 }
               },
               onTechnicianTap: (tech) {
-                setState(() => _selectedTech = tech);
+                setState(() {
+                  _selectedTech = tech;
+                  _currentZoom = 14.5;
+                });
                 _mapController.move(
                   LatLng(tech.latitude, tech.longitude),
-                  14.5,
+                  _currentZoom,
                 );
               },
               onRecenter: _recenterToUser,

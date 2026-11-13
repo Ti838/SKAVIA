@@ -1,8 +1,11 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../constants/app_constants.dart';
 
 /// Central reactive language localization service for SKAVIA.
-/// Supports seamless 1-tap instant switching between English and Bengali (বাংলা)
-/// matching bKash's world-class bilingual experience with zero reload glitches.
+/// Supports instant bilingual switching between English ('en') and Bengali ('bn')
+/// with persistent local preference storage.
 class AppLanguageService {
   static final AppLanguageService _instance = AppLanguageService._internal();
   factory AppLanguageService() => _instance;
@@ -13,15 +16,36 @@ class AppLanguageService {
     'en',
   );
 
+  static SharedPreferences? _prefs;
+
   static bool get isBengali => localeNotifier.value == 'bn';
 
+  static Future<void> init({SharedPreferences? prefs}) async {
+    try {
+      _prefs = prefs ?? await SharedPreferences.getInstance();
+      final saved = _prefs?.getString(AppConstants.languageStorageKey);
+      if (saved == 'en' || saved == 'bn') {
+        localeNotifier.value = saved!;
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> _persist(String code) async {
+    try {
+      final prefs = _prefs ?? await SharedPreferences.getInstance();
+      _prefs = prefs;
+      await prefs.setString(AppConstants.languageStorageKey, code);
+    } catch (_) {}
+  }
+
   static void toggleLanguage() {
-    localeNotifier.value = isBengali ? 'en' : 'bn';
+    setLanguage(isBengali ? 'en' : 'bn');
   }
 
   static void setLanguage(String code) {
     if (code == 'en' || code == 'bn') {
       localeNotifier.value = code;
+      _persist(code);
     }
   }
 

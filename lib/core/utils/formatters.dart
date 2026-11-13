@@ -33,6 +33,14 @@ abstract class Formatters {
     return formatDate(dateTime);
   }
 
+  /// Formats byte counts cleanly into KB or MB for APK & attachment labels.
+  static String formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    final mb = bytes / (1024 * 1024);
+    if (mb >= 1) return '${mb.toStringAsFixed(1)} MB';
+    return '${(bytes / 1024).toStringAsFixed(0)} KB';
+  }
+
   /// Formats standard Bangladeshi phone number
   static String formatBdPhone(String phone) {
     final clean = phone.replaceAll(RegExp(r'\D'), '');

@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../app/theme/app_colors.dart';
+import '../../../core/extensions/context_extensions.dart';
 import '../models/radar_technician.dart';
 import 'radar_map_controls.dart';
 
@@ -44,6 +45,7 @@ class RadarMapCanvas extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
 
     return Stack(
       children: [
@@ -149,7 +151,7 @@ class RadarMapCanvas extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isSelected
                               ? AppColors.primaryRoyal
-                              : Colors.white,
+                              : tokens.cardBg,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected ? Colors.white : tech.color,
@@ -196,9 +198,9 @@ class RadarMapCanvas extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              color: tokens.cardBg,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: colorScheme.outlineVariant),
+              border: Border.all(color: tokens.border),
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black12,

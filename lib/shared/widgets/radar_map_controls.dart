@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/theme/app_colors.dart';
+import '../../../core/extensions/context_extensions.dart';
 
 /// Floating zoom and GPS recenter controls for radar map sheets.
 class RadarMapControls extends StatelessWidget {
@@ -23,25 +23,22 @@ class RadarMapControls extends StatelessWidget {
     required String tooltip,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          shape: BoxShape.circle,
-          border: Border.all(color: colorScheme.outlineVariant),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: tokens.cardBg,
+        shape: CircleBorder(side: BorderSide(color: tokens.border)),
+        elevation: 2,
+        child: InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(icon, size: 20, color: tokens.brandAccent),
+          ),
         ),
-        child: Icon(icon, size: 20, color: AppColors.primaryRoyal),
       ),
     );
   }
