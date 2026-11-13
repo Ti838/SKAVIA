@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 class EarningsMetricTile extends StatelessWidget {
   final String label;
@@ -20,11 +21,13 @@ class EarningsMetricTile extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: Colors.white60, fontSize: 11),
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white70, fontSize: 11),
         ),
         const SizedBox(height: 2),
         Text(
           value,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 13,
@@ -43,6 +46,8 @@ class EarningsTransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final amount = (transaction['amount'] as num?)?.toDouble() ?? 0.0;
     final isCredit = transaction['transaction_type'] == 'Credit' || amount >= 0;
 
@@ -50,16 +55,9 @@ class EarningsTransactionTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         children: [
@@ -67,8 +65,8 @@ class EarningsTransactionTile extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isCredit
-                  ? AppColors.success.withValues(alpha: 0.12)
-                  : AppColors.error.withValues(alpha: 0.12),
+                  ? AppColors.success.withValues(alpha: 0.14)
+                  : AppColors.error.withValues(alpha: 0.14),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -88,25 +86,30 @@ class EarningsTransactionTile extends StatelessWidget {
                   transaction['transaction_type']?.toString() ?? 'Job Earning',
                   style: AppTypography.titleSmall.copyWith(
                     fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
                   ),
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   transaction['status']?.toString() ?? 'Completed',
                   style: AppTypography.caption.copyWith(
-                    color: AppColors.textSecondary,
+                    color: tokens.secondaryText,
                   ),
                 ),
               ],
             ),
           ),
-          Text(
-            '${isCredit ? '+' : ''}৳ ${amount.abs().toStringAsFixed(0)}',
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.w800,
-              color: isCredit ? AppColors.success : AppColors.error,
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              '${isCredit ? '+' : '-'}৳ ${amount.abs().toStringAsFixed(0)}',
+              textAlign: TextAlign.end,
+              style: AppTypography.titleMedium.copyWith(
+                fontWeight: FontWeight.w800,
+                color: isCredit ? AppColors.success : AppColors.error,
+              ),
             ),
           ),
         ],

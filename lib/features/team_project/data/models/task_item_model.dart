@@ -26,18 +26,18 @@ class TaskItemModel {
   });
 
   factory TaskItemModel.fromJson(Map<String, dynamic> json) {
+    final rawDate = json['deadline'] ?? json['due_date'];
     return TaskItemModel(
       taskId: json['task_id']?.toString() ?? '',
       projectId: json['project_id']?.toString() ?? '',
       title: json['title']?.toString() ?? 'Project Task',
       description: json['description']?.toString() ?? '',
-      status: json['status']?.toString() ?? 'To Do',
+      status: json['status']?.toString() ?? 'Assigned',
       priority: json['priority']?.toString() ?? 'Medium',
-      assignedWorkerId: json['assigned_to']?.toString(),
+      assignedWorkerId:
+          (json['assigned_team_member_id'] ?? json['assigned_to'])?.toString(),
       assignedWorkerName: json['assigned_worker_name']?.toString(),
-      deadline: json['due_date'] != null
-          ? DateTime.tryParse(json['due_date'].toString())
-          : null,
+      deadline: rawDate != null ? DateTime.tryParse(rawDate.toString()) : null,
       budgetWeight: (json['budget_weight'] as num?)?.toDouble() ?? 0.0,
     );
   }

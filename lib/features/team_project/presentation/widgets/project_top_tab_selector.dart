@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// 3-segment pill tab selector (Overview | Tasks | Members) for project dashboard.
 class ProjectTopTabSelector extends StatelessWidget {
@@ -15,22 +16,16 @@ class ProjectTopTabSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 8,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isDark
-              ? colorScheme.surfaceContainerHighest
-              : const Color(0xFFF1F5F9),
+          color: tokens.subtleCardBg,
           borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: tokens.subtleBorder),
         ),
         child: Row(
           children: [
@@ -44,43 +39,33 @@ class ProjectTopTabSelector extends StatelessWidget {
   }
 
   Widget _buildTabItem(BuildContext context, int index, String title) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final isSelected = selectedIndex == index;
 
     return Expanded(
       child: GestureDetector(
         onTap: () => onTabSelected(index),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected
-                ? (isDark ? colorScheme.surface : Colors.white)
-                : Colors.transparent,
+            color: isSelected ? tokens.cardBg : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: isDark ? 0.2 : 0.05,
-                      ),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
           ),
           child: Center(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontFamily: AppTypography.bodyFont,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 13,
-                color: isSelected
-                    ? colorScheme.onSurface
-                    : colorScheme.onSurfaceVariant,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                title,
+                maxLines: 1,
+                style: TextStyle(
+                  fontFamily: AppTypography.bodyFont,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 13,
+                  color: isSelected
+                      ? colorScheme.onSurface
+                      : tokens.secondaryText,
+                ),
               ),
             ),
           ),

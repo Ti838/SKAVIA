@@ -95,7 +95,7 @@ class _WorkerDashboardViewState extends State<WorkerDashboardView> {
                                   ? '${widget.locationZone} এলাকায় কাজের জন্য প্রস্তুত'
                                   : 'Available for Jobs in ${widget.locationZone}')
                             : AppLanguageService.tr('offline'),
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 13,

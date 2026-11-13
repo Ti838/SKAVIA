@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
+import '../../../../core/utils/uuid_util.dart';
 import '../../data/models/project_fallback_data.dart';
 import '../widgets/project_action_dialogs.dart';
 import '../widgets/project_members_tab_view.dart';
@@ -13,15 +16,17 @@ import 'task_board_screen.dart';
 import 'team_roster_screen.dart';
 
 /// Project Management & Task Board Screen aligned with Screen 10 & Screen 12 of SKAVIA reference design.
-/// Supports Overview, Tasks, and Members tabs with live Supabase query fallback.
+/// Supports Overview, Tasks, and Members tabs with live Supabase query + LocalCacheService fallback.
 class ProjectDashboardScreen extends StatefulWidget {
   final String? projectId;
   final String projectTitle;
+  final bool isTab;
 
   const ProjectDashboardScreen({
     super.key,
     this.projectId,
     this.projectTitle = 'Project Alpha',
+    this.isTab = false,
   });
 
   @override
@@ -35,8 +40,12 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
   bool _isLoading = true;
   String _title = 'Project Alpha';
   double _budget = 15000.0;
+  String? _liveTeamId;
   List<Map<String, dynamic>> _teamMembers = [];
   List<Map<String, dynamic>> _tasks = [];
+
+  String get _cacheKey =>
+      'project_dashboard_state_${widget.projectId ?? 'default'}';
 
   @override
   void initState() {
@@ -45,12 +54,25 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
     _fetchRealProjectData();
   }
 
+  void _saveLocalState() {
+    LocalCacheService.instance.put(_cacheKey, {
+      'teamMembers': _teamMembers,
+      'tasks': _tasks,
+    });
+  }
+
   Future<void> _fetchRealProjectData() async {
     setState(() => _isLoading = true);
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      final client = Supabase.instance.client;
+      User? user;
+      try {
+        user = FirebaseAuth.instance.currentUser;
+      } catch (_) {
+        user = null;
+      }
+      final SupabaseClient? client = tryGetSupabaseClient();
+      if (client == null) return;
 
       Map<String, dynamic>? project;
 
@@ -85,51 +107,56 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
             .maybeSingle();
 
         if (teamRes != null) {
-          final teamId = teamRes['team_id'];
-          final membersRes = await client
-              .from('team_members')
-              .select(
-                'team_member_id, role_in_team, is_team_leader, worker_profiles ( title, location, rating_average, users ( full_name ) )',
-              )
-              .eq('team_id', teamId);
+          final teamId = teamRes['team_id']?.toString();
+          _liveTeamId = teamId;
+          if (teamId != null) {
+            final membersRes = await client
+                .from('team_members')
+                .select(
+                  'team_member_id, role_in_team, is_team_leader, worker_profiles ( title, location, rating_average, users ( full_name ) )',
+                )
+                .eq('team_id', teamId);
 
-          final members = <Map<String, dynamic>>[];
-          for (final m in membersRes) {
-            final wp = m['worker_profiles'] as Map<String, dynamic>?;
-            final u = wp?['users'] as Map<String, dynamic>?;
-            members.add({
-              'name': u?['full_name'] ?? 'Assigned Member',
-              'role': m['role_in_team'] ?? wp?['title'] ?? 'Developer',
-              'isLeader': m['is_team_leader'] == true,
-            });
-          }
+            final members = <Map<String, dynamic>>[];
+            for (final m in membersRes) {
+              final wp = m['worker_profiles'] as Map<String, dynamic>?;
+              final u = wp?['users'] as Map<String, dynamic>?;
+              members.add({
+                'name': u?['full_name'] ?? 'Assigned Member',
+                'role': m['role_in_team'] ?? wp?['title'] ?? 'Developer',
+                'isLeader': m['is_team_leader'] == true,
+              });
+            }
 
-          if (members.isNotEmpty) {
-            _teamMembers = members;
-          }
+            if (members.isNotEmpty) {
+              _teamMembers = members;
+            }
 
-          final tasksRes = await client
-              .from('tasks')
-              .select('task_id, title, status, description, created_at')
-              .eq('team_id', teamId);
+            final tasksRes = await client
+                .from('tasks')
+                .select('task_id, title, status, description, deadline, created_at')
+                .eq('project_id', projId);
 
-          if (tasksRes.isNotEmpty) {
-            _tasks = tasksRes.map((t) {
-              final statusRaw = t['status']?.toString() ?? 'Pending';
-              String statusClean = 'Pending';
-              if (statusRaw == 'Verified' || statusRaw == 'Completed') {
-                statusClean = 'Completed';
-              } else if (statusRaw == 'In Progress' ||
-                  statusRaw == 'Submitted') {
-                statusClean = 'In Progress';
-              }
-              return {
-                'id': t['task_id']?.toString() ?? '',
-                'title': t['title']?.toString() ?? 'Task',
-                'status': statusClean,
-                'date': 'Apr 24',
-              };
-            }).toList();
+            if (tasksRes.isNotEmpty) {
+              _tasks = tasksRes.map((t) {
+                final statusRaw = t['status']?.toString() ?? 'Pending';
+                String statusClean = 'Pending';
+                if (statusRaw == 'Verified' || statusRaw == 'Completed') {
+                  statusClean = 'Completed';
+                } else if (statusRaw == 'In Progress' ||
+                    statusRaw == 'Submitted') {
+                  statusClean = 'In Progress';
+                }
+                final rawDate = (t['deadline'] ?? t['created_at'])?.toString() ?? '';
+                final shortDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : 'TBD';
+                return {
+                  'id': t['task_id']?.toString() ?? '',
+                  'title': t['title']?.toString() ?? 'Task',
+                  'status': statusClean,
+                  'date': shortDate,
+                };
+              }).toList();
+            }
           }
         }
       }
@@ -137,12 +164,35 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
       debugPrint('Error fetching live project data: $e');
     } finally {
       if (mounted) {
+        final cached = LocalCacheService.instance.get(_cacheKey);
+        if (_teamMembers.isEmpty &&
+            cached is Map &&
+            cached['teamMembers'] is List) {
+          _teamMembers = (cached['teamMembers'] as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
+        if (_tasks.isEmpty && cached is Map && cached['tasks'] is List) {
+          _tasks = (cached['tasks'] as List)
+              .whereType<Map>()
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+        }
         setState(() {
           if (_teamMembers.isEmpty) {
-            _teamMembers = List.from(ProjectFallbackData.fallbackMembers);
+            _teamMembers = List<Map<String, dynamic>>.from(
+              ProjectFallbackData.fallbackMembers.map(
+                (e) => Map<String, dynamic>.from(e),
+              ),
+            );
           }
           if (_tasks.isEmpty) {
-            _tasks = List.from(ProjectFallbackData.fallbackTasks);
+            _tasks = List<Map<String, dynamic>>.from(
+              ProjectFallbackData.fallbackTasks.map(
+                (e) => Map<String, dynamic>.from(e),
+              ),
+            );
           }
           _isLoading = false;
         });
@@ -150,18 +200,36 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
     }
   }
 
-  void _onAddNewTask() {
+  Future<void> _onAddNewTask() async {
     ProjectActionDialogs.showAddTaskDialog(
       context,
-      onTaskAdded: (text) {
+      onTaskAdded: (text) async {
+        final newId = UuidUtil.generateV4();
         setState(() {
           _tasks.add({
-            'id': 't_${DateTime.now().millisecondsSinceEpoch}',
+            'id': newId,
             'title': text,
             'status': 'Pending',
-            'date': 'May 5',
+            'date': 'Today',
           });
         });
+        _saveLocalState();
+
+        final client = tryGetSupabaseClient();
+        if (client != null &&
+            _liveTeamId != null &&
+            UuidUtil.isValidUuid(_liveTeamId)) {
+          try {
+            await client.from('tasks').insert({
+              'task_id': newId,
+              'team_id': _liveTeamId,
+              'title': text,
+              'status': 'Pending',
+            });
+          } catch (e) {
+            debugPrint('[ProjectDashboard] Task insert sync notice: $e');
+          }
+        }
       },
     );
   }
@@ -173,8 +241,42 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
         setState(() {
           _teamMembers.add({'name': name, 'role': role, 'isLeader': false});
         });
+        _saveLocalState();
       },
     );
+  }
+
+  Future<void> _toggleTaskStatus(int index) async {
+    if (index < 0 || index >= _tasks.length) return;
+    final task = _tasks[index];
+    final currentStatus = task['status'] as String? ?? 'Pending';
+    final nextStatus = currentStatus == 'Completed'
+        ? 'In Progress'
+        : (currentStatus == 'In Progress' ? 'Completed' : 'In Progress');
+
+    setState(() {
+      _tasks[index]['status'] = nextStatus;
+    });
+    _saveLocalState();
+
+    final taskId = task['id']?.toString();
+    final client = tryGetSupabaseClient();
+    if (client != null && UuidUtil.isValidUuid(taskId)) {
+      try {
+        await client
+            .from('tasks')
+            .update({'status': nextStatus})
+            .eq('task_id', taskId!);
+      } catch (e) {
+        debugPrint('[ProjectDashboard] Task status sync notice: $e');
+      }
+    }
+  }
+
+  double _computeProgressPercent() {
+    if (_tasks.isEmpty) return 0.0;
+    final completed = _tasks.where((t) => t['status'] == 'Completed').length;
+    return (completed / _tasks.length).clamp(0.0, 1.0);
   }
 
   @override
@@ -184,93 +286,69 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: Text(
-          _title,
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Kanban Task Board',
-            icon: Icon(
-              Icons.view_kanban_outlined,
-              color: colorScheme.onSurface,
-              size: 22,
-            ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => TaskBoardScreen(
-                    projectId: widget.projectId ?? 'proj_01',
-                    projectTitle: _title,
-                  ),
+      appBar: widget.isTab
+          ? null
+          : AppBar(
+              backgroundColor: colorScheme.surface,
+              elevation: 0,
+              centerTitle: true,
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: colorScheme.onSurface,
+                  size: 20,
                 ),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: 'Team Roster',
-            icon: Icon(
-              Icons.people_outline_rounded,
-              color: colorScheme.onSurface,
-              size: 22,
-            ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => TeamRosterScreen(
-                    projectId: widget.projectId ?? 'proj_01',
-                    projectTitle: _title,
-                  ),
+                onPressed: () {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              title: Text(
+                _title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: AppTypography.headingFont,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  color: colorScheme.onSurface,
                 ),
-              );
-            },
-          ),
-          IconButton(
-            tooltip: 'Add Item',
-            icon: Icon(Icons.add, color: colorScheme.onSurface, size: 24),
-            onPressed: () {
-              if (_selectedTopTab == 1) {
-                _onAddNewTask();
-              } else {
-                _onAddNewMember();
-              }
-            },
-          ),
-        ],
-      ),
+              ),
+              actions: _buildActionButtons(colorScheme),
+            ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator(color: colorScheme.primary))
           : Column(
               children: [
-                // 3-Segment Top Pill Selector (Overview | Tasks | Members)
+                if (widget.isTab)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 10, 8, 6),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: AppTypography.headingFont,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        ..._buildActionButtons(colorScheme),
+                      ],
+                    ),
+                  ),
                 ProjectTopTabSelector(
                   selectedIndex: _selectedTopTab,
                   onTabSelected: (idx) => setState(() => _selectedTopTab = idx),
                 ),
                 const SizedBox(height: 8),
 
-                // Content Views
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
@@ -282,11 +360,73 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
     );
   }
 
+  List<Widget> _buildActionButtons(ColorScheme colorScheme) {
+    return [
+      IconButton(
+        tooltip: 'Kanban Task Board',
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: const EdgeInsets.all(6),
+        icon: Icon(
+          Icons.view_kanban_outlined,
+          color: colorScheme.onSurface,
+          size: 21,
+        ),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => TaskBoardScreen(
+                projectId: widget.projectId ?? 'proj_01',
+                projectTitle: _title,
+              ),
+            ),
+          );
+        },
+      ),
+      IconButton(
+        tooltip: 'Team Roster',
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: const EdgeInsets.all(6),
+        icon: Icon(
+          Icons.people_outline_rounded,
+          color: colorScheme.onSurface,
+          size: 21,
+        ),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => TeamRosterScreen(
+                projectId: widget.projectId ?? 'proj_01',
+                projectTitle: _title,
+              ),
+            ),
+          );
+        },
+      ),
+      IconButton(
+        tooltip: 'Add Item',
+        visualDensity: VisualDensity.compact,
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: const EdgeInsets.all(6),
+        icon: Icon(Icons.add, color: colorScheme.onSurface, size: 22),
+        onPressed: () {
+          if (_selectedTopTab == 1) {
+            _onAddNewTask();
+          } else {
+            _onAddNewMember();
+          }
+        },
+      ),
+    ];
+  }
+
   Widget _buildSelectedTabBody() {
     switch (_selectedTopTab) {
       case 0:
         return ProjectOverviewTabView(
           budget: _budget,
+          progressPercent: _computeProgressPercent(),
           teamMembers: _teamMembers,
           onAddMember: _onAddNewMember,
         );
@@ -296,19 +436,7 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
           selectedTaskFilter: _selectedTaskFilter,
           onFilterChanged: (filter) =>
               setState(() => _selectedTaskFilter = filter),
-          onToggleTaskStatus: (index) {
-            setState(() {
-              final task = _tasks[index];
-              final status = task['status'] as String? ?? 'Pending';
-              if (status == 'Completed') {
-                task['status'] = 'In Progress';
-              } else if (status == 'In Progress') {
-                task['status'] = 'Completed';
-              } else {
-                task['status'] = 'In Progress';
-              }
-            });
-          },
+          onToggleTaskStatus: _toggleTaskStatus,
           onAddTask: _onAddNewTask,
         );
       case 2:

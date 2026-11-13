@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/extensions/context_extensions.dart';
+
 /// Reusable modal dialogs for adding tasks and team members in project management.
 class ProjectActionDialogs {
   /// Shows dialog to create a new task
@@ -8,21 +10,29 @@ class ProjectActionDialogs {
     required ValueChanged<String> onTaskAdded,
   }) {
     final titleController = TextEditingController();
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(
+        backgroundColor: tokens.cardBg,
+        scrollable: true,
+        title: Text(
           'Add New Task',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: colorScheme.onSurface,
+          ),
         ),
-        content: SingleChildScrollView(
-          child: TextField(
-            controller: titleController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'e.g. Implement payment flow',
-              border: OutlineInputBorder(),
-            ),
+        content: TextField(
+          controller: titleController,
+          autofocus: true,
+          style: TextStyle(color: colorScheme.onSurface),
+          decoration: const InputDecoration(
+            hintText: 'e.g. Implement payment flow',
+            border: OutlineInputBorder(),
           ),
         ),
         actions: [
@@ -39,16 +49,14 @@ class ProjectActionDialogs {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
+              backgroundColor: tokens.brandAccent,
+              foregroundColor: tokens.onBrandAccent,
             ),
-            child: const Text(
-              'Add Task',
-              style: TextStyle(color: Colors.white),
-            ),
+            child: const Text('Add Task'),
           ),
         ],
       ),
-    );
+    ).whenComplete(titleController.dispose);
   }
 
   /// Shows dialog to add a new team member
@@ -58,34 +66,43 @@ class ProjectActionDialogs {
   }) {
     final nameController = TextEditingController();
     final roleController = TextEditingController();
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(
+        backgroundColor: tokens.cardBg,
+        scrollable: true,
+        title: Text(
           'Add Team Member',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  hintText: 'Member Name',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: roleController,
-                decoration: const InputDecoration(
-                  hintText: 'Role (e.g. Developer, QA)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+            color: colorScheme.onSurface,
           ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              style: TextStyle(color: colorScheme.onSurface),
+              decoration: const InputDecoration(
+                hintText: 'Member Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: roleController,
+              style: TextStyle(color: colorScheme.onSurface),
+              decoration: const InputDecoration(
+                hintText: 'Role (e.g. Developer, QA)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -102,12 +119,16 @@ class ProjectActionDialogs {
               Navigator.pop(ctx);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2563EB),
+              backgroundColor: tokens.brandAccent,
+              foregroundColor: tokens.onBrandAccent,
             ),
-            child: const Text('Add', style: TextStyle(color: Colors.white)),
+            child: const Text('Add'),
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      nameController.dispose();
+      roleController.dispose();
+    });
   }
 }

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
-/// Reusable list of selectable payment rails (bKash, Nagad, Card, SSLCommerz, Cash)
+/// Reusable list of selectable payment rails (bKash, Nagad, Card, SSLCommerz, Cash).
 class PaymentMethodSelector extends StatelessWidget {
   final List<Map<String, dynamic>> methods;
   final String selectedMethod;
@@ -17,14 +18,16 @@ class PaymentMethodSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: methods.map((method) {
         final isSelected = selectedMethod == method['id'];
-        final methodColor = method['color'] as Color;
+        final rawColor = method['color'] as Color;
+        final methodColor =
+            isDark && method['id'] == 'Card' ? tokens.brandAccent : rawColor;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -35,13 +38,11 @@ class PaymentMethodSelector extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? methodColor.withValues(alpha: 0.08)
-                    : (isDark
-                          ? colorScheme.surfaceContainerHighest
-                          : Colors.white),
+                    ? methodColor.withValues(alpha: isDark ? 0.16 : 0.08)
+                    : tokens.cardBg,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
                 border: Border.all(
-                  color: isSelected ? methodColor : colorScheme.outlineVariant,
+                  color: isSelected ? methodColor : tokens.border,
                   width: isSelected ? 2 : 1,
                 ),
               ),
@@ -76,7 +77,7 @@ class PaymentMethodSelector extends StatelessWidget {
                           method['subtitle'] as String,
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurfaceVariant,
+                            color: tokens.mutedText,
                           ),
                         ),
                       ],
@@ -88,7 +89,7 @@ class PaymentMethodSelector extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? methodColor : colorScheme.outline,
+                        color: isSelected ? methodColor : tokens.border,
                         width: isSelected ? 6 : 2,
                       ),
                     ),

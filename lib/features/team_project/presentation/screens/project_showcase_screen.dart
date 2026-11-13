@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 
 /// Screen 15: Project Showcase ("Project Showcase") with "My Projects" and "Explore" tabs.
 class ProjectShowcaseScreen extends StatefulWidget {
@@ -19,32 +19,28 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
     {
       'title': 'HealthCare App',
       'category': 'Mobile App • Flutter',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFF10B981),
       'progress': 0.85,
     },
     {
       'title': 'E-commerce Platform',
       'category': 'Web App • React',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFF2563EB),
       'progress': 0.60,
     },
     {
       'title': 'Portfolio Website',
       'category': 'Web • Next.js',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFF8B5CF6),
       'progress': 1.0,
     },
     {
       'title': 'Task Manager',
       'category': 'Mobile App • Flutter',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFFF59E0B),
       'progress': 0.45,
     },
@@ -54,16 +50,14 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
     {
       'title': 'Smart FinTech Dashboard',
       'category': 'Finance • Flutter & Golang',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFF0EA5E9),
       'progress': 0.90,
     },
     {
       'title': 'IoT Smart Logistics',
       'category': 'Hardware & Mobile • Python',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400',
+      'thumbnail': '',
       'tagColor': Color(0xFF10B981),
       'progress': 0.70,
     },
@@ -71,32 +65,12 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
     final activeList = _selectedTab == 0 ? _myProjects : _exploreProjects;
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
-            size: 20,
-          ),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        title: const Text(
-          'Project Showcase',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
-            color: AppColors.textDark,
-          ),
-        ),
-      ),
+      backgroundColor: tokens.sheetBg,
+      appBar: const AppAppBar(title: 'Project Showcase'),
       body: SafeArea(
         child: Column(
           children: [
@@ -106,8 +80,9 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                  color: tokens.subtleCardBg,
                   borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: tokens.border),
                 ),
                 child: Row(
                   children: [
@@ -119,20 +94,26 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Projects 2-Column Grid
+            // Responsive Projects Grid
             Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 14,
-                  childAspectRatio: 0.82,
-                ),
-                itemCount: activeList.length,
-                itemBuilder: (context, index) {
-                  final proj = activeList[index];
-                  return _buildProjectCard(proj);
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final textScale = MediaQuery.textScalerOf(context).scale(1);
+                  final isSingleCol =
+                      constraints.maxWidth < 360 || textScale > 1.3;
+                  return GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isSingleCol ? 1 : 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: isSingleCol ? 1.65 : 0.82,
+                    ),
+                    itemCount: activeList.length,
+                    itemBuilder: (context, index) {
+                      return _buildProjectCard(activeList[index]);
+                    },
+                  );
                 },
               ),
             ),
@@ -143,23 +124,28 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
   }
 
   Widget _buildTab(int index, String title) {
+    final tokens = context.skavia;
     final isSelected = _selectedTab == index;
+
     return Expanded(
       child: GestureDetector(
         onTap: () => setState(() => _selectedTab = index),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 9),
+          padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 8),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFF2563EB) : Colors.transparent,
+            color: isSelected ? tokens.brandAccent : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
           ),
           alignment: Alignment.center,
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : const Color(0xFF64748B),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isSelected ? tokens.onBrandAccent : tokens.mutedText,
+              ),
             ),
           ),
         ),
@@ -168,6 +154,14 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
   }
 
   Widget _buildProjectCard(Map<String, dynamic> proj) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final thumbUrl = (proj['thumbnail'] as String?)?.trim() ?? '';
+    final hasValidUrl =
+        thumbUrl.startsWith('http://') || thumbUrl.startsWith('https://');
+    final accentColor = proj['tagColor'] as Color? ?? tokens.brandAccent;
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(
@@ -181,12 +175,12 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: tokens.cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: tokens.border),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.02),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -195,41 +189,34 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Thumbnail image with curved top
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(15),
                 ),
-                child: Image.network(
-                  proj['thumbnail'] as String,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, error, stack) => Container(
-                    color: const Color(0xFFEFF6FF),
-                    child: const Center(
-                      child: Icon(
-                        Icons.apps_rounded,
-                        color: Color(0xFF2563EB),
-                        size: 32,
-                      ),
-                    ),
-                  ),
-                ),
+                child: hasValidUrl
+                    ? Image.network(
+                        thumbUrl,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) =>
+                            _buildThumbnailFallback(tokens, accentColor),
+                      )
+                    : _buildThumbnailFallback(tokens, accentColor),
               ),
             ),
-            // Title & Category
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     proj['title'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -237,9 +224,9 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
                   const SizedBox(height: 3),
                   Text(
                     proj['category'] as String,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
-                      color: AppColors.textMuted,
+                      color: tokens.mutedText,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
@@ -249,6 +236,23 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThumbnailFallback(
+    dynamic tokens,
+    Color accentColor,
+  ) {
+    return Container(
+      width: double.infinity,
+      color: tokens.softBlueBg,
+      child: Center(
+        child: Icon(
+          Icons.apps_rounded,
+          color: accentColor,
+          size: 32,
         ),
       ),
     );

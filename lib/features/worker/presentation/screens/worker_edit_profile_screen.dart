@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_assets.dart';
-import '../../../../data/tables/database_tables.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
+import '../../../../shared/widgets/skavia_brand_image.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
+import '../../data/datasources/worker_profile_remote_datasource.dart';
 import '../widgets/worker_verification_section.dart';
 
 class WorkerEditProfileScreen extends StatefulWidget {
@@ -21,17 +22,20 @@ class WorkerEditProfileScreen extends StatefulWidget {
 
 class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
+  final WorkerProfileRemoteDataSource _dataSource =
+      WorkerProfileRemoteDataSource();
   final _titleController = TextEditingController(
     text: 'Certified Electrician & HVAC Specialist',
   );
   final _rateController = TextEditingController(text: '650');
   final _bioController = TextEditingController(
-    text: 'Experienced technician with 5+ years servicing residential, corporate, and industrial electrical boards, AC cooling systems, and backup generators across Dhaka.',
+    text:
+        'Experienced technician with 5+ years servicing residential, corporate, and industrial electrical boards, AC cooling systems, and backup generators across Dhaka.',
   );
   final AuthController _authController = AuthController();
 
   String _workingArea = 'All Dhaka City';
-  String _verificationStatus = 'Pending'; // 'Pending' or 'Verified'
+  String _verificationStatus = 'Pending';
   bool _isAvailable = true;
   bool _isLoading = false;
   bool _nidUploaded = true;
@@ -49,7 +53,33 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _loadCachedDraft();
     _fetchWorkerProfile();
+  }
+
+  void _loadCachedDraft() {
+    final draft = _dataSource.loadCachedDraft();
+    if (draft == null) return;
+    if (draft['title'] is String) {
+      _titleController.text = draft['title'] as String;
+    }
+    if (draft['rate'] != null) {
+      _rateController.text = draft['rate'].toString();
+    }
+    if (draft['bio'] is String) _bioController.text = draft['bio'] as String;
+    if (draft['workingArea'] is String &&
+        _workingZones.contains(draft['workingArea'])) {
+      _workingArea = draft['workingArea'] as String;
+    }
+    if (draft['isAvailable'] is bool) {
+      _isAvailable = draft['isAvailable'] as bool;
+    }
+    if (draft['nidUploaded'] is bool) {
+      _nidUploaded = draft['nidUploaded'] as bool;
+    }
+    if (draft['certUploaded'] is bool) {
+      _certUploaded = draft['certUploaded'] as bool;
+    }
   }
 
   @override
@@ -65,26 +95,20 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
     final user = _authController.user;
     if (user == null) return;
 
-    try {
-      final response = await Supabase.instance.client
-          .from(DatabaseTables.workerProfiles)
-          .select()
-          .eq('user_id', user.uid)
-          .maybeSingle();
-
-      if (response != null && mounted) {
-        setState(() {
-          _titleController.text = response['title'] ?? _titleController.text;
-          _rateController.text = (response['expected_rate'] ?? 650).toString();
-          _bioController.text = response['bio'] ?? _bioController.text;
-          _workingArea = response['working_area'] ?? _workingArea;
-          _verificationStatus =
-              response['verification_status'] ?? _verificationStatus;
-          _isAvailable = response['is_available'] ?? true;
-        });
-      }
-    } catch (e) {
-      debugPrint('[WorkerProfile Fetch Info]: $e');
+    final response = await _dataSource.fetchWorkerProfile(user.uid);
+    if (response != null && mounted) {
+      setState(() {
+        _titleController.text = response['title'] ?? _titleController.text;
+        _rateController.text = (response['expected_rate'] ?? 650).toString();
+        _bioController.text = response['bio'] ?? _bioController.text;
+        final area = response['working_area']?.toString();
+        if (area != null && _workingZones.contains(area)) {
+          _workingArea = area;
+        }
+        _verificationStatus =
+            response['verification_status'] ?? _verificationStatus;
+        _isAvailable = response['is_available'] ?? true;
+      });
     }
   }
 
@@ -97,22 +121,18 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
       final user = _authController.user;
       final rate = double.tryParse(_rateController.text.trim()) ?? 650.0;
 
-      if (user != null) {
-        await Supabase.instance.client
-            .from(DatabaseTables.workerProfiles)
-            .upsert({
-              'user_id': user.uid,
-              'title': _titleController.text.trim(),
-              'expected_rate': rate,
-              'working_area': _workingArea,
-              'bio': _bioController.text.trim(),
-              'is_available': _isAvailable,
-              'updated_at': DateTime.now().toIso8601String(),
-            }, onConflict: 'user_id');
-      }
+      await _dataSource.saveWorkerProfile(
+        userId: user?.uid,
+        title: _titleController.text.trim(),
+        expectedRate: rate,
+        workingArea: _workingArea,
+        bio: _bioController.text.trim(),
+        isAvailable: _isAvailable,
+        nidUploaded: _nidUploaded,
+        certUploaded: _certUploaded,
+      );
 
       if (!mounted) return;
-
       setState(() => _isLoading = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,8 +156,12 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+
     return Scaffold(
-      backgroundColor: AppColors.primarySky,
+      backgroundColor: tokens.canvasBg,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -156,31 +180,35 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'Worker Profile',
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                  const Expanded(
+                    child: Text(
+                      'Worker Profile',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: tokens.cardBg,
                       shape: BoxShape.circle,
                     ),
-                    child: Image.asset(
-                      AppAssets.emblem,
+                    child: SkaviaBrandImage(
+                      assetPath: AppAssets.emblem,
                       height: 22,
                       width: 22,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, error, stack) => const Icon(
+                      errorBuilder: (_, _, _) => Icon(
                         Icons.engineering_rounded,
                         size: 18,
-                        color: AppColors.primaryRoyal,
+                        color: tokens.brandAccent,
                       ),
                     ),
                   ),
@@ -192,23 +220,21 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
             Expanded(
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: AppColors.sheetSurface,
+                decoration: BoxDecoration(
+                  color: tokens.sheetBg,
                   borderRadius: AppDimensions.roundedSheetTop,
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 36),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 36),
                   child: Form(
                     key: _formKey,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Verification Status Banner (SRS Section 3.1.R)
                         WorkerVerificationBanner(
                           verificationStatus: _verificationStatus,
                         ),
-
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         // Availability Toggle Switch
                         Container(
@@ -217,49 +243,49 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.sheetSurfaceSubtle,
+                            color: tokens.subtleCardBg,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.borderLight),
+                            border: Border.all(color: tokens.border),
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Active Dispatch Status',
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.headingFont,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textDark,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Active Dispatch Status',
+                                      style: TextStyle(
+                                        fontFamily: AppTypography.headingFont,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: colorScheme.onSurface,
+                                      ),
                                     ),
-                                  ),
-                                  Text(
-                                    _isAvailable
-                                        ? 'Ready for immediate job alerts'
-                                        : 'Currently off-duty',
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textMedium,
+                                    Text(
+                                      _isAvailable
+                                          ? 'Ready for immediate job alerts'
+                                          : 'Currently off-duty',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: tokens.secondaryText,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Switch.adaptive(
                                 value: _isAvailable,
-                                activeTrackColor: AppColors.primarySky,
+                                activeTrackColor: tokens.brandAccent,
                                 onChanged: (val) =>
                                     setState(() => _isAvailable = val),
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 20),
 
-                        const SizedBox(height: 24),
-
-                        // Professional Title
                         AppTextField(
                           controller: _titleController,
                           label: 'Trade Specialization / Title',
@@ -269,105 +295,124 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                               ? 'Please enter your title'
                               : null,
                         ),
-
                         const SizedBox(height: 16),
 
-                        // Expected Rate & Working Zone Row
-                        Row(
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: AppTextField(
-                                controller: _rateController,
-                                label: 'Rate (৳/Hour)',
-                                hint: '650',
-                                keyboardType: TextInputType.number,
-                                prefixIcon: const Icon(
-                                  Icons.sell_outlined,
-                                  color: AppColors.primarySky,
-                                  size: 20,
+                        // Expected Rate & Working Zone
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final stackVertically =
+                                constraints.maxWidth < 330 || textScale > 1.3;
+
+                            final rateField = AppTextField(
+                              controller: _rateController,
+                              label: 'Rate (৳/Hour)',
+                              hint: '650',
+                              keyboardType: TextInputType.number,
+                              prefixIcon: Icon(
+                                Icons.sell_outlined,
+                                color: tokens.brandAccent,
+                                size: 20,
+                              ),
+                            );
+
+                            final zoneField = Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Working Zone',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: tokens.secondaryText,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              flex: 4,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Working Zone',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textMedium,
-                                    ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
                                   ),
-                                  const SizedBox(height: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.sheetSurfaceSubtle,
-                                      borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(
-                                        color: AppColors.borderLight,
+                                  decoration: BoxDecoration(
+                                    color: tokens.inputBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: tokens.border),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _workingArea,
+                                      isExpanded: true,
+                                      dropdownColor: tokens.cardBg,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface,
                                       ),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: _workingArea,
-                                        isExpanded: true,
-                                        items: _workingZones.map((z) {
-                                          return DropdownMenuItem<String>(
-                                            value: z,
-                                            child: Text(
-                                              z,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                      items: _workingZones.map((z) {
+                                        return DropdownMenuItem<String>(
+                                          value: z,
+                                          child: Text(
+                                            z,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: colorScheme.onSurface,
                                             ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (val) {
-                                          if (val != null) {
-                                            setState(() => _workingArea = val);
-                                          }
-                                        },
-                                      ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setState(() => _workingArea = val);
+                                        }
+                                      },
                                     ),
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                                ),
+                              ],
+                            );
 
+                            if (stackVertically) {
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  rateField,
+                                  const SizedBox(height: 14),
+                                  zoneField,
+                                ],
+                              );
+                            }
+
+                            return Row(
+                              children: [
+                                Expanded(flex: 3, child: rateField),
+                                const SizedBox(width: 12),
+                                Expanded(flex: 4, child: zoneField),
+                              ],
+                            );
+                          },
+                        ),
                         const SizedBox(height: 16),
 
-                        // Bio
                         AppTextField(
                           controller: _bioController,
                           label: 'Professional Summary & Experience',
-                          hint: 'Describe your certifications, experience, and past commercial/home repairs...',
+                          hint:
+                              'Describe your certifications, experience, and past commercial/home repairs...',
                           maxLines: 3,
                         ),
-
                         const SizedBox(height: 24),
 
-                        // Verification Documents Upload Cards (SRS Section 3.1.R)
                         WorkerDocumentUploadSection(
                           nidUploaded: _nidUploaded,
                           onToggleNid: () {
                             setState(() => _nidUploaded = !_nidUploaded);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'NID front & back documents uploaded.',
+                                  _nidUploaded
+                                      ? 'NID document status marked for verification sync.'
+                                      : 'NID verification status cleared.',
                                 ),
                               ),
                             );
@@ -376,18 +421,18 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                           onToggleCert: () {
                             setState(() => _certUploaded = !_certUploaded);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'Trade certification document uploaded.',
+                                  _certUploaded
+                                      ? 'Trade certification status marked for verification sync.'
+                                      : 'Trade certification status cleared.',
                                 ),
                               ),
                             );
                           },
                         ),
+                        const SizedBox(height: 32),
 
-                        const SizedBox(height: 36),
-
-                        // Save Button
                         AppButton(
                           text: _isLoading
                               ? 'Saving...'

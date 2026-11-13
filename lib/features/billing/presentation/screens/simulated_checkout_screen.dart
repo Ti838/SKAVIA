@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../controllers/payment_controller.dart';
 import '../widgets/order_summary_card.dart';
@@ -96,7 +98,13 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
   double get _totalPayable => _baseAmount + _platformFee;
 
   Future<void> _processPayment() async {
-    final user = FirebaseAuth.instance.currentUser;
+    User? user;
+    try {
+      user = FirebaseAuth.instance.currentUser;
+    } catch (_) {
+      user = null;
+    }
+
     if (user == null) {
       UiFeedbackHelper.showError(
         context,
@@ -116,7 +124,6 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
     final customerPhone = user.phoneNumber ?? '01700000000';
 
     try {
-      // 1. Initiate checkout via PaymentController
       await _paymentController.initiateCheckout(
         clientId: clientId,
         serviceRequestId: widget.serviceRequestId,
@@ -129,14 +136,24 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
         serviceTitle: widget.title,
       );
 
-      // 2. Complete payment settlement
       final txId = 'TXN-${DateTime.now().millisecondsSinceEpoch}';
-      await _paymentController.handlePaymentSuccess(
+      final completed = await _paymentController.handlePaymentSuccess(
         gatewayTxId: txId,
         gatewayName: _selectedMethod,
         clientName: customerName,
         workerProfileId: widget.workerProfileId,
       );
+
+      if (!completed) {
+        if (mounted) {
+          UiFeedbackHelper.showError(
+            context,
+            _paymentController.errorMessage ??
+                'Payment settlement could not be verified.',
+          );
+        }
+        return;
+      }
 
       final transactionId =
           _paymentController.currentTransaction?.transactionId ??
@@ -191,38 +208,17 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Checkout & Escrow',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: tokens.sheetBg,
+      appBar: const AppAppBar(title: 'Checkout & Escrow'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Order Summary Card
             OrderSummaryCard(
               title: widget.title,
               specialistName: widget.specialistName,
@@ -232,31 +228,30 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             ),
             const SizedBox(height: AppDimensions.paddingLarge),
 
-            // Escrow Guarantee Pill
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
-                color: AppColors.successGreen.withValues(alpha: 0.08),
+                color: tokens.softMintBg,
                 borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
                 border: Border.all(
-                  color: AppColors.successGreen.withValues(alpha: 0.25),
+                  color: AppColors.successGreen.withValues(alpha: 0.35),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.verified_user_rounded,
                     color: AppColors.successGreen,
                     size: 22,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       '100% Escrow Protected: Funds are held securely and released only after your Job OTP is verified.',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                         height: 1.35,
                       ),
                     ),
@@ -266,7 +261,6 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             ),
             const SizedBox(height: AppDimensions.paddingLarge),
 
-            // Payment Methods
             Text(
               'Select Payment Rail',
               style: TextStyle(
@@ -278,7 +272,6 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             ),
             const SizedBox(height: AppDimensions.paddingMedium),
 
-            // Selectable Payment Rails
             PaymentMethodSelector(
               methods: _methods,
               selectedMethod: _selectedMethod,
@@ -286,10 +279,8 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
                   setState(() => _selectedMethod = methodId),
             ),
 
-            // Sandbox / Test Mode Disclaimer
             PaymentDisclaimerCard(selectedMethod: _selectedMethod),
 
-            // Pay CTA
             AppButton(
               text: _isProcessing
                   ? (_selectedMethod == 'Cash'

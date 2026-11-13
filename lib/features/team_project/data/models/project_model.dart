@@ -23,11 +23,11 @@ class ProjectModel extends ProjectEntity {
       description: json['description']?.toString() ?? '',
       clientId: json['client_id']?.toString() ?? '',
       teamLeaderId: json['team_leader_id']?.toString(),
-      budget: (json['budget'] as num?)?.toDouble() ?? 50000.0,
+      budget: ((json['total_budget'] ?? json['budget']) as num?)?.toDouble() ?? 0.0,
       progressPercent: (json['progress_percent'] as num?)?.toDouble() ?? 0.0,
       status: json['status']?.toString() ?? 'In Progress',
-      startDate: json['start_date'] != null
-          ? DateTime.tryParse(json['start_date'].toString()) ?? DateTime.now()
+      startDate: (json['created_at'] ?? json['start_date']) != null
+          ? DateTime.tryParse((json['created_at'] ?? json['start_date']).toString()) ?? DateTime.now()
           : DateTime.now(),
       deadline: json['deadline'] != null
           ? DateTime.tryParse(json['deadline'].toString())

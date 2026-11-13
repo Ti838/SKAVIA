@@ -2,8 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 import '../../../chat/data/datasources/chat_remote_datasource.dart';
 
 /// Reusable team member tile for Project Management board
@@ -19,6 +20,8 @@ class TeamMemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final name = member['name'] as String? ?? 'Member';
     final role = member['role'] as String? ?? 'Developer';
     final isLeader = member['isLeader'] == true;
@@ -27,51 +30,39 @@ class TeamMemberTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: const Color(0xFFEFF6FF),
-            child: Text(
-              name.isNotEmpty ? name[0].toUpperCase() : 'U',
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF2563EB),
-              ),
-            ),
-          ),
+          UserAvatar(name: name, radius: 20, isVerified: isLeader),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Flexible(
-                      child: Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-                    if (isLeader) ...[
-                      const SizedBox(width: 6),
+                    if (isLeader)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
+                          color: tokens.softPeachBg,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text(
@@ -83,15 +74,14 @@ class TeamMemberTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ],
                   ],
                 ),
                 const SizedBox(height: 2),
                 Text(
                   role,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.textMuted,
+                    color: tokens.mutedText,
                   ),
                 ),
               ],
@@ -99,13 +89,18 @@ class TeamMemberTile extends StatelessWidget {
           ),
           if (showChatButton)
             IconButton(
-              icon: const Icon(
+              icon: Icon(
                 Icons.chat_bubble_outline_rounded,
                 size: 20,
-                color: Color(0xFF2563EB),
+                color: tokens.brandAccent,
               ),
               onPressed: () async {
-                final currentUid = FirebaseAuth.instance.currentUser?.uid;
+                String? currentUid;
+                try {
+                  currentUid = FirebaseAuth.instance.currentUser?.uid;
+                } catch (_) {
+                  currentUid = null;
+                }
                 if (currentUid == null) {
                   UiFeedbackHelper.showError(
                     context,

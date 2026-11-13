@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/utils/job_otp_util.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../customer/presentation/screens/live_job_feed_screen.dart';
 import '../widgets/incoming_request_card.dart';
@@ -37,7 +39,8 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
 
     try {
       final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
+      final client = tryGetSupabaseClient();
+      if (user == null || client == null) {
         if (mounted) {
           setState(() {
             _requests = [];
@@ -47,47 +50,54 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         return;
       }
 
-      final workerId = user.uid;
-
       try {
-        final client = Supabase.instance.client;
+        final wpRow = await client
+            .from('worker_profiles')
+            .select('worker_profile_id')
+            .eq('user_id', user.uid)
+            .maybeSingle();
+        final workerProfileId = wpRow?['worker_profile_id']?.toString();
+        if (workerProfileId == null || workerProfileId.isEmpty) {
+          _requests = [];
+          return;
+        }
+
         final res = await client
             .from('service_requests')
             .select(
               'service_request_id, client_id, status, scheduled_at, agreed_price, service_notes, created_at',
             )
             .eq('status', 'Requested')
-            .eq('worker_profile_id', workerId)
+            .eq('worker_profile_id', workerProfileId)
             .order('created_at', ascending: false)
             .limit(10);
-        if (res.isNotEmpty) {
-          _requests = List<Map<String, dynamic>>.from(res);
-        } else {
-          _requests = [];
-        }
+        _requests = res.isNotEmpty
+            ? List<Map<String, dynamic>>.from(res)
+            : [];
       } catch (e) {
         debugPrint('Supabase live fetch error: $e');
         _requests = [];
       }
     } catch (e) {
       debugPrint('Error fetching requests: $e');
+      _requests = [];
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _acceptRequest(Map<String, dynamic> request) async {
+  Future<void> _acceptRequest(Map<String, dynamic> request) async {
     final reqId = request['service_request_id']?.toString();
-    // Update local list
     setState(() {
       _requests.removeWhere(
         (r) => r['service_request_id'] == request['service_request_id'],
       );
     });
 
-    if (reqId != null && !reqId.startsWith('sr_sample')) {
+    final client = tryGetSupabaseClient();
+    if (client != null && reqId != null && !reqId.startsWith('sr_sample')) {
       try {
-        await Supabase.instance.client
+        await client
             .from('service_requests')
             .update({
               'status': 'Accepted',
@@ -103,13 +113,12 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Accepted job: ${request['job_title']}! Opening active job navigation.',
+          'Accepted job: ${request['job_title'] ?? 'Service Request'}! Opening active job navigation.',
         ),
         backgroundColor: AppColors.success,
       ),
     );
 
-    // Direct worker to active job execution
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ActiveJobScreen(
@@ -118,7 +127,12 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
           jobTitle: request['job_title']?.toString() ?? 'Service Job',
           location: request['location']?.toString() ?? 'Dhaka',
           agreedPrice: (request['agreed_price'] as num?)?.toDouble() ?? 1000.0,
-          expectedOtp: request['job_otp']?.toString() ?? '7241',
+          expectedOtp:
+              request['job_otp']?.toString() ??
+              JobOtpUtil.extractOtp(
+                request['service_notes']?.toString(),
+                fallbackRequestId: request['service_request_id']?.toString(),
+              ),
           scheduledTime: request['scheduled_at']?.toString() ?? 'Today',
           serviceNotes: request['service_notes']?.toString() ?? '',
         ),
@@ -126,7 +140,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     );
   }
 
-  void _declineRequest(Map<String, dynamic> request) async {
+  Future<void> _declineRequest(Map<String, dynamic> request) async {
     final reqId = request['service_request_id']?.toString();
     setState(() {
       _requests.removeWhere(
@@ -134,9 +148,10 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
       );
     });
 
-    if (reqId != null && !reqId.startsWith('sr_sample')) {
+    final client = tryGetSupabaseClient();
+    if (client != null && reqId != null && !reqId.startsWith('sr_sample')) {
       try {
-        await Supabase.instance.client
+        await client
             .from('service_requests')
             .update({
               'status': 'Cancelled',
@@ -160,8 +175,11 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: tokens.canvasBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -178,199 +196,229 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
               ),
         title: Text(
           'Incoming Job Requests',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: AppTypography.headingMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Worker Dispatch Mode Status Banner
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingLarge,
-              vertical: AppDimensions.paddingSmall,
-            ),
-            child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.radar_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingLarge,
+                    vertical: AppDimensions.paddingSmall,
                   ),
-                  const SizedBox(width: AppDimensions.paddingMedium),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Container(
+                    padding: const EdgeInsets.all(AppDimensions.paddingMedium),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusLarge,
+                      ),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.24),
+                      ),
+                    ),
+                    child: Row(
                       children: [
-                        Text(
-                          'Radar Dispatch Active',
-                          style: TextStyle(
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: const BoxDecoration(
+                            color: AppColors.success,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.radar_rounded,
                             color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            size: 20,
                           ),
                         ),
-                        Text(
-                          'You are visible to customers in your service area',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        const SizedBox(width: AppDimensions.paddingMedium),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Radar Dispatch Active',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                'You are visible to customers in your service area',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          // Segmented Control: [ Direct Requests (N) | Open Job Feed ]
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingLarge,
-              vertical: 4,
-            ),
-            child: Container(
-              height: 38,
-              padding: const EdgeInsets.all(3),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedSegment = 0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _selectedSegment == 0
-                              ? Colors.white
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Direct Requests (${_requests.length})',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: _selectedSegment == 0
-                                ? AppColors.primary
-                                : Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingLarge,
+                    vertical: 4,
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedSegment = 1),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: _selectedSegment == 1
-                              ? Colors.white
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          'Open Jobs Feed (লাইভ)',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w800,
-                            color: _selectedSegment == 1
-                                ? AppColors.primary
-                                : Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // Main 32dp Curved White Content Sheet
-          Expanded(
-            child: _selectedSegment == 1
-                ? const ClipRRect(
-                    borderRadius: AppDimensions.roundedSheetTop,
-                    child: LiveJobFeedScreen(isTab: true),
-                  )
-                : Container(
-                    width: double.infinity,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 40),
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: AppColors.sheetBackground,
-                      borderRadius: AppDimensions.roundedSheetTop,
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: _isLoading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedSegment = 0),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _selectedSegment == 0
+                                    ? tokens.cardBg
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Direct (${_requests.length})',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: _selectedSegment == 0
+                                      ? tokens.brandAccent
+                                      : Colors.white,
+                                ),
+                              ),
                             ),
-                          )
-                        : _requests.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.inbox_rounded,
-                                  size: 64,
-                                  color: AppColors.textDisabled,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No pending requests right now',
-                                  style: AppTypography.headingSmall,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Keep your status Active to receive instant dispatches.',
-                                  style: AppTypography.bodySmall,
-                                ),
-                                const SizedBox(height: 20),
-                                AppButton(
-                                  text: 'Refresh Queue',
-                                  onPressed: _fetchIncomingRequests,
-                                  width: 180,
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(
-                              AppDimensions.paddingLarge,
-                            ),
-                            itemCount: _requests.length,
-                            itemBuilder: (context, index) {
-                              final req = _requests[index];
-                              return IncomingRequestCard(
-                                request: req,
-                                onAccept: () => _acceptRequest(req),
-                                onDecline: () => _declineRequest(req),
-                              );
-                            },
                           ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedSegment = 1),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _selectedSegment == 1
+                                    ? tokens.cardBg
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Open Jobs Feed',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w800,
+                                  color: _selectedSegment == 1
+                                      ? tokens.brandAccent
+                                      : Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                ),
+                const SizedBox(height: 6),
+              ],
+            ),
           ),
         ],
+        body: _selectedSegment == 1
+            ? const ClipRRect(
+                borderRadius: AppDimensions.roundedSheetTop,
+                child: LiveJobFeedScreen(isTab: true),
+              )
+            : Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: tokens.sheetBg,
+                  borderRadius: AppDimensions.roundedSheetTop,
+                ),
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: tokens.brandAccent,
+                        ),
+                      )
+                    : _requests.isEmpty
+                    ? Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inbox_rounded,
+                                size: 56,
+                                color: tokens.mutedText,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No pending requests right now',
+                                textAlign: TextAlign.center,
+                                style: AppTypography.headingSmall.copyWith(
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Keep your status Active to receive instant dispatches.',
+                                textAlign: TextAlign.center,
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              AppButton(
+                                text: 'Refresh Queue',
+                                onPressed: _fetchIncomingRequests,
+                                width: 180,
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(
+                          AppDimensions.paddingLarge,
+                        ),
+                        itemCount: _requests.length,
+                        itemBuilder: (context, index) {
+                          final req = _requests[index];
+                          return IncomingRequestCard(
+                            request: req,
+                            onAccept: () => _acceptRequest(req),
+                            onDecline: () => _declineRequest(req),
+                          );
+                        },
+                      ),
+              ),
       ),
     );
   }

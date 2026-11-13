@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 
 /// Incoming job requests list for worker dashboard with empty radar state.
@@ -13,15 +14,18 @@ class WorkerIncomingRequestsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          alignment: WrapAlignment.spaceBetween,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
               AppLanguageService.tr('incoming_requests'),
@@ -31,27 +35,32 @@ class WorkerIncomingRequestsList extends StatelessWidget {
                 color: colorScheme.onSurface,
               ),
             ),
-            GestureDetector(
+            InkWell(
               onTap: () => Navigator.pushNamed(context, AppRoutes.liveJobFeed),
-              child: Row(
-                children: [
-                  Text(
-                    AppLanguageService.tr('open_jobs_feed'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark
-                          ? colorScheme.primary
-                          : AppColors.primarySky,
+              borderRadius: BorderRadius.circular(8),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        AppLanguageService.tr('open_jobs_feed'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: tokens.brandAccent,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 11,
-                    color: isDark ? colorScheme.primary : AppColors.primarySky,
-                  ),
-                ],
+                    const SizedBox(width: 2),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 11,
+                      color: tokens.brandAccent,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -61,17 +70,15 @@ class WorkerIncomingRequestsList extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark
-                  ? colorScheme.surfaceContainerHighest
-                  : AppColors.sheetSurfaceSubtle,
+              color: tokens.subtleCardBg,
               borderRadius: BorderRadius.circular(AppDimensions.radius16),
-              border: Border.all(color: colorScheme.outlineVariant),
+              border: Border.all(color: tokens.border),
             ),
             child: Row(
               children: [
                 Icon(
                   Icons.radar_rounded,
-                  color: isDark ? colorScheme.primary : AppColors.primarySky,
+                  color: tokens.brandAccent,
                   size: 24,
                 ),
                 const SizedBox(width: 14),
@@ -92,7 +99,7 @@ class WorkerIncomingRequestsList extends StatelessWidget {
                         AppLanguageService.tr('radar_alert_desc'),
                         style: TextStyle(
                           fontSize: 11,
-                          color: colorScheme.onSurfaceVariant,
+                          color: tokens.secondaryText,
                         ),
                       ),
                     ],
@@ -108,53 +115,57 @@ class WorkerIncomingRequestsList extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDark
-                    ? colorScheme.surfaceContainerHighest
-                    : AppColors.sheetSurfaceSubtle,
+                color: tokens.subtleCardBg,
                 borderRadius: BorderRadius.circular(AppDimensions.radius16),
-                border: Border.all(color: colorScheme.outlineVariant),
+                border: Border.all(color: tokens.border),
               ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isDark ? colorScheme.surface : Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.bolt,
-                      color: AppColors.accentCoral,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Incoming Service Request',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final compact = constraints.maxWidth < 290 || textScale > 1.3;
+                  final infoRow = Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: tokens.cardBg,
+                          shape: BoxShape.circle,
                         ),
-                        Text(
-                          'Agreed Fare: ৳ ${price.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                        child: const Icon(
+                          Icons.bolt,
+                          color: AppColors.accentCoral,
+                          size: 20,
                         ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton(
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Incoming Service Request',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            Text(
+                              'Agreed Fare: ৳ ${price.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: tokens.secondaryText,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+
+                  final reviewBtn = ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primarySky,
-                      foregroundColor: Colors.white,
+                      backgroundColor: tokens.brandAccent,
+                      foregroundColor: tokens.onBrandAccent,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
                         vertical: 8,
@@ -174,8 +185,27 @@ class WorkerIncomingRequestsList extends StatelessWidget {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                  ),
-                ],
+                  );
+
+                  if (compact) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        infoRow,
+                        const SizedBox(height: 10),
+                        reviewBtn,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: infoRow),
+                      const SizedBox(width: 8),
+                      reviewBtn,
+                    ],
+                  );
+                },
               ),
             );
           }),

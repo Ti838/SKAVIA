@@ -24,16 +24,18 @@ class WorkerBalanceCard extends StatelessWidget {
         vertical: AppDimensions.paddingSmall,
       ),
       child: Container(
+        width: double.infinity,
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
+          color: Colors.white.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
         ),
         child: Column(
           children: [
             const Text(
               'Available Wallet Balance',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 13,
@@ -41,27 +43,26 @@ class WorkerBalanceCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 6),
-            Text(
-              '৳ ${availableBalance.toStringAsFixed(0)}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '৳ ${availableBalance.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 34,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              spacing: 20,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
               children: [
                 EarningsMetricTile(
                   label: 'Pending Escrow',
                   value: '৳ ${pendingEscrow.toStringAsFixed(0)}',
-                ),
-                Container(
-                  height: 20,
-                  width: 1,
-                  color: Colors.white24,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
                 ),
                 EarningsMetricTile(
                   label: 'Total Lifetime',

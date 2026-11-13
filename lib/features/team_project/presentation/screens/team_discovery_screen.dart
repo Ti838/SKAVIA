@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_typography.dart';
 import '../../../../app/router/app_routes.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 
-/// Screen 9: Team Discovery ("Find Teams") from the SKAVIA reference design board.
+/// Screen 9: Team Discovery ("Find Teams") with real filtering and bookmark persistence.
 class TeamDiscoveryScreen extends StatefulWidget {
   const TeamDiscoveryScreen({super.key});
 
@@ -13,118 +16,225 @@ class TeamDiscoveryScreen extends StatefulWidget {
 }
 
 class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
+  static const String _savedTeamsCacheKey = 'team_discovery_saved_ids';
+
   String _selectedSkill = 'All Skills';
   String _selectedLocation = 'All Locations';
   String _selectedAvailability = 'Any';
 
-  final List<Map<String, dynamic>> _teams = [
-    {
-      'id': 'team_01',
-      'name': 'TechCraft Team',
-      'membersCount': 5,
-      'projectsCount': 3,
-      'rating': 4.8,
-      'reviews': 12,
-      'avatar':
-          'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150',
-      'skills': ['Flutter', 'Firebase', 'UI/UX'],
-      'isSaved': false,
-    },
-    {
-      'id': 'team_02',
-      'name': 'Dream Builders',
-      'membersCount': 4,
-      'projectsCount': 2,
-      'rating': 4.6,
-      'reviews': 9,
-      'avatar':
-          'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=150',
-      'skills': ['React', 'Node.js', 'Design'],
-      'isSaved': true,
-    },
-    {
-      'id': 'team_03',
-      'name': 'Pixel Squad',
-      'membersCount': 3,
-      'projectsCount': 1,
-      'rating': 4.7,
-      'reviews': 7,
-      'avatar':
-          'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=150',
-      'skills': ['Flutter', 'Firebase', 'Design'],
-      'isSaved': false,
-    },
-    {
-      'id': 'team_04',
-      'name': 'Code Crafters',
-      'membersCount': 6,
-      'projectsCount': 5,
-      'rating': 4.9,
-      'reviews': 18,
-      'avatar':
-          'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=150',
-      'skills': ['Mobile', 'Cloud', 'DevOps'],
-      'isSaved': false,
-    },
-  ];
+  late final List<Map<String, dynamic>> _teams;
+
+  @override
+  void initState() {
+    super.initState();
+    final cachedSaved = LocalCacheService.instance.get(
+      _savedTeamsCacheKey,
+    );
+    final savedIds = cachedSaved is List
+        ? cachedSaved.map((e) => e.toString()).toSet()
+        : null;
+
+    _teams = [
+      {
+        'id': 'team_01',
+        'name': 'TechCraft Team',
+        'membersCount': 5,
+        'projectsCount': 3,
+        'rating': 4.8,
+        'reviews': 12,
+        'avatar': '',
+        'skills': ['Flutter', 'Firebase', 'UI/UX'],
+        'location': 'Dhanmondi',
+        'availability': 'Immediate',
+        'isSaved': savedIds?.contains('team_01') ?? false,
+      },
+      {
+        'id': 'team_02',
+        'name': 'Dream Builders',
+        'membersCount': 4,
+        'projectsCount': 2,
+        'rating': 4.6,
+        'reviews': 9,
+        'avatar': '',
+        'skills': ['React', 'Node.js', 'Design'],
+        'location': 'Gulshan',
+        'availability': 'Full-time',
+        'isSaved': savedIds?.contains('team_02') ?? true,
+      },
+      {
+        'id': 'team_03',
+        'name': 'Pixel Squad',
+        'membersCount': 3,
+        'projectsCount': 1,
+        'rating': 4.7,
+        'reviews': 7,
+        'avatar': '',
+        'skills': ['Flutter', 'Firebase', 'Design'],
+        'location': 'Uttara',
+        'availability': 'Part-time',
+        'isSaved': savedIds?.contains('team_03') ?? false,
+      },
+      {
+        'id': 'team_04',
+        'name': 'Code Crafters',
+        'membersCount': 6,
+        'projectsCount': 5,
+        'rating': 4.9,
+        'reviews': 18,
+        'avatar': '',
+        'skills': ['Mobile', 'Cloud', 'DevOps'],
+        'location': 'Gulshan',
+        'availability': 'Immediate',
+        'isSaved': savedIds?.contains('team_04') ?? false,
+      },
+    ];
+  }
+
+  List<Map<String, dynamic>> get _filteredTeams {
+    return _teams.where((team) {
+      final skills = (team['skills'] as List<dynamic>? ?? [])
+          .map((e) => e.toString().toLowerCase())
+          .toList();
+      final matchesSkill =
+          _selectedSkill == 'All Skills' ||
+          skills.contains(_selectedSkill.toLowerCase());
+      final matchesLocation =
+          _selectedLocation == 'All Locations' ||
+          team['location'] == _selectedLocation;
+      final matchesAvailability =
+          _selectedAvailability == 'Any' ||
+          team['availability'] == _selectedAvailability;
+      return matchesSkill && matchesLocation && matchesAvailability;
+    }).toList();
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _selectedSkill = 'All Skills';
+      _selectedLocation = 'All Locations';
+      _selectedAvailability = 'Any';
+    });
+  }
+
+  void _toggleSaved(Map<String, dynamic> team) {
+    final nextSaved = !(team['isSaved'] == true);
+    setState(() {
+      team['isSaved'] = nextSaved;
+    });
+    final savedIds = _teams
+        .where((t) => t['isSaved'] == true)
+        .map((t) => t['id'].toString())
+        .toList();
+    LocalCacheService.instance.put(_savedTeamsCacheKey, savedIds);
+    UiFeedbackHelper.showInfo(
+      context,
+      nextSaved
+          ? '${team['name']} saved to your shortlist'
+          : '${team['name']} removed from shortlist',
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final visibleTeams = _filteredTeams;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textDark,
-            size: 20,
-          ),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        title: const Text(
-          'Find Teams',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            fontSize: 17,
-            color: AppColors.textDark,
-          ),
-        ),
-      ),
+      backgroundColor: tokens.sheetBg,
+      appBar: const AppAppBar(title: 'Find Teams'),
       body: SafeArea(
         child: Column(
           children: [
-            // Filter Pills Row (Skills v, Location v, Availability v)
+            // Filter Pills Row
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildFilterChip('Skills', _selectedSkill),
+                    _buildFilterChip(
+                      'Skills',
+                      _selectedSkill,
+                      isActive: _selectedSkill != 'All Skills',
+                    ),
                     const SizedBox(width: 10),
-                    _buildFilterChip('Location', _selectedLocation),
+                    _buildFilterChip(
+                      'Location',
+                      _selectedLocation,
+                      isActive: _selectedLocation != 'All Locations',
+                    ),
                     const SizedBox(width: 10),
-                    _buildFilterChip('Availability', _selectedAvailability),
+                    _buildFilterChip(
+                      'Availability',
+                      _selectedAvailability,
+                      isActive: _selectedAvailability != 'Any',
+                    ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 8),
 
-            // Teams List
+            // Teams List or Contextual Empty State
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                itemCount: _teams.length,
-                itemBuilder: (context, index) {
-                  final team = _teams[index];
-                  return _buildTeamCard(team);
-                },
-              ),
+              child: visibleTeams.isEmpty
+                  ? Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.groups_2_outlined,
+                              size: 48,
+                              color: tokens.mutedText,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No teams match these filters',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: context.colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Try adjusting skills, location, or availability.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: tokens.mutedText,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            TextButton.icon(
+                              onPressed: _resetFilters,
+                              icon: Icon(
+                                Icons.refresh_rounded,
+                                size: 18,
+                                color: tokens.brandAccent,
+                              ),
+                              label: Text(
+                                'Reset Filters',
+                                style: TextStyle(
+                                  color: tokens.brandAccent,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+                      itemCount: visibleTeams.length,
+                      itemBuilder: (context, index) {
+                        return _buildTeamCard(visibleTeams[index]);
+                      },
+                    ),
             ),
           ],
         ),
@@ -132,20 +242,27 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, String value) {
+  Widget _buildFilterChip(
+    String label,
+    String value, {
+    required bool isActive,
+  }) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return GestureDetector(
       onTap: () {
         setState(() {
           if (label == 'Skills') {
-            final opts = ['All Skills', 'Flutter', 'React', 'Design'];
+            const opts = ['All Skills', 'Flutter', 'React', 'Design', 'Cloud'];
             _selectedSkill =
                 opts[(opts.indexOf(_selectedSkill) + 1) % opts.length];
           } else if (label == 'Location') {
-            final opts = ['All Locations', 'Dhanmondi', 'Gulshan', 'Uttara'];
+            const opts = ['All Locations', 'Dhanmondi', 'Gulshan', 'Uttara'];
             _selectedLocation =
                 opts[(opts.indexOf(_selectedLocation) + 1) % opts.length];
           } else if (label == 'Availability') {
-            final opts = ['Any', 'Immediate', 'Part-time', 'Full-time'];
+            const opts = ['Any', 'Immediate', 'Part-time', 'Full-time'];
             _selectedAvailability =
                 opts[(opts.indexOf(_selectedAvailability) + 1) % opts.length];
           }
@@ -154,26 +271,28 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8FAFC),
+          color: isActive ? tokens.softBlueBg : tokens.subtleCardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(
+            color: isActive ? tokens.brandAccent : tokens.border,
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              label,
-              style: const TextStyle(
+              isActive ? '$label: $value' : label,
+              style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
+                color: isActive ? tokens.brandAccent : colorScheme.onSurface,
               ),
             ),
             const SizedBox(width: 4),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
               size: 16,
-              color: Color(0xFF64748B),
+              color: isActive ? tokens.brandAccent : tokens.mutedText,
             ),
           ],
         ),
@@ -182,6 +301,9 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
   }
 
   Widget _buildTeamCard(Map<String, dynamic> team) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final skills = (team['skills'] as List<dynamic>?)?.cast<String>() ?? [];
     final isSaved = team['isSaved'] == true;
 
@@ -189,12 +311,12 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.02),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -203,14 +325,13 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Top Row: Avatar, Team Name, Stats, Bookmark
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
+              UserAvatar(
+                imageUrl: team['avatar'] as String?,
+                name: team['name'] as String? ?? 'SKAVIA Team',
                 radius: 24,
-                backgroundColor: const Color(0xFFEFF6FF),
-                backgroundImage: NetworkImage(team['avatar'] as String),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -219,36 +340,54 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                   children: [
                     Text(
                       team['name'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${team['membersCount']} members • ${team['projectsCount']} projects',
-                      style: const TextStyle(
+                      '${team['membersCount']} members • ${team['projectsCount']} projects • ${team['location']}',
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textMuted,
+                        color: tokens.mutedText,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.star_rounded,
-                          color: Color(0xFFF59E0B),
-                          size: 16,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Color(0xFFF59E0B),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                '${team['rating']} (${team['reviews']})',
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 3),
                         Text(
-                          '${team['rating']} (${team['reviews']})',
-                          style: const TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                          '${team['availability']}',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: tokens.brandAccent,
                           ),
                         ),
                       ],
@@ -263,22 +402,15 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                   isSaved
                       ? Icons.bookmark_rounded
                       : Icons.bookmark_border_rounded,
-                  color: isSaved
-                      ? const Color(0xFF2563EB)
-                      : const Color(0xFF94A3B8),
+                  color: isSaved ? tokens.brandAccent : tokens.mutedText,
                   size: 22,
                 ),
-                onPressed: () {
-                  setState(() {
-                    team['isSaved'] = !isSaved;
-                  });
-                },
+                onPressed: () => _toggleSaved(team),
               ),
             ],
           ),
           const SizedBox(height: 12),
 
-          // Skills Chips
           Wrap(
             spacing: 8,
             runSpacing: 6,
@@ -289,16 +421,18 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: tokens.softBlueBg,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFDBEAFE)),
+                  border: Border.all(
+                    color: tokens.brandAccent.withValues(alpha: 0.25),
+                  ),
                 ),
                 child: Text(
                   s,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2563EB),
+                    color: tokens.brandAccent,
                   ),
                 ),
               );
@@ -306,7 +440,6 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
           ),
           const SizedBox(height: 14),
 
-          // Request to Join Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -321,7 +454,8 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: tokens.brandAccent,
+                foregroundColor: tokens.onBrandAccent,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
@@ -329,12 +463,9 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                 ),
               ),
               child: const Text(
-                'Request to Join',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
+                'Open Team Workspace',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),
           ),

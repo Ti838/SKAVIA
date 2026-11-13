@@ -15,8 +15,8 @@ class ProjectRemoteDataSource {
       final res = await _client
           .from('projects')
           .select('*')
-          .or('client_id.eq.$userId,team_leader_id.eq.$userId')
-          .order('start_date', ascending: false);
+          .eq('client_id', userId)
+          .order('created_at', ascending: false);
 
       return (res as List).map((r) => ProjectModel.fromJson(r)).toList();
     } catch (e) {
@@ -47,7 +47,7 @@ class ProjectRemoteDataSource {
           .from('tasks')
           .select('*')
           .eq('project_id', projectId)
-          .order('due_date', ascending: true);
+          .order('deadline', ascending: true);
 
       return (res as List).map((r) => TaskItemModel.fromJson(r)).toList();
     } catch (e) {
@@ -67,11 +67,11 @@ class ProjectRemoteDataSource {
     }
   }
 
-  Future<void> assignTask(String taskId, String assignedWorkerId) async {
+  Future<void> assignTask(String taskId, String assignedTeamMemberId) async {
     try {
       await _client
           .from('tasks')
-          .update({'assigned_to': assignedWorkerId})
+          .update({'assigned_team_member_id': assignedTeamMemberId})
           .eq('task_id', taskId);
     } catch (e) {
       debugPrint('[ProjectRemoteDataSource] assignTask notice: $e');

@@ -19,7 +19,7 @@ class SslCommerzGatewayService {
   static const String failUrl = 'https://skavia-platform.web.app/payment/fail';
   static const String cancelUrl =
       'https://skavia-platform.web.app/payment/cancel';
-  static const String ipnUrl = 'https://skavia-platform.web.app/payment/ipn';
+  static String get ipnUrl => AppConfig.sslCommerzIpnUrl;
 
   final String storeId;
   final String storePasswd;
@@ -44,6 +44,14 @@ class SslCommerzGatewayService {
     String productCategory = 'Service',
     String? paymentId,
   }) async {
+    if (storeId.trim().isEmpty || storePasswd.trim().isEmpty) {
+      return SslCommerzInitResult(
+        isSuccess: false,
+        errorMessage:
+            'SSLCommerz credentials are not configured (set SSLCOMMERZ_STORE_ID and SSLCOMMERZ_STORE_PASSWD via --dart-define).',
+      );
+    }
+
     final endpoint = isSandbox ? sandboxApiUrl : liveApiUrl;
 
     final body = {

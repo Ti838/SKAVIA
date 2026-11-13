@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
-/// Project Progress & Budget overview card aligned with SKAVIA screen 10
+/// Project Progress & Budget overview card aligned with SKAVIA screen 10.
 class TeamProgressBar extends StatelessWidget {
   final double progressPercent;
   final double budget;
@@ -16,17 +16,17 @@ class TeamProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentInt = (progressPercent * 100).toInt();
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
@@ -41,20 +41,23 @@ class TeamProgressBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Project Progress',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+              Expanded(
+                child: Text(
+                  'Project Progress',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '$percentInt%',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF2563EB),
+                  color: tokens.brandAccent,
                 ),
               ),
             ],
@@ -65,19 +68,17 @@ class TeamProgressBar extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progressPercent,
               minHeight: 8,
-              backgroundColor: const Color(0xFFE2E8F0),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF2563EB),
-              ),
+              backgroundColor: tokens.subtleBorder,
+              valueColor: AlwaysStoppedAnimation<Color>(tokens.brandAccent),
             ),
           ),
           if (budget > 0) ...[
             const SizedBox(height: 10),
             Text(
               'Budget: ৳ ${budget.toStringAsFixed(0)}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: AppColors.textMuted,
+                color: tokens.mutedText,
                 fontWeight: FontWeight.w600,
               ),
             ),

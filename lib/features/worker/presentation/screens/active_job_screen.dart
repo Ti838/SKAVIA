@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../chat/presentation/screens/chat_room_screen.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
+import '../../../../core/utils/uuid_util.dart';
 import '../../../../shared/widgets/app_button.dart';
+import '../../../chat/presentation/screens/chat_room_screen.dart';
 import '../widgets/active_job_client_card.dart';
 import '../widgets/active_job_lifecycle_stepper.dart';
 import '../widgets/worker_job_otp_sheet.dart';
@@ -46,9 +50,44 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
   // 0: Accepted, 1: On The Way, 2: In Progress, 3: Completed
   int _jobPhase = 0;
 
-  void _nextPhase() {
+  @override
+  void initState() {
+    super.initState();
+    final cached = LocalCacheService.instance.get(
+      'active_job_phase_${widget.requestId}',
+    );
+    if (cached is int && cached >= 0 && cached <= 3) {
+      _jobPhase = cached;
+    }
+  }
+
+  Future<void> _persistPhase(int phase, String remoteStatus) async {
+    LocalCacheService.instance.put(
+      'active_job_phase_${widget.requestId}',
+      phase,
+    );
+    final client = tryGetSupabaseClient();
+    if (client != null && UuidUtil.isValidUuid(widget.requestId)) {
+      try {
+        await client
+            .from('service_requests')
+            .update({
+              'status': remoteStatus,
+              if (phase == 3) 'completed_at': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            })
+            .eq('service_request_id', widget.requestId);
+      } catch (e) {
+        debugPrint('[ActiveJobScreen] Phase sync notice: $e');
+      }
+    }
+  }
+
+  Future<void> _nextPhase() async {
     if (_jobPhase == 0) {
       setState(() => _jobPhase = 1);
+      await _persistPhase(1, 'In Progress');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Status updated: Heading to customer location'),
@@ -56,6 +95,8 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
       );
     } else if (_jobPhase == 1) {
       setState(() => _jobPhase = 2);
+      await _persistPhase(2, 'In Progress');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Status updated: Arrived at site & Work in progress'),
@@ -70,18 +111,24 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
     WorkerJobOtpSheet.show(
       context,
       expectedOtp: widget.expectedOtp,
-      onOtpVerified: () {
+      onOtpVerified: () async {
         setState(() => _jobPhase = 3);
-        _showSuccessCelebration();
+        await _persistPhase(3, 'Completed');
+        if (mounted) _showSuccessCelebration();
       },
     );
   }
 
   void _showSuccessCelebration() {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        scrollable: true,
+        backgroundColor: tokens.cardBg,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -99,30 +146,39 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Job Completed Successfully',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
-              '৳ ${widget.agreedPrice.toStringAsFixed(0)} has been credited to your SKAVIA earnings balance.',
+              '৳ ${widget.agreedPrice.toStringAsFixed(0)} completion verified for escrow settlement.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: tokens.secondaryText,
               ),
             ),
             const SizedBox(height: 20),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.pop(context); // Return to dashboard
-              },
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: const StadiumBorder(),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context);
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: tokens.brandAccent,
+                  foregroundColor: tokens.onBrandAccent,
+                  shape: const StadiumBorder(),
+                ),
+                child: const Text('Back to Dashboard'),
               ),
-              child: const Text('Back to Dashboard'),
             ),
           ],
         ),
@@ -132,8 +188,10 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: tokens.canvasBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -148,6 +206,8 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
         ),
         title: Text(
           'Active Service Dispatch',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
           style: AppTypography.headingMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -156,18 +216,18 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
       ),
       body: Column(
         children: [
-          // Header Earning & Price Banner
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.paddingLarge,
               vertical: AppDimensions.paddingSmall,
             ),
             child: Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
+                color: Colors.white.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
               ),
               child: Row(
                 children: [
@@ -192,33 +252,41 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                           'Guaranteed Escrow Payout',
                           style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
-                        Text(
-                          '৳ ${widget.agreedPrice.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w900,
-                          ),
+                        const SizedBox(height: 2),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              '৳ ${widget.agreedPrice.toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.success.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Text(
+                                'Secured',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'Secured',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
                     ),
                   ),
                 ],
@@ -227,12 +295,11 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
           ),
           const SizedBox(height: AppDimensions.paddingSmall),
 
-          // Main 32dp Curved White Content Sheet
           Expanded(
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.sheetBackground,
+                color: tokens.sheetBg,
                 borderRadius: AppDimensions.roundedSheetTop,
               ),
               child: SingleChildScrollView(
@@ -240,7 +307,6 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Job & Client Details Card
                     ActiveJobClientCard(
                       jobTitle: widget.jobTitle,
                       clientName: widget.clientName,
@@ -278,12 +344,10 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                     ),
                     const SizedBox(height: AppDimensions.paddingLarge),
 
-                    // Progress Lifecycle Stepper
                     ActiveJobLifecycleStepper(currentPhase: _jobPhase),
 
                     const SizedBox(height: AppDimensions.paddingXLarge),
 
-                    // Primary Phase Progression CTA
                     if (_jobPhase == 0)
                       SizedBox(
                         width: double.infinity,
@@ -319,6 +383,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
                         child: const Center(
                           child: Text(
                             'Job Finished & Verified',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               color: AppColors.success,
                               fontSize: 16,

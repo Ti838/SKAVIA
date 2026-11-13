@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 class WorkerVerificationBanner extends StatelessWidget {
   final String verificationStatus;
@@ -10,12 +11,13 @@ class WorkerVerificationBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
     final isVerified = verificationStatus == 'Verified';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isVerified ? const Color(0xFFDCFCE7) : AppColors.cardPeachTint,
+        color: isVerified ? tokens.softMintBg : tokens.softPeachBg,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isVerified ? AppColors.statusActive : AppColors.accentPeach,
@@ -49,9 +51,9 @@ class WorkerVerificationBanner extends StatelessWidget {
                   isVerified
                       ? 'Your NID and certifications are authenticated by SKAVIA Operations.'
                       : 'NID documents submitted. Verified workers get priority matching & instant payouts.',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11.5,
-                    color: AppColors.textMedium,
+                    color: tokens.secondaryText,
                     height: 1.3,
                   ),
                 ),
@@ -80,89 +82,110 @@ class WorkerDocumentUploadSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Verification Documents & Identity',
           style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontSize: 15,
             fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildDocUploadCard(
-                title: 'NID Card',
-                isUploaded: nidUploaded,
-                icon: Icons.badge_rounded,
-                onTap: onToggleNid,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildDocUploadCard(
-                title: 'Trade License',
-                isUploaded: certUploaded,
-                icon: Icons.assignment_turned_in_rounded,
-                onTap: onToggleCert,
-              ),
-            ),
-          ],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stackVertically =
+                constraints.maxWidth < 300 || textScale > 1.3;
+
+            final nidCard = _buildDocUploadCard(
+              context,
+              title: 'NID Card',
+              isUploaded: nidUploaded,
+              icon: Icons.badge_rounded,
+              onTap: onToggleNid,
+            );
+
+            final certCard = _buildDocUploadCard(
+              context,
+              title: 'Trade License',
+              isUploaded: certUploaded,
+              icon: Icons.assignment_turned_in_rounded,
+              onTap: onToggleCert,
+            );
+
+            if (stackVertically) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [nidCard, const SizedBox(height: 10), certCard],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: nidCard),
+                const SizedBox(width: 12),
+                Expanded(child: certCard),
+              ],
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildDocUploadCard({
+  Widget _buildDocUploadCard(
+    BuildContext context, {
     required String title,
     required bool isUploaded,
     required IconData icon,
     required VoidCallback onTap,
   }) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isUploaded
-              ? AppColors.cardBlueTint
-              : AppColors.sheetSurfaceSubtle,
+          color: isUploaded ? tokens.softBlueBg : tokens.subtleCardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isUploaded ? AppColors.primarySky : AppColors.borderLight,
+            color: isUploaded ? tokens.brandAccent : tokens.border,
           ),
         ),
         child: Column(
           children: [
             Icon(
               isUploaded ? Icons.check_circle_rounded : icon,
-              color: isUploaded ? AppColors.statusActive : AppColors.textMedium,
+              color: isUploaded ? AppColors.statusActive : tokens.secondaryText,
               size: 26,
             ),
             const SizedBox(height: 6),
             Text(
               title,
-              style: const TextStyle(
+              textAlign: TextAlign.center,
+              style: TextStyle(
                 fontFamily: AppTypography.headingFont,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textDark,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 2),
             Text(
-              isUploaded ? 'Uploaded' : 'Tap to Upload',
+              isUploaded ? 'Marked Ready' : 'Tap to Mark Ready',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isUploaded
-                    ? AppColors.statusActive
-                    : AppColors.primarySky,
+                color: isUploaded ? AppColors.statusActive : tokens.brandAccent,
               ),
             ),
           ],

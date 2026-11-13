@@ -1,9 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/user_avatar.dart';
 
 /// Screen listing team members, their roles, certifications, and project workload.
@@ -54,39 +57,25 @@ class TeamRosterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Team Roster',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      backgroundColor: tokens.sheetBg,
+      appBar: AppAppBar(
+        title: 'Team Roster',
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add_alt_1_rounded, size: 22),
+            icon: Icon(
+              Icons.person_add_alt_1_rounded,
+              size: 22,
+              color: colorScheme.onSurface,
+            ),
             onPressed: () {
               UiFeedbackHelper.showInfo(
                 context,
-                'Invitation link copied for sharing with specialists',
+                'Team specialist assignment for $projectTitle is coordinated by your Team Leader.',
               );
             },
           ),
@@ -95,26 +84,25 @@ class TeamRosterScreen extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         itemCount: _members.length,
-        separatorBuilder: (_, index) => const SizedBox(height: 12),
+        separatorBuilder: (_, _) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final member = _members[index];
           return Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark
-                  ? colorScheme.surfaceContainerHighest
-                  : Colors.white,
+              color: tokens.cardBg,
               borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-              border: Border.all(color: colorScheme.outlineVariant),
+              border: Border.all(color: tokens.border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 UserAvatar(
                   name: member['name'] as String,
@@ -126,27 +114,27 @@ class TeamRosterScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Flexible(
-                            child: Text(
-                              member['name'] as String,
-                              style: TextStyle(
-                                fontFamily: AppTypography.headingFont,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15,
-                                color: colorScheme.onSurface,
-                              ),
+                          Text(
+                            member['name'] as String,
+                            style: TextStyle(
+                              fontFamily: AppTypography.headingFont,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.accent.withValues(alpha: 0.12),
+                              color: tokens.softPeachBg,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
@@ -171,35 +159,49 @@ class TeamRosterScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
                       Text(
                         member['role'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primaryRoyal,
+                          color: tokens.brandAccent,
                         ),
                       ),
+                      const SizedBox(height: 2),
                       Text(
                         '${member['trade']} • ${member['activeTasks']} active tasks',
                         style: TextStyle(
                           fontSize: 11.5,
-                          color: colorScheme.onSurfaceVariant,
+                          color: tokens.mutedText,
                         ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.chat_bubble_outline_rounded,
-                    color: AppColors.primarySky,
+                    color: tokens.brandAccent,
                     size: 20,
                   ),
                   onPressed: () {
+                    User? currentUser;
+                    try {
+                      currentUser = FirebaseAuth.instance.currentUser;
+                    } catch (_) {
+                      currentUser = null;
+                    }
+                    if (currentUser == null) {
+                      UiFeedbackHelper.showInfo(
+                        context,
+                        'Sign in to message ${member['name']}.',
+                      );
+                      return;
+                    }
                     UiFeedbackHelper.showInfo(
                       context,
-                      'Opening team messaging channel with ${member['name']}',
+                      'Use the Project Messages tab to coordinate with ${member['name']}.',
                     );
                   },
                 ),

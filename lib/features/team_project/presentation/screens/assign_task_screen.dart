@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../data/models/task_item_model.dart';
 
@@ -28,7 +29,7 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
   String _assignedWorkerName = 'Rahul Ahmed (Electrician)';
   String _assignedWorkerId = 'worker_01';
 
-  final List<Map<String, String>> _availableSpecialists = [
+  final List<Map<String, String>> _availableSpecialists = const [
     {'id': 'worker_01', 'name': 'Rahul Ahmed (Electrician)'},
     {'id': 'worker_02', 'name': 'Kamal Hossain (Plumbing Lead)'},
     {'id': 'worker_03', 'name': 'Engr. Tariqul Islam (HVAC Consultant)'},
@@ -68,32 +69,12 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Assign Deliverable / Task',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: tokens.sheetBg,
+      appBar: const AppAppBar(title: 'Assign Deliverable / Task'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         child: Form(
@@ -113,33 +94,42 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _titleController,
+                style: TextStyle(color: colorScheme.onSurface),
                 validator: (val) =>
                     Validators.requiredField(val, 'Task title is required'),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Task Title',
                   hintText: 'e.g. Sub-panel Conduit & Circuit Testing',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: tokens.inputBg,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _descController,
                 maxLines: 3,
-                decoration: const InputDecoration(
+                style: TextStyle(color: colorScheme.onSurface),
+                decoration: InputDecoration(
                   labelText: 'Detailed Scope & Acceptance Criteria',
                   hintText:
                       'Mention required equipment, safety protocols, and SLA',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: tokens.inputBg,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 14),
               TextFormField(
                 controller: _budgetController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
+                style: TextStyle(color: colorScheme.onSurface),
+                decoration: InputDecoration(
                   labelText: 'Milestone Payout (৳ BDT)',
                   hintText: 'e.g. 8500',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: tokens.inputBg,
+                  border: const OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
@@ -156,18 +146,23 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
+                runSpacing: 8,
                 children: ['Low', 'Medium', 'High', 'Urgent'].map((p) {
                   final isSelected = _priority == p;
                   return ChoiceChip(
                     label: Text(p),
                     selected: isSelected,
-                    selectedColor: AppColors.primarySky.withValues(alpha: 0.2),
+                    selectedColor: tokens.softBlueBg,
+                    backgroundColor: tokens.subtleCardBg,
+                    side: BorderSide(
+                      color: isSelected ? tokens.brandAccent : tokens.border,
+                    ),
                     labelStyle: TextStyle(
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w500,
                       color: isSelected
-                          ? AppColors.primaryRoyal
+                          ? tokens.brandAccent
                           : colorScheme.onSurface,
                     ),
                     onSelected: (val) {
@@ -190,11 +185,22 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
                 initialValue: _assignedWorkerId,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
+                isExpanded: true,
+                dropdownColor: tokens.cardBg,
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: tokens.inputBg,
+                  border: const OutlineInputBorder(),
+                ),
                 items: _availableSpecialists.map((s) {
                   return DropdownMenuItem(
                     value: s['id'],
-                    child: Text(s['name']!),
+                    child: Text(
+                      s['name']!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {

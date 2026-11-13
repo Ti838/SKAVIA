@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
 
 /// Card displaying order breakdown: specialist details, base amount, 15% platform commission, and total payable.
@@ -24,18 +24,15 @@ class OrderSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(AppDimensions.paddingLarge),
       decoration: BoxDecoration(
-        color: isDark
-            ? colorScheme.surfaceContainerHighest
-            : AppColors.sheetSurfaceSubtle,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: tokens.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,12 +42,12 @@ class OrderSummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primarySky.withValues(alpha: 0.15),
+                  color: tokens.softBlueBg,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.assignment_turned_in_rounded,
-                  color: AppColors.primarySky,
+                  color: tokens.brandAccent,
                   size: 22,
                 ),
               ),
@@ -71,17 +68,14 @@ class OrderSummaryCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       'Specialist: $specialistName',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      style: TextStyle(fontSize: 12.5, color: tokens.mutedText),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const Divider(height: 28),
+          Divider(height: 28, color: tokens.border),
           _buildCostRow(
             context,
             'Base Service Amount',
@@ -94,29 +88,35 @@ class OrderSummaryCard extends StatelessWidget {
             Formatters.formatCurrency(platformFee),
             subtitle: 'Escrow guarantee & 24/7 insurance',
           ),
-          const Divider(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Total Payable',
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 17,
-                  color: colorScheme.onSurface,
+          Divider(height: 24, color: tokens.border),
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                Text(
+                  'Total Payable',
+                  style: TextStyle(
+                    fontFamily: AppTypography.headingFont,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 17,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
-              ),
-              Text(
-                Formatters.formatCurrency(totalPayable),
-                style: const TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 22,
-                  color: AppColors.primaryRoyal,
+                Text(
+                  Formatters.formatCurrency(totalPayable),
+                  style: TextStyle(
+                    fontFamily: AppTypography.headingFont,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 22,
+                    color: tokens.brandAccent,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -129,33 +129,32 @@ class OrderSummaryCard extends StatelessWidget {
     String amount, {
     String? subtitle,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 13.5,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (subtitle != null) ...[
-              const SizedBox(height: 2),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               Text(
-                subtitle,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.textMuted,
-                ),
+                title,
+                style: TextStyle(fontSize: 13.5, color: tokens.secondaryText),
               ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: TextStyle(fontSize: 11, color: tokens.mutedText),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
+        const SizedBox(width: 8),
         Text(
           amount,
           style: TextStyle(
