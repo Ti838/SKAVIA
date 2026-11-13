@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'sound_haptic_preferences.dart';
+
 /// Production-Grade Notification & Audio Chime Service for SKAVIA.
 ///
 /// Implements dual-channel high-priority alert architecture modeled after
@@ -108,33 +110,38 @@ class NotificationService {
         }
       }
 
-      // Configure audio player mode safely
-      try {
-        _audioPlayer ??= AudioPlayer();
-        await _audioPlayer?.setAudioContext(AudioContext(
-          android: const AudioContextAndroid(
-            isSpeakerphoneOn: true,
-            stayAwake: false,
-            contentType: AndroidContentType.sonification,
-            usageType: AndroidUsageType.notification,
-            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
-          ),
-          iOS: AudioContextIOS(
-            category: AVAudioSessionCategory.ambient,
-            options: const {
-              AVAudioSessionOptions.mixWithOthers,
-            },
-          ),
-        ));
-      } catch (audioErr) {
-        debugPrint('[NotificationService] AudioContext notice: $audioErr');
-      }
-
       _isInitialized = true;
-      debugPrint('[NotificationService] Initialized successfully with audio channels.');
+      debugPrint('[NotificationService] Initialized successfully.');
     } catch (e, stack) {
       debugPrint('[NotificationService] Initialization error: $e\n$stack');
     }
+  }
+
+  Future<AudioPlayer> _ensureAudioPlayer() async {
+    final existing = _audioPlayer;
+    if (existing != null) return existing;
+    final created = AudioPlayer();
+    _audioPlayer = created;
+    try {
+      await created.setAudioContext(AudioContext(
+        android: const AudioContextAndroid(
+          isSpeakerphoneOn: true,
+          stayAwake: false,
+          contentType: AndroidContentType.sonification,
+          usageType: AndroidUsageType.notification,
+          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+        ),
+        iOS: AudioContextIOS(
+          category: AVAudioSessionCategory.ambient,
+          options: const {
+            AVAudioSessionOptions.mixWithOthers,
+          },
+        ),
+      ));
+    } catch (audioErr) {
+      debugPrint('[NotificationService] AudioContext notice: $audioErr');
+    }
+    return created;
   }
 
   /// Checks the current system notification permission status.
@@ -192,22 +199,46 @@ class NotificationService {
     return await openAppSettings();
   }
 
-  /// Plays in-app bell chime and triggers haptic vibration for foreground events.
-  Future<void> playInAppNotificationSound({bool withHaptic = true}) async {
+  /// Plays in-app bell chime and triggers haptic vibration for foreground events,
+  /// respecting persisted user sound and haptic preferences.
+  Future<void> playInAppNotificationSound({
+    bool? withHaptic,
+    bool isMessage = false,
+    bool forcePreview = false,
+  }) async {
+    final prefs = SoundHapticPreferences.instance;
+    final allowSound = forcePreview
+        ? true
+        : (isMessage
+              ? prefs.messageSoundEnabled
+              : prefs.notificationSoundEnabled);
+    final allowHaptic = forcePreview
+        ? true
+        : (withHaptic ?? prefs.hapticFeedbackEnabled);
+
     try {
-      if (withHaptic) {
+      if (allowHaptic) {
         await HapticFeedback.heavyImpact();
       }
-      _audioPlayer ??= AudioPlayer();
-      await _audioPlayer?.stop();
-      await _audioPlayer?.play(AssetSource('sounds/notification_sound.wav'), volume: 1.0);
+      if (!allowSound) return;
+      final player = await _ensureAudioPlayer();
+      await player.stop();
+      await player.play(
+        AssetSource('sounds/notification_sound.wav'),
+        volume: 1.0,
+      );
     } catch (e) {
       // Audio playback fallback to pure system haptic
-      if (withHaptic) {
+      if (allowHaptic) {
         await HapticFeedback.mediumImpact();
       }
       debugPrint('[NotificationService] In-app audio notice: $e');
     }
+  }
+
+  /// Explicit live chime preview for the Sound & Haptics settings screen.
+  Future<void> previewNotificationSound() async {
+    await playInAppNotificationSound(withHaptic: true, forcePreview: true);
   }
 
   /// Displays a heads-up system tray notification with sound, vibration, and optional action buttons.
@@ -226,8 +257,9 @@ class NotificationService {
     }
 
     try {
-      // Play in-app chime if active
-      if (triggerInAppChime) {
+      final prefs = SoundHapticPreferences.instance;
+      // Play in-app chime if enabled
+      if (triggerInAppChime && prefs.notificationSoundEnabled) {
         unawaited(playInAppNotificationSound());
       }
 
@@ -238,13 +270,14 @@ class NotificationService {
             isUrgent ? urgentChannelDescription : generalChannelDescription,
         importance: isUrgent ? Importance.max : Importance.defaultImportance,
         priority: isUrgent ? Priority.high : Priority.defaultPriority,
-        playSound: true,
-        sound: isUrgent
+        playSound: prefs.notificationSoundEnabled,
+        sound: isUrgent && prefs.notificationSoundEnabled
             ? const RawResourceAndroidNotificationSound(customSoundResource)
             : null,
-        enableVibration: true,
-        vibrationPattern:
-            isUrgent ? Int64List.fromList([0, 500, 200, 500]) : null,
+        enableVibration: prefs.vibrationEnabled,
+        vibrationPattern: (isUrgent && prefs.vibrationEnabled)
+            ? Int64List.fromList([0, 500, 200, 500])
+            : null,
         visibility: visibility,
         ticker: title,
         actions: actions,

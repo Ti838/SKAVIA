@@ -3,12 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/uuid_util.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../models/chat_message_model.dart';
 
 class ChatRemoteDataSource {
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   // Local optimistic message cache: conversationId -> List<ChatMessageModel>
   static final Map<String, List<ChatMessageModel>> _localMessages = {};
@@ -17,38 +18,43 @@ class ChatRemoteDataSource {
       StreamController<ChatMessageModel>.broadcast();
 
   ChatRemoteDataSource({SupabaseClient? supabaseClient})
-    : _supabase = supabaseClient ?? Supabase.instance.client;
+    : _supabase = supabaseClient ?? tryGetSupabaseClient();
+
+  Stream<List<ChatMessageModel>> _createLocalStream(String conversationId) {
+    final localList = _localMessages[conversationId] ?? <ChatMessageModel>[];
+    final controller = StreamController<List<ChatMessageModel>>();
+    controller.add(List<ChatMessageModel>.from(localList));
+
+    final sub = _optimisticMessageBus.stream
+        .where((m) => m.conversationId == conversationId)
+        .listen((newMsg) {
+          final target = _localMessages.putIfAbsent(
+            conversationId,
+            () => <ChatMessageModel>[],
+          );
+          if (!target.any((m) => m.messageId == newMsg.messageId)) {
+            target.add(newMsg);
+          }
+          controller.add(List<ChatMessageModel>.from(target));
+        });
+
+    controller.onCancel = () => sub.cancel();
+    return controller.stream;
+  }
 
   /// Real-Time WebSocket stream of messages for a specific conversation (SRS 3.1.N)
   /// Combines remote Supabase stream with optimistic client-side messaging for zero-latency.
   Stream<List<ChatMessageModel>> getMessagesStream(String rawConversationId) {
     final conversationId = rawConversationId.trim();
     final localList = _localMessages[conversationId] ?? <ChatMessageModel>[];
+    final client = _supabase;
 
-    // If conversationId is not a valid UUID, Supabase stream will reject it with 22P02.
-    // In that case, return a reactive local stream!
-    if (!UuidUtil.isValidUuid(conversationId)) {
-      debugPrint(
-        '[ChatRemoteDataSource] Non-UUID conversation id "$conversationId", using reactive local stream.',
-      );
-      final controller = StreamController<List<ChatMessageModel>>();
-      controller.add(List<ChatMessageModel>.from(localList));
-
-      final sub = _optimisticMessageBus.stream
-          .where((m) => m.conversationId == conversationId)
-          .listen((newMsg) {
-            if (!localList.any((m) => m.messageId == newMsg.messageId)) {
-              localList.add(newMsg);
-            }
-            controller.add(List<ChatMessageModel>.from(localList));
-          });
-
-      controller.onCancel = () => sub.cancel();
-      return controller.stream;
+    if (client == null || !UuidUtil.isValidUuid(conversationId)) {
+      return _createLocalStream(conversationId);
     }
 
     try {
-      final remoteStream = _supabase
+      final remoteStream = client
           .from(DatabaseTables.messages)
           .stream(primaryKey: ['message_id'])
           .eq('conversation_id', conversationId)
@@ -57,7 +63,6 @@ class ChatRemoteDataSource {
             final remoteMsgs = rows
                 .map((r) => ChatMessageModel.fromJson(r))
                 .toList();
-            // Merge with any local optimistic messages not yet acknowledged by remote
             final combined = List<ChatMessageModel>.from(remoteMsgs);
             final pending = _localMessages[conversationId] ?? [];
             for (final local in pending) {
@@ -76,12 +81,11 @@ class ChatRemoteDataSource {
       return remoteStream;
     } catch (e) {
       debugPrint('[ChatRemoteDataSource Stream Error]: $e');
-      return Stream.value(List<ChatMessageModel>.from(localList));
+      return _createLocalStream(conversationId);
     }
   }
 
-  /// Sends a secure message and updates conversation last_message_at
-  /// Guarantees delivery via optimistic bus even if remote DB RLS is pending.
+  /// Sends a secure message and updates conversation last_message_at.
   Future<ChatMessageModel> sendMessage({
     required String conversationId,
     required String senderId,
@@ -106,10 +110,11 @@ class ChatRemoteDataSource {
     _localMessages.putIfAbsent(validConvId, () => []).add(localMsg);
     _optimisticMessageBus.add(localMsg);
 
-    // 2. Persist to Supabase if valid UUID
-    if (UuidUtil.isValidUuid(validConvId)) {
+    // 2. Persist to Supabase if initialized and valid UUID
+    final client = _supabase;
+    if (client != null && UuidUtil.isValidUuid(validConvId)) {
       try {
-        final res = await _supabase
+        final res = await client
             .from(DatabaseTables.messages)
             .insert({
               'message_id': messageId,
@@ -123,9 +128,8 @@ class ChatRemoteDataSource {
             .select()
             .maybeSingle();
 
-        // Update conversation timestamp
         try {
-          await _supabase
+          await client
               .from(DatabaseTables.conversations)
               .update({'last_message_at': now.toIso8601String()})
               .eq('conversation_id', validConvId);
@@ -136,17 +140,19 @@ class ChatRemoteDataSource {
         }
       } catch (e) {
         debugPrint('[ChatRemoteDataSource sendMessage Supabase notice]: $e');
-        // Do not fail user action: optimistic message is already active!
       }
     }
 
     return localMsg;
   }
 
-  /// Retrieves all real conversations for the user, populating the other participant's details
+  /// Retrieves all real conversations for the user, populating the other participant's details.
   Future<List<ConversationModel>> getConversations(String userId) async {
+    final client = _supabase;
+    if (client == null) return [];
+
     try {
-      final res = await _supabase
+      final res = await client
           .from(DatabaseTables.conversations)
           .select('''
             conversation_id,
@@ -160,62 +166,84 @@ class ChatRemoteDataSource {
           .or('participant_one.eq.$userId,participant_two.eq.$userId')
           .order('last_message_at', ascending: false);
 
-      final List<ConversationModel> conversations = [];
+      final rawList = (res as List)
+          .whereType<Map>()
+          .map((raw) => Map<String, dynamic>.from(raw))
+          .toList();
 
-      for (final raw in (res as List)) {
-        final convMap = Map<String, dynamic>.from(raw as Map);
+      if (rawList.isEmpty) return [];
+
+      final otherUserIds = <String>{};
+      final conversationIds = <String>[];
+      for (final convMap in rawList) {
         final p1 = convMap['participant_one'] as String? ?? '';
         final p2 = convMap['participant_two'] as String? ?? '';
         final otherId = p1 == userId ? p2 : p1;
+        if (otherId.isNotEmpty) otherUserIds.add(otherId);
+        final convId = convMap['conversation_id']?.toString() ?? '';
+        if (convId.isNotEmpty) conversationIds.add(convId);
+      }
 
-        // Fetch other participant's real name and avatar
-        String otherName = 'SKAVIA Member';
-        String? otherAvatar;
+      final usersById = <String, Map<String, dynamic>>{};
+      final lastMsgByConv = <String, String>{};
+      final unreadCountByConv = <String, int>{};
 
-        try {
-          final userRes = await _supabase
-              .from(DatabaseTables.users)
-              .select('full_name, avatar_url')
-              .eq('user_id', otherId)
-              .maybeSingle();
+      await Future.wait([
+        () async {
+          if (otherUserIds.isEmpty) return;
+          try {
+            final users = await client
+                .from(DatabaseTables.users)
+                .select('user_id, full_name, avatar_url')
+                .inFilter('user_id', otherUserIds.toList());
+            for (final row in (users as List).whereType<Map>()) {
+              final map = Map<String, dynamic>.from(row);
+              final uid = map['user_id']?.toString();
+              if (uid != null && uid.isNotEmpty) {
+                usersById[uid] = map;
+              }
+            }
+          } catch (_) {}
+        }(),
+        () async {
+          if (conversationIds.isEmpty) return;
+          try {
+            final msgs = await client
+                .from(DatabaseTables.messages)
+                .select('conversation_id, message_text, is_read, sender_id, created_at')
+                .inFilter('conversation_id', conversationIds)
+                .order('created_at', ascending: false);
+            for (final row in (msgs as List).whereType<Map>()) {
+              final convId = row['conversation_id']?.toString() ?? '';
+              if (convId.isEmpty) continue;
+              if (!lastMsgByConv.containsKey(convId) &&
+                  row['message_text'] != null) {
+                lastMsgByConv[convId] = row['message_text'].toString();
+              }
+              final isRead = row['is_read'] as bool? ?? true;
+              final senderId = row['sender_id']?.toString() ?? '';
+              if (!isRead && senderId != userId) {
+                unreadCountByConv[convId] =
+                    (unreadCountByConv[convId] ?? 0) + 1;
+              }
+            }
+          } catch (_) {}
+        }(),
+      ]);
 
-          if (userRes != null) {
-            otherName = userRes['full_name'] as String? ?? 'SKAVIA Member';
-            otherAvatar = userRes['avatar_url'] as String?;
-          }
-        } catch (_) {}
+      final List<ConversationModel> conversations = [];
+      for (final convMap in rawList) {
+        final p1 = convMap['participant_one'] as String? ?? '';
+        final p2 = convMap['participant_two'] as String? ?? '';
+        final otherId = p1 == userId ? p2 : p1;
+        final convId = convMap['conversation_id']?.toString() ?? '';
+        final userRes = usersById[otherId];
 
-        // Fetch last message preview
-        String? lastMessage;
-        int unreadCount = 0;
-        try {
-          final lastMsgRes = await _supabase
-              .from(DatabaseTables.messages)
-              .select('message_text, is_read, sender_id')
-              .eq('conversation_id', convMap['conversation_id'])
-              .order('created_at', ascending: false)
-              .limit(1)
-              .maybeSingle();
-
-          if (lastMsgRes != null) {
-            lastMessage = lastMsgRes['message_text'] as String?;
-          }
-
-          // Count unread messages received by current user
-          final unreadRes = await _supabase
-              .from(DatabaseTables.messages)
-              .select('message_id')
-              .eq('conversation_id', convMap['conversation_id'])
-              .eq('is_read', false)
-              .neq('sender_id', userId);
-
-          unreadCount = (unreadRes as List).length;
-        } catch (_) {}
-
-        convMap['other_name'] = otherName;
-        convMap['other_avatar'] = otherAvatar;
-        convMap['last_message_text'] = lastMessage;
-        convMap['unread_count'] = unreadCount;
+        convMap['other_name'] =
+            userRes?['full_name'] as String? ?? 'SKAVIA Member';
+        convMap['other_avatar'] = userRes?['avatar_url'] as String?;
+        convMap['last_message_text'] = lastMsgByConv[convId];
+        convMap['unread_count'] = unreadCountByConv[convId] ?? 0;
 
         conversations.add(
           ConversationModel.fromJson(convMap, currentUserId: userId),
@@ -229,7 +257,7 @@ class ChatRemoteDataSource {
     }
   }
 
-  /// Finds existing conversation between two users or creates a new one with a valid UUID
+  /// Finds existing conversation between two users or creates a new one with a valid UUID.
   Future<ConversationModel> getOrCreateConversation({
     required String currentUserId,
     required String otherUserId,
@@ -237,57 +265,59 @@ class ChatRemoteDataSource {
     String? projectId,
   }) async {
     final now = DateTime.now();
+    final client = _supabase;
 
-    try {
-      // 1. Check if conversation already exists in Supabase
-      final existing = await _supabase
-          .from(DatabaseTables.conversations)
-          .select()
-          .or(
-            'and(participant_one.eq.$currentUserId,participant_two.eq.$otherUserId),'
-            'and(participant_one.eq.$otherUserId,participant_two.eq.$currentUserId)',
-          )
-          .maybeSingle();
+    if (client != null) {
+      try {
+        final existing = await client
+            .from(DatabaseTables.conversations)
+            .select()
+            .or(
+              'and(participant_one.eq.$currentUserId,participant_two.eq.$otherUserId),'
+              'and(participant_one.eq.$otherUserId,participant_two.eq.$currentUserId)',
+            )
+            .maybeSingle();
 
-      if (existing != null) {
-        return ConversationModel.fromJson(
-          Map<String, dynamic>.from(existing),
-          currentUserId: currentUserId,
-        );
+        if (existing != null) {
+          return ConversationModel.fromJson(
+            Map<String, dynamic>.from(existing),
+            currentUserId: currentUserId,
+          );
+        }
+      } catch (e) {
+        debugPrint('[ChatRemoteDataSource checkExisting notice]: $e');
       }
-    } catch (e) {
-      debugPrint('[ChatRemoteDataSource checkExisting notice]: $e');
     }
 
-    // 2. Generate clean UUID for the new conversation
     final newConvId = UuidUtil.generateV4();
 
-    try {
-      final newConv = await _supabase
-          .from(DatabaseTables.conversations)
-          .insert({
-            'conversation_id': newConvId,
-            'participant_one': currentUserId,
-            'participant_two': otherUserId,
-            'service_request_id': serviceRequestId,
-            'project_id': projectId,
-            'last_message_at': now.toIso8601String(),
-            'created_at': now.toIso8601String(),
-          })
-          .select()
-          .maybeSingle();
+    if (client != null) {
+      try {
+        final newConv = await client
+            .from(DatabaseTables.conversations)
+            .insert({
+              'conversation_id': newConvId,
+              'participant_one': currentUserId,
+              'participant_two': otherUserId,
+              'service_request_id': serviceRequestId,
+              'project_id': projectId,
+              'last_message_at': now.toIso8601String(),
+              'created_at': now.toIso8601String(),
+            })
+            .select()
+            .maybeSingle();
 
-      if (newConv != null) {
-        return ConversationModel.fromJson(
-          Map<String, dynamic>.from(newConv),
-          currentUserId: currentUserId,
-        );
+        if (newConv != null) {
+          return ConversationModel.fromJson(
+            Map<String, dynamic>.from(newConv),
+            currentUserId: currentUserId,
+          );
+        }
+      } catch (e) {
+        debugPrint('[ChatRemoteDataSource createConversation notice]: $e');
       }
-    } catch (e) {
-      debugPrint('[ChatRemoteDataSource createConversation notice]: $e');
     }
 
-    // 3. Fallback resilient model (zero UI crash even if Supabase RLS is waiting for user SQL)
     return ConversationModel(
       conversationId: newConvId,
       participantOne: currentUserId,
@@ -299,14 +329,15 @@ class ChatRemoteDataSource {
     );
   }
 
-  /// Marks unread messages in conversation as read for the current recipient
+  /// Marks unread messages in conversation as read for the current recipient.
   Future<void> markMessagesAsRead({
     required String conversationId,
     required String currentUserId,
   }) async {
-    if (!UuidUtil.isValidUuid(conversationId)) return;
+    final client = _supabase;
+    if (client == null || !UuidUtil.isValidUuid(conversationId)) return;
     try {
-      await _supabase
+      await client
           .from(DatabaseTables.messages)
           .update({'is_read': true})
           .eq('conversation_id', conversationId)

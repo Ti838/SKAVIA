@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_typography.dart';
+import '../../../../app/router/app_routes.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/chat_remote_datasource.dart';
 import '../../data/models/chat_message_model.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_message_bubble.dart';
-
-import 'package:intl/intl.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final String conversationId;
@@ -77,7 +78,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         text: text,
       );
 
-      // Auto scroll to bottom after send
       Future.delayed(const Duration(milliseconds: 150), () {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
@@ -97,176 +97,169 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   @override
   Widget build(BuildContext context) {
     final timeFormat = DateFormat('hh:mm a');
-
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final roomTitle = widget.otherParticipantName.isNotEmpty
+        ? widget.otherParticipantName
+        : 'SKAVIA Chat';
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
+      backgroundColor: tokens.sheetBg,
+      appBar: AppAppBar(
+        title: roomTitle,
         centerTitle: false,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          widget.otherParticipantName.isNotEmpty
-              ? widget.otherParticipantName
-              : 'Project Alpha',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-          overflow: TextOverflow.ellipsis,
-        ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.phone_outlined,
-              color: colorScheme.onSurface,
-              size: 22,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Starting voice call...')),
-              );
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
+            color: tokens.cardBg,
+            onSelected: (value) {
+              if (value == 'call_info') {
+                UiFeedbackHelper.showInfo(
+                  context,
+                  'In-app voice & video calls are not enabled on this build yet. Coordinate securely via direct text chat.',
+                );
+              } else if (value == 'report') {
+                Navigator.pushNamed(context, AppRoutes.submitComplaint);
+              }
             },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.videocam_outlined,
-              color: colorScheme.onSurface,
-              size: 24,
-            ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Starting video call...')),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.more_vert_rounded,
-              color: colorScheme.onSurface,
-              size: 22,
-            ),
-            onPressed: () {},
+            itemBuilder: (_) => [
+              PopupMenuItem(
+                value: 'call_info',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.phone_in_talk_outlined,
+                      size: 18,
+                      color: tokens.brandAccent,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Voice & Video Info',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.report_problem_outlined,
+                      size: 18,
+                      color: colorScheme.error,
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Report Conversation',
+                      style: TextStyle(color: colorScheme.onSurface),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          color: colorScheme.surface,
-          child: Column(
-            children: [
-              // Real-time messages stream
-              Expanded(
-                child: StreamBuilder<List<ChatMessageModel>>(
-                  stream: _chatDataSource.getMessagesStream(_conversationId),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting &&
-                        !snapshot.hasData) {
-                      return const Center(
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      );
-                    }
-
-                    final messages = snapshot.data ?? [];
-
-                    if (messages.isEmpty) {
-                      return Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(32.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: AppColors.cardBlueTint,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.chat_bubble_outline_rounded,
-                                  size: 40,
-                                  color: AppColors.primarySky,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Secure Chat Initialized',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Send a message to coordinate service details with ${widget.otherParticipantName}.',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textMedium,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-
-                    // Scroll to bottom when new messages stream in
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (_scrollController.hasClients) {
-                        _scrollController.animateTo(
-                          _scrollController.position.maxScrollExtent,
-                          duration: const Duration(milliseconds: 200),
-                          curve: Curves.easeOut,
-                        );
-                      }
-                    });
-
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 20,
-                      ),
-                      itemCount: messages.length,
-                      itemBuilder: (context, index) {
-                        final msg = messages[index];
-                        final isMe = msg.senderId == _currentUserId;
-
-                        return ChatMessageBubble(
-                          message: msg,
-                          isMe: isMe,
-                          timeFormat: timeFormat,
-                        );
-                      },
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder<List<ChatMessageModel>>(
+                stream: _chatDataSource.getMessagesStream(_conversationId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting &&
+                      !snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     );
-                  },
-                ),
-              ),
+                  }
 
-              // Bottom Input Control
-              ChatInputBar(
-                controller: _messageController,
-                isSending: _isSending,
-                onSend: _sendMessage,
+                  final messages = snapshot.data ?? [];
+
+                  if (messages.isEmpty) {
+                    return Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: tokens.softBlueBg,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.chat_bubble_outline_rounded,
+                                size: 40,
+                                color: tokens.brandAccent,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Secure Chat Initialized',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Send a message to coordinate service details with $roomTitle.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: tokens.mutedText,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (_scrollController.hasClients) {
+                      _scrollController.animateTo(
+                        _scrollController.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  });
+
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isMe = msg.senderId == _currentUserId;
+
+                      return ChatMessageBubble(
+                        message: msg,
+                        isMe: isMe,
+                        timeFormat: timeFormat,
+                      );
+                    },
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+
+            ChatInputBar(
+              controller: _messageController,
+              isSending: _isSending,
+              onSend: _sendMessage,
+            ),
+          ],
         ),
       ),
     );

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
 import '../controllers/notification_center_controller.dart';
 import '../../data/models/app_notification_model.dart';
@@ -21,7 +23,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -32,6 +35,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           if (_selectedFilter == 'Bookings') {
             return n.category == 'booking' || n.category == 'urgent';
           }
+          if (_selectedFilter == 'Updates') {
+            return n.category == 'app_update' ||
+                n.category == 'system' ||
+                n.actionRoute == AppRoutes.appUpdate;
+          }
           if (_selectedFilter == 'Gifts & Profile') {
             return n.category == 'birthday' || n.category == 'profile';
           }
@@ -39,27 +47,25 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         }).toList();
 
         return Scaffold(
+          backgroundColor: tokens.sheetBg,
           appBar: AppAppBar(
             title: 'Notifications',
             actions: [
               if (_controller.unreadCount > 0)
-                TextButton(
-                  onPressed: () => _controller.markAllAsRead(),
-                  child: const Text(
-                    'Mark all as read',
-                    style: TextStyle(
-                      color: AppColors.primaryRoyal,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                    ),
+                IconButton(
+                  icon: Icon(
+                    Icons.done_all_rounded,
+                    color: tokens.brandAccent,
                   ),
+                  tooltip: 'Mark all as read',
+                  onPressed: () => _controller.markAllAsRead(),
                 ),
             ],
           ),
           body: SafeArea(
             child: Column(
               children: [
-                // Filter chips bar
+                // Filter pills bar
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(
@@ -71,6 +77,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                       'All',
                       'Unread',
                       'Bookings',
+                      'Updates',
                       'Gifts & Profile',
                     ].map((filter) {
                       final isSelected = _selectedFilter == filter;
@@ -78,66 +85,89 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                       if (filter == 'Unread') {
                         count = _controller.unreadCount;
                       }
+                      final label = count != null && count > 0
+                          ? '$filter ($count)'
+                          : filter;
 
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
-                        child: ChoiceChip(
-                          label: Text(
-                            count != null && count > 0
-                                ? '$filter ($count)'
-                                : filter,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () =>
+                                setState(() => _selectedFilter = filter),
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? tokens.brandAccent
+                                    : tokens.cardBg,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? tokens.brandAccent
+                                      : tokens.border,
+                                ),
+                              ),
+                              child: Text(
+                                label,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? tokens.onBrandAccent
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
                           ),
-                          selected: isSelected,
-                          selectedColor:
-                              AppColors.primaryRoyal.withValues(alpha: 0.15),
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? AppColors.primaryRoyal
-                                : colorScheme.onSurfaceVariant,
-                            fontWeight: isSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
-                            fontSize: 12,
-                          ),
-                          onSelected: (val) {
-                            if (val) setState(() => _selectedFilter = filter);
-                          },
                         ),
                       );
                     }).toList(),
                   ),
                 ),
-                const Divider(height: 1),
+                Divider(height: 1, color: tokens.border),
 
                 Expanded(
                   child: filtered.isEmpty
                       ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.notifications_off_outlined,
-                                size: 56,
-                                color: colorScheme.outlineVariant,
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'No Notifications',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.onSurface,
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.notifications_off_outlined,
+                                  size: 56,
+                                  color: tokens.mutedText,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'You are all caught up!',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: colorScheme.onSurfaceVariant,
+                                const SizedBox(height: 12),
+                                Text(
+                                  'No Notifications',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: colorScheme.onSurface,
+                                  ),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  'You are all caught up!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : ListView.separated(
@@ -151,6 +181,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                               context,
                               notif,
                               colorScheme,
+                              tokens,
                             );
                           },
                         ),
@@ -167,9 +198,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     BuildContext context,
     AppNotificationModel notif,
     ColorScheme colorScheme,
+    dynamic tokens,
   ) {
     IconData icon = Icons.notifications_rounded;
-    Color iconColor = AppColors.primaryRoyal;
+    Color iconColor = tokens.brandAccent as Color;
 
     switch (notif.category) {
       case 'birthday':
@@ -191,6 +223,11 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       case 'security':
         icon = Icons.security_rounded;
         iconColor = AppColors.warning;
+        break;
+      case 'app_update':
+      case 'system':
+        icon = Icons.system_update_rounded;
+        iconColor = AppColors.primaryRoyal;
         break;
     }
 
@@ -218,14 +255,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: notif.isRead
-                ? colorScheme.surface
-                : AppColors.primaryRoyal.withValues(alpha: 0.05),
+            color: notif.isRead ? tokens.cardBg : tokens.softBlueBg,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: notif.isRead
-                  ? colorScheme.outlineVariant
-                  : AppColors.primaryRoyal.withValues(alpha: 0.3),
+              color: notif.isRead ? tokens.border : tokens.brandAccent,
               width: notif.isRead ? 1 : 1.2,
             ),
           ),
@@ -235,7 +268,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
+                  color: iconColor.withValues(alpha: 0.14),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: iconColor, size: 20),
@@ -260,15 +293,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                             ),
                           ),
                         ),
-                        if (!notif.isRead)
+                        if (!notif.isRead) ...[
+                          const SizedBox(width: 8),
                           Container(
                             width: 8,
                             height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.primaryRoyal,
+                            decoration: BoxDecoration(
+                              color: tokens.brandAccent,
                               shape: BoxShape.circle,
                             ),
                           ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -285,8 +320,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                       DateFormat('dd MMM, hh:mm a').format(notif.createdAt),
                       style: TextStyle(
                         fontSize: 10,
-                        color: colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.7),
+                        color: tokens.mutedText,
                       ),
                     ),
                   ],

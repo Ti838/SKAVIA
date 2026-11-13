@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Text input field with send button for chat conversations.
 class ChatInputBar extends StatelessWidget {
@@ -17,22 +17,18 @@ class ChatInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.sheetBg,
+        border: Border(top: BorderSide(color: tokens.border)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: isDark ? 0.2 : 0.05,
-            ),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
             offset: const Offset(0, -2),
             blurRadius: 10,
           ),
@@ -43,15 +39,9 @@ class ChatInputBar extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: isDark
-                    ? colorScheme.surfaceContainerHighest
-                    : AppColors.sheetSurfaceSubtle,
+                color: tokens.subtleCardBg,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark
-                      ? colorScheme.outlineVariant
-                      : AppColors.borderLight,
-                ),
+                border: Border.all(color: tokens.border),
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
@@ -67,7 +57,7 @@ class ChatInputBar extends StatelessWidget {
                   hintText: 'Type a message...',
                   hintStyle: TextStyle(
                     fontSize: 14,
-                    color: colorScheme.onSurfaceVariant,
+                    color: tokens.mutedText,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -76,9 +66,7 @@ class ChatInputBar extends StatelessWidget {
                   filled: false,
                   fillColor: Colors.transparent,
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 12,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
                 onSubmitted: (_) => onSend(),
               ),
@@ -86,25 +74,25 @@ class ChatInputBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Container(
-            decoration: const BoxDecoration(
-              color: AppColors.primarySky,
+            decoration: BoxDecoration(
+              color: tokens.brandAccent,
               shape: BoxShape.circle,
             ),
             child: IconButton(
               icon: isSending
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white,
+                          tokens.onBrandAccent,
                         ),
                       ),
                     )
-                  : const Icon(
+                  : Icon(
                       Icons.send_rounded,
-                      color: Colors.white,
+                      color: tokens.onBrandAccent,
                       size: 20,
                     ),
               onPressed: onSend,
@@ -115,4 +103,3 @@ class ChatInputBar extends StatelessWidget {
     );
   }
 }
-

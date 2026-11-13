@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 import '../../data/models/chat_message_model.dart';
 import '../screens/chat_room_screen.dart';
 
@@ -34,11 +35,13 @@ class ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final timeStr = _formatTimestamp(conversation.lastMessageAt);
     final otherId = conversation.participantOne == currentUserId
         ? conversation.participantTwo
         : conversation.participantOne;
+    final otherName = conversation.otherParticipantName ?? 'SKAVIA Member';
 
     return InkWell(
       onTap: () async {
@@ -47,8 +50,7 @@ class ConversationTile extends StatelessWidget {
           MaterialPageRoute(
             builder: (_) => ChatRoomScreen(
               conversationId: conversation.conversationId,
-              otherParticipantName:
-                  conversation.otherParticipantName ?? 'SKAVIA Member',
+              otherParticipantName: otherName,
               otherParticipantAvatar: conversation.otherParticipantAvatar,
               otherParticipantId: otherId,
             ),
@@ -61,29 +63,12 @@ class ConversationTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         child: Row(
           children: [
-            // Avatar
-            CircleAvatar(
+            UserAvatar(
+              imageUrl: conversation.otherParticipantAvatar,
+              name: otherName,
               radius: 26,
-              backgroundColor: AppColors.primarySky.withValues(alpha: 0.15),
-              backgroundImage: conversation.otherParticipantAvatar != null
-                  ? NetworkImage(conversation.otherParticipantAvatar!)
-                  : null,
-              child: conversation.otherParticipantAvatar == null
-                  ? Text(
-                      (conversation.otherParticipantName?.isNotEmpty ?? false)
-                          ? conversation.otherParticipantName![0].toUpperCase()
-                          : 'U',
-                      style: const TextStyle(
-                        color: AppColors.primaryRoyal,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 18,
-                      ),
-                    )
-                  : null,
             ),
             const SizedBox(width: 14),
-
-            // Name & snippet
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -91,9 +76,9 @@ class ConversationTile extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
+                      Expanded(
                         child: Text(
-                          conversation.otherParticipantName ?? 'SKAVIA Member',
+                          otherName,
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
@@ -102,11 +87,12 @@ class ConversationTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         timeStr,
                         style: TextStyle(
                           fontSize: 11,
-                          color: colorScheme.onSurfaceVariant,
+                          color: tokens.mutedText,
                         ),
                       ),
                     ],
@@ -125,7 +111,7 @@ class ConversationTile extends StatelessWidget {
                                 : FontWeight.w400,
                             color: conversation.unreadCount > 0
                                 ? colorScheme.onSurface
-                                : colorScheme.onSurfaceVariant,
+                                : tokens.mutedText,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -138,14 +124,14 @@ class ConversationTile extends StatelessWidget {
                             horizontal: 8,
                             vertical: 2,
                           ),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primarySky,
+                          decoration: BoxDecoration(
+                            color: tokens.brandAccent,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
                             '${conversation.unreadCount}',
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: tokens.onBrandAccent,
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                             ),

@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Empty state illustration and message for chat list when no direct messages exist yet.
 class ChatEmptyState extends StatelessWidget {
-  const ChatEmptyState({super.key});
+  final bool shrinkWrap;
+
+  const ChatEmptyState({super.key, this.shrinkWrap = false});
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return ListView(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       children: [
-        const SizedBox(height: 80),
         Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -23,20 +26,19 @@ class ChatEmptyState extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? colorScheme.surfaceContainerHighest
-                      : AppColors.cardBlueTint,
+                  color: tokens.softBlueBg,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.forum_outlined,
                   size: 48,
-                  color: colorScheme.primary,
+                  color: tokens.brandAccent,
                 ),
               ),
               const SizedBox(height: 20),
               Text(
                 'No Conversations Yet',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: AppTypography.headingFont,
                   fontSize: 18,
@@ -45,16 +47,13 @@ class ChatEmptyState extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Text(
-                  'When you book a specialist, post a requirement, or accept a job assignment, your direct real-time communication will be listed here.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: colorScheme.onSurfaceVariant,
-                    height: 1.45,
-                  ),
+              Text(
+                'When you book a specialist, post a requirement, or accept a job assignment, your direct real-time communication will be listed here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: tokens.mutedText,
+                  height: 1.45,
                 ),
               ),
             ],

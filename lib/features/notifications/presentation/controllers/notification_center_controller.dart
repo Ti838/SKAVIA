@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/uuid_util.dart';
+import '../../../../data/tables/database_tables.dart';
 import '../../../profile/data/models/user_profile_model.dart';
 import '../../../profile/domain/services/profile_completion_engine.dart';
 import '../../data/models/app_notification_model.dart';
@@ -13,32 +16,155 @@ class NotificationCenterController extends ChangeNotifier {
   factory NotificationCenterController() => instance;
   NotificationCenterController._internal();
 
-  static const String _cacheKey = 'skavia_user_notifications_cache';
+  static const String _cachePrefix = 'skavia_user_notifications_cache_';
 
   final List<AppNotificationModel> _notifications = [];
   final Set<String> _seenDedupKeys = {};
-  final bool _isLoading = false;
+  String? _activeUserId;
+  bool _isLoading = false;
 
   List<AppNotificationModel> get notifications =>
       List.unmodifiable(_notifications);
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
   bool get isLoading => _isLoading;
+  String? get activeUserId => _activeUserId;
 
-  void initialize(String userId) {
+  String get _cacheKey => '$_cachePrefix${_activeUserId ?? 'guest'}';
+
+  void initialize(String userId, {bool forceRefresh = false}) {
+    final trimmed = userId.trim();
+    if (trimmed.isEmpty) return;
+    if (!forceRefresh && _activeUserId == trimmed && _notifications.isNotEmpty) {
+      return;
+    }
+
+    _activeUserId = trimmed;
+    _notifications.clear();
+    _seenDedupKeys.clear();
     _loadFromCache();
     if (_notifications.isEmpty) {
-      _seedDefaultNotifications(userId);
+      _seedDefaultNotifications(trimmed);
+    }
+    syncFromBackend(trimmed);
+  }
+
+  /// Resets in-memory notification state when signing out or switching accounts.
+  void clearSession() {
+    _activeUserId = null;
+    _notifications.clear();
+    _seenDedupKeys.clear();
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> syncFromBackend([String? userId]) async {
+    final targetUserId = userId ?? _activeUserId;
+    if (targetUserId == null || targetUserId.isEmpty) return;
+    final client = tryGetSupabaseClient();
+    if (client == null) return;
+    try {
+      if (FirebaseAuth.instance.currentUser == null &&
+          client.auth.currentUser == null) {
+        return;
+      }
+    } catch (_) {
+      return;
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      Future<List<AppNotificationModel>> fetchPrimary() async {
+        try {
+          final rows = await client
+              .from(DatabaseTables.userNotifications)
+              .select()
+              .eq('user_id', targetUserId)
+              .order('created_at', ascending: false)
+              .limit(40);
+          return (rows as List)
+              .map((row) =>
+                  AppNotificationModel.fromJson(Map<String, dynamic>.from(row)))
+              .toList();
+        } catch (_) {
+          return const [];
+        }
+      }
+
+      Future<List<AppNotificationModel>> fetchLegacy() async {
+        try {
+          final legacyRows = await client
+              .from(DatabaseTables.notifications)
+              .select()
+              .eq('user_id', targetUserId)
+              .order('created_at', ascending: false)
+              .limit(30);
+          return (legacyRows as List).map((row) {
+            final map = Map<String, dynamic>.from(row);
+            return AppNotificationModel(
+              id: map['notification_id']?.toString() ?? UuidUtil.generateUuidV4(),
+              userId: map['user_id']?.toString() ?? targetUserId,
+              dedupKey: map['notification_id'] != null
+                  ? 'legacy_${map['notification_id']}'
+                  : null,
+              title: map['title']?.toString() ?? 'Notification',
+              body: map['body']?.toString() ?? '',
+              category: map['type']?.toString() ?? 'general',
+              isRead: map['is_read'] as bool? ?? false,
+              createdAt: map['created_at'] != null
+                  ? DateTime.tryParse(map['created_at'].toString()) ??
+                      DateTime.now()
+                  : DateTime.now(),
+            );
+          }).toList();
+        } catch (_) {
+          return const [];
+        }
+      }
+
+      final results = await Future.wait([fetchPrimary(), fetchLegacy()]);
+      final fetched = [...results[0], ...results[1]];
+
+      if (fetched.isNotEmpty) {
+        final existingIds = _notifications.map((n) => n.id).toSet();
+        bool added = false;
+        for (final item in fetched) {
+          final existsByKey = item.dedupKey != null &&
+              _seenDedupKeys.contains(item.dedupKey);
+          if (!existingIds.contains(item.id) && !existsByKey) {
+            existingIds.add(item.id);
+            if (item.dedupKey != null) {
+              _seenDedupKeys.add(item.dedupKey!);
+            }
+            _notifications.add(item);
+            added = true;
+          }
+        }
+        if (added) {
+          _notifications.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          _saveToCache();
+        }
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   void _loadFromCache() {
     final raw = LocalCacheService.instance.get(_cacheKey);
-    if (raw != null && raw is List) {
+    final List<dynamic>? list = raw is List
+        ? raw
+        : (raw is String ? _tryDecodeList(raw) : null);
+    if (list != null) {
       _notifications.clear();
       _seenDedupKeys.clear();
-      for (final item in raw) {
-        if (item is Map<String, dynamic>) {
-          final notif = AppNotificationModel.fromJson(item);
+      for (final item in list) {
+        if (item is Map) {
+          final notif = AppNotificationModel.fromJson(
+            Map<String, dynamic>.from(item),
+          );
           _notifications.add(notif);
           if (notif.dedupKey != null) {
             _seenDedupKeys.add(notif.dedupKey!);
@@ -49,9 +175,18 @@ class NotificationCenterController extends ChangeNotifier {
     }
   }
 
+  List<dynamic>? _tryDecodeList(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      return decoded is List ? decoded : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _saveToCache() {
     final list = _notifications.map((e) => e.toJson()).toList();
-    LocalCacheService.instance.put(_cacheKey, jsonEncode(list));
+    LocalCacheService.instance.put(_cacheKey, list);
   }
 
   /// Adds a notification with duplicate prevention.
@@ -76,6 +211,7 @@ class NotificationCenterController extends ChangeNotifier {
       _notifications[index] = _notifications[index].copyWith(isRead: true);
       _saveToCache();
       notifyListeners();
+      _syncReadStatusRemote(id);
     }
   }
 
@@ -85,12 +221,49 @@ class NotificationCenterController extends ChangeNotifier {
     }
     _saveToCache();
     notifyListeners();
+    _syncAllReadRemote();
   }
 
   void dismiss(String id) {
     _notifications.removeWhere((n) => n.id == id);
     _saveToCache();
     notifyListeners();
+  }
+
+  Future<void> _syncReadStatusRemote(String id) async {
+    final client = tryGetSupabaseClient();
+    if (client == null || _activeUserId == null) return;
+    try {
+      await client
+          .from(DatabaseTables.userNotifications)
+          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .eq('id', id)
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+    try {
+      await client
+          .from(DatabaseTables.notifications)
+          .update({'is_read': true})
+          .eq('notification_id', id)
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+  }
+
+  Future<void> _syncAllReadRemote() async {
+    final client = tryGetSupabaseClient();
+    if (client == null || _activeUserId == null) return;
+    try {
+      await client
+          .from(DatabaseTables.userNotifications)
+          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+    try {
+      await client
+          .from(DatabaseTables.notifications)
+          .update({'is_read': true})
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
   }
 
   /// Checks if today is the user's birthday and triggers a celebratory notification.
