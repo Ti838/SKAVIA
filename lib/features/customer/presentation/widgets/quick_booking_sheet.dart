@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/job_otp_util.dart';
+import '../../../../core/utils/supabase_guard.dart';
 
 /// 1-Tap Quick Booking BottomSheet for Featured Services
 class QuickBookingSheet extends StatelessWidget {
@@ -51,59 +53,93 @@ class QuickBookingSheet extends StatelessWidget {
     );
   }
 
-  Future<void> _dispatchQuickBooking(BuildContext context) async {
-    if (currentUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+  Future<void> _dispatchQuickBooking(
+    ScaffoldMessengerState messenger,
+    NavigatorState navigator,
+  ) async {
+    if (currentUserId == null || currentUserId!.trim().isEmpty) {
+      messenger.showSnackBar(
         const SnackBar(content: Text('Please log in to book a service')),
       );
       return;
     }
 
-    try {
-      final client = Supabase.instance.client;
-      final scheduleTime = DateTime.now().add(const Duration(hours: 1));
-      final notesText =
-          '1-Tap Quick Booking: $serviceName in $currentLocationZone';
+    final client = tryGetSupabaseClient();
+    if (client == null) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Booking queued offline — reconnect to confirm dispatch.'),
+        ),
+      );
+      return;
+    }
 
-      // Find a verified worker matching category in this zone if available
-      final candidate = await client
+    try {
+      final scheduleTime = DateTime.now().add(const Duration(hours: 1));
+      final otpCode = JobOtpUtil.generateOtp();
+      final notesText =
+          '1-Tap Quick Booking: $serviceName in $currentLocationZone | OTP: $otpCode';
+
+      final catUuid = await CategoryResolver.resolveCategoryUuid(
+        client,
+        categoryId,
+      );
+
+      Map<String, dynamic>? candidate;
+      if (catUuid != null) {
+        candidate = await client
+            .from('worker_profiles')
+            .select('worker_profile_id')
+            .eq('category_id', catUuid)
+            .eq('is_available', true)
+            .limit(1)
+            .maybeSingle();
+      }
+      candidate ??= await client
           .from('worker_profiles')
           .select('worker_profile_id')
+          .eq('is_available', true)
           .limit(1)
           .maybeSingle();
 
-      final wpId = candidate?['worker_profile_id'];
+      final wpId = candidate?['worker_profile_id']?.toString();
+      if (wpId == null || wpId.isEmpty) {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No instant specialist available right now. Please select from Services.',
+            ),
+          ),
+        );
+        navigator.pushNamed(
+          AppRoutes.categoryCatalog,
+          arguments: {'categoryId': categoryId},
+        );
+        return;
+      }
 
-      final insertData = <String, dynamic>{
+      await client.from('service_requests').insert({
         'client_id': currentUserId,
+        'worker_profile_id': wpId,
         'agreed_price': startingRate,
         'service_notes': '$notesText | Location: $currentFormattedLocation',
         'status': 'Requested',
         'scheduled_at': scheduleTime.toIso8601String(),
-      };
-      if (wpId != null) {
-        insertData['worker_profile_id'] = wpId;
-      }
+      });
 
-      await client.from('service_requests').insert(insertData);
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.successGreen,
-            content: Text(
-              'Booking created for $serviceName! Technicians in $currentLocationZone are alerted.',
-            ),
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.successGreen,
+          content: Text(
+            'Booking created (OTP: $otpCode)! Specialists in $currentLocationZone alerted.',
           ),
-        );
-        onBookingSuccess();
-      }
+        ),
+      );
+      onBookingSuccess();
     } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Booking initiated! Finding technician: $e')),
-        );
-      }
+      messenger.showSnackBar(
+        SnackBar(content: Text('Unable to complete quick booking: $e')),
+      );
     }
   }
 
@@ -268,53 +304,84 @@ class QuickBookingSheet extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+              // Action Buttons (stack on narrow/2.0x textScale)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+                  final stackButtons =
+                      constraints.maxWidth < 310 || textScale > 1.35;
+
+                  final viewRatesBtn = OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(
-                          context,
-                          AppRoutes.categoryCatalog,
-                          arguments: {'categoryId': categoryId},
-                        );
-                      },
-                      child: const Text(
-                        'View All Rates',
-                        style: TextStyle(fontWeight: FontWeight.w700),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryRoyal,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.categoryCatalog,
+                        arguments: {'categoryId': categoryId},
+                      );
+                    },
+                    child: const Text(
+                      'View All Rates',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  );
+
+                  final bookBtn = ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryRoyal,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 14,
                       ),
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        await _dispatchQuickBooking(context);
-                      },
-                      child: const Text(
-                        'Book Now',
-                        style: TextStyle(fontWeight: FontWeight.w800),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ),
-                ],
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(context);
+                      navigator.pop();
+                      await _dispatchQuickBooking(messenger, navigator);
+                    },
+                    child: const Text(
+                      'Book Now',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                  );
+
+                  if (stackButtons) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        bookBtn,
+                        const SizedBox(height: 10),
+                        viewRatesBtn,
+                      ],
+                    );
+                  }
+
+                  return Row(
+                    children: [
+                      Expanded(child: viewRatesBtn),
+                      const SizedBox(width: 12),
+                      Expanded(child: bookBtn),
+                    ],
+                  );
+                },
               ),
             ],
           ),

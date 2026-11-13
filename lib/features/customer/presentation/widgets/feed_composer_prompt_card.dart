@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Top card in the live feed prompting user to create a post, job, or service request.
 class FeedComposerPromptCard extends StatelessWidget {
@@ -17,9 +18,9 @@ class FeedComposerPromptCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final isDark = context.isDarkMode;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -27,7 +28,7 @@ class FeedComposerPromptCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
@@ -42,11 +43,11 @@ class FeedComposerPromptCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+                backgroundColor: tokens.softBlueBg,
                 child: Text(
                   userInitial,
                   style: TextStyle(
-                    color: colorScheme.primary,
+                    color: tokens.brandAccent,
                     fontWeight: FontWeight.w800,
                     fontSize: 14,
                   ),
@@ -54,28 +55,32 @@ class FeedComposerPromptCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: GestureDetector(
-                  onTap: onOpenComposer,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? colorScheme.surfaceContainerHighest
-                          : AppColors.canvasBlue,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: colorScheme.outlineVariant),
-                    ),
-                    child: Text(
-                      isBn ? 'একটি কাজ পোস্ট করুন বা সেবা চান...' : 'Share an opportunity, post a job, or request a service...',
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 12,
+                child: Material(
+                  color: tokens.subtleCardBg,
+                  borderRadius: BorderRadius.circular(24),
+                  child: InkWell(
+                    onTap: onOpenComposer,
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: tokens.border),
+                      ),
+                      child: Text(
+                        isBn
+                            ? 'একটি কাজ পোস্ট করুন বা সেবা চান...'
+                            : 'Share an opportunity, post a job, or request a service...',
+                        style: TextStyle(
+                          color: colorScheme.onSurfaceVariant,
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ),
@@ -83,33 +88,38 @@ class FeedComposerPromptCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Divider(height: 1, color: colorScheme.outlineVariant),
+          Divider(height: 1, color: tokens.border),
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildActionItem(
-                context: context,
-                icon: Icons.work_outline_rounded,
-                color: AppColors.primaryRoyal,
-                label: isBn ? 'কাজের পোস্ট' : 'Post Job',
-                onTap: onOpenComposer,
-              ),
-              _buildActionItem(
-                context: context,
-                icon: Icons.handyman_outlined,
-                color: AppColors.accentAqua,
-                label: isBn ? 'সেবা চান' : 'Request Service',
-                onTap: onOpenComposer,
-              ),
-              _buildActionItem(
-                context: context,
-                icon: Icons.campaign_outlined,
-                color: AppColors.accentCoral,
-                label: isBn ? 'আপডেট' : 'Share Update',
-                onTap: onOpenComposer,
-              ),
-            ],
+          SizedBox(
+            width: double.infinity,
+            child: Wrap(
+              alignment: WrapAlignment.spaceAround,
+              spacing: 10,
+              runSpacing: 8,
+              children: [
+                _buildActionItem(
+                  context: context,
+                  icon: Icons.work_outline_rounded,
+                  color: tokens.brandAccent,
+                  label: isBn ? 'কাজের পোস্ট' : 'Post Job',
+                  onTap: onOpenComposer,
+                ),
+                _buildActionItem(
+                  context: context,
+                  icon: Icons.handyman_outlined,
+                  color: AppColors.accentAqua,
+                  label: isBn ? 'সেবা চান' : 'Request Service',
+                  onTap: onOpenComposer,
+                ),
+                _buildActionItem(
+                  context: context,
+                  icon: Icons.campaign_outlined,
+                  color: AppColors.accentCoral,
+                  label: isBn ? 'আপডেট' : 'Share Update',
+                  onTap: onOpenComposer,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -123,23 +133,31 @@ class FeedComposerPromptCard extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return GestureDetector(
+    final colorScheme = context.colorScheme;
+    return InkWell(
       onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../data/models/requirement_model.dart';
 import 'feed_card_actions.dart';
 import 'feed_card_body.dart';
@@ -37,6 +39,9 @@ class JobRequirementFeedCard extends StatefulWidget {
 }
 
 class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
+  static const String _likedCacheKey = 'skavia_feed_liked_ids';
+  static const String _savedCacheKey = 'skavia_feed_saved_ids';
+
   late bool _isLiked;
   late int _likesCount;
   late bool _isSaved;
@@ -45,21 +50,45 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
   @override
   void initState() {
     super.initState();
-    _isLiked = widget.job.isLikedByMe;
-    _likesCount = widget.job.likesCount;
-    _isSaved = widget.job.isSavedByMe;
-    _commentsCount = widget.job.commentsCount;
+    _syncFromPropsAndCache();
   }
 
   @override
   void didUpdateWidget(covariant JobRequirementFeedCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.job != widget.job) {
-      _isLiked = widget.job.isLikedByMe;
-      _likesCount = widget.job.likesCount;
-      _isSaved = widget.job.isSavedByMe;
-      _commentsCount = widget.job.commentsCount;
+      _syncFromPropsAndCache();
     }
+  }
+
+  Set<String> _readIdSet(String key) {
+    final raw = LocalCacheService.instance.get(key);
+    if (raw is List) {
+      return raw.map((e) => e.toString()).toSet();
+    }
+    return <String>{};
+  }
+
+  void _writeIdToggle(String key, String id, bool enabled) {
+    final ids = _readIdSet(key);
+    if (enabled) {
+      ids.add(id);
+    } else {
+      ids.remove(id);
+    }
+    LocalCacheService.instance.put(key, ids.toList());
+  }
+
+  void _syncFromPropsAndCache() {
+    final likedIds = _readIdSet(_likedCacheKey);
+    final savedIds = _readIdSet(_savedCacheKey);
+    _isLiked = widget.job.isLikedByMe || likedIds.contains(widget.job.id);
+    _likesCount = widget.job.likesCount;
+    if (_isLiked && !widget.job.isLikedByMe && _likesCount == 0) {
+      _likesCount = 1;
+    }
+    _isSaved = widget.job.isSavedByMe || savedIds.contains(widget.job.id);
+    _commentsCount = widget.job.commentsCount;
   }
 
   void _toggleLike() {
@@ -69,24 +98,29 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
       if (_likesCount < 0) _likesCount = 0;
     });
 
+    _writeIdToggle(_likedCacheKey, widget.job.id, _isLiked);
+
     final updated = widget.job.copyWith(
       isLikedByMe: _isLiked,
       likesCount: _likesCount,
     );
     widget.onJobUpdated?.call(updated);
 
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
+    final client = tryGetSupabaseClient();
+    if (client != null) {
+      final user = client.auth.currentUser;
       if (user != null) {
-        debugPrint('[FeedCard] Synced like toggle for ${widget.job.id}');
+        debugPrint('[FeedCard] Recorded local like toggle for ${widget.job.id}');
       }
-    } catch (_) {}
+    }
   }
 
   void _toggleSave() {
     setState(() {
       _isSaved = !_isSaved;
     });
+
+    _writeIdToggle(_savedCacheKey, widget.job.id, _isSaved);
 
     final updated = widget.job.copyWith(isSavedByMe: _isSaved);
     widget.onJobUpdated?.call(updated);
@@ -98,8 +132,8 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
           _isSaved
               ? (isBn ? 'সংরক্ষিত তালিকায় যোগ করা হয়েছে' : 'Saved to bookmarks')
               : (isBn
-                    ? 'সংরক্ষিত তালিকা থেকে সরানো হয়েছে'
-                    : 'Removed from bookmarks'),
+                  ? 'সংরক্ষিত তালিকা থেকে সরানো হয়েছে'
+                  : 'Removed from bookmarks'),
         ),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
@@ -141,9 +175,9 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
   @override
   Widget build(BuildContext context) {
     final isEmergency = widget.job.urgency.toLowerCase().contains('emergency');
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final isDark = context.isDarkMode;
 
     return Container(
       decoration: BoxDecoration(
@@ -151,8 +185,8 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isEmergency
-              ? AppColors.accentCoral.withValues(alpha: 0.35)
-              : colorScheme.outlineVariant,
+              ? AppColors.accentCoral.withValues(alpha: 0.45)
+              : tokens.border,
         ),
         boxShadow: [
           BoxShadow(
@@ -172,7 +206,7 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
           FeedCardBody(job: widget.job),
 
           const SizedBox(height: 12),
-          const Divider(height: 1, color: AppColors.borderLight),
+          Divider(height: 1, color: tokens.border),
 
           // 3. Social Interactions & Bid/Apply Actions
           FeedCardActions(

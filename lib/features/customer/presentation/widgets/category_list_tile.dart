@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../data/models/category_model.dart';
 
@@ -43,7 +43,14 @@ class CategoryListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final isBn = AppLanguageService.isBengali;
+    final subtitleText = category.serviceCount > 0
+        ? (isBn
+              ? '${category.serviceCount}+ টি সার্ভিস'
+              : '${category.serviceCount}+ services')
+        : (isBn ? 'যাচাইকৃত ট্রেড সার্ভিস' : 'Verified trade services');
 
     return GestureDetector(
       onTap: onTap,
@@ -51,12 +58,10 @@ class CategoryListTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: tokens.cardBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? AppColors.primaryRoyal
-                : colorScheme.outlineVariant,
+            color: isSelected ? tokens.brandAccent : tokens.border,
             width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: [
@@ -73,13 +78,13 @@ class CategoryListTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primarySky.withValues(alpha: 0.12),
+                color: tokens.softBlueBg,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 resolveCategoryIcon(category.iconName),
                 size: 22,
-                color: AppColors.primaryRoyal,
+                color: tokens.brandAccent,
               ),
             ),
             const SizedBox(width: 14),
@@ -103,9 +108,7 @@ class CategoryListTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    AppLanguageService.isBengali
-                        ? '${category.serviceCount > 0 ? category.serviceCount : 24}+ টি সার্ভিস'
-                        : '${category.serviceCount > 0 ? category.serviceCount : 24}+ services',
+                    subtitleText,
                     style: TextStyle(
                       fontSize: 12,
                       color: colorScheme.onSurfaceVariant,

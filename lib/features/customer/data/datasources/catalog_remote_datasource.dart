@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../models/category_model.dart';
 import '../models/service_model.dart';
@@ -10,14 +12,7 @@ class CatalogRemoteDataSource {
 
   CatalogRemoteDataSource([this._client]);
 
-  SupabaseClient? get _supabase {
-    if (_client != null) return _client;
-    try {
-      return Supabase.instance.client;
-    } catch (_) {
-      return null;
-    }
-  }
+  SupabaseClient? get _supabase => _client ?? tryGetSupabaseClient();
 
   /// Fetch all active categories from Supabase with graceful default fallback
   Future<List<CategoryModel>> getCategories() async {
@@ -50,11 +45,18 @@ class CatalogRemoteDataSource {
     final client = _supabase;
     if (client != null) {
       try {
-        var query = client.from(DatabaseTables.services).select();
+        String? dbCategoryUuid;
         if (categoryId != null &&
             categoryId.isNotEmpty &&
             categoryId != 'all') {
-          query = query.eq('category_id', categoryId);
+          dbCategoryUuid = await CategoryResolver.resolveCategoryUuid(
+            client,
+            categoryId,
+          );
+        }
+        var query = client.from(DatabaseTables.services).select();
+        if (dbCategoryUuid != null) {
+          query = query.eq('category_id', dbCategoryUuid);
         }
         final response = await query.order('name');
         final List<dynamic> data = response as List<dynamic>;

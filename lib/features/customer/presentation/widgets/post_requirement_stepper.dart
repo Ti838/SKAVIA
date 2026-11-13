@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Horizontal stepper indicator for the Request Service flow aligned with Screen 6
 class PostRequirementStepper extends StatelessWidget {
@@ -8,66 +8,80 @@ class PostRequirementStepper extends StatelessWidget {
 
   const PostRequirementStepper({super.key, this.activeStep = 1});
 
-  Widget _buildStepItem(int stepNumber, String title, bool isActive) {
-    return Column(
-      children: [
-        Container(
-          width: 26,
-          height: 26,
-          decoration: BoxDecoration(
-            color: isActive ? AppColors.primaryRoyal : Colors.transparent,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isActive ? AppColors.primaryRoyal : AppColors.borderLight,
-              width: 1.5,
+  Widget _buildStepItem(
+    BuildContext context,
+    int stepNumber,
+    String title,
+    bool isActive,
+  ) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
+    return Flexible(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 26,
+            height: 26,
+            decoration: BoxDecoration(
+              color: isActive ? tokens.brandAccent : Colors.transparent,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isActive ? tokens.brandAccent : tokens.border,
+                width: 1.5,
+              ),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              '$stepNumber',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: isActive ? tokens.onBrandAccent : colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-          alignment: Alignment.center,
-          child: Text(
-            '$stepNumber',
+          const SizedBox(height: 4),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              color: isActive ? Colors.white : AppColors.textMedium,
+              fontSize: 10,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+              color: isActive ? tokens.brandAccent : colorScheme.onSurfaceVariant,
             ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-            color: isActive ? AppColors.primaryRoyal : AppColors.textMedium,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildStepDivider() {
-    return Container(
-      width: 28,
-      height: 1.5,
-      color: AppColors.borderLight,
-      margin: const EdgeInsets.only(bottom: 14),
+  Widget _buildStepDivider(BuildContext context) {
+    return Expanded(
+      child: Container(
+        height: 1.5,
+        color: context.skavia.border,
+        margin: const EdgeInsets.only(left: 4, right: 4, bottom: 14),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStepItem(1, 'Details', activeStep >= 1),
-          _buildStepDivider(),
-          _buildStepItem(2, 'Skills', activeStep >= 2),
-          _buildStepDivider(),
-          _buildStepItem(3, 'Budget', activeStep >= 3),
-          _buildStepDivider(),
-          _buildStepItem(4, 'Review', activeStep >= 4),
+          _buildStepItem(context, 1, 'Details', activeStep >= 1),
+          _buildStepDivider(context),
+          _buildStepItem(context, 2, 'Skills', activeStep >= 2),
+          _buildStepDivider(context),
+          _buildStepItem(context, 3, 'Budget', activeStep >= 3),
+          _buildStepDivider(context),
+          _buildStepItem(context, 4, 'Review', activeStep >= 4),
         ],
       ),
     );

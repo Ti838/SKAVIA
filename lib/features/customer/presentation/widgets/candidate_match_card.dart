@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../matching/domain/entities/match_result_entity.dart';
 import '../../../reviews/presentation/screens/worker_reputation_screen.dart';
@@ -23,16 +24,18 @@ class CandidateMatchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isTopMatch = candidate.rankPosition == 1;
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return Container(
       margin: const EdgeInsets.only(bottom: AppDimensions.paddingMedium),
       padding: const EdgeInsets.all(AppDimensions.paddingMedium),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
         border: Border.all(
-          color: isTopMatch ? AppColors.accent : colorScheme.outlineVariant,
+          color: isTopMatch ? AppColors.accent : tokens.border,
           width: isTopMatch ? 2.0 : 1.0,
         ),
         boxShadow: [
@@ -47,59 +50,59 @@ class CandidateMatchCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Top Row: Rank & Match Score Badge
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 6,
             children: [
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isTopMatch
-                        ? AppColors.accent
-                        : AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isTopMatch
-                            ? Icons.workspace_premium_rounded
-                            : Icons.star_rounded,
-                        size: 13,
-                        color: isTopMatch ? Colors.white : AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Flexible(
-                        child: Text(
-                          isTopMatch
-                              ? 'Top Match #${candidate.rankPosition}'
-                              : 'Rank #${candidate.rankPosition}',
-                          style: AppTypography.caption.copyWith(
-                            color: isTopMatch
-                                ? Colors.white
-                                : AppColors.primary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
+                  color: isTopMatch
+                      ? AppColors.accent
+                      : tokens.softBlueBg,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      isTopMatch
+                          ? Icons.workspace_premium_rounded
+                          : Icons.star_rounded,
+                      size: 13,
+                      color: isTopMatch ? AppColors.textDark : tokens.brandAccent,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        isTopMatch
+                            ? 'Top Match #${candidate.rankPosition}'
+                            : 'Rank #${candidate.rankPosition}',
+                        style: AppTypography.caption.copyWith(
+                          color: isTopMatch
+                              ? AppColors.textDark
+                              : tokens.brandAccent,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -111,11 +114,15 @@ class CandidateMatchCard extends StatelessWidget {
                       color: AppColors.success,
                     ),
                     const SizedBox(width: 2),
-                    Text(
-                      '${candidate.matchScore.toStringAsFixed(0)}% Match',
-                      style: AppTypography.caption.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w800,
+                    Flexible(
+                      child: Text(
+                        '${candidate.matchScore.toStringAsFixed(0)}% Match',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTypography.caption.copyWith(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ],
@@ -130,10 +137,10 @@ class CandidateMatchCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 26,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                child: const Icon(
+                backgroundColor: tokens.softBlueBg,
+                child: Icon(
                   Icons.person,
-                  color: AppColors.primary,
+                  color: tokens.brandAccent,
                   size: 28,
                 ),
               ),
@@ -157,9 +164,9 @@ class CandidateMatchCard extends StatelessWidget {
                         ),
                         if (candidate.isVerified) ...[
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.verified_rounded,
-                            color: AppColors.primary,
+                            color: tokens.brandAccent,
                             size: 18,
                           ),
                         ],
@@ -175,33 +182,40 @@ class CandidateMatchCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
-                    Row(
+                    const SizedBox(height: 4),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 2,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        Expanded(
-                          child: Text(
-                            candidate.location,
-                            style: AppTypography.caption.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        const Icon(
-                          Icons.star_rounded,
-                          size: 13,
-                          color: AppColors.accentPeach,
-                        ),
-                        const SizedBox(width: 2),
                         Text(
-                          '${candidate.rating.toStringAsFixed(1)} (${candidate.completedJobs} jobs)',
+                          candidate.location,
                           style: AppTypography.caption.copyWith(
                             color: colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 13,
+                              color: AppColors.accentPeach,
+                            ),
+                            const SizedBox(width: 2),
+                            Flexible(
+                              child: Text(
+                                '${candidate.rating.toStringAsFixed(1)} (${candidate.completedJobs} jobs)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTypography.caption.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -237,68 +251,83 @@ class CandidateMatchCard extends StatelessWidget {
           const SizedBox(height: AppDimensions.paddingMedium),
 
           // Direct Actions: Reputation & Booking CTA
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => WorkerReputationScreen(
-                          workerProfileId: candidate.workerProfileId,
-                          workerName: candidate.workerName,
-                        ),
-                      ),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 4,
-                    ),
-                    side: const BorderSide(color: AppColors.primarySky),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusRound,
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stackActions =
+                  constraints.maxWidth < 330 || textScale > 1.35;
+
+              final scorecardBtn = OutlinedButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => WorkerReputationScreen(
+                        workerProfileId: candidate.workerProfileId,
+                        workerName: candidate.workerName,
                       ),
                     ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 10,
                   ),
-                  child: const FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      'Scorecard',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primarySky,
-                      ),
+                  side: BorderSide(color: tokens.brandAccent),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusRound,
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 5,
-                child: AppButton(
-                  text: 'Book Specialist',
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => BookingConfirmationScreen(
-                          requirementId: candidate.requirementId,
-                          workerProfileId: candidate.workerProfileId,
-                          workerName: candidate.workerName,
-                          tradeTitle: candidate.tradeTitle,
-                          hourlyRate: candidate.hourlyRate,
-                          jobTitle: requirementTitle,
-                          location: requirementZone,
-                        ),
-                      ),
-                    );
-                  },
+                child: Text(
+                  'Scorecard',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: tokens.brandAccent,
+                  ),
                 ),
-              ),
-            ],
+              );
+
+              final bookBtn = AppButton(
+                text: 'Book Specialist',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => BookingConfirmationScreen(
+                        requirementId: candidate.requirementId,
+                        workerProfileId: candidate.workerProfileId,
+                        workerName: candidate.workerName,
+                        tradeTitle: candidate.tradeTitle,
+                        hourlyRate: candidate.hourlyRate,
+                        jobTitle: requirementTitle,
+                        location: requirementZone,
+                      ),
+                    ),
+                  );
+                },
+              );
+
+              if (stackActions) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    bookBtn,
+                    const SizedBox(height: 8),
+                    scorecardBtn,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(flex: 3, child: scorecardBtn),
+                  const SizedBox(width: 8),
+                  Expanded(flex: 5, child: bookBtn),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -306,13 +335,15 @@ class CandidateMatchCard extends StatelessWidget {
   }
 
   Widget _buildMetricChip(BuildContext context, String label, String value) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: tokens.subtleCardBg,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: tokens.subtleBorder),
       ),
       child: Text(
         '$label: $value',

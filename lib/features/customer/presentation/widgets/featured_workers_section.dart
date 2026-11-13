@@ -19,26 +19,32 @@ class FeaturedWorkersSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              isBn ? 'শীর্ষ দক্ষ কারিগর' : 'Featured Specialists',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: colorScheme.onSurface,
+            Expanded(
+              child: Text(
+                isBn ? 'শীর্ষ দক্ষ কারিগর' : 'Featured Specialists',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap:
                   onSeeAll ??
                   () => Navigator.pushNamed(context, AppRoutes.teamDiscovery),
               child: Text(
                 AppLanguageService.tr('see_all'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primaryRoyal,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? colorScheme.primary
+                      : AppColors.primaryRoyal,
                 ),
               ),
             ),
@@ -90,21 +96,21 @@ class FeaturedWorkersSection extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          Flexible(
-                            child: Text(
-                              isBn ? 'মোঃ তরিকুল ইসলাম' : 'Md. Tariqul Islam',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: colorScheme.onSurface,
-                              ),
+                          Text(
+                            isBn ? 'মোঃ তরিকুল ইসলাম' : 'Md. Tariqul Islam',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 6,
@@ -125,12 +131,16 @@ class FeaturedWorkersSection extends StatelessWidget {
                                   size: 11,
                                 ),
                                 const SizedBox(width: 3),
-                                Text(
-                                  isBn ? 'যাচাইকৃত' : 'Verified',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.successGreen,
+                                Flexible(
+                                  child: Text(
+                                    isBn ? 'যাচাইকৃত' : 'Verified',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.successGreen,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -158,14 +168,18 @@ class FeaturedWorkersSection extends StatelessWidget {
                             size: 16,
                           ),
                           const SizedBox(width: 3),
-                          Text(
-                            isBn
-                                ? '৪.৯৫ (৪৮টি রিভিউ • ১২৪টি সম্পন্ন কাজ)'
-                                : '4.95 (48 reviews • 124 completed)',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onSurface,
+                          Expanded(
+                            child: Text(
+                              isBn
+                                  ? '৪.৯৫ (৪৮টি রিভিউ • ১২৪টি সম্পন্ন কাজ)'
+                                  : '4.95 (48 reviews • 124 completed)',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
+                              ),
                             ),
                           ),
                         ],

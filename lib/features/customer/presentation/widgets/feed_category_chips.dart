@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Reusable horizontal trade/category filter chips for the live job feed.
 class FeedCategoryChips extends StatelessWidget {
@@ -17,9 +18,8 @@ class FeedCategoryChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     final categories = [
       {'key': 'All', 'label': isBn ? 'সকল ট্রেড' : 'All Trades'},
@@ -37,30 +37,36 @@ class FeedCategoryChips extends StatelessWidget {
           final isSelected = selectedCategory == cat['key'];
           return Padding(
             padding: const EdgeInsets.only(right: 6),
-            child: ChoiceChip(
-              label: Text(
-                cat['label']!,
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : colorScheme.onSurfaceVariant,
+            child: Material(
+              color: isSelected ? AppColors.primarySky : tokens.subtleCardBg,
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: () => onSelected(cat['key']!),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isSelected ? Colors.transparent : tokens.border,
+                    ),
+                  ),
+                  child: Text(
+                    cat['label']!,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                 ),
               ),
-              selected: isSelected,
-              selectedColor: isDark
-                  ? colorScheme.primary
-                  : AppColors.primarySky,
-              backgroundColor: isDark
-                  ? colorScheme.surfaceContainerHighest
-                  : Colors.white,
-              side: BorderSide(
-                color: isSelected
-                    ? Colors.transparent
-                    : colorScheme.outlineVariant,
-              ),
-              onSelected: (_) => onSelected(cat['key']!),
             ),
           );
         }).toList(),

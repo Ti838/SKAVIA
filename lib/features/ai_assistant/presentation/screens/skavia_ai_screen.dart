@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/skavia_ai_service.dart';
 import '../widgets/ai_analyzing_view.dart';
 import '../widgets/ai_chat_view.dart';
@@ -79,12 +80,86 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   void initState() {
     super.initState();
     _currentMode = widget.initialMode;
-    if (widget.initialPrompt != null &&
+    if (widget.initialMode == AiScreenMode.chat &&
+        widget.initialPrompt != null &&
         widget.initialPrompt!.trim().isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _sendMessage(widget.initialPrompt!);
       });
     }
+  }
+
+  @override
+  void didUpdateWidget(covariant SkaviaAiScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialMode != widget.initialMode) {
+      _currentMode = widget.initialMode;
+    }
+  }
+
+  List<String> get _resolvedRequiredSkills {
+    final fromAnalysis = widget.analysisData?['skills'];
+    if (fromAnalysis is List && fromAnalysis.isNotEmpty) {
+      return fromAnalysis.map((e) => e.toString()).toList();
+    }
+    return _requiredSkills;
+  }
+
+  List<Map<String, String>> get _resolvedRecommendedTeam {
+    final fromTeam = widget.analysisData?['recommended_team'];
+    if (fromTeam is List && fromTeam.isNotEmpty) {
+      final result = <Map<String, String>>[];
+      for (var i = 0; i < fromTeam.length; i++) {
+        final item = fromTeam[i];
+        if (item is Map) {
+          result.add({
+            'role': item['role']?.toString() ?? 'Verified Specialist',
+            'index': item['index']?.toString() ?? '${i + 1}',
+          });
+        } else {
+          result.add({'role': item.toString(), 'index': '${i + 1}'});
+        }
+      }
+      if (result.isNotEmpty) return result;
+    }
+
+    final skills = widget.analysisData?['skills'];
+    if (skills is List && skills.isNotEmpty) {
+      final result = <Map<String, String>>[];
+      for (var i = 0; i < skills.length && i < 4; i++) {
+        result.add({
+          'role': '${skills[i]} Specialist',
+          'index': '${i + 1}',
+        });
+      }
+      if (result.length < 3) {
+        result.add({
+          'role': 'Site Lead & QA Verifier',
+          'index': '${result.length + 1}',
+        });
+      }
+      return result;
+    }
+
+    return _recommendedTeam;
+  }
+
+  String get _resolvedSummary {
+    final summary = widget.analysisData?['technical_summary']?.toString().trim();
+    if (summary != null && summary.isNotEmpty) return summary;
+    final prompt = widget.initialPrompt?.trim();
+    if (prompt != null && prompt.isNotEmpty) return prompt;
+    return 'Mobile app for e-commerce with payment integration and admin panel.';
+  }
+
+  String get _resolvedProjectTitle {
+    final title = widget.analysisData?['suggested_title']?.toString().trim();
+    if (title != null && title.isNotEmpty) return title;
+    final categoryName = widget.analysisData?['category_name']?.toString().trim();
+    if (categoryName != null && categoryName.isNotEmpty) {
+      return '$categoryName Project';
+    }
+    return 'Mobile App for E-Commerce';
   }
 
   @override
@@ -164,8 +239,10 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
         );
       case AiScreenMode.results:
         return AiResultsView(
-          requiredSkills: _requiredSkills,
-          recommendedTeam: _recommendedTeam,
+          requiredSkills: _resolvedRequiredSkills,
+          recommendedTeam: _resolvedRecommendedTeam,
+          projectSummary: _resolvedSummary,
+          projectTitle: _resolvedProjectTitle,
           onEditRequest: () =>
               setState(() => _currentMode = AiScreenMode.analyzing),
         );
@@ -181,10 +258,78 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
     }
   }
 
+  Widget _buildModeTogglePill(BuildContext context, {bool fullWidth = false}) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final isChat = _currentMode == AiScreenMode.chat;
+
+    Widget buildOption({
+      required String label,
+      required bool active,
+      required VoidCallback onTap,
+    }) {
+      final pill = GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: fullWidth ? 12 : 8,
+            vertical: fullWidth ? 7 : 4,
+          ),
+          alignment: fullWidth ? Alignment.center : null,
+          decoration: BoxDecoration(
+            color: active ? tokens.brandAccent : Colors.transparent,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: active ? tokens.onBrandAccent : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      );
+      return fullWidth ? Expanded(child: pill) : pill;
+    }
+
+    return Container(
+      margin: fullWidth
+          ? const EdgeInsets.fromLTRB(16, 4, 16, 8)
+          : const EdgeInsets.only(right: 12),
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.subtleBorder),
+      ),
+      child: Row(
+        mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+        children: [
+          buildOption(
+            label: 'Chat',
+            active: isChat,
+            onTap: () => setState(() => _currentMode = AiScreenMode.chat),
+          ),
+          buildOption(
+            label: 'Match',
+            active: !isChat,
+            onTap: () => setState(() => _currentMode = AiScreenMode.analyzing),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final compactModeBar = width < 360 || textScale > 1.3;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -261,77 +406,19 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
             ),
           ],
         ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
-                  onTap: () => setState(() => _currentMode = AiScreenMode.chat),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _currentMode == AiScreenMode.chat
-                          ? const Color(0xFF2563EB)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      'Chat',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: _currentMode == AiScreenMode.chat
-                            ? Colors.white
-                            : const Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () =>
-                      setState(() => _currentMode = AiScreenMode.analyzing),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _currentMode != AiScreenMode.chat
-                          ? const Color(0xFF2563EB)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      'Match',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: _currentMode != AiScreenMode.chat
-                            ? Colors.white
-                            : const Color(0xFF64748B),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        actions: compactModeBar ? null : [_buildModeTogglePill(context)],
       ),
       body: SafeArea(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: _buildCurrentView(),
+        child: Column(
+          children: [
+            if (compactModeBar) _buildModeTogglePill(context, fullWidth: true),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildCurrentView(),
+              ),
+            ),
+          ],
         ),
       ),
     );

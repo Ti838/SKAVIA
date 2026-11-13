@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/location_service.dart';
 
@@ -34,6 +35,130 @@ class PostComposerFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+
+    final locationPicker = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isBn ? 'এলাকা (ঢাকা)' : 'Location Zone',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: tokens.subtleCardBg,
+            border: Border.all(color: tokens.border),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: LocationService.dhakaZones.contains(
+                    selectedLocation.split(',').first.trim(),
+                  )
+                  ? selectedLocation.split(',').first.trim()
+                  : 'Dhanmondi',
+              isExpanded: true,
+              dropdownColor: tokens.cardBg,
+              items: LocationService.dhakaZones.map((z) {
+                return DropdownMenuItem(
+                  value: z,
+                  child: Text(
+                    z,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: colorScheme.onSurface),
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) onLocationChanged('$val, Dhaka');
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final budgetInput = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isBn ? 'বাজেট (৳ BDT)' : 'Budget (৳ BDT)',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 6),
+        TextFormField(
+          controller: budgetController,
+          keyboardType: TextInputType.number,
+          style: TextStyle(color: colorScheme.onSurface),
+          decoration: InputDecoration(
+            hintText: '1500',
+            filled: true,
+            fillColor: tokens.subtleCardBg,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: tokens.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 12,
+            ),
+          ),
+        ),
+      ],
+    );
+
+    Widget buildUrgencyPill({
+      required String value,
+      required String label,
+      required bool isEmergency,
+    }) {
+      final isSelected = urgency == value;
+      final activeBg = isEmergency
+          ? AppColors.accentCoral.withValues(alpha: 0.16)
+          : tokens.softBlueBg;
+      final activeBorder =
+          isEmergency ? AppColors.accentCoral : tokens.brandAccent;
+      final activeText =
+          isEmergency ? AppColors.accentCoral : tokens.brandAccent;
+
+      return Material(
+        color: isSelected ? activeBg : tokens.subtleCardBg,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          onTap: () => onUrgencyChanged(value),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? activeBorder : tokens.border,
+              ),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                color: isSelected ? activeText : colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,18 +166,25 @@ class PostComposerFields extends StatelessWidget {
         // Title Field
         Text(
           isBn ? 'শিরোনাম' : 'Title',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
           controller: titleController,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: isBn
                 ? 'যেমন: ধানমন্ডিতে ৩-টন এসি গ্যাস রিফিল প্রয়োজন'
                 : 'e.g. 3-Ton Split AC Gas Refill & Compressor Check',
+            filled: true,
+            fillColor: tokens.subtleCardBg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.borderLight),
+              borderSide: BorderSide(color: tokens.border),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
@@ -67,24 +199,34 @@ class PostComposerFields extends StatelessWidget {
         // Category Selector
         Text(
           isBn ? 'ট্রেড ক্যাটাগরি' : 'Trade Category',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            border: Border.all(color: AppColors.borderLight),
+            color: tokens.subtleCardBg,
+            border: Border.all(color: tokens.border),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: selectedCategory,
+              value: categories.containsKey(selectedCategory)
+                  ? selectedCategory
+                  : categories.keys.first,
               isExpanded: true,
+              dropdownColor: tokens.cardBg,
               items: categories.entries.map((e) {
                 return DropdownMenuItem(
                   value: e.key,
                   child: Text(
                     AppLanguageService.getCategoryName(e.key, e.value),
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: colorScheme.onSurface),
                   ),
                 );
               }).toList(),
@@ -96,105 +238,55 @@ class PostComposerFields extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Location & Budget Row
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        // Location & Budget Row (adapts vertically on compact viewports or high text scale)
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final stackFields = constraints.maxWidth < 330 || textScale > 1.35;
+            if (stackFields) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    isBn ? 'এলাকা (ঢাকা)' : 'Location Zone',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.borderLight),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: LocationService.dhakaZones.contains(
-                          selectedLocation.split(',').first.trim(),
-                        )
-                            ? selectedLocation.split(',').first.trim()
-                            : 'Dhanmondi',
-                        isExpanded: true,
-                        items: LocationService.dhakaZones.map((z) {
-                          return DropdownMenuItem(value: z, child: Text(z));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) onLocationChanged('$val, Dhaka');
-                        },
-                      ),
-                    ),
-                  ),
+                  locationPicker,
+                  const SizedBox(height: 14),
+                  budgetInput,
                 ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    isBn ? 'বাজেট (৳ BDT)' : 'Budget (৳ BDT)',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  TextFormField(
-                    controller: budgetController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      hintText: '1500',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.borderLight,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+              );
+            }
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: locationPicker),
+                const SizedBox(width: 12),
+                Expanded(child: budgetInput),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 16),
 
         // Urgency
         Text(
           isBn ? 'জরুরিতা' : 'Urgency',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
         ),
-        const SizedBox(height: 6),
-        Row(
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            ChoiceChip(
-              label: Text(isBn ? 'স্ট্যান্ডার্ড' : 'Standard'),
-              selected: urgency == 'Standard',
-              onSelected: (_) => onUrgencyChanged('Standard'),
+            buildUrgencyPill(
+              value: 'Standard',
+              label: isBn ? 'স্ট্যান্ডার্ড' : 'Standard',
+              isEmergency: false,
             ),
-            const SizedBox(width: 8),
-            ChoiceChip(
-              label: Text(
-                isBn ? 'জরুরি (Emergency)' : 'Emergency (Within 2h)',
-              ),
-              selected: urgency == 'Emergency',
-              selectedColor: AppColors.accentCoral.withValues(alpha: 0.2),
-              onSelected: (_) => onUrgencyChanged('Emergency'),
+            buildUrgencyPill(
+              value: 'Emergency',
+              label: isBn ? 'জরুরি (Emergency)' : 'Emergency (Within 2h)',
+              isEmergency: true,
             ),
           ],
         ),
@@ -203,19 +295,26 @@ class PostComposerFields extends StatelessWidget {
         // Description
         Text(
           isBn ? 'বিস্তারিত বর্ণনা' : 'Detailed Description',
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
           controller: descController,
           maxLines: 4,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: isBn
                 ? 'কাজের বিস্তারিত বিবরণ, প্রয়োজনীয় টুলস বা সমস্যা উল্লেখ করুন...'
                 : 'Describe the issue, work scope, or technical requirement in detail...',
+            filled: true,
+            fillColor: tokens.subtleCardBg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.borderLight),
+              borderSide: BorderSide(color: tokens.border),
             ),
             contentPadding: const EdgeInsets.all(14),
           ),

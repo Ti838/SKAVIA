@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/services/skavia_ai_service.dart';
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
-import '../../../../core/services/skavia_ai_service.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/models/category_model.dart';
 import '../widgets/post_requirement_ai_button.dart';
@@ -63,8 +65,26 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
   void initState() {
     super.initState();
     if (widget.preselectedCategory != null) {
-      _selectedCategory = widget.preselectedCategory!;
+      _selectedCategory = _normalizeCategoryOption(widget.preselectedCategory!);
     }
+  }
+
+  String _normalizeCategoryOption(String raw) {
+    final direct = CategoryModel.defaultCategories.any(
+      (c) => c.categoryId == raw,
+    );
+    if (direct) return raw;
+
+    final lower = raw.trim().toLowerCase();
+    for (final cat in CategoryModel.defaultCategories) {
+      if (cat.slug.toLowerCase() == lower ||
+          cat.name.toLowerCase() == lower ||
+          CategoryResolver.displayName(raw).toLowerCase() ==
+              cat.name.toLowerCase()) {
+        return cat.categoryId;
+      }
+    }
+    return CategoryModel.defaultCategories.first.categoryId;
   }
 
   @override
@@ -101,8 +121,8 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
             diag['technical_summary'] as String? ?? 'Analysis complete';
 
         setState(() {
-          if (catId != null) {
-            _selectedCategory = catId;
+          if (catId != null && catId.trim().isNotEmpty) {
+            _selectedCategory = _normalizeCategoryOption(catId);
           }
           if (title != null && title.isNotEmpty) {
             _titleController.text = title;
@@ -160,23 +180,52 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
       return;
     }
 
+    final client = tryGetSupabaseClient();
+    if (client == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Offline mode: service posting requires an active backend connection.',
+          ),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     try {
       final budget = double.tryParse(_budgetController.text.trim()) ?? 1500.0;
+      final resolvedCategoryUuid = await CategoryResolver.resolveCategoryUuid(
+        client,
+        _selectedCategory,
+      );
+      final normalizedType = CategoryResolver.normalizeRequirementType(
+        _requirementType,
+      );
 
       // Submit to Supabase `requirements` table (SRS Section 3.1.D & 4.4)
-      await Supabase.instance.client.from(DatabaseTables.requirements).insert({
-        'submitted_by': user.uid,
-        'category_id': _selectedCategory,
-        'title': _titleController.text.trim(),
-        'description': _descriptionController.text.trim(),
-        'requirement_type': _requirementType,
-        'budget': budget,
-        'location': _selectedLocation,
-        'status': 'Open',
-        'created_at': DateTime.now().toIso8601String(),
-      });
+      final inserted = await client
+          .from(DatabaseTables.requirements)
+          .insert({
+            'submitted_by': user.uid,
+            'category_id': ?resolvedCategoryUuid,
+            'title': _titleController.text.trim(),
+            'description': _descriptionController.text.trim(),
+            'requirement_type': normalizedType,
+            'urgency': 'Medium',
+            'budget': budget,
+            'location': _selectedLocation,
+            if (_selectedDeadline != null)
+              'required_date': _selectedDeadline!
+                  .toIso8601String()
+                  .split('T')
+                  .first,
+            'status': 'Open',
+          })
+          .select('requirement_id')
+          .single();
 
       if (!mounted) return;
 
@@ -185,10 +234,11 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
       // Show Success Dialog only on genuine database success
       await PostRequirementSuccessDialog.show(
         context,
+        requirementId: inserted['requirement_id']?.toString(),
         title: _titleController.text.trim(),
         budget: budget,
         selectedLocation: _selectedLocation,
-        requirementType: _requirementType,
+        requirementType: normalizedType,
       );
     } catch (e) {
       if (mounted) {
@@ -205,8 +255,12 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final safeSelectedCategory = _normalizeCategoryOption(_selectedCategory);
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -218,23 +272,26 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
                 children: [
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                       size: 20,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Text(
-                    'Request a Service',
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textDark,
+                  Expanded(
+                    child: Text(
+                      'Request a Service',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                 ],
               ),
             ),
@@ -242,7 +299,7 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
             // Horizontal Stepper Indicator matching Screen 6
             const PostRequirementStepper(activeStep: 1),
 
-            const Divider(height: 1, color: AppColors.borderLight),
+            Divider(height: 1, color: tokens.border),
 
             // Form Container
             Expanded(
@@ -254,12 +311,12 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Section Header matching Screen 6
-                      const Text(
+                      Text(
                         'Service Details',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.textDark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -274,41 +331,43 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
                       const SizedBox(height: 24),
 
                       // Trade Category Picker
-                      const Text(
+                      Text(
                         'Category',
                         style: TextStyle(
                           fontFamily: AppTypography.headingFont,
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
-                          color: AppColors.sheetSurfaceSubtle,
+                          color: tokens.subtleCardBg,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppColors.borderLight),
+                          border: Border.all(color: tokens.border),
                         ),
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
-                            value: _selectedCategory,
+                            value: safeSelectedCategory,
                             isExpanded: true,
-                            icon: const Icon(
+                            dropdownColor: tokens.cardBg,
+                            icon: Icon(
                               Icons.arrow_drop_down_rounded,
-                              color: AppColors.primarySky,
+                              color: tokens.brandAccent,
                             ),
                             items: CategoryModel.defaultCategories.map((cat) {
                               return DropdownMenuItem<String>(
                                 value: cat.categoryId,
                                 child: Text(
                                   cat.name,
-                                  style: const TextStyle(
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
                                     fontFamily: AppTypography.bodyFont,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: AppColors.textDark,
+                                    color: colorScheme.onSurface,
                                   ),
                                 ),
                               );

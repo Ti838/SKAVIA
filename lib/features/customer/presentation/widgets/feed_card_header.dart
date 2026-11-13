@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../data/models/requirement_model.dart';
 
 /// Top author identity, role badge, and status pill for feed cards.
@@ -9,7 +10,7 @@ class FeedCardHeader extends StatelessWidget {
 
   const FeedCardHeader({super.key, required this.job});
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(BuildContext context, String status) {
     switch (status.toLowerCase()) {
       case 'open':
         return AppColors.successGreen;
@@ -18,18 +19,18 @@ class FeedCardHeader extends StatelessWidget {
         return AppColors.primarySky;
       case 'closed':
       default:
-        return AppColors.textMuted;
+        return context.skavia.mutedText;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
     final initial = job.clientName.isNotEmpty
         ? job.clientName[0].toUpperCase()
         : 'S';
+    final statusColor = _getStatusColor(context, job.status);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
@@ -38,11 +39,11 @@ class FeedCardHeader extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: colorScheme.primary.withValues(alpha: 0.15),
+            backgroundColor: tokens.softBlueBg,
             child: Text(
               initial,
               style: TextStyle(
-                color: colorScheme.primary,
+                color: tokens.brandAccent,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),
@@ -78,7 +79,10 @@ class FeedCardHeader extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 2,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -86,9 +90,7 @@ class FeedCardHeader extends StatelessWidget {
                         vertical: 1.5,
                       ),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? colorScheme.surfaceContainerHighest
-                            : AppColors.canvasBlue.withValues(alpha: 0.12),
+                        color: tokens.softBlueBg,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -96,13 +98,10 @@ class FeedCardHeader extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: isDark
-                              ? colorScheme.primary
-                              : AppColors.primaryRoyal,
+                          color: tokens.brandAccent,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Text(
                       '• ${job.timeAgo}',
                       style: TextStyle(
@@ -115,33 +114,37 @@ class FeedCardHeader extends StatelessWidget {
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: _getStatusColor(job.status).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(job.status),
-                    shape: BoxShape.circle,
+          const SizedBox(width: 8),
+          Flexible(
+            flex: 0,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  job.status,
-                  style: TextStyle(
-                    color: _getStatusColor(job.status),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                  const SizedBox(width: 5),
+                  Text(
+                    job.status,
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

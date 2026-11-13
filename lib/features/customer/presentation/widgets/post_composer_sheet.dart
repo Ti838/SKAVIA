@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
-import '../../../../core/utils/uuid_util.dart';
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/models/requirement_model.dart';
@@ -76,40 +77,64 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
       return;
     }
 
+    final client = tryGetSupabaseClient();
+    if (client == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Offline mode: publishing opportunities requires an active backend connection.',
+          ),
+          backgroundColor: AppColors.warning,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     final title = _titleController.text.trim();
     final desc = _descController.text.trim();
     final budget = double.tryParse(_budgetController.text.trim()) ?? 1500.0;
     final catName = _categories[_selectedCategory] ?? 'General Trade';
-
-    final reqId = UuidUtil.generateV4();
+    final normalizedUrgency = CategoryResolver.normalizeUrgency(_urgency);
+    final normalizedType = CategoryResolver.normalizeRequirementType(
+      _postType == 'Job' ? 'Simple' : 'Complex',
+    );
 
     try {
+      final resolvedCategoryUuid = await CategoryResolver.resolveCategoryUuid(
+        client,
+        _selectedCategory,
+      );
+
       // 1. Persist to Supabase `requirements` table (SRS Section 3.1.D & 4.4)
-      await Supabase.instance.client.from(DatabaseTables.requirements).insert({
-        'requirement_id': reqId,
-        'submitted_by': user.uid,
-        'category_id': _selectedCategory,
-        'title': title,
-        'description': desc,
-        'requirement_type': _postType == 'Job' ? 'Simple' : 'Complex',
-        'budget': budget,
-        'location': _selectedLocation,
-        'urgency': _urgency,
-        'status': 'Open',
-        'created_at': DateTime.now().toIso8601String(),
-      });
+      final inserted = await client
+          .from(DatabaseTables.requirements)
+          .insert({
+            'submitted_by': user.uid,
+            'category_id': ?resolvedCategoryUuid,
+            'title': title,
+            'description': desc,
+            'requirement_type': normalizedType,
+            'budget': budget,
+            'location': _selectedLocation,
+            'urgency': normalizedUrgency,
+            'status': 'Open',
+          })
+          .select('requirement_id')
+          .single();
+
+      final reqId = inserted['requirement_id']?.toString() ?? '';
 
       final newItem = JobRequirementItem(
         id: reqId,
         title: title,
         category: catName,
-        categoryId: _selectedCategory,
+        categoryId: resolvedCategoryUuid ?? _selectedCategory,
         description: desc,
         location: _selectedLocation,
         budgetMin: budget * 0.9,
         budgetMax: budget * 1.2,
-        urgency: _urgency,
+        urgency: normalizedUrgency,
         timeAgo: 'Just now',
         clientName:
             user.displayName ?? user.email?.split('@').first ?? 'Member',
@@ -118,6 +143,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
         status: 'Open',
         likesCount: 0,
         commentsCount: 0,
+        submittedBy: user.uid,
       );
 
       if (mounted) {
@@ -147,13 +173,13 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.88,
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.sheetBg,
         borderRadius: AppDimensions.roundedSheet,
       ),
       child: SafeArea(
@@ -165,7 +191,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
+                color: tokens.border,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -175,34 +201,33 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primarySky.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.add_task_rounded,
-                          color: AppColors.primaryRoyal,
-                          size: 20,
-                        ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: tokens.softBlueBg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.add_task_rounded,
+                      color: tokens.brandAccent,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isBn
+                          ? 'নতুন সুযোগ বা পোস্ট তৈরি করুন'
+                          : 'Create Opportunity or Post',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        isBn
-                            ? 'নতুন সুযোগ বা পোস্ট তৈরি করুন'
-                            : 'Create Opportunity or Post',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   IconButton(
                     icon: Icon(
@@ -214,7 +239,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                 ],
               ),
             ),
-            Divider(height: 12, color: colorScheme.outlineVariant),
+            Divider(height: 12, color: tokens.border),
 
             Expanded(
               child: SingleChildScrollView(
@@ -254,34 +279,36 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                       // Publish Button
                       SizedBox(
                         width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isSubmitting ? null : _submitPost,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryRoyal,
-                            foregroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: AppDimensions.roundedPill,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 50),
+                          child: ElevatedButton(
+                            onPressed: _isSubmitting ? null : _submitPost,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: tokens.brandAccent,
+                              foregroundColor: tokens.onBrandAccent,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: AppDimensions.roundedPill,
+                              ),
                             ),
+                            child: _isSubmitting
+                                ? SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: tokens.onBrandAccent,
+                                    ),
+                                  )
+                                : Text(
+                                    isBn
+                                        ? 'পোস্ট প্রকাশ করুন'
+                                        : 'Publish Opportunity',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
                           ),
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(
-                                  isBn
-                                      ? 'পোস্ট প্রকাশ করুন'
-                                      : 'Publish Opportunity',
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
                         ),
                       ),
                     ],

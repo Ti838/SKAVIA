@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Screen 7: AI Diagnostic Analysis in Progress view
 class AiAnalyzingView extends StatelessWidget {
@@ -17,6 +17,9 @@ class AiAnalyzingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+
     return SingleChildScrollView(
       key: const ValueKey('analyzing_view'),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -37,7 +40,7 @@ class AiAnalyzingView extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF2563EB).withValues(alpha: 0.35),
+                  color: tokens.brandAccent.withValues(alpha: 0.35),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -58,22 +61,23 @@ class AiAnalyzingView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'SKAVIA AI',
             style: TextStyle(
               fontFamily: AppTypography.headingFont,
               fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Analyzing your requirements...',
+            textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: AppColors.textMuted,
+              color: tokens.mutedText,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -105,10 +109,10 @@ class AiAnalyzingView extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -123,11 +127,11 @@ class AiAnalyzingView extends StatelessWidget {
           // Linear Blue Gradient Progress Bar (85%)
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: const LinearProgressIndicator(
+            child: LinearProgressIndicator(
               value: 0.85,
               minHeight: 8,
-              backgroundColor: Color(0xFFE2E8F0),
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2563EB)),
+              backgroundColor: tokens.border,
+              valueColor: AlwaysStoppedAnimation<Color>(tokens.brandAccent),
             ),
           ),
           const SizedBox(height: 36),
@@ -138,29 +142,29 @@ class AiAnalyzingView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: tokens.subtleCardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: tokens.border),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: tokens.brandAccent,
                     child: Image.asset(
                       AppAssets.emblem,
                       width: 18,
                       height: 18,
                       fit: BoxFit.contain,
-                      errorBuilder: (_, error, stack) => const Icon(
+                      errorBuilder: (_, error, stack) => Icon(
                         Icons.auto_awesome,
-                        color: Colors.white,
+                        color: tokens.onBrandAccent,
                         size: 16,
                       ),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -169,24 +173,24 @@ class AiAnalyzingView extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
-                        SizedBox(height: 2),
+                        const SizedBox(height: 2),
                         Text(
                           'Here are the results...',
                           style: TextStyle(
                             fontSize: 12,
-                            color: AppColors.textMuted,
+                            color: tokens.mutedText,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
+                  Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 16,
-                    color: Color(0xFF2563EB),
+                    color: tokens.brandAccent,
                   ),
                 ],
               ),

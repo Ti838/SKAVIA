@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Service Pill with 1-Tap Quick Booking "+" Action Button
 class FeaturedServicePill extends StatelessWidget {
@@ -27,24 +27,25 @@ class FeaturedServicePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.6),
+        color: tokens.subtleCardBg,
         borderRadius: BorderRadius.circular(AppDimensions.radius20),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: tokens.border),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: colorScheme.surface,
+              color: tokens.softBlueBg,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.primaryRoyal, size: 20),
+            child: Icon(icon, color: tokens.brandAccent, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -83,6 +84,7 @@ class FeaturedServicePill extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(width: 8),
           GestureDetector(
             onTap: onQuickBook,
             child: Container(

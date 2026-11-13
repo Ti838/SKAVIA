@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Interactive Copilot Chat View (with Groq 70B & Quick Suggestions)
 class AiChatView extends StatelessWidget {
@@ -110,7 +111,7 @@ class AiChatView extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: isUser
-                        ? const Color(0xFF2563EB)
+                        ? context.skavia.brandAccent
                         : (isDark
                               ? colorScheme.surfaceContainerHighest
                               : const Color(0xFFF1F5F9)),
@@ -135,19 +136,19 @@ class AiChatView extends StatelessWidget {
                               AppAssets.emblem,
                               width: 14,
                               height: 14,
-                              errorBuilder: (_, error, stack) => const Icon(
+                              errorBuilder: (_, error, stack) => Icon(
                                 Icons.auto_awesome,
                                 size: 14,
-                                color: Color(0xFF2563EB),
+                                color: context.skavia.brandAccent,
                               ),
                             ),
                             const SizedBox(width: 6),
-                            const Text(
+                            Text(
                               'SKAVIA AI',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
-                                color: Color(0xFF2563EB),
+                                color: context.skavia.brandAccent,
                               ),
                             ),
                           ],
@@ -160,7 +161,9 @@ class AiChatView extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 13.5,
                           fontWeight: FontWeight.w500,
-                          color: isUser ? Colors.white : colorScheme.onSurface,
+                          color: isUser
+                              ? context.skavia.onBrandAccent
+                              : colorScheme.onSurface,
                           height: 1.4,
                         ),
                       ),
@@ -247,14 +250,14 @@ class AiChatView extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2563EB),
+                decoration: BoxDecoration(
+                  color: context.skavia.brandAccent,
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.send_rounded,
-                    color: Colors.white,
+                    color: context.skavia.onBrandAccent,
                     size: 20,
                   ),
                   onPressed: () => onSendMessage(textController.text),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Reusable horizontal filter tabs for the live social and job feed.
 class FeedFilterTabs extends StatelessWidget {
@@ -17,9 +17,8 @@ class FeedFilterTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     final tabs = [
       {'key': 'All', 'label': isBn ? 'সকল পোস্ট' : 'All Posts'},
@@ -36,30 +35,36 @@ class FeedFilterTabs extends StatelessWidget {
           final isSelected = selectedPostType == tab['key'];
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: ChoiceChip(
-              label: Text(
-                tab['label']!,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? colorScheme.onSurface : AppColors.textDark),
+            child: Material(
+              color: isSelected ? tokens.brandAccent : tokens.cardBg,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                onTap: () => onSelected(tab['key']!),
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected ? Colors.transparent : tokens.border,
+                    ),
+                  ),
+                  child: Text(
+                    tab['label']!,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      color: isSelected
+                          ? tokens.onBrandAccent
+                          : colorScheme.onSurface,
+                    ),
+                  ),
                 ),
               ),
-              selected: isSelected,
-              selectedColor: isDark
-                  ? colorScheme.primary
-                  : AppColors.primaryRoyal,
-              backgroundColor: isDark
-                  ? colorScheme.surfaceContainerHighest
-                  : Colors.white,
-              side: BorderSide(
-                color: isSelected
-                    ? Colors.transparent
-                    : colorScheme.outlineVariant,
-              ),
-              onSelected: (_) => onSelected(tab['key']!),
             ),
           );
         }).toList(),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Auto-diagnose with SKAVIA AI action button with loading spinner.
 class PostRequirementAiButton extends StatelessWidget {
@@ -15,6 +15,8 @@ class PostRequirementAiButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+
     return Align(
       alignment: Alignment.centerRight,
       child: InkWell(
@@ -23,34 +25,41 @@ class PostRequirementAiButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.primaryRoyal.withValues(alpha: 0.1),
+            color: tokens.softVioletBg,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppColors.primarySky.withValues(alpha: 0.4),
+              color: tokens.brandAccent.withValues(alpha: 0.4),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (isDiagnosing)
-                const SizedBox(
+                SizedBox(
                   width: 12,
                   height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 1.5),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    color: tokens.brandAccent,
+                  ),
                 )
               else
-                const Icon(
+                Icon(
                   Icons.auto_awesome,
-                  color: AppColors.primaryRoyal,
+                  color: tokens.brandAccent,
                   size: 14,
                 ),
               const SizedBox(width: 6),
-              const Text(
-                'Auto-Diagnose with SKAVIA AI',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.primaryRoyal,
+              Flexible(
+                child: Text(
+                  'Auto-Diagnose with SKAVIA AI',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.brandAccent,
+                  ),
                 ),
               ),
             ],

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Single visual step indicator along the service lifecycle progress track.
 class BookingTimelineStep extends StatelessWidget {
@@ -27,6 +28,8 @@ class BookingTimelineStep extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDone = currentStep >= stepIndex;
     final isCurrent = currentStep == stepIndex;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,13 +41,16 @@ class BookingTimelineStep extends StatelessWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: isDone
-                    ? (isCurrent ? AppColors.accent : AppColors.primary)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? (isCurrent ? AppColors.accent : tokens.brandAccent)
+                    : tokens.subtleCardBg,
                 shape: BoxShape.circle,
+                border: isDone ? null : Border.all(color: tokens.border),
               ),
               child: Icon(
                 icon,
-                color: isDone ? Colors.white : AppColors.textDisabled,
+                color: isDone
+                    ? (isCurrent ? AppColors.textDark : tokens.onBrandAccent)
+                    : tokens.mutedText,
                 size: 18,
               ),
             ),
@@ -52,9 +58,7 @@ class BookingTimelineStep extends StatelessWidget {
               Container(
                 width: 2,
                 height: 48,
-                color: isDone
-                    ? AppColors.primary
-                    : Colors.black.withValues(alpha: 0.1),
+                color: isDone ? tokens.brandAccent : tokens.border,
               ),
           ],
         ),
@@ -69,9 +73,7 @@ class BookingTimelineStep extends StatelessWidget {
                   title,
                   style: AppTypography.titleSmall.copyWith(
                     fontWeight: isCurrent ? FontWeight.w800 : FontWeight.w600,
-                    color: isDone
-                        ? AppColors.textPrimary
-                        : AppColors.textDisabled,
+                    color: isDone ? colorScheme.onSurface : tokens.mutedText,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -79,8 +81,8 @@ class BookingTimelineStep extends StatelessWidget {
                   subtitle,
                   style: AppTypography.caption.copyWith(
                     color: isDone
-                        ? AppColors.textSecondary
-                        : AppColors.textDisabled,
+                        ? colorScheme.onSurfaceVariant
+                        : tokens.mutedText,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.paddingMedium),

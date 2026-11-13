@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
+import '../../../../core/utils/uuid_util.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/models/requirement_model.dart';
 
@@ -39,6 +41,8 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
   bool _isLoading = true;
   bool _isSending = false;
 
+  String get _cacheKey => 'skavia_feed_comments_${widget.job.id}';
+
   @override
   void initState() {
     super.initState();
@@ -52,43 +56,57 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
     super.dispose();
   }
 
+  List<Map<String, dynamic>> _loadCachedComments() {
+    final raw = LocalCacheService.instance.get(_cacheKey);
+    if (raw is List) {
+      return raw
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+    }
+    return <Map<String, dynamic>>[];
+  }
+
   Future<void> _fetchComments() async {
     setState(() => _isLoading = true);
-    try {
-      final res = await Supabase.instance.client
-          .from('messages')
-          .select(
-            'message_id, sender_id, message_text, created_at, users(full_name)',
-          )
-          .eq('conversation_id', widget.job.id)
-          .order('created_at', ascending: true)
-          .limit(50);
+    final list = <Map<String, dynamic>>[];
+    final client = tryGetSupabaseClient();
 
-      final list = <Map<String, dynamic>>[];
-      for (final r in res) {
-        final users = r['users'] as Map<String, dynamic>?;
-        list.add({
-          'id': r['message_id']?.toString() ?? '',
-          'author': users?['full_name'] ?? 'Verified Member',
-          'body': r['message_text'] ?? '',
-          'time': 'Recent',
-        });
-      }
+    if (client != null && UuidUtil.isValidUuid(widget.job.id)) {
+      try {
+        final res = await client
+            .from('messages')
+            .select(
+              'message_id, sender_id, message_text, created_at, users(full_name)',
+            )
+            .eq('conversation_id', widget.job.id)
+            .order('created_at', ascending: true)
+            .limit(50);
 
-      if (mounted) {
-        setState(() {
-          _comments.clear();
-          _comments.addAll(list);
-          _isLoading = false;
-        });
+        for (final r in (res as List<dynamic>)) {
+          final users = r['users'] as Map<String, dynamic>?;
+          list.add({
+            'id': r['message_id']?.toString() ?? '',
+            'author': users?['full_name'] ?? 'Verified Member',
+            'body': r['message_text'] ?? '',
+            'time': 'Recent',
+          });
+        }
+      } catch (e) {
+        debugPrint('[PostCommentsSheet fetch notice]: $e');
       }
-    } catch (e) {
-      debugPrint('[PostCommentsSheet fetch error]: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+    }
+
+    if (list.isEmpty) {
+      list.addAll(_loadCachedComments());
+    }
+
+    if (mounted) {
+      setState(() {
+        _comments.clear();
+        _comments.addAll(list);
+        _isLoading = false;
+      });
     }
   }
 
@@ -108,41 +126,47 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
     final userName =
         user.displayName ?? user.email?.split('@').first ?? 'Member';
 
-    // Optimistically add to UI
+    final entry = <String, dynamic>{
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'author': userName,
+      'body': text,
+      'time': 'Just now',
+    };
+
     setState(() {
-      _comments.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'author': userName,
-        'body': text,
-        'time': 'Just now',
-      });
+      _comments.add(entry);
       _commentController.clear();
       _isSending = false;
     });
 
+    LocalCacheService.instance.put(_cacheKey, _comments);
     widget.onCommentAdded?.call();
 
-    // Persist to Supabase messages
-    try {
-      await Supabase.instance.client.from('messages').insert({
-        'conversation_id': widget.job.id,
-        'sender_id': user.uid,
-        'message_text': text,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-    } catch (_) {}
+    final client = tryGetSupabaseClient();
+    if (client != null && UuidUtil.isValidUuid(widget.job.id)) {
+      try {
+        await client.from('messages').insert({
+          'conversation_id': widget.job.id,
+          'sender_id': user.uid,
+          'message_text': text,
+        });
+      } catch (e) {
+        debugPrint('[PostCommentsSheet remote sync notice]: $e');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.75,
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.sheetBg,
         borderRadius: AppDimensions.roundedSheet,
       ),
       child: SafeArea(
@@ -155,7 +179,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
+                color: tokens.border,
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
@@ -201,7 +225,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                 ],
               ),
             ),
-            Divider(height: 16, color: colorScheme.outlineVariant),
+            Divider(height: 16, color: tokens.border),
 
             // Comment List
             Expanded(
@@ -209,13 +233,17 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                   ? const Center(child: CircularProgressIndicator())
                   : _comments.isEmpty
                   ? Center(
-                      child: Text(
-                        isBn
-                            ? 'এখনও কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!'
-                            : 'No comments yet. Be the first to inquire!',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurfaceVariant,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          isBn
+                              ? 'এখনও কোনো কমেন্ট নেই। প্রথম কমেন্ট করুন!'
+                              : 'No comments yet. Be the first to inquire!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     )
@@ -225,21 +253,20 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                       separatorBuilder: (_, _) => const SizedBox(height: 14),
                       itemBuilder: (context, idx) {
                         final c = _comments[idx];
+                        final author = c['author']?.toString() ?? 'Member';
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CircleAvatar(
                               radius: 16,
-                              backgroundColor: AppColors.primarySky.withValues(
-                                alpha: 0.15,
-                              ),
+                              backgroundColor: tokens.softBlueBg,
                               child: Text(
-                                (c['author'] as String).isNotEmpty
-                                    ? (c['author'] as String)[0].toUpperCase()
+                                author.isNotEmpty
+                                    ? author[0].toUpperCase()
                                     : 'U',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.primaryRoyal,
+                                  color: tokens.brandAccent,
                                   fontSize: 12,
                                 ),
                               ),
@@ -249,30 +276,30 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                               child: Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.5),
+                                  color: tokens.subtleCardBg,
                                   borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: colorScheme.outlineVariant,
-                                  ),
+                                  border: Border.all(color: tokens.border),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
-                                          c['author'] as String,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: colorScheme.onSurface,
+                                        Expanded(
+                                          child: Text(
+                                            author,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: colorScheme.onSurface,
+                                            ),
                                           ),
                                         ),
+                                        const SizedBox(width: 8),
                                         Text(
-                                          c['time'] as String,
+                                          c['time']?.toString() ?? 'Recent',
                                           style: TextStyle(
                                             fontSize: 10,
                                             color: colorScheme.onSurfaceVariant,
@@ -282,7 +309,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      c['body'] as String,
+                                      c['body']?.toString() ?? '',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: colorScheme.onSurface,
@@ -303,9 +330,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
             Container(
               padding: EdgeInsets.fromLTRB(16, 10, 16, 12 + bottomInset),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: tokens.sheetBg,
                 border: Border(
-                  top: BorderSide(color: colorScheme.outlineVariant),
+                  top: BorderSide(color: tokens.border),
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -320,8 +347,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest,
+                        color: tokens.subtleCardBg,
                         borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: tokens.border),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
@@ -352,9 +380,9 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.send_rounded,
-                            color: AppColors.primaryRoyal,
+                            color: tokens.brandAccent,
                           ),
                     onPressed: _sendComment,
                   ),

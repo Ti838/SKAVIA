@@ -206,19 +206,24 @@ class CustomerDashboardView extends StatelessWidget {
 
         // 8. Featured Services (Reference Screen 3 Design with 1-Tap Booking)
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              AppLanguageService.tr('featured_services'),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: Theme.of(context).colorScheme.onSurface,
+            Expanded(
+              child: Text(
+                AppLanguageService.tr('featured_services'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: onSelectServicesTab,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     AppLanguageService.tr('see_all'),
@@ -290,50 +295,44 @@ class CustomerDashboardView extends StatelessWidget {
         const SizedBox(height: 18),
 
         // 9. Facebook-Style Live Community & Jobs Feed Stream
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.dynamic_feed_rounded,
-                  color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
-                  size: 20,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+            final stackFeedHeader =
+                constraints.maxWidth < 340 || textScale > 1.3;
+
+            final badgeWidget = Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 6,
+                vertical: 2,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.successGreen.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                isBn ? '১৮+ সক্রিয়' : '18+ Open',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.successGreen,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  isBn ? 'লাইভ সোশ্যাল ও কাজের ফিড' : 'Live Marketplace Feed',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.successGreen.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    isBn ? '১৮+ সক্রিয়' : '18+ Open',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.successGreen,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            TextButton.icon(
+              ),
+            );
+
+            final viewAllButton = TextButton.icon(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               onPressed: () =>
                   Navigator.pushNamed(context, AppRoutes.liveJobFeed),
               icon: Icon(
                 Icons.arrow_forward_ios_rounded,
-                size: 13,
+                size: 12,
                 color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
               ),
               label: Text(
@@ -344,8 +343,87 @@ class CustomerDashboardView extends StatelessWidget {
                   color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
                 ),
               ),
-            ),
-          ],
+            );
+
+            final titleRow = Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.dynamic_feed_rounded,
+                  color: isDark ? colorScheme.primary : AppColors.primaryRoyal,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    isBn ? 'লাইভ সোশ্যাল ও কাজের ফিড' : 'Live Marketplace Feed',
+                    maxLines: stackFeedHeader ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+              ],
+            );
+
+            if (stackFeedHeader) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  titleRow,
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      badgeWidget,
+                      viewAllButton,
+                    ],
+                  ),
+                ],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.dynamic_feed_rounded,
+                        color: isDark
+                            ? colorScheme.primary
+                            : AppColors.primaryRoyal,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          isBn
+                              ? 'লাইভ সোশ্যাল ও কাজের ফিড'
+                              : 'Live Marketplace Feed',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      badgeWidget,
+                    ],
+                  ),
+                ),
+                viewAllButton,
+              ],
+            );
+          },
         ),
         const SizedBox(height: 10),
 
@@ -363,7 +441,8 @@ class CustomerDashboardView extends StatelessWidget {
         ),
 
         // Bottom CTA to open full-screen feed
-        Center(
+        SizedBox(
+          width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: () =>
                 Navigator.pushNamed(context, AppRoutes.liveJobFeed),
@@ -372,6 +451,9 @@ class CustomerDashboardView extends StatelessWidget {
               isBn
                   ? 'আরও ১৮+ লাইভ সোশ্যাল পোস্ট ব্রাউজ করুন'
                   : 'Explore All 18+ Live Marketplace Posts',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w700,
@@ -379,7 +461,7 @@ class CustomerDashboardView extends StatelessWidget {
             ),
             style: OutlinedButton.styleFrom(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),

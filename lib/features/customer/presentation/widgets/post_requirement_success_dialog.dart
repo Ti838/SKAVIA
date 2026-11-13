@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../screens/candidate_matches_screen.dart';
 
 class PostRequirementSuccessDialog extends StatelessWidget {
+  final String? requirementId;
   final String title;
   final double budget;
   final String selectedLocation;
@@ -12,6 +14,7 @@ class PostRequirementSuccessDialog extends StatelessWidget {
 
   const PostRequirementSuccessDialog({
     super.key,
+    this.requirementId,
     required this.title,
     required this.budget,
     required this.selectedLocation,
@@ -20,6 +23,7 @@ class PostRequirementSuccessDialog extends StatelessWidget {
 
   static Future<void> show(
     BuildContext context, {
+    String? requirementId,
     required String title,
     required double budget,
     required String selectedLocation,
@@ -29,6 +33,7 @@ class PostRequirementSuccessDialog extends StatelessWidget {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => PostRequirementSuccessDialog(
+        requirementId: requirementId,
         title: title,
         budget: budget,
         selectedLocation: selectedLocation,
@@ -39,7 +44,12 @@ class PostRequirementSuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+
     return AlertDialog(
+      scrollable: true,
+      backgroundColor: tokens.cardBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       title: Row(
         children: [
@@ -56,13 +66,14 @@ class PostRequirementSuccessDialog extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Text(
               'Job Posted Successfully',
               style: TextStyle(
                 fontFamily: AppTypography.headingFont,
                 fontWeight: FontWeight.w800,
                 fontSize: 18,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -74,9 +85,9 @@ class PostRequirementSuccessDialog extends StatelessWidget {
         children: [
           Text(
             'Your requirement for "$title" has been posted across the SKAVIA network.',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: AppColors.textMedium,
+              color: colorScheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),
@@ -84,24 +95,24 @@ class PostRequirementSuccessDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.cardBlueTint,
+              color: tokens.softBlueBg,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(
                   Icons.auto_awesome,
-                  color: AppColors.primaryRoyal,
+                  color: tokens.brandAccent,
                   size: 20,
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Algorithmic match engine is calculating top-rated technicians in your area...',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primaryRoyal,
+                      color: tokens.brandAccent,
                     ),
                   ),
                 ),
@@ -110,23 +121,28 @@ class PostRequirementSuccessDialog extends StatelessWidget {
           ),
         ],
       ),
+      actionsAlignment: MainAxisAlignment.end,
+      actionsOverflowButtonSpacing: 8,
       actions: [
         TextButton(
           onPressed: () {
             Navigator.pop(context);
             Navigator.pop(context);
           },
-          child: const Text(
+          child: Text(
             'Dashboard',
             style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: AppColors.textMedium,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
             backgroundColor: AppColors.primarySky,
+            foregroundColor: Colors.white,
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             shape: const StadiumBorder(),
           ),
           onPressed: () {
@@ -135,7 +151,10 @@ class PostRequirementSuccessDialog extends StatelessWidget {
               context,
               MaterialPageRoute(
                 builder: (_) => CandidateMatchesScreen(
-                  requirementId: 'req_${DateTime.now().millisecondsSinceEpoch}',
+                  requirementId:
+                      (requirementId != null && requirementId!.isNotEmpty)
+                          ? requirementId!
+                          : 'req_${DateTime.now().millisecondsSinceEpoch}',
                   requirementTitle: title,
                   requirementZone: selectedLocation,
                   budget: budget,

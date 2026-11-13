@@ -1,23 +1,39 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Screen 8: AI Analysis Results and Recommended Team structure
 class AiResultsView extends StatelessWidget {
   final List<String> requiredSkills;
   final List<Map<String, String>> recommendedTeam;
   final VoidCallback onEditRequest;
+  final String? projectSummary;
+  final String? projectTitle;
+  final String? projectId;
 
   const AiResultsView({
     super.key,
     required this.requiredSkills,
     required this.recommendedTeam,
     required this.onEditRequest,
+    this.projectSummary,
+    this.projectTitle,
+    this.projectId,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final summaryText = (projectSummary != null && projectSummary!.trim().isNotEmpty)
+        ? projectSummary!.trim()
+        : 'Mobile app for e-commerce with payment integration and admin panel.';
+    final targetTitle = (projectTitle != null && projectTitle!.trim().isNotEmpty)
+        ? projectTitle!.trim()
+        : 'Mobile App for E-Commerce';
+
     return SingleChildScrollView(
       key: const ValueKey('results_view'),
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -25,12 +41,12 @@ class AiResultsView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Project Summary Card
-          const Text(
+          Text(
             'Project Summary',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -38,16 +54,16 @@ class AiResultsView extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: tokens.subtleCardBg,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(color: tokens.border),
             ),
-            child: const Text(
-              'Mobile app for e-commerce with payment integration and admin panel.',
+            child: Text(
+              summaryText,
               style: TextStyle(
                 fontSize: 13,
                 height: 1.45,
-                color: Color(0xFF334155),
+                color: tokens.secondaryText,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -55,12 +71,12 @@ class AiResultsView extends StatelessWidget {
           const SizedBox(height: 22),
 
           // Required Skills
-          const Text(
+          Text(
             'Required Skills',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 10),
@@ -68,19 +84,19 @@ class AiResultsView extends StatelessWidget {
             spacing: 8,
             runSpacing: 8,
             children: requiredSkills.map((skill) {
-              final isOptional = skill.contains('optional');
+              final isOptional = skill.toLowerCase().contains('optional');
               return Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isOptional ? Colors.white : const Color(0xFFEFF6FF),
+                  color: isOptional ? tokens.cardBg : tokens.softBlueBg,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isOptional
-                        ? const Color(0xFFCBD5E1)
-                        : const Color(0xFF93C5FD),
+                        ? tokens.border
+                        : tokens.brandAccent.withValues(alpha: 0.45),
                   ),
                 ),
                 child: Text(
@@ -88,9 +104,7 @@ class AiResultsView extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: isOptional
-                        ? const Color(0xFF64748B)
-                        : const Color(0xFF1D4ED8),
+                    color: isOptional ? tokens.mutedText : tokens.brandAccent,
                   ),
                 ),
               );
@@ -100,8 +114,7 @@ class AiResultsView extends StatelessWidget {
 
           // Recommended Team (3-5 members)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Expanded(
                 child: Text(
                   'Recommended Team',
@@ -110,17 +123,21 @@ class AiResultsView extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
+                    color: colorScheme.onSurface,
                   ),
                 ),
               ),
-              SizedBox(width: 8),
-              Text(
-                '(3-5 members)',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMuted,
-                  fontWeight: FontWeight.w500,
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  '(3-5 members)',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: tokens.mutedText,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -135,9 +152,9 @@ class AiResultsView extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: tokens.cardBg,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: tokens.border),
                 ),
                 child: Row(
                   children: [
@@ -145,16 +162,16 @@ class AiResultsView extends StatelessWidget {
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: tokens.softBlueBg,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
                         child: Text(
-                          member['index']!,
-                          style: const TextStyle(
+                          member['index'] ?? '1',
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
-                            color: Color(0xFF2563EB),
+                            color: tokens.brandAccent,
                           ),
                         ),
                       ),
@@ -162,13 +179,13 @@ class AiResultsView extends StatelessWidget {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        member['role']!,
+                        member['role'] ?? 'Specialist',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textDark,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ),
@@ -179,64 +196,81 @@ class AiResultsView extends StatelessWidget {
           ),
           const SizedBox(height: 32),
 
-          // Action Buttons: Edit Request & Create Team
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: onEditRequest,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: const BorderSide(
-                      color: Color(0xFF2563EB),
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Text(
-                    'Edit Request',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF2563EB),
-                    ),
+          // Action Buttons: Edit Request & Create Team (stack on narrow/2.0x textScale)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stackButtons = constraints.maxWidth < 330 || textScale > 1.35;
+              final editBtn = OutlinedButton(
+                onPressed: onEditRequest,
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  side: BorderSide(color: tokens.brandAccent, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.projectDashboard,
-                      arguments: {
-                        'projectId': 'proj_ecommerce_001',
-                        'projectTitle': 'Mobile App for E-Commerce',
-                      },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                  ),
-                  child: const Text(
-                    'Create Team',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                child: Text(
+                  'Edit Request',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.brandAccent,
                   ),
                 ),
-              ),
-            ],
+              );
+
+              final createBtn = ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.projectDashboard,
+                    arguments: {
+                      'projectId': projectId ?? 'proj_ecommerce_001',
+                      'projectTitle': targetTitle,
+                    },
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: tokens.brandAccent,
+                  foregroundColor: tokens.onBrandAccent,
+                  elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                ),
+                child: Text(
+                  'Create Team',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: tokens.onBrandAccent,
+                  ),
+                ),
+              );
+
+              if (stackButtons) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    editBtn,
+                    const SizedBox(height: 10),
+                    createBtn,
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: editBtn),
+                  const SizedBox(width: 12),
+                  Expanded(child: createBtn),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
         ],

@@ -27,10 +27,10 @@ class DashboardTrustSafetySection extends StatelessWidget {
         ),
         content: Text(
           body,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             height: 1.4,
-            color: AppColors.textMedium,
+            color: Theme.of(ctx).colorScheme.onSurfaceVariant,
           ),
         ),
         actions: [
@@ -262,12 +262,16 @@ class KycTrustCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      AppLanguageService.tr('verified_shield'),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
+                    Flexible(
+                      child: Text(
+                        AppLanguageService.tr('verified_shield'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),

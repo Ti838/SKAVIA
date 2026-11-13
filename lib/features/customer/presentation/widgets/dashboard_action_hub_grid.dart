@@ -68,10 +68,11 @@ class DashboardActionHubGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionTile(
+    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final tiles = [
+          _buildActionTile(
             context: context,
             icon: Icons.handyman_rounded,
             label: AppLanguageService.tr('book_service'),
@@ -79,10 +80,7 @@ class DashboardActionHubGrid extends StatelessWidget {
             iconColor: AppColors.primaryRoyal,
             onTap: onBookService,
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildActionTile(
+          _buildActionTile(
             context: context,
             icon: Icons.post_add_rounded,
             label: AppLanguageService.tr('post_job'),
@@ -91,10 +89,7 @@ class DashboardActionHubGrid extends StatelessWidget {
             onTap: () =>
                 Navigator.pushNamed(context, AppRoutes.postRequirement),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildActionTile(
+          _buildActionTile(
             context: context,
             icon: Icons.dynamic_feed_rounded,
             label: AppLanguageService.tr('live_job_feed'),
@@ -102,10 +97,7 @@ class DashboardActionHubGrid extends StatelessWidget {
             iconColor: AppColors.successGreen,
             onTap: () => Navigator.pushNamed(context, AppRoutes.liveJobFeed),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildActionTile(
+          _buildActionTile(
             context: context,
             icon: Icons.auto_awesome_rounded,
             label: AppLanguageService.tr('skavia_ai'),
@@ -113,8 +105,43 @@ class DashboardActionHubGrid extends StatelessWidget {
             iconColor: const Color(0xFF7C3AED),
             onTap: () => Navigator.pushNamed(context, AppRoutes.skaviaAi),
           ),
-        ),
-      ],
+        ];
+
+        final useTwoByTwo = constraints.maxWidth < 330 || textScale > 1.3;
+        if (useTwoByTwo) {
+          return Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(child: tiles[0]),
+                  const SizedBox(width: 10),
+                  Expanded(child: tiles[1]),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(child: tiles[2]),
+                  const SizedBox(width: 10),
+                  Expanded(child: tiles[3]),
+                ],
+              ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: tiles[0]),
+            const SizedBox(width: 10),
+            Expanded(child: tiles[1]),
+            const SizedBox(width: 10),
+            Expanded(child: tiles[2]),
+            const SizedBox(width: 10),
+            Expanded(child: tiles[3]),
+          ],
+        );
+      },
     );
   }
 }

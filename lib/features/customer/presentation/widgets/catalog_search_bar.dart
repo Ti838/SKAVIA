@@ -27,7 +27,7 @@ class CatalogSearchBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 4, 20, 14),
       child: Container(
-        height: 48,
+        constraints: const BoxConstraints(minHeight: 48),
         decoration: BoxDecoration(
           color: isDark
               ? colorScheme.surfaceContainerHighest

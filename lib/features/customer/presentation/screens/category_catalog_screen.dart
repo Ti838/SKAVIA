@@ -65,6 +65,7 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
+        top: !widget.isTab,
         bottom: false,
         child: Column(
           children: [
@@ -85,16 +86,19 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                     const SizedBox(width: 4),
                   ] else
                     const SizedBox(width: 8),
-                  Text(
-                    AppLanguageService.tr('services_and_categories'),
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
+                  Expanded(
+                    child: Text(
+                      AppLanguageService.tr('services_and_categories'),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                 ],
               ),
             ),
@@ -132,13 +136,10 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
 
                         // Horizontal Category Filter Pills
                         SliverToBoxAdapter(
-                          child: SizedBox(
-                            height: 42,
-                            child: ListView(
-                              scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                              ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
                               children: [
                                 CatalogFilterPill(
                                   id: 'all',
@@ -174,18 +175,22 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  '${AppLanguageService.tr('available_services')} (${_controller.services.length})',
-                                  style: TextStyle(
-                                    fontFamily: AppTypography.headingFont,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: colorScheme.onSurface,
+                                Expanded(
+                                  child: Text(
+                                    '${AppLanguageService.tr('available_services')} (${_controller.services.length})',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: AppTypography.headingFont,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: colorScheme.onSurface,
+                                    ),
                                   ),
                                 ),
-                                if (_controller.selectedCategoryId != 'all')
+                                if (_controller.selectedCategoryId != 'all') ...[
+                                  const SizedBox(width: 8),
                                   GestureDetector(
                                     onTap: () =>
                                         _controller.filterByCategory('all'),
@@ -200,6 +205,7 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                       ),
                                     ),
                                   ),
+                                ],
                               ],
                             ),
                           ),

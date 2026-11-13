@@ -19,6 +19,7 @@ class JobRequirementItem {
   final String postType; // 'Job', 'Service Request', 'Professional Update'
   final String status; // 'Open', 'In Progress', 'Closed'
   final List<String> skills;
+  final String? submittedBy;
 
   const JobRequirementItem({
     required this.id,
@@ -41,6 +42,7 @@ class JobRequirementItem {
     this.postType = 'Job',
     this.status = 'Open',
     this.skills = const [],
+    this.submittedBy,
   });
 
   JobRequirementItem copyWith({
@@ -64,6 +66,7 @@ class JobRequirementItem {
     String? postType,
     String? status,
     List<String>? skills,
+    String? submittedBy,
   }) {
     return JobRequirementItem(
       id: id ?? this.id,
@@ -86,6 +89,7 @@ class JobRequirementItem {
       postType: postType ?? this.postType,
       status: status ?? this.status,
       skills: skills ?? this.skills,
+      submittedBy: submittedBy ?? this.submittedBy,
     );
   }
 
@@ -111,6 +115,7 @@ class JobRequirementItem {
       postType: map['post_type']?.toString() ?? 'Job',
       status: map['status']?.toString() ?? 'Open',
       skills: (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      submittedBy: map['submitted_by']?.toString(),
     );
   }
 }

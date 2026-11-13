@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../data/models/service_model.dart';
 
@@ -24,9 +24,12 @@ class CatalogServiceDetailSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.sheetBackground,
+      decoration: BoxDecoration(
+        color: tokens.sheetBg,
         borderRadius: AppDimensions.roundedSheetTop,
       ),
       child: SafeArea(
@@ -43,7 +46,7 @@ class CatalogServiceDetailSheet extends StatelessWidget {
                   width: 44,
                   height: 5,
                   decoration: BoxDecoration(
-                    color: AppColors.borderLight,
+                    color: tokens.border,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -54,12 +57,12 @@ class CatalogServiceDetailSheet extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppColors.primarySky.withValues(alpha: 0.12),
+                      color: colorScheme.primary.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.verified_rounded,
-                      color: AppColors.primarySky,
+                      color: colorScheme.primary,
                       size: 26,
                     ),
                   ),
@@ -70,18 +73,18 @@ class CatalogServiceDetailSheet extends StatelessWidget {
                       children: [
                         Text(
                           service.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: AppTypography.headingFont,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                         Text(
                           'Estimated time: ${service.estimatedDuration}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 13,
-                            color: AppColors.textMedium,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -92,9 +95,9 @@ class CatalogServiceDetailSheet extends StatelessWidget {
               const SizedBox(height: 18),
               Text(
                 service.description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13.5,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                   height: 1.45,
                 ),
               ),
@@ -102,39 +105,46 @@ class CatalogServiceDetailSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceVariant,
+                  color: tokens.subtleCardBg,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: tokens.border),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Starting Price',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textMedium,
-                            fontWeight: FontWeight.w500,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Starting Price',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Inclusive of SKAVIA Escrow',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textMuted,
+                          Text(
+                            'Inclusive of SKAVIA Escrow',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: tokens.mutedText,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                    Text(
-                      '৳ ${service.basePrice.toStringAsFixed(0)}',
-                      style: const TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primaryRoyal,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '৳ ${service.basePrice.toStringAsFixed(0)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: AppTypography.headingFont,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: tokens.brandAccent,
+                        ),
                       ),
                     ),
                   ],

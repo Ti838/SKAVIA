@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Search input field and emergency filter toggle button for the live feed.
 class FeedSearchUrgentBar extends StatelessWidget {
@@ -21,9 +22,8 @@ class FeedSearchUrgentBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -31,11 +31,11 @@ class FeedSearchUrgentBar extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              height: 38,
+              constraints: const BoxConstraints(minHeight: 40),
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: tokens.cardBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outlineVariant),
+                border: Border.all(color: tokens.border),
               ),
               child: TextField(
                 controller: searchController,
@@ -52,7 +52,7 @@ class FeedSearchUrgentBar extends StatelessWidget {
                   prefixIcon: Icon(
                     Icons.search_rounded,
                     size: 18,
-                    color: isDark ? colorScheme.primary : AppColors.primarySky,
+                    color: tokens.brandAccent,
                   ),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
@@ -67,40 +67,47 @@ class FeedSearchUrgentBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           // Emergency Filter Toggle
-          GestureDetector(
-            onTap: onToggleEmergency,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-              decoration: BoxDecoration(
-                color: onlyEmergency
-                    ? AppColors.accentCoral
-                    : colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: onlyEmergency
-                      ? AppColors.accentCoral
-                      : colorScheme.outlineVariant,
+          Material(
+            color: onlyEmergency ? AppColors.accentCoral : tokens.cardBg,
+            borderRadius: BorderRadius.circular(12),
+            child: InkWell(
+              onTap: onToggleEmergency,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: onlyEmergency ? AppColors.accentCoral : tokens.border,
+                  ),
                 ),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.bolt_rounded,
-                    size: 14,
-                    color: onlyEmergency ? Colors.white : AppColors.accentCoral,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    isBn ? 'জরুরি' : 'Urgent',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: onlyEmergency
-                          ? Colors.white
-                          : AppColors.accentCoral,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.bolt_rounded,
+                      size: 14,
+                      color:
+                          onlyEmergency ? Colors.white : AppColors.accentCoral,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        isBn ? 'জরুরি' : 'Urgent',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: onlyEmergency
+                              ? Colors.white
+                              : AppColors.accentCoral,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

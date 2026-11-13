@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
+import '../../data/datasources/live_job_feed_datasource.dart';
 import '../../data/models/requirement_model.dart';
 import '../widgets/feed_category_chips.dart';
 import '../widgets/feed_composer_prompt_card.dart';
@@ -31,6 +33,7 @@ class LiveJobFeedScreen extends StatefulWidget {
 
 class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
   final AuthController _authController = AuthController();
+  final LiveJobFeedDataSource _dataSource = LiveJobFeedDataSource();
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedPostType = 'All'; // All, Job, Service Request, Update
@@ -53,79 +56,22 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchLiveRequirements() async {
-    setState(() {
-      _isLoading = true;
-    });
-
+  User? _safeCurrentUser() {
     try {
-      final client = Supabase.instance.client;
-      final res = await client
-          .from('requirements')
-          .select(
-            'requirement_id, title, description, location, budget, status, created_at, category_id, submitted_by',
-          )
-          .eq('status', 'Open')
-          .order('created_at', ascending: false)
-          .limit(30);
+      return _authController.user;
+    } catch (_) {
+      return null;
+    }
+  }
 
-      List<JobRequirementItem> fetched = [];
-      if (res.isNotEmpty) {
-        for (final row in res) {
-          final id = row['requirement_id']?.toString() ?? 'req';
-          final title = row['title']?.toString() ?? 'Service Requirement';
-          final desc = row['description']?.toString() ?? '';
-          final loc = row['location']?.toString() ?? 'Dhaka, Bangladesh';
-          final budget = (row['budget'] as num?)?.toDouble() ?? 1500.0;
-          final catId = row['category_id']?.toString() ?? 'cat_electrical';
-          final status = row['status']?.toString() ?? 'Open';
-
-          String catName = 'Electrical';
-          if (catId.contains('ac') || catId.contains('hvac')) {
-            catName = 'HVAC & AC';
-          } else if (catId.contains('plumb')) {
-            catName = 'Plumbing';
-          } else if (catId.contains('carpent')) {
-            catName = 'Carpentry';
-          }
-
-          fetched.add(
-            JobRequirementItem(
-              id: id,
-              title: title,
-              category: catName,
-              categoryId: catId,
-              description: desc,
-              location: loc,
-              budgetMin: budget * 0.9,
-              budgetMax: budget * 1.2,
-              urgency: 'Standard',
-              timeAgo: 'Just now',
-              clientName: 'Verified Client',
-              authorRole: 'Client',
-              postType: 'Job',
-              status: status,
-              likesCount: 3,
-              commentsCount: 1,
-            ),
-          );
-        }
-      }
-
-      if (mounted) {
-        setState(() {
-          _jobs = fetched;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      debugPrint('[LiveJobFeedScreen fetch notice]: $e');
-      if (mounted) {
-        setState(() {
-          _jobs = [];
-          _isLoading = false;
-        });
-      }
+  Future<void> _fetchLiveRequirements() async {
+    setState(() => _isLoading = true);
+    final fetched = await _dataSource.fetchOpenRequirements();
+    if (mounted) {
+      setState(() {
+        _jobs = fetched;
+        _isLoading = false;
+      });
     }
   }
 
@@ -191,18 +137,21 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+    final user = _safeCurrentUser();
+    final userInitial = (user?.displayName?.isNotEmpty ?? false)
+        ? user!.displayName![0].toUpperCase()
+        : (user?.email?.isNotEmpty ?? false)
+            ? user!.email![0].toUpperCase()
+            : 'U';
 
     return Scaffold(
-      backgroundColor: widget.isTab
-          ? colorScheme.surface
-          : (isDark ? colorScheme.surface : AppColors.canvasBlue),
+      backgroundColor: widget.isTab ? colorScheme.surface : tokens.canvasBg,
       appBar: widget.isTab
           ? null
           : AppBar(
-              backgroundColor: AppColors.canvasBlue,
+              backgroundColor: tokens.canvasBg,
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(
@@ -229,8 +178,9 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
               ],
             ),
       body: SafeArea(
+        top: !widget.isTab,
         child: RefreshIndicator(
-          color: AppColors.primaryRoyal,
+          color: tokens.brandAccent,
           onRefresh: _fetchLiveRequirements,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -240,12 +190,7 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
               // 1. Post Composer Card
               SliverToBoxAdapter(
                 child: FeedComposerPromptCard(
-                  userInitial:
-                      (_authController.user?.displayName?.isNotEmpty ?? false)
-                      ? _authController.user!.displayName![0].toUpperCase()
-                      : (_authController.user?.email?.isNotEmpty ?? false)
-                      ? _authController.user!.email![0].toUpperCase()
-                      : 'U',
+                  userInitial: userInitial,
                   onOpenComposer: _openPostComposer,
                   isBn: isBn,
                 ),
@@ -297,48 +242,62 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                     vertical: 6,
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.successGreen,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            '${_filteredJobs.length} ${isBn ? "টি পোস্ট সক্রিয়" : "Active Feed Posts"}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w800,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      GestureDetector(
-                        onTap: _fetchLiveRequirements,
+                      Expanded(
                         child: Row(
                           children: [
-                            const Icon(
-                              Icons.refresh_rounded,
-                              size: 14,
-                              color: AppColors.primarySky,
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.successGreen,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                            const SizedBox(width: 3),
-                            Text(
-                              isBn ? 'রিফ্রেশ' : 'Refresh',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.primarySky,
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                '${_filteredJobs.length} ${isBn ? "টি পোস্ট সক্রিয়" : "Active Feed Posts"}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: colorScheme.onSurface,
+                                ),
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: _fetchLiveRequirements,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 2,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.refresh_rounded,
+                                size: 14,
+                                color: tokens.brandAccent,
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                isBn ? 'রিফ্রেশ' : 'Refresh',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: tokens.brandAccent,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -358,38 +317,39 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.dynamic_feed_rounded,
                             size: 48,
-                            color: AppColors.textMuted,
+                            color: tokens.mutedText,
                           ),
                           const SizedBox(height: 12),
                           Text(
                             isBn
                                 ? 'কোনো পোস্ট পাওয়া যায়নি'
                                 : 'No posts matching your filter',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.textDark,
+                              color: colorScheme.onSurface,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 6),
                           Text(
                             isBn
                                 ? 'নতুন কাজ পোস্ট করতে উপরের বোতাম ব্যবহার করুন'
                                 : 'Use the composer above to share an opportunity',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.textMedium,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primaryRoyal,
-                              foregroundColor: Colors.white,
+                              backgroundColor: tokens.brandAccent,
+                              foregroundColor: tokens.onBrandAccent,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 18,
                                 vertical: 10,

@@ -64,16 +64,20 @@ class DashboardLocationSheet extends StatelessWidget {
               ),
               const SizedBox(height: 18),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Select Service Location',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: colorScheme.onSurface,
+                  Expanded(
+                    child: Text(
+                      'Select Service Location',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
@@ -185,31 +189,40 @@ class DashboardLocationSheet extends StatelessWidget {
                 children: LocationService.dhakaZones.map((zone) {
                   final isSelected =
                       currentLocationZone.toLowerCase() == zone.toLowerCase();
-                  return ChoiceChip(
-                    label: Text(zone),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        Navigator.pop(context);
-                        onZoneSelected(zone);
-                      }
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      onZoneSelected(zone);
                     },
-                    selectedColor: AppColors.primaryRoyal,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : colorScheme.onSurface,
-                      fontWeight: isSelected
-                          ? FontWeight.w800
-                          : FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    side: BorderSide(
-                      color: isSelected
-                          ? AppColors.primaryRoyal
-                          : colorScheme.outlineVariant,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primaryRoyal
+                            : colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primaryRoyal
+                              : colorScheme.outlineVariant,
+                        ),
+                      ),
+                      child: Text(
+                        zone,
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : colorScheme.onSurface,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
                     ),
                   );
                 }).toList(),

@@ -1,10 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../core/utils/uuid_util.dart';
+import '../../../../data/tables/database_tables.dart';
 import '../../data/models/requirement_model.dart';
 
 /// Modal bottom sheet for workers to submit direct bids to client requirements
@@ -30,6 +33,7 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
   late final TextEditingController _bidPriceController;
   late final TextEditingController _arrivalController;
   late final TextEditingController _proposalNoteController;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -39,7 +43,8 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
     );
     _arrivalController = TextEditingController(text: '30 mins');
     _proposalNoteController = TextEditingController(
-      text: 'Verified specialist with proper inspection equipment ready to dispatch immediately.',
+      text:
+          'Verified specialist with proper inspection equipment ready to dispatch immediately.',
     );
   }
 
@@ -51,15 +56,134 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
     super.dispose();
   }
 
+  User? _safeCurrentUser() {
+    try {
+      return FirebaseAuth.instance.currentUser;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _submitProposal() async {
+    if (_isSubmitting) return;
+    final user = _safeCurrentUser();
+    if (user == null) {
+      UiFeedbackHelper.showError(
+        context,
+        'Authentication required. Please sign in to submit a proposal.',
+      );
+      return;
+    }
+
+    final client = tryGetSupabaseClient();
+    if (client == null) {
+      UiFeedbackHelper.showError(
+        context,
+        'Offline mode: submitting a proposal requires an active backend connection.',
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // Look up authentic worker_profile_id for this authenticated worker
+      final wp = await client
+          .from(DatabaseTables.workerProfiles)
+          .select('worker_profile_id')
+          .eq('user_id', user.uid)
+          .maybeSingle();
+
+      final workerProfileId = wp?['worker_profile_id']?.toString();
+      if (workerProfileId == null || !UuidUtil.isValidUuid(workerProfileId)) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          UiFeedbackHelper.showError(
+            context,
+            'Complete your Worker Profile first before submitting direct service bids.',
+          );
+        }
+        return;
+      }
+
+      String? clientId = widget.job.submittedBy;
+      if ((clientId == null || clientId.isEmpty) &&
+          UuidUtil.isValidUuid(widget.job.id)) {
+        final reqRow = await client
+            .from(DatabaseTables.requirements)
+            .select('submitted_by')
+            .eq('requirement_id', widget.job.id)
+            .maybeSingle();
+        clientId = reqRow?['submitted_by']?.toString();
+      }
+
+      if (clientId == null ||
+          clientId.isEmpty ||
+          clientId == user.uid ||
+          !UuidUtil.isValidUuid(widget.job.id)) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          UiFeedbackHelper.showError(
+            context,
+            clientId == user.uid
+                ? 'You cannot submit a service proposal on your own requirement.'
+                : 'This sample post cannot accept live bids. Please open a live requirement.',
+          );
+        }
+        return;
+      }
+
+      final proposedPrice =
+          double.tryParse(_bidPriceController.text.trim()) ??
+          widget.job.budgetMin;
+      final note = _proposalNoteController.text.trim();
+
+      await client.from(DatabaseTables.serviceRequests).insert({
+        'requirement_id': widget.job.id,
+        'client_id': clientId,
+        'worker_profile_id': workerProfileId,
+        'status': 'Requested',
+        'agreed_price': proposedPrice,
+        'service_notes':
+            'Bid Proposal: $note | ETA: ${_arrivalController.text.trim()}',
+        'scheduled_at': DateTime.now()
+            .add(const Duration(hours: 1))
+            .toIso8601String(),
+      });
+
+      if (!mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      final isBn = AppLanguageService.isBengali;
+      Navigator.pop(context);
+      messenger.showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.successGreen,
+          content: Text(
+            isBn
+                ? 'বিড সফলভাবে পাঠানো হয়েছে! ক্লায়েন্ট গ্রহণ করলে মেসেজ পাবেন।'
+                : 'Proposal sent to ${widget.job.clientName}! You will be alerted upon client acceptance.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        UiFeedbackHelper.showError(context, 'Failed to submit proposal: $e');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isBn = AppLanguageService.isBengali;
     final job = widget.job;
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      decoration: BoxDecoration(
+        color: tokens.sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
         22,
@@ -68,6 +192,7 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
         MediaQuery.of(context).viewInsets.bottom + 24,
       ),
       child: SafeArea(
+        top: false,
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           child: Column(
@@ -79,7 +204,7 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: tokens.border,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -93,26 +218,20 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                       isBn
                           ? 'কাজের বিড প্রস্তাব (Submit Bid)'
                           : 'Submit Direct Proposal',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 20,
-                        color: AppColors.textMedium,
-                      ),
+                  IconButton(
+                    onPressed:
+                        _isSubmitting ? null : () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -120,17 +239,17 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
               const SizedBox(height: 6),
               Text(
                 job.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primaryRoyal,
+                  color: tokens.brandAccent,
                 ),
               ),
               Text(
                 'Client Budget: ৳ ${job.budgetMin.toStringAsFixed(0)} - ৳ ${job.budgetMax.toStringAsFixed(0)} • ${job.location}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textMedium,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
@@ -138,16 +257,17 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
               // Bid Price Input
               Text(
                 isBn ? 'আপনার প্রস্তাবিত চার্জ (৳)' : 'Your Bid Amount (৳)',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: _bidPriceController,
                 keyboardType: TextInputType.number,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(
                     Icons.payments_rounded,
@@ -155,10 +275,10 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: AppColors.sheetSurfaceSubtle,
+                  fillColor: tokens.subtleCardBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: tokens.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -171,15 +291,16 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
               // Earliest Arrival Time
               Text(
                 isBn ? 'কখন পৌঁছাতে পারবেন?' : 'Estimated Arrival Time',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: _arrivalController,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   prefixIcon: const Icon(
                     Icons.timer_rounded,
@@ -187,10 +308,10 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: AppColors.sheetSurfaceSubtle,
+                  fillColor: tokens.subtleCardBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: tokens.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -205,22 +326,23 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                 isBn
                     ? 'কাজের অভিজ্ঞতা ও সংক্ষিপ্ত নোট'
                     : 'Brief Proposal Message',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textDark,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 6),
               TextField(
                 controller: _proposalNoteController,
                 maxLines: 2,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: AppColors.sheetSurfaceSubtle,
+                  fillColor: tokens.subtleCardBg,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: BorderSide(color: tokens.border),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -235,75 +357,33 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryRoyal,
-                    foregroundColor: Colors.white,
+                    backgroundColor: tokens.brandAccent,
+                    foregroundColor: tokens.onBrandAccent,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 2,
                   ),
-                  onPressed: () async {
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user == null) {
-                      UiFeedbackHelper.showError(
-                        context,
-                        'Authentication required. Please sign in to submit a proposal.',
-                      );
-                      return;
-                    }
-
-                    final proposedPrice =
-                        double.tryParse(_bidPriceController.text.trim()) ??
-                        job.budgetMin;
-                    final note = _proposalNoteController.text.trim();
-                    final workerId = user.uid;
-
-                    if (!job.id.startsWith('req_sample') &&
-                        !job.id.startsWith('req_')) {
-                      try {
-                        await Supabase.instance.client
-                            .from('service_requests')
-                            .insert({
-                              'client_id': user.uid,
-                              'worker_profile_id': workerId,
-                              'status': 'Requested',
-                              'agreed_price': proposedPrice,
-                              'service_notes':
-                                  'Bid Proposal: $note | ETA: ${_arrivalController.text.trim()}',
-                              'scheduled_at': DateTime.now()
-                                  .add(const Duration(hours: 1))
-                                  .toIso8601String(),
-                            });
-                      } catch (e) {
-                        debugPrint(
-                          '[LiveJobBidSheet] Supabase bid persist notice: $e',
-                        );
-                      }
-                    }
-
-                    if (!context.mounted) return;
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: AppColors.successGreen,
-                        content: Text(
+                  onPressed: _isSubmitting ? null : _submitProposal,
+                  child: _isSubmitting
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: tokens.onBrandAccent,
+                          ),
+                        )
+                      : Text(
                           isBn
-                              ? 'বিড সফলভাবে পাঠানো হয়েছে! ক্লায়েন্ট গ্রহণ করলে মেসেজ পাবেন।'
-                              : 'Proposal sent to ${job.clientName}! You will be alerted upon client acceptance.',
+                              ? 'বিড নিশ্চিত করুন (Confirm Proposal)'
+                              : 'Submit Proposal to Client',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 13,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    isBn
-                        ? 'বিড নিশ্চিত করুন (Confirm Proposal)'
-                        : 'Submit Proposal to Client',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 13,
-                    ),
-                  ),
                 ),
               ),
             ],

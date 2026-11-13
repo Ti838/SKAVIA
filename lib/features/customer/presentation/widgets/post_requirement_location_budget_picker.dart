@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 class PostRequirementLocationBudgetPicker extends StatelessWidget {
   final String selectedBudgetRange;
@@ -23,42 +23,49 @@ class PostRequirementLocationBudgetPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final tokens = context.skavia;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Budget Range
-        const Text(
+        Text(
           'Budget Range',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.sheetSurfaceSubtle,
+            color: tokens.subtleCardBg,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: tokens.border),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: selectedBudgetRange,
+              value: budgetRangeOptions.contains(selectedBudgetRange)
+                  ? selectedBudgetRange
+                  : budgetRangeOptions.first,
               isExpanded: true,
-              icon: const Icon(
+              dropdownColor: tokens.cardBg,
+              icon: Icon(
                 Icons.arrow_drop_down_rounded,
-                color: AppColors.textMedium,
+                color: colorScheme.onSurfaceVariant,
               ),
               items: budgetRangeOptions.map((opt) {
                 return DropdownMenuItem<String>(
                   value: opt,
                   child: Text(
                     opt,
-                    style: const TextStyle(
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 );
@@ -72,30 +79,33 @@ class PostRequirementLocationBudgetPicker extends StatelessWidget {
         const SizedBox(height: 16),
 
         // Service Location in Dhaka
-        const Text(
+        Text(
           'Service Location',
           style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: AppColors.sheetSurfaceSubtle,
+            color: tokens.subtleCardBg,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderLight),
+            border: Border.all(color: tokens.border),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: selectedLocation,
+              value: dhakaZones.contains(selectedLocation)
+                  ? selectedLocation
+                  : dhakaZones.first,
               isExpanded: true,
-              icon: const Icon(
+              dropdownColor: tokens.cardBg,
+              icon: Icon(
                 Icons.location_on_outlined,
-                color: AppColors.primarySky,
+                color: tokens.brandAccent,
                 size: 20,
               ),
               items: dhakaZones.map((loc) {
@@ -103,11 +113,12 @@ class PostRequirementLocationBudgetPicker extends StatelessWidget {
                   value: loc,
                   child: Text(
                     loc,
-                    style: const TextStyle(
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
                       fontFamily: AppTypography.bodyFont,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 );

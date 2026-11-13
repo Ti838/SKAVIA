@@ -1,19 +1,25 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../domain/entities/requirement_entity.dart';
 
 class CustomerRemoteDataSource {
-  final SupabaseClient _client;
+  final SupabaseClient? _injectedClient;
 
   CustomerRemoteDataSource({SupabaseClient? client})
-    : _client = client ?? Supabase.instance.client;
+    : _injectedClient = client;
+
+  SupabaseClient? get _client => _injectedClient ?? tryGetSupabaseClient();
 
   Future<List<RequirementEntity>> getCustomerRequirements(
     String clientId,
   ) async {
+    final client = _client;
+    if (client == null) return [];
     try {
-      final res = await _client
+      final res = await client
           .from('requirements')
           .select('*')
           .eq('submitted_by', clientId)
@@ -29,6 +35,8 @@ class CustomerRemoteDataSource {
           location: row['location']?.toString() ?? 'Dhaka',
           budget: (row['budget'] as num?)?.toDouble() ?? 1000.0,
           status: row['status']?.toString() ?? 'Open',
+          isComplexProject:
+              row['requirement_type']?.toString().toLowerCase() == 'complex',
           createdAt: row['created_at'] != null
               ? DateTime.parse(row['created_at'])
               : DateTime.now(),
@@ -43,32 +51,43 @@ class CustomerRemoteDataSource {
   }
 
   Future<String> createRequirement(RequirementEntity req) async {
-    try {
-      final insertData = {
-        'submitted_by': req.clientId,
-        'title': req.title,
-        'description': req.description,
-        'category_id': req.categoryId,
-        'location': req.location,
-        'budget': req.budget,
-        'status': req.status,
-      };
-      final res = await _client
-          .from('requirements')
-          .insert(insertData)
-          .select('requirement_id')
-          .single();
-      return res['requirement_id']?.toString() ??
-          'req_${DateTime.now().millisecondsSinceEpoch}';
-    } catch (e) {
-      debugPrint('[CustomerRemoteDataSource] createRequirement notice: $e');
-      return 'req_${DateTime.now().millisecondsSinceEpoch}';
+    final client = _client;
+    if (client == null) {
+      throw StateError('Supabase client is not initialized.');
     }
+
+    final resolvedCategoryUuid = await CategoryResolver.resolveCategoryUuid(
+      client,
+      req.categoryId,
+    );
+    final insertData = <String, dynamic>{
+      'submitted_by': req.clientId,
+      'title': req.title,
+      'description': req.description,
+      'category_id': ?resolvedCategoryUuid,
+      'requirement_type': req.isComplexProject ? 'Complex' : 'Simple',
+      'location': req.location,
+      'budget': req.budget,
+      'status': req.status,
+    };
+
+    final res = await client
+        .from('requirements')
+        .insert(insertData)
+        .select('requirement_id')
+        .single();
+    final createdId = res['requirement_id']?.toString();
+    if (createdId == null || createdId.isEmpty) {
+      throw StateError('Database did not return a requirement_id.');
+    }
+    return createdId;
   }
 
   Future<List<Map<String, dynamic>>> getActiveBookings(String clientId) async {
+    final client = _client;
+    if (client == null) return [];
     try {
-      final res = await _client
+      final res = await client
           .from('service_requests')
           .select('*, worker_profiles(*)')
           .eq('client_id', clientId)
