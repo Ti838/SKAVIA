@@ -6,7 +6,12 @@ class UserProfileModel {
   final String? phone;
   final String fullName;
   final String? avatarUrl;
+  final String? coverUrl;
   final String role;
+  final String customerType;
+  final String? companyName;
+  final String? tradeLicense;
+  final String? billingAddress;
   final DateTime? dateOfBirth;
   final bool birthdayNotificationsEnabled;
   final String? gender;
@@ -27,7 +32,12 @@ class UserProfileModel {
     this.phone,
     required this.fullName,
     this.avatarUrl,
+    this.coverUrl,
     this.role = 'Individual Customer',
+    this.customerType = 'Individual',
+    this.companyName,
+    this.tradeLicense,
+    this.billingAddress,
     this.dateOfBirth,
     this.birthdayNotificationsEnabled = true,
     this.gender,
@@ -54,13 +64,21 @@ class UserProfileModel {
     this.profileCompletionPercentage = 30,
   });
 
+  bool get isCorporateClient =>
+      customerType == 'Business Client' || customerType == 'Organization';
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'email': email,
         'phone': phone,
         'full_name': fullName,
         'avatar_url': avatarUrl,
+        'cover_url': coverUrl,
         'role': role,
+        'customer_type': customerType,
+        'company_name': companyName,
+        'trade_license': tradeLicense,
+        'billing_address': billingAddress,
         'date_of_birth': dateOfBirth?.toIso8601String(),
         'birthday_notifications_enabled': birthdayNotificationsEnabled,
         'gender': gender,
@@ -80,9 +98,26 @@ class UserProfileModel {
     List<UserAddressModel> addresses = [];
     if (json['saved_addresses'] is List) {
       addresses = (json['saved_addresses'] as List)
+          .whereType<Map>()
           .map((a) => UserAddressModel.fromJson(Map<String, dynamic>.from(a)))
           .toList();
     }
+
+    final rawCustType = json['customer_type']?.toString() ?? 'Individual';
+    final normalizedCustType = rawCustType == 'Business'
+        ? 'Business Client'
+        : rawCustType;
+
+    final parsedPrivacy = json['privacy_settings'] is Map
+        ? Map<String, dynamic>.from(json['privacy_settings'] as Map)
+        : const {
+            'profile_visibility': 'public',
+            'share_phone_with_assigned_specialist': true,
+            'data_sharing_consent': true,
+          };
+    final resolvedCoverUrl =
+        json['cover_url']?.toString() ??
+        parsedPrivacy['cover_url']?.toString();
 
     return UserProfileModel(
       id: json['user_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -90,7 +125,12 @@ class UserProfileModel {
       phone: json['phone']?.toString(),
       fullName: json['full_name']?.toString() ?? 'SKAVIA Member',
       avatarUrl: json['avatar_url']?.toString(),
+      coverUrl: resolvedCoverUrl,
       role: json['role']?.toString() ?? 'Individual Customer',
+      customerType: normalizedCustType,
+      companyName: json['company_name']?.toString(),
+      tradeLicense: json['trade_license']?.toString(),
+      billingAddress: json['billing_address']?.toString(),
       dateOfBirth: json['date_of_birth'] != null
           ? DateTime.tryParse(json['date_of_birth'].toString())
           : null,
@@ -103,13 +143,7 @@ class UserProfileModel {
       timezone: json['timezone']?.toString() ?? 'Asia/Dhaka',
       accountStatus: json['account_status']?.toString() ?? 'active',
       verificationStatus: json['verification_status']?.toString() ?? 'unverified',
-      privacySettings: json['privacy_settings'] is Map
-          ? Map<String, dynamic>.from(json['privacy_settings'] as Map)
-          : const {
-              'profile_visibility': 'public',
-              'share_phone_with_assigned_specialist': true,
-              'data_sharing_consent': true,
-            },
+      privacySettings: parsedPrivacy,
       notificationPreferences: json['notification_preferences'] is Map
           ? Map<String, dynamic>.from(json['notification_preferences'] as Map)
           : const {
@@ -132,7 +166,12 @@ class UserProfileModel {
     String? phone,
     String? fullName,
     String? avatarUrl,
+    String? coverUrl,
     String? role,
+    String? customerType,
+    String? companyName,
+    String? tradeLicense,
+    String? billingAddress,
     DateTime? dateOfBirth,
     bool? birthdayNotificationsEnabled,
     String? gender,
@@ -153,7 +192,12 @@ class UserProfileModel {
       phone: phone ?? this.phone,
       fullName: fullName ?? this.fullName,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      coverUrl: coverUrl ?? this.coverUrl,
       role: role ?? this.role,
+      customerType: customerType ?? this.customerType,
+      companyName: companyName ?? this.companyName,
+      tradeLicense: tradeLicense ?? this.tradeLicense,
+      billingAddress: billingAddress ?? this.billingAddress,
       dateOfBirth: dateOfBirth ?? this.dateOfBirth,
       birthdayNotificationsEnabled:
           birthdayNotificationsEnabled ?? this.birthdayNotificationsEnabled,
@@ -174,4 +218,3 @@ class UserProfileModel {
     );
   }
 }
-

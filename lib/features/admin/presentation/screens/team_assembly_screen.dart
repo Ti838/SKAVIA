@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/app_button.dart';
 
 /// Screen allowing administrators to configure and deploy cross-disciplinary teams for complex turnkey contracts.
@@ -15,18 +17,14 @@ class TeamAssemblyScreen extends StatefulWidget {
 }
 
 class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
-  final _teamNameController = TextEditingController(
-    text: 'Gulshan Commercial MEP Response Unit',
-  );
-  final _projectBudgetController = TextEditingController(text: '75000');
+  static const String _cacheKey = 'admin_last_assembled_team';
 
-  final List<String> _selectedTrades = [
-    'Electrical & Lighting',
-    'HVAC & AC',
-    'Plumbing & Water Systems',
-  ];
+  late final TextEditingController _teamNameController;
+  late final TextEditingController _projectBudgetController;
 
-  final List<String> _availableTrades = [
+  late final List<String> _selectedTrades;
+
+  final List<String> _availableTrades = const [
     'Electrical & Lighting',
     'HVAC & AC',
     'Plumbing & Water Systems',
@@ -36,6 +34,31 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    final rawCached = LocalCacheService.instance.get(_cacheKey);
+    final cached = rawCached is Map
+        ? Map<String, dynamic>.from(rawCached)
+        : null;
+    _teamNameController = TextEditingController(
+      text: cached?['name']?.toString() ?? 'Gulshan Commercial MEP Response Unit',
+    );
+    _projectBudgetController = TextEditingController(
+      text: cached?['budget']?.toString() ?? '75000',
+    );
+    final savedTrades = (cached?['trades'] as List<dynamic>?)
+        ?.map((e) => e.toString())
+        .toList();
+    _selectedTrades = savedTrades != null && savedTrades.isNotEmpty
+        ? savedTrades
+        : [
+            'Electrical & Lighting',
+            'HVAC & AC',
+            'Plumbing & Water Systems',
+          ];
+  }
+
+  @override
   void dispose() {
     _teamNameController.dispose();
     _projectBudgetController.dispose();
@@ -43,42 +66,31 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
   }
 
   void _assembleTeam() {
+    if (_teamNameController.text.trim().isEmpty) {
+      UiFeedbackHelper.showError(context, 'Enter a unit or team call-sign.');
+      return;
+    }
+    LocalCacheService.instance.put(_cacheKey, {
+      'name': _teamNameController.text.trim(),
+      'budget': _projectBudgetController.text.trim(),
+      'trades': List<String>.from(_selectedTrades),
+      'updatedAt': DateTime.now().toIso8601String(),
+    });
     UiFeedbackHelper.showSuccess(
       context,
-      'Turnkey team unit assembled! Matched top-ranked certified specialists deployed to project roster.',
+      'Turnkey team unit draft saved. Deploy verified specialists from project roster.',
     );
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Assemble Specialized Unit',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-      ),
+      backgroundColor: tokens.sheetBg,
+      appBar: const AppAppBar(title: 'Assemble Specialized Unit'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         child: Column(
@@ -96,18 +108,24 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
             const SizedBox(height: 12),
             TextField(
               controller: _teamNameController,
-              decoration: const InputDecoration(
+              style: TextStyle(color: colorScheme.onSurface),
+              decoration: InputDecoration(
                 labelText: 'Unit / Team Call-Sign',
-                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: tokens.inputBg,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 14),
             TextField(
               controller: _projectBudgetController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              style: TextStyle(color: colorScheme.onSurface),
+              decoration: InputDecoration(
                 labelText: 'Collective Escrow Budget (৳ BDT)',
-                border: OutlineInputBorder(),
+                filled: true,
+                fillColor: tokens.inputBg,
+                border: const OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 24),
@@ -130,12 +148,16 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
                 return FilterChip(
                   label: Text(trade),
                   selected: isSelected,
-                  selectedColor: AppColors.primarySky.withValues(alpha: 0.2),
-                  checkmarkColor: AppColors.primaryRoyal,
+                  selectedColor: tokens.softBlueBg,
+                  backgroundColor: tokens.subtleCardBg,
+                  checkmarkColor: tokens.brandAccent,
+                  side: BorderSide(
+                    color: isSelected ? tokens.brandAccent : tokens.border,
+                  ),
                   labelStyle: TextStyle(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
-                        ? AppColors.primaryRoyal
+                        ? tokens.brandAccent
                         : colorScheme.onSurface,
                     fontSize: 12.5,
                   ),
@@ -156,26 +178,24 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: isDark
-                    ? colorScheme.surfaceContainerHighest
-                    : AppColors.sheetSurfaceSubtle,
+                color: tokens.subtleCardBg,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outlineVariant),
+                border: Border.all(color: tokens.border),
               ),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(
                     Icons.auto_awesome_rounded,
-                    color: AppColors.primarySky,
+                    color: tokens.brandAccent,
                     size: 24,
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'SKAVIA Algorithmic Matcher will automatically select the highest-rated verified specialists within the project zone.',
+                      'SKAVIA Matching Engine ranks verified specialists within the project zone by certification and availability.',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textDark,
+                        color: colorScheme.onSurface,
                         height: 1.35,
                       ),
                     ),
@@ -186,7 +206,7 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
             const SizedBox(height: 32),
 
             AppButton(
-              text: 'Deploy Team to Project Roster',
+              text: 'Save & Deploy Unit Configuration',
               onPressed: _assembleTeam,
             ),
             const SizedBox(height: 24),

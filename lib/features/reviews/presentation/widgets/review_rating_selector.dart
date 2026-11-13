@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Interactive 5-star rating selector with descriptive feedback labels.
 class ReviewRatingSelector extends StatelessWidget {
@@ -33,35 +34,38 @@ class ReviewRatingSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return Column(
       children: [
-        const Text(
+        Text(
           'How was your service experience?',
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontFamily: AppTypography.headingFont,
             fontSize: 16,
             fontWeight: FontWeight.w800,
-            color: AppColors.textDark,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 8,
+          runSpacing: 8,
           children: List.generate(5, (index) {
             final starValue = index + 1;
             return GestureDetector(
               onTap: () => onRatingChanged(starValue),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: Icon(
-                  starValue <= rating
-                      ? Icons.star_rounded
-                      : Icons.star_outline_rounded,
-                  size: 42,
-                  color: starValue <= rating
-                      ? AppColors.warningAmber
-                      : AppColors.textMuted,
-                ),
+              child: Icon(
+                starValue <= rating
+                    ? Icons.star_rounded
+                    : Icons.star_outline_rounded,
+                size: 40,
+                color: starValue <= rating
+                    ? AppColors.warningAmber
+                    : tokens.mutedText,
               ),
             );
           }),
@@ -69,14 +73,14 @@ class ReviewRatingSelector extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           _getRatingLabel(rating),
-          style: const TextStyle(
+          textAlign: TextAlign.center,
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: AppColors.primarySky,
+            color: tokens.brandAccent,
           ),
         ),
       ],
     );
   }
 }
-

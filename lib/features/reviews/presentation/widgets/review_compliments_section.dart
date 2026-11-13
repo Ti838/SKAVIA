@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Tag chips selection section for highlighting specific strengths in a review.
 class ReviewComplimentsSection extends StatelessWidget {
@@ -18,10 +18,13 @@ class ReviewComplimentsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Align(
+        Align(
           alignment: Alignment.centerLeft,
           child: Text(
             'What stood out the most?',
@@ -29,7 +32,7 @@ class ReviewComplimentsSection extends StatelessWidget {
               fontFamily: AppTypography.headingFont,
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+              color: colorScheme.onSurface,
             ),
           ),
         ),
@@ -43,19 +46,18 @@ class ReviewComplimentsSection extends StatelessWidget {
               label: Text(tag),
               selected: isSelected,
               onSelected: (_) => onTagToggled(tag),
-              selectedColor: AppColors.cardBlueTint,
-              checkmarkColor: AppColors.primarySky,
+              selectedColor: tokens.softBlueBg,
+              checkmarkColor: tokens.brandAccent,
               labelStyle: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? AppColors.primarySky : AppColors.textDark,
+                color: isSelected ? tokens.brandAccent : colorScheme.onSurface,
               ),
-              backgroundColor: AppColors.sheetSurfaceSubtle,
+              backgroundColor: tokens.subtleCardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
                 side: BorderSide(
-                  color:
-                      isSelected ? AppColors.primarySky : AppColors.borderLight,
+                  color: isSelected ? tokens.brandAccent : tokens.border,
                 ),
               ),
             );
@@ -65,4 +67,3 @@ class ReviewComplimentsSection extends StatelessWidget {
     );
   }
 }
-

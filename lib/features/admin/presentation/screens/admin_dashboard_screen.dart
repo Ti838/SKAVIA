@@ -4,7 +4,9 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../controllers/admin_controller.dart';
 
 /// Platform Governance & Operations Dashboard for SKAVIA Administrators.
@@ -32,130 +34,178 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: Text(
-          'Admin & Governance Hub',
-          style: TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+      backgroundColor: tokens.sheetBg,
+      appBar: AppAppBar(
+        title: 'Admin & Governance Hub',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => _controller.loadDashboard(),
+            icon: Icon(Icons.refresh_rounded, color: colorScheme.onSurface),
+            onPressed: _controller.loadDashboard,
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // KPI Metrics Row
-            Row(
+      body: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final totalUsers = (_controller.metrics['totalUsers'] as num?)?.toInt() ?? 0;
+          final activeRequests =
+              (_controller.metrics['activeRequests'] as num?)?.toInt() ?? 0;
+          final totalVolume =
+              (_controller.metrics['totalVolume'] as num?)?.toDouble() ?? 0.0;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: _buildMetricTile(
-                    'Total Verified Users',
-                    '${_controller.metrics['totalUsers'] ?? 128}',
-                    Icons.people_rounded,
-                    AppColors.primaryRoyal,
+                if (!_controller.isLoading && !_controller.isLive) ...[
+                  Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: tokens.softPeachBg,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.accent.withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.cloud_off_rounded,
+                          color: AppColors.accent,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Live admin backend offline or unavailable. Showing verified local counts (0 until synced).',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final textScale = MediaQuery.textScalerOf(context).scale(1);
+                    final stackKpis =
+                        constraints.maxWidth < 340 || textScale > 1.3;
+                    if (stackKpis) {
+                      return Column(
+                        children: [
+                          _buildMetricTile(
+                            'Total Verified Users',
+                            '$totalUsers',
+                            Icons.people_rounded,
+                            tokens.brandAccent,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildMetricTile(
+                            'Active Service Jobs',
+                            '$activeRequests',
+                            Icons.handyman_rounded,
+                            AppColors.accent,
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _buildMetricTile(
+                            'Total Verified Users',
+                            '$totalUsers',
+                            Icons.people_rounded,
+                            tokens.brandAccent,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _buildMetricTile(
+                            'Active Service Jobs',
+                            '$activeRequests',
+                            Icons.handyman_rounded,
+                            AppColors.accent,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildMetricTile(
+                  'Gross Platform Volume',
+                  Formatters.formatCurrency(totalVolume),
+                  Icons.account_balance_rounded,
+                  AppColors.successGreen,
+                  isFullWidth: true,
+                ),
+                const SizedBox(height: AppDimensions.paddingLarge),
+
+                Text(
+                  'Operations & Moderation Workflows',
+                  style: TextStyle(
+                    fontFamily: AppTypography.headingFont,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildMetricTile(
-                    'Active Service Jobs',
-                    '${_controller.metrics['activeRequests'] ?? 36}',
-                    Icons.handyman_rounded,
-                    AppColors.accent,
-                  ),
+                const SizedBox(height: AppDimensions.paddingMedium),
+
+                _buildActionCard(
+                  context,
+                  title: 'Worker Verification Queue',
+                  subtitle:
+                      'Review government NID, trade licenses, and certificates',
+                  icon: Icons.verified_user_rounded,
+                  color: tokens.brandAccent,
+                  badgeCount: _controller.verifications.length,
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.verificationQueue),
                 ),
+                const SizedBox(height: 12),
+
+                _buildActionCard(
+                  context,
+                  title: 'Escrow Dispute Resolution',
+                  subtitle:
+                      'Mediate client-worker claims, cancellations, and refunds',
+                  icon: Icons.gavel_rounded,
+                  color: AppColors.errorRed,
+                  badgeCount: _controller.disputes.length,
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.disputeResolution),
+                ),
+                const SizedBox(height: 12),
+
+                _buildActionCard(
+                  context,
+                  title: 'Turnkey Team Assembly',
+                  subtitle:
+                      'Form cross-functional specialized trade units for enterprise clients',
+                  icon: Icons.group_work_rounded,
+                  color: AppColors.accent,
+                  onTap: () =>
+                      Navigator.pushNamed(context, AppRoutes.teamAssembly),
+                ),
+                const SizedBox(height: 24),
               ],
             ),
-            const SizedBox(height: 12),
-            _buildMetricTile(
-              'Gross Platform Volume',
-              Formatters.formatCurrency(
-                (_controller.metrics['totalVolume'] as num?)?.toDouble() ??
-                    285400.0,
-              ),
-              Icons.account_balance_rounded,
-              AppColors.successGreen,
-              isFullWidth: true,
-            ),
-            const SizedBox(height: AppDimensions.paddingLarge),
-
-            Text(
-              'Operations & Moderation Workflows',
-              style: TextStyle(
-                fontFamily: AppTypography.headingFont,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.paddingMedium),
-
-            _buildActionCard(
-              context,
-              title: 'Worker Verification Queue',
-              subtitle:
-                  'Review government NID, trade licenses, and certificates',
-              icon: Icons.verified_user_rounded,
-              color: AppColors.primarySky,
-              badgeCount: _controller.verifications.isNotEmpty
-                  ? _controller.verifications.length
-                  : 3,
-              onTap: () =>
-                  Navigator.pushNamed(context, AppRoutes.verificationQueue),
-            ),
-            const SizedBox(height: 12),
-
-            _buildActionCard(
-              context,
-              title: 'Escrow Dispute Resolution',
-              subtitle:
-                  'Mediate client-worker claims, cancellations, and refunds',
-              icon: Icons.gavel_rounded,
-              color: AppColors.errorRed,
-              badgeCount: _controller.disputes.isNotEmpty
-                  ? _controller.disputes.length
-                  : 1,
-              onTap: () =>
-                  Navigator.pushNamed(context, AppRoutes.disputeResolution),
-            ),
-            const SizedBox(height: 12),
-
-            _buildActionCard(
-              context,
-              title: 'Turnkey Team Assembly',
-              subtitle: 'Form cross-functional specialized trade units for enterprise clients',
-              icon: Icons.group_work_rounded,
-              color: AppColors.accent,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.teamAssembly),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -167,18 +217,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     Color color, {
     bool isFullWidth = false,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+        color: tokens.cardBg,
         borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-        border: Border.all(color: colorScheme.outlineVariant),
+        border: Border.all(color: tokens.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -189,7 +240,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              color: color.withValues(alpha: 0.14),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 22),
@@ -203,7 +254,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   label,
                   style: TextStyle(
                     fontSize: 11,
-                    color: colorScheme.onSurfaceVariant,
+                    color: tokens.mutedText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -234,8 +285,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     int? badgeCount,
     required VoidCallback onTap,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
 
     return InkWell(
       onTap: onTap,
@@ -243,9 +294,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+          color: tokens.cardBg,
           borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-          border: Border.all(color: colorScheme.outlineVariant),
+          border: Border.all(color: tokens.border),
         ),
         child: Row(
           children: [
@@ -262,21 +313,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          style: TextStyle(
-                            fontFamily: AppTypography.headingFont,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 15,
-                            color: colorScheme.onSurface,
-                          ),
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: AppTypography.headingFont,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15,
+                          color: colorScheme.onSurface,
                         ),
                       ),
-                      if (badgeCount != null) ...[
-                        const SizedBox(width: 8),
+                      if (badgeCount != null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 7,
@@ -295,24 +346,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             ),
                           ),
                         ),
-                      ],
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: TextStyle(fontSize: 12, color: tokens.mutedText),
                   ),
                 ],
               ),
             ),
-            Icon(
-              Icons.chevron_right_rounded,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            Icon(Icons.chevron_right_rounded, color: tokens.mutedText),
           ],
         ),
       ),

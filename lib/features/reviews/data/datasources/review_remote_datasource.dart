@@ -1,16 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../models/review_model.dart';
 
 class ReviewRemoteDataSource {
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   ReviewRemoteDataSource({SupabaseClient? supabaseClient})
-    : _supabase = supabaseClient ?? Supabase.instance.client;
+    : _supabase = supabaseClient ?? tryGetSupabaseClient();
 
-  /// Submits an authentic review and recalculates worker reputation metrics (SRS 3.1.M)
+  /// Submits an authentic review and recalculates worker reputation metrics (SRS 3.1.M).
   Future<bool> submitReview({
     required String workerProfileId,
     required String clientId,
@@ -19,10 +20,14 @@ class ReviewRemoteDataSource {
     String? serviceRequestId,
     String? projectId,
   }) async {
+    final client = _supabase;
+    if (client == null) {
+      throw Exception('Review submission requires an active backend connection.');
+    }
+
     final now = DateTime.now().toIso8601String();
     try {
-      // 1. Insert review into reviews table
-      await _supabase.from(DatabaseTables.reviews).insert({
+      await client.from(DatabaseTables.reviews).insert({
         'worker_profile_id': workerProfileId,
         'client_id': clientId,
         'rating': rating,
@@ -32,13 +37,12 @@ class ReviewRemoteDataSource {
         'created_at': now,
       });
 
-      // 2. Fetch all reviews for this worker to calculate accurate real average
-      final allReviews = await _supabase
+      final allReviews = await client
           .from(DatabaseTables.reviews)
           .select('rating')
           .eq('worker_profile_id', workerProfileId);
 
-      int totalRatings = (allReviews as List).length;
+      final int totalRatings = (allReviews as List).length;
       double sum = 0.0;
       for (final r in allReviews) {
         sum += (r['rating'] as num?)?.toDouble() ?? 5.0;
@@ -47,15 +51,13 @@ class ReviewRemoteDataSource {
           ? (sum / totalRatings)
           : 5.0;
 
-      // 3. Update worker_profiles table
-      await _supabase
+      await client
           .from(DatabaseTables.workerProfiles)
           .update({
             'rating_average': double.parse(averageRating.toStringAsFixed(2)),
           })
           .eq('worker_profile_id', workerProfileId);
 
-      // 4. Update or Upsert into reputations table
       String badge = 'Verified Specialist';
       if (averageRating >= 4.8 && totalRatings >= 5) {
         badge = 'Top Rated Elite';
@@ -63,7 +65,7 @@ class ReviewRemoteDataSource {
         badge = 'Top Rated Specialist';
       }
 
-      await _supabase.from(DatabaseTables.reputations).upsert({
+      await client.from(DatabaseTables.reputations).upsert({
         'worker_profile_id': workerProfileId,
         'overall_score': double.parse(averageRating.toStringAsFixed(2)),
         'total_ratings': totalRatings,
@@ -78,10 +80,13 @@ class ReviewRemoteDataSource {
     }
   }
 
-  /// Fetches real reviews for a specific worker profile
+  /// Fetches real reviews for a specific worker profile.
   Future<List<ReviewModel>> getWorkerReviews(String workerProfileId) async {
+    final client = _supabase;
+    if (client == null) return [];
+
     try {
-      final res = await _supabase
+      final res = await client
           .from(DatabaseTables.reviews)
           .select('''
             review_id,
@@ -106,7 +111,7 @@ class ReviewRemoteDataSource {
         String? clientAvatar;
 
         try {
-          final userRes = await _supabase
+          final userRes = await client
               .from(DatabaseTables.users)
               .select('full_name, avatar_url')
               .eq('user_id', clientId)
@@ -131,10 +136,13 @@ class ReviewRemoteDataSource {
     }
   }
 
-  /// Fetches reputation scorecard for a worker
+  /// Fetches reputation scorecard for a worker.
   Future<ReputationModel?> getWorkerReputation(String workerProfileId) async {
+    final client = _supabase;
+    if (client == null) return null;
+
     try {
-      final res = await _supabase
+      final res = await client
           .from(DatabaseTables.reputations)
           .select()
           .eq('worker_profile_id', workerProfileId)

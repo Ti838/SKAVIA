@@ -13,8 +13,11 @@ class AdminController extends ChangeNotifier {
     'totalUsers': 0,
     'activeRequests': 0,
     'totalVolume': 0.0,
+    'isLive': false,
   };
   Map<String, dynamic> get metrics => _metrics;
+
+  bool get isLive => _metrics['isLive'] == true;
 
   List<Map<String, dynamic>> _verifications = [];
   List<Map<String, dynamic>> get verifications => _verifications;
@@ -42,13 +45,17 @@ class AdminController extends ChangeNotifier {
   }
 
   Future<void> reviewVerification(String id, bool approved) async {
-    _verifications.removeWhere((v) => v['verification_id'] == id);
+    _verifications.removeWhere(
+      (v) => (v['verification_id']?.toString() ?? v['id']?.toString()) == id,
+    );
     notifyListeners();
     await _dataSource.reviewVerification(id, approved);
   }
 
   Future<void> resolveDispute(String id, String resolution) async {
-    _disputes.removeWhere((d) => d['dispute_id'] == id);
+    _disputes.removeWhere(
+      (d) => (d['dispute_id']?.toString() ?? d['id']?.toString()) == id,
+    );
     notifyListeners();
     await _dataSource.resolveDispute(id, resolution);
   }

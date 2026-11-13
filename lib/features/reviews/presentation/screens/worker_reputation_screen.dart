@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/utils/supabase_guard.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/review_remote_datasource.dart';
 import '../../data/models/review_model.dart';
 import '../widgets/review_item_card.dart';
-
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:intl/intl.dart';
 
 class WorkerReputationScreen extends StatefulWidget {
   final String? workerProfileId;
@@ -40,6 +40,7 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
   @override
   void initState() {
     super.initState();
+    _displayName = widget.workerName ?? 'Specialist';
     _loadReputationData();
   }
 
@@ -53,7 +54,11 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final client = Supabase.instance.client;
+      final client = tryGetSupabaseClient();
+      if (client == null) {
+        return;
+      }
+
       String? wpId = widget.workerProfileId;
       String name = widget.workerName ?? 'Specialist';
 
@@ -67,7 +72,7 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
               .maybeSingle();
 
           if (profile != null) {
-            wpId = profile['worker_profile_id'];
+            wpId = profile['worker_profile_id']?.toString();
             name = user.displayName ?? 'My Profile';
             _completedJobs = (profile['completed_jobs'] as num?)?.toInt() ?? 0;
             _averageRating =
@@ -79,7 +84,6 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
       if (wpId != null) {
         _displayName = name;
 
-        // Fetch reputation
         final rep = await _reviewDataSource.getWorkerReputation(wpId);
         if (rep != null) {
           _averageRating = rep.overallScore;
@@ -90,7 +94,6 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
           _badgeLevel = rep.badgeLevel;
         }
 
-        // Fetch reviews
         final revs = await _reviewDataSource.getWorkerReviews(wpId);
         _reviews = revs;
         _totalRatings = revs.isNotEmpty ? revs.length : _totalRatings;
@@ -106,247 +109,228 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = context.skavia;
+    final colorScheme = context.colorScheme;
     final dateFormat = DateFormat('dd MMM yyyy');
 
     return Scaffold(
-      backgroundColor: AppColors.canvasBlue,
-      appBar: AppBar(
-        backgroundColor: AppColors.canvasBlue,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.white,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Reputation & Ratings',
-          style: const TextStyle(
-            fontFamily: AppTypography.headingFont,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-        ),
+      backgroundColor: tokens.sheetBg,
+      appBar: AppAppBar(
+        title: 'Reputation & Ratings',
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            icon: Icon(Icons.refresh_rounded, color: colorScheme.onSurface),
             onPressed: _loadReputationData,
           ),
         ],
       ),
       body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(top: 8),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: AppDimensions.roundedSheet,
-          ),
-          child: ClipRRect(
-            borderRadius: AppDimensions.roundedSheet,
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Hero Reputation Card
-                        Container(
-                          padding: const EdgeInsets.all(22),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.1),
-                                blurRadius: 16,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _displayName,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w800,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primarySky
-                                              .withValues(alpha: 0.3),
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                          border: Border.all(
-                                            color: AppColors.primarySky
-                                                .withValues(alpha: 0.5),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          _badgeLevel,
-                                          style: const TextStyle(
-                                            color: AppColors.primarySky,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  // Score badge
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 10,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
-                                      border: Border.all(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.star_rounded,
-                                          color: AppColors.warningAmber,
-                                          size: 26,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _averageRating.toStringAsFixed(1),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              const Divider(color: Colors.white12),
-                              const SizedBox(height: 12),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  _buildStatColumn(
-                                    '$_completedJobs',
-                                    'Completed Jobs',
-                                  ),
-                                  Container(
-                                    width: 1,
-                                    height: 32,
-                                    color: Colors.white12,
-                                  ),
-                                  _buildStatColumn(
-                                    '$_totalRatings',
-                                    'Total Ratings',
-                                  ),
-                                  Container(
-                                    width: 1,
-                                    height: 32,
-                                    color: Colors.white12,
-                                  ),
-                                  _buildStatColumn('100%', 'Authenticity'),
-                                ],
-                              ),
-                            ],
-                          ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Hero Reputation Card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-
-                        const SizedBox(height: 28),
-
-                        // Section Title: Verified Reviews
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Verified Client Reviews',
-                              style: TextStyle(
-                                fontFamily: AppTypography.headingFont,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.cardBlueTint,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '${_reviews.length} Reviews',
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.primarySky,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.14),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _displayName,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primarySky.withValues(
+                                          alpha: 0.25,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: AppColors.primarySky
+                                              .withValues(alpha: 0.5),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        _badgeLevel,
+                                        style: const TextStyle(
+                                          color: Color(0xFF93C5FD),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Reviews list or honest empty state
-                        if (_reviews.isEmpty)
-                          const EmptyReviewsState()
-                        else
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _reviews.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 14),
-                            itemBuilder: (context, index) {
-                              return ReviewItemCard(
-                                review: _reviews[index],
-                                dateFormat: dateFormat,
-                              );
-                            },
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.star_rounded,
+                                      color: AppColors.warningAmber,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      _averageRating.toStringAsFixed(1),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                      ],
+                          const SizedBox(height: 18),
+                          const Divider(color: Colors.white12),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildStatColumn(
+                                  '$_completedJobs',
+                                  'Completed Jobs',
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 32,
+                                color: Colors.white12,
+                              ),
+                              Expanded(
+                                child: _buildStatColumn(
+                                  '$_totalRatings',
+                                  'Total Ratings',
+                                ),
+                              ),
+                              Container(
+                                width: 1,
+                                height: 32,
+                                color: Colors.white12,
+                              ),
+                              Expanded(
+                                child: _buildStatColumn(
+                                  '100%',
+                                  'Verified',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-          ),
-        ),
+
+                    const SizedBox(height: 24),
+
+                    SizedBox(
+                      width: double.infinity,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          Text(
+                            'Verified Client Reviews',
+                            style: TextStyle(
+                              fontFamily: AppTypography.headingFont,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: tokens.softBlueBg,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '${_reviews.length} Reviews',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: tokens.brandAccent,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    if (_reviews.isEmpty)
+                      const EmptyReviewsState()
+                    else
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _reviews.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 14),
+                        itemBuilder: (context, index) {
+                          return ReviewItemCard(
+                            review: _reviews[index],
+                            dateFormat: dateFormat,
+                          );
+                        },
+                      ),
+                  ],
+                ),
+              ),
       ),
     );
   }
@@ -356,6 +340,7 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
       children: [
         Text(
           value,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 16,
@@ -365,8 +350,9 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
         const SizedBox(height: 2),
         Text(
           label,
+          textAlign: TextAlign.center,
           style: const TextStyle(
-            color: Colors.white60,
+            color: Colors.white70,
             fontSize: 11,
             fontWeight: FontWeight.w500,
           ),
