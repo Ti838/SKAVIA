@@ -9,7 +9,6 @@ import {
   Download,
   Hammer,
   HelpCircle,
-  Layers,
   Mail,
   Phone,
   ShieldCheck,
@@ -102,7 +101,7 @@ export function DownloadSection({
 
   return (
     <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} p-6 sm:p-10`}>
-      <div className="max-w-3xl mb-6">
+      <div className="max-w-3xl mb-8">
         <p className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA] mb-2">
           Official Distribution
         </p>
@@ -110,20 +109,20 @@ export function DownloadSection({
           Download the Official SKAVIA Mobile App
         </h2>
         <p className={`text-sm mt-2 leading-relaxed ${t.textSecondary}`}>
-          For genuine SKAVIA client bookings and verified worker onboarding, install only from
-          official verified distribution links listed here.
+          For genuine SKAVIA client bookings and verified worker onboarding, install directly from
+          the verified official distribution release package below.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className={`rounded-2xl border p-6 space-y-4 ${t.railBorder} ${t.cardBg}`}>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-[#003399]/15 border border-[#3898EC]/30 flex items-center justify-center shrink-0">
-                <Smartphone className="h-5 w-5 text-[#3898EC]" />
+      <div className="max-w-3xl">
+        <div className={`rounded-2xl border p-6 sm:p-8 space-y-6 ${t.railBorder} ${t.cardBg}`}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="h-12 w-12 rounded-xl bg-[#003399]/15 border border-[#3898EC]/30 flex items-center justify-center shrink-0">
+                <Smartphone className="h-6 w-6 text-[#3898EC]" />
               </div>
               <div>
-                <h3 className="text-base font-bold">Android Application</h3>
+                <h3 className="text-lg font-bold">Android Application</h3>
                 <p className={`text-xs ${t.textSecondary}`}>
                   {distribution.android.distributionMethod}
                   {distribution.android.version ? ` · v${distribution.android.version}` : ''}
@@ -131,58 +130,64 @@ export function DownloadSection({
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               {distribution.android.isMandatory && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">
+                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">
                   Required Update
                 </span>
               )}
               <span
-                className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
                   distribution.android.published
                     ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                     : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
                 }`}
               >
-                {distribution.android.published ? 'Available' : 'Release Pending'}
+                {distribution.android.published ? 'Available for Download' : 'Release Pending'}
               </span>
             </div>
           </div>
 
           {distribution.android.published && (apkSizeLabel || publishedDateLabel || distribution.android.minSdkVersion) && (
             <div
-              className={`grid grid-cols-3 gap-2 rounded-xl border p-3 text-[11px] ${t.railBorder} ${t.surfaceBg}`}
+              className={`grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-xl border p-4 text-xs ${t.railBorder} ${t.surfaceBg}`}
             >
               <div>
                 <p className={t.textMuted}>Package Size</p>
-                <p className="font-semibold mt-0.5">{apkSizeLabel ?? '—'}</p>
+                <p className="font-semibold text-sm mt-0.5">{apkSizeLabel ?? '—'}</p>
               </div>
               <div>
                 <p className={t.textMuted}>Released</p>
-                <p className="font-semibold mt-0.5">{publishedDateLabel ?? 'Latest'}</p>
+                <p className="font-semibold text-sm mt-0.5">{publishedDateLabel ?? 'Latest'}</p>
               </div>
               <div>
-                <p className={t.textMuted}>Android API</p>
-                <p className="font-semibold mt-0.5">
+                <p className={t.textMuted}>Compatibility</p>
+                <p className="font-semibold text-sm mt-0.5">
                   {distribution.android.minSdkVersion
-                    ? `API ${distribution.android.minSdkVersion}+`
-                    : 'Android 7+'}
+                    ? `Android API ${distribution.android.minSdkVersion}+`
+                    : 'Android 7.0+'}
+                </p>
+              </div>
+              <div>
+                <p className={t.textMuted}>Integrity</p>
+                <p className="font-semibold text-sm mt-0.5 text-emerald-400 flex items-center gap-1">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Verified
                 </p>
               </div>
             </div>
           )}
 
           {distribution.android.published && distribution.android.apkUrl ? (
-            <div className="space-y-3">
+            <div className="space-y-4 pt-1">
               <a
                 href={distribution.android.apkUrl}
                 download={distribution.android.fileName ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition hover:opacity-95"
+                className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-base font-semibold text-white transition hover:opacity-95 shadow-lg shadow-[#003399]/20"
                 style={{ backgroundColor: '#003399' }}
               >
-                <Download className="h-4 w-4" />
+                <Download className="h-5 w-5" />
                 <span>
                   Download Official Android APK
                   {distribution.android.version ? ` (v${distribution.android.version})` : ''}
@@ -190,7 +195,7 @@ export function DownloadSection({
               </a>
 
               {distribution.android.sha256Checksum && (
-                <div className={`rounded-xl border p-3 text-[11px] space-y-1 ${t.railBorder} ${t.surfaceBg}`}>
+                <div className={`rounded-xl border p-3.5 text-xs space-y-1.5 ${t.railBorder} ${t.surfaceBg}`}>
                   <div className="flex items-center justify-between gap-2">
                     <span className="inline-flex items-center gap-1 font-semibold text-[#15E7CA]">
                       <ShieldCheck className="h-3.5 w-3.5" /> Verified SHA-256 Checksum
@@ -203,7 +208,7 @@ export function DownloadSection({
                         setCopiedSha(true);
                         setTimeout(() => setCopiedSha(false), 2000);
                       }}
-                      className={`inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC]`}
+                      className={`inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] transition`}
                     >
                       {copiedSha ? (
                         <>
@@ -213,19 +218,19 @@ export function DownloadSection({
                       ) : (
                         <>
                           <Copy className="h-3 w-3" />
-                          <span>Copy</span>
+                          <span>Copy Checksum</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <p className={`font-mono-code break-all ${t.textMuted}`}>
+                  <p className={`font-mono-code break-all text-[11px] ${t.textMuted}`}>
                     {distribution.android.sha256Checksum}
                   </p>
                 </div>
               )}
 
               {distribution.android.releaseNotes && (
-                <div className={`rounded-xl border p-3 text-xs ${t.railBorder} ${t.surfaceBg}`}>
+                <div className={`rounded-xl border p-3.5 text-xs ${t.railBorder} ${t.surfaceBg}`}>
                   <button
                     type="button"
                     onClick={() => setNotesExpanded((prev) => !prev)}
@@ -233,11 +238,11 @@ export function DownloadSection({
                   >
                     <span>What&apos;s New in v{distribution.android.version ?? 'Latest'}</span>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 transition-transform ${notesExpanded ? 'rotate-180' : ''}`}
+                      className={`h-4 w-4 transition-transform duration-200 ${notesExpanded ? 'rotate-180' : ''}`}
                     />
                   </button>
                   {notesExpanded && (
-                    <p className={`mt-2 whitespace-pre-wrap leading-relaxed ${t.textSecondary}`}>
+                    <p className={`mt-2.5 whitespace-pre-wrap leading-relaxed ${t.textSecondary}`}>
                       {distribution.android.releaseNotes}
                     </p>
                   )}
@@ -250,47 +255,6 @@ export function DownloadSection({
             >
               Official Android APK release link is being finalized. Contact SKAVIA Support for
               verified pilot build access — never download SKAVIA packages from unverified third-party mirrors.
-            </div>
-          )}
-        </div>
-
-        <div className={`rounded-2xl border p-6 space-y-4 ${t.railBorder} ${t.cardBg}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-white/5 border border-white/15 flex items-center justify-center">
-                <Layers className="h-5 w-5 text-[#15E7CA]" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold">iOS Application</h3>
-                <p className={`text-xs ${t.textSecondary}`}>{distribution.ios.distributionMethod}</p>
-              </div>
-            </div>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                distribution.ios.published
-                  ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                  : 'bg-slate-500/15 text-slate-400 border border-slate-500/30'
-              }`}
-            >
-              {distribution.ios.published ? 'Available' : 'Coming Soon'}
-            </span>
-          </div>
-
-          {distribution.ios.published && distribution.ios.storeUrl ? (
-            <a
-              href={distribution.ios.storeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border px-5 py-3 text-sm font-semibold transition hover:bg-white/10"
-            >
-              <Download className="h-4 w-4" />
-              <span>Open Official App Store Page</span>
-            </a>
-          ) : (
-            <div
-              className={`rounded-xl border p-4 text-xs leading-relaxed ${t.railBorder} ${t.surfaceBg} ${t.textSecondary}`}
-            >
-              iOS App Store distribution will be published here once Apple App Store review completes.
             </div>
           )}
         </div>
