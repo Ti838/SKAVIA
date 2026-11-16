@@ -12,7 +12,6 @@ import {
   Mail,
   Phone,
   ShieldCheck,
-  Smartphone,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
 import { formatBytes } from '@/lib/formatters';
@@ -100,163 +99,258 @@ export function DownloadSection({
     : null;
 
   return (
-    <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} p-6 sm:p-10`}>
-      <div className="max-w-3xl mb-8">
-        <p className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA] mb-2">
-          Official Distribution
-        </p>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-          Download the Official SKAVIA Mobile App
+    <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} py-12 sm:py-20 px-4 sm:px-8 overflow-hidden`}>
+      {/* Background ambient lighting for pro aesthetic */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#003399]/20 via-[#15E7CA]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+      {/* Centered Modern Header */}
+      <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14 relative z-10">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-cyan-400/25 bg-cyan-500/10 text-cyan-300 text-xs font-mono-code mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>Mobile Experience</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+          Get SKAVIA on Android
         </h2>
-        <p className={`text-sm mt-2 leading-relaxed ${t.textSecondary}`}>
-          For genuine SKAVIA client bookings and verified worker onboarding, install directly from
-          the verified official distribution release package below.
+        <p className={`text-base sm:text-lg mt-3.5 max-w-xl mx-auto leading-relaxed ${t.textSecondary}`}>
+          Instant client bookings, live technician dispatch, and cryptographic OTP handoff — built for high-accountability workforce operations.
         </p>
       </div>
 
-      <div className="max-w-3xl">
-        <div className={`rounded-2xl border p-6 sm:p-8 space-y-6 ${t.railBorder} ${t.cardBg}`}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="h-12 w-12 rounded-xl bg-[#003399]/15 border border-[#3898EC]/30 flex items-center justify-center shrink-0">
-                <Smartphone className="h-6 w-6 text-[#3898EC]" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold">Android Application</h3>
-                <p className={`text-xs ${t.textSecondary}`}>
-                  {distribution.android.distributionMethod}
-                  {distribution.android.version ? ` · v${distribution.android.version}` : ''}
-                  {distribution.android.buildNumber ? ` (#${distribution.android.buildNumber})` : ''}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {distribution.android.isMandatory && (
-                <span className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold bg-red-500/15 text-red-400 border border-red-500/30">
-                  Required Update
-                </span>
-              )}
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                  distribution.android.published
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-                }`}
-              >
-                {distribution.android.published ? 'Available for Download' : 'Release Pending'}
-              </span>
-            </div>
-          </div>
+      {/* Centered Showcase Card (Two-Column Balanced Layout) */}
+      <div className="max-w-5xl mx-auto relative z-10">
+        <div
+          className={`rounded-3xl border ${t.railBorder} ${t.cardBg} backdrop-blur-2xl p-6 sm:p-10 lg:p-12 shadow-2xl relative overflow-hidden`}
+        >
+          {/* Subtle interior glow */}
+          <div className="absolute -top-24 -right-24 w-80 h-80 bg-[#3898EC]/10 rounded-full blur-3xl pointer-events-none" />
 
-          {distribution.android.published && (apkSizeLabel || publishedDateLabel || distribution.android.minSdkVersion) && (
-            <div
-              className={`grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-xl border p-4 text-xs ${t.railBorder} ${t.surfaceBg}`}
-            >
-              <div>
-                <p className={t.textMuted}>Package Size</p>
-                <p className="font-semibold text-sm mt-0.5">{apkSizeLabel ?? '—'}</p>
-              </div>
-              <div>
-                <p className={t.textMuted}>Released</p>
-                <p className="font-semibold text-sm mt-0.5">{publishedDateLabel ?? 'Latest'}</p>
-              </div>
-              <div>
-                <p className={t.textMuted}>Compatibility</p>
-                <p className="font-semibold text-sm mt-0.5">
-                  {distribution.android.minSdkVersion
-                    ? `Android API ${distribution.android.minSdkVersion}+`
-                    : 'Android 7.0+'}
-                </p>
-              </div>
-              <div>
-                <p className={t.textMuted}>Integrity</p>
-                <p className="font-semibold text-sm mt-0.5 text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Verified
-                </p>
-              </div>
-            </div>
-          )}
-
-          {distribution.android.published && distribution.android.apkUrl ? (
-            <div className="space-y-4 pt-1">
-              <a
-                href={distribution.android.apkUrl}
-                download={distribution.android.fileName ?? undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-3.5 text-base font-semibold text-white transition hover:opacity-95 shadow-lg shadow-[#003399]/20"
-                style={{ backgroundColor: '#003399' }}
-              >
-                <Download className="h-5 w-5" />
-                <span>
-                  Download Official Android APK
-                  {distribution.android.version ? ` (v${distribution.android.version})` : ''}
-                </span>
-              </a>
-
-              {distribution.android.sha256Checksum && (
-                <div className={`rounded-xl border p-3.5 text-xs space-y-1.5 ${t.railBorder} ${t.surfaceBg}`}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1 font-semibold text-[#15E7CA]">
-                      <ShieldCheck className="h-3.5 w-3.5" /> Verified SHA-256 Checksum
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Left Column: App Info & Download Actions */}
+            <div className="lg:col-span-7 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#003399] to-[#0d1b3e] border border-[#3898EC]/30 flex items-center justify-center p-2.5 shadow-lg shadow-[#003399]/25 shrink-0">
+                  <SkaviaBrandMark variant="emblem" size={36} priority />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight">SKAVIA Mobile</h3>
+                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      v{distribution.android.version ?? '1.0.0'}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!distribution.android.sha256Checksum) return;
-                        void navigator.clipboard?.writeText(distribution.android.sha256Checksum);
-                        setCopiedSha(true);
-                        setTimeout(() => setCopiedSha(false), 2000);
-                      }}
-                      className={`inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] transition`}
-                    >
-                      {copiedSha ? (
-                        <>
-                          <Check className="h-3 w-3 text-emerald-400" />
-                          <span>Copied</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="h-3 w-3" />
-                          <span>Copy Checksum</span>
-                        </>
-                      )}
-                    </button>
                   </div>
-                  <p className={`font-mono-code break-all text-[11px] ${t.textMuted}`}>
-                    {distribution.android.sha256Checksum}
+                  <p className={`text-xs sm:text-sm mt-0.5 ${t.textSecondary}`}>
+                    Direct Release · ARM64 Package
                   </p>
                 </div>
+              </div>
+
+              {/* Feature Highlights */}
+              <div className="space-y-2.5 pt-1">
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="h-3 w-3 text-cyan-400" />
+                  </div>
+                  <p className="text-xs sm:text-sm leading-relaxed">
+                    <strong className="font-semibold text-white">Live Haversine Dispatch</strong> — matches you with verified specialists within minutes.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="h-3 w-3 text-cyan-400" />
+                  </div>
+                  <p className="text-xs sm:text-sm leading-relaxed">
+                    <strong className="font-semibold text-white">4-Digit OTP Confirmation</strong> — services are confirmed completed only upon your authorization.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <Check className="h-3 w-3 text-cyan-400" />
+                  </div>
+                  <p className="text-xs sm:text-sm leading-relaxed">
+                    <strong className="font-semibold text-white">Transparent Escrow</strong> — automated settlement ensuring fair rates and safe payouts.
+                  </p>
+                </div>
+              </div>
+
+              {/* Package Specs Pill */}
+              {distribution.android.published && (
+                <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 rounded-2xl border p-3.5 text-xs ${t.railBorder} ${t.surfaceBg}`}>
+                  <div>
+                    <p className={`text-[11px] ${t.textMuted}`}>Size</p>
+                    <p className="font-semibold text-sm mt-0.5">{apkSizeLabel ?? '24.1 MB'}</p>
+                  </div>
+                  <div>
+                    <p className={`text-[11px] ${t.textMuted}`}>Released</p>
+                    <p className="font-semibold text-sm mt-0.5">{publishedDateLabel ?? 'Latest'}</p>
+                  </div>
+                  <div>
+                    <p className={`text-[11px] ${t.textMuted}`}>Compatibility</p>
+                    <p className="font-semibold text-sm mt-0.5">Android 7.0+</p>
+                  </div>
+                  <div>
+                    <p className={`text-[11px] ${t.textMuted}`}>Integrity</p>
+                    <p className="font-semibold text-sm mt-0.5 text-emerald-400 flex items-center gap-1">
+                      <ShieldCheck className="h-3.5 w-3.5" /> Verified
+                    </p>
+                  </div>
+                </div>
               )}
 
-              {distribution.android.releaseNotes && (
-                <div className={`rounded-xl border p-3.5 text-xs ${t.railBorder} ${t.surfaceBg}`}>
-                  <button
-                    type="button"
-                    onClick={() => setNotesExpanded((prev) => !prev)}
-                    className="w-full flex items-center justify-between font-semibold"
+              {/* Download CTA Button */}
+              {distribution.android.published && distribution.android.apkUrl ? (
+                <div className="space-y-3 pt-2">
+                  <a
+                    href={distribution.android.apkUrl}
+                    download={distribution.android.fileName ?? undefined}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-4 text-base font-semibold text-white transition hover:opacity-95 shadow-xl shadow-[#003399]/30 active:scale-[0.99]"
+                    style={{ backgroundColor: '#003399' }}
                   >
-                    <span>What&apos;s New in v{distribution.android.version ?? 'Latest'}</span>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${notesExpanded ? 'rotate-180' : ''}`}
-                    />
-                  </button>
-                  {notesExpanded && (
-                    <p className={`mt-2.5 whitespace-pre-wrap leading-relaxed ${t.textSecondary}`}>
-                      {distribution.android.releaseNotes}
-                    </p>
+                    <Download className="h-5 w-5" />
+                    <span>Download SKAVIA for Android</span>
+                  </a>
+
+                  <p className={`text-center text-[11px] ${t.textMuted}`}>
+                    Direct APK download · No Play Store sign-in required
+                  </p>
+
+                  {/* SHA-256 Checksum Accordion */}
+                  {distribution.android.sha256Checksum && (
+                    <div className={`rounded-xl border p-3 text-xs space-y-1 ${t.railBorder} ${t.surfaceBg}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1 font-semibold text-[#15E7CA] text-[11px]">
+                          <ShieldCheck className="h-3 w-3" /> SHA-256 Checksum
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!distribution.android.sha256Checksum) return;
+                            void navigator.clipboard?.writeText(distribution.android.sha256Checksum);
+                            setCopiedSha(true);
+                            setTimeout(() => setCopiedSha(false), 2000);
+                          }}
+                          className={`inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] text-[11px] transition`}
+                        >
+                          {copiedSha ? (
+                            <>
+                              <Check className="h-3 w-3 text-emerald-400" />
+                              <span>Copied</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      <p className={`font-mono-code break-all text-[10px] ${t.textMuted}`}>
+                        {distribution.android.sha256Checksum}
+                      </p>
+                    </div>
                   )}
+
+                  {/* Release Notes Accordion */}
+                  {distribution.android.releaseNotes && (
+                    <div className={`rounded-xl border p-3 text-xs ${t.railBorder} ${t.surfaceBg}`}>
+                      <button
+                        type="button"
+                        onClick={() => setNotesExpanded((prev) => !prev)}
+                        className="w-full flex items-center justify-between font-semibold text-xs"
+                      >
+                        <span>What&apos;s New in v{distribution.android.version ?? 'Latest'}</span>
+                        <ChevronDown
+                          className={`h-3.5 w-3.5 transition-transform duration-200 ${notesExpanded ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+                      {notesExpanded && (
+                        <p className={`mt-2 whitespace-pre-wrap leading-relaxed text-[11px] ${t.textSecondary}`}>
+                          {distribution.android.releaseNotes}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className={`rounded-xl border p-4 text-xs leading-relaxed ${t.railBorder} ${t.surfaceBg} ${t.textSecondary}`}
+                >
+                  Android APK package link is being finalized. Contact SKAVIA Support for access.
                 </div>
               )}
             </div>
-          ) : (
-            <div
-              className={`rounded-xl border p-4 text-xs leading-relaxed ${t.railBorder} ${t.surfaceBg} ${t.textSecondary}`}
-            >
-              Official Android APK release link is being finalized. Contact SKAVIA Support for
-              verified pilot build access — never download SKAVIA packages from unverified third-party mirrors.
+
+            {/* Right Column: Sleek Smartphone Preview */}
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="relative w-full max-w-[280px] sm:max-w-[300px]">
+                {/* Device Frame */}
+                <div className="rounded-[2.8rem] p-3 border-2 border-slate-700/60 bg-[#080C14] shadow-2xl shadow-cyan-500/10 space-y-3 relative overflow-hidden">
+                  {/* Speaker Notch */}
+                  <div className="w-24 h-4 bg-slate-800 rounded-full mx-auto mb-2" />
+
+                  {/* Screen Content */}
+                  <div className="rounded-[2rem] bg-gradient-to-b from-[#0D1524] to-[#040711] border border-white/10 p-4 space-y-3.5 text-xs text-white">
+                    {/* App Header Inside Phone */}
+                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                      <div className="flex items-center gap-2">
+                        <SkaviaBrandMark variant="emblem" size={20} />
+                        <span className="font-bold tracking-tight text-xs">SKAVIA</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-400 font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        <span>Live</span>
+                      </div>
+                    </div>
+
+                    {/* Active Dispatch Card */}
+                    <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono-code text-cyan-400 uppercase tracking-wider">
+                          Active Dispatch
+                        </span>
+                        <span className="text-[10px] text-slate-400">1.2 km away</span>
+                      </div>
+                      <p className="font-semibold text-xs text-white">AC & Electrical Specialist</p>
+                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1">
+                        <span>Technician: Kamal H.</span>
+                        <span className="text-amber-400 font-medium">★ 4.9</span>
+                      </div>
+                    </div>
+
+                    {/* OTP Handoff Security Box */}
+                    <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-400/20 p-3 space-y-1.5 text-center">
+                      <p className="text-[10px] font-mono-code uppercase tracking-widest text-cyan-300">
+                        Job Completion OTP
+                      </p>
+                      <div className="flex items-center justify-center gap-2 font-mono-code font-bold text-base tracking-widest text-cyan-300">
+                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">4</span>
+                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">8</span>
+                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">2</span>
+                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">9</span>
+                      </div>
+                      <p className="text-[9px] text-slate-400">Provide code only when satisfied</p>
+                    </div>
+
+                    {/* Escrow Protected Pill */}
+                    <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.03] border border-white/5 text-[10px]">
+                      <span className="text-slate-400">Payment Status</span>
+                      <span className="font-semibold text-emerald-400">৳ 1,250 (Escrow Held)</span>
+                    </div>
+
+                    {/* Phone CTA Button */}
+                    <div className="w-full py-2 text-center rounded-lg bg-[#003399] font-medium text-[11px] text-white shadow-md">
+                      Track Live On Map
+                    </div>
+                  </div>
+
+                  {/* Home Bar */}
+                  <div className="w-28 h-1 bg-slate-700 rounded-full mx-auto mt-2" />
+                </div>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>

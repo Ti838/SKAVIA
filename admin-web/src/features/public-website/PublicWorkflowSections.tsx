@@ -50,15 +50,6 @@ export function PublicHeader({
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <SkaviaBrandMark variant="emblem" size={32} priority />
           <span className="text-base font-bold tracking-tight">SKAVIA</span>
-          <span
-            className={`hidden sm:inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-widest ${
-              t.dark
-                ? 'border-cyan-400/25 bg-cyan-500/10 text-cyan-300'
-                : 'border-blue-200 bg-blue-50 text-blue-800'
-            }`}
-          >
-            Official Platform
-          </span>
         </Link>
 
         <nav
