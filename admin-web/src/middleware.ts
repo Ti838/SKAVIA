@@ -35,7 +35,9 @@ export function middleware(req: NextRequest) {
     pathname === '/favicon.png' ||
     pathname === '/favicon.ico' ||
     pathname === '/apple-touch-icon.png' ||
-    pathname === '/icon.png'
+    pathname === '/icon.png' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml'
   ) {
     return NextResponse.next();
   }
