@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Check,
   ChevronDown,
@@ -31,7 +32,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA]">
             Worker Opportunities
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
             How to Become a Verified SKAVIA Worker
           </h2>
           <p className={`text-sm leading-relaxed ${t.textSecondary}`}>
@@ -55,7 +56,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC]">
             Mobile App Features
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
             One App. Complete Ecosystem Control.
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -67,7 +68,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
                   className={`rounded-xl border p-4 ${t.railBorder} ${t.surfaceBg}`}
                 >
                   <Icon className="h-4 w-4 text-[#15E7CA] mb-2.5" />
-                  <p className="text-sm font-semibold">{feat.title}</p>
+                  <p className={`text-sm font-semibold ${t.textPrimary}`}>{feat.title}</p>
                   <p className={`text-xs mt-1 leading-relaxed ${t.textSecondary}`}>{feat.desc}</p>
                 </div>
               );
@@ -105,11 +106,21 @@ export function DownloadSection({
 
       {/* Centered Modern Header */}
       <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-cyan-400/25 bg-cyan-500/10 text-cyan-300 text-xs font-mono-code mb-4">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+        <div
+          className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code mb-4 ${
+            t.dark
+              ? 'border-cyan-400/25 bg-cyan-500/10 text-cyan-300'
+              : 'border-sky-300 bg-sky-50 text-sky-700'
+          }`}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              t.dark ? 'bg-cyan-400' : 'bg-sky-600'
+            } animate-pulse`}
+          />
           <span>Mobile Experience</span>
         </div>
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight">
+        <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight ${t.textPrimary}`}>
           Get SKAVIA on Android
         </h2>
         <p className={`text-base sm:text-lg mt-3.5 max-w-xl mx-auto leading-relaxed ${t.textSecondary}`}>
@@ -134,8 +145,14 @@ export function DownloadSection({
                 </div>
                 <div>
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h3 className="text-xl sm:text-2xl font-bold tracking-tight">SKAVIA Mobile</h3>
-                    <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    <h3 className={`text-xl sm:text-2xl font-bold tracking-tight ${t.textPrimary}`}>SKAVIA Mobile</h3>
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        t.dark
+                          ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                      }`}
+                    >
                       v{distribution.android.version ?? '1.0.0'}
                     </span>
                   </div>
@@ -146,29 +163,53 @@ export function DownloadSection({
               </div>
 
               {/* Feature Highlights */}
-              <div className="space-y-2.5 pt-1">
+              <div className="space-y-3 pt-1">
                 <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="h-3 w-3 text-cyan-400" />
+                  <div
+                    className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                      t.dark
+                        ? 'bg-cyan-500/10 border border-cyan-500/20'
+                        : 'bg-sky-50 border border-sky-200'
+                    }`}
+                  >
+                    <Check
+                      className={`h-3 w-3 ${t.dark ? 'text-cyan-400' : 'text-sky-600'}`}
+                    />
                   </div>
-                  <p className="text-xs sm:text-sm leading-relaxed">
-                    <strong className="font-semibold text-white">Live Haversine Dispatch</strong> — matches you with verified specialists within minutes.
+                  <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                    <strong className={`font-semibold ${t.textPrimary}`}>Live Haversine Dispatch</strong> — matches you with verified specialists within minutes.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="h-3 w-3 text-cyan-400" />
+                  <div
+                    className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                      t.dark
+                        ? 'bg-cyan-500/10 border border-cyan-500/20'
+                        : 'bg-sky-50 border border-sky-200'
+                    }`}
+                  >
+                    <Check
+                      className={`h-3 w-3 ${t.dark ? 'text-cyan-400' : 'text-sky-600'}`}
+                    />
                   </div>
-                  <p className="text-xs sm:text-sm leading-relaxed">
-                    <strong className="font-semibold text-white">4-Digit OTP Confirmation</strong> — services are confirmed completed only upon your authorization.
+                  <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                    <strong className={`font-semibold ${t.textPrimary}`}>4-Digit OTP Confirmation</strong> — services are confirmed completed only upon your authorization.
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="h-5 w-5 rounded-md bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <Check className="h-3 w-3 text-cyan-400" />
+                  <div
+                    className={`h-5 w-5 rounded-md flex items-center justify-center shrink-0 mt-0.5 ${
+                      t.dark
+                        ? 'bg-cyan-500/10 border border-cyan-500/20'
+                        : 'bg-sky-50 border border-sky-200'
+                    }`}
+                  >
+                    <Check
+                      className={`h-3 w-3 ${t.dark ? 'text-cyan-400' : 'text-sky-600'}`}
+                    />
                   </div>
-                  <p className="text-xs sm:text-sm leading-relaxed">
-                    <strong className="font-semibold text-white">Transparent Escrow</strong> — automated settlement ensuring fair rates and safe payouts.
+                  <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                    <strong className={`font-semibold ${t.textPrimary}`}>Transparent Escrow</strong> — automated settlement ensuring fair rates and safe payouts.
                   </p>
                 </div>
               </div>
@@ -178,19 +219,23 @@ export function DownloadSection({
                 <div className={`grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 rounded-2xl border p-3.5 text-xs ${t.railBorder} ${t.surfaceBg}`}>
                   <div>
                     <p className={`text-[11px] ${t.textMuted}`}>Size</p>
-                    <p className="font-semibold text-sm mt-0.5">{apkSizeLabel ?? '24.1 MB'}</p>
+                    <p className={`font-semibold text-sm mt-0.5 ${t.textPrimary}`}>{apkSizeLabel ?? '24.1 MB'}</p>
                   </div>
                   <div>
                     <p className={`text-[11px] ${t.textMuted}`}>Released</p>
-                    <p className="font-semibold text-sm mt-0.5">{publishedDateLabel ?? 'Latest'}</p>
+                    <p className={`font-semibold text-sm mt-0.5 ${t.textPrimary}`}>{publishedDateLabel ?? 'Latest'}</p>
                   </div>
                   <div>
                     <p className={`text-[11px] ${t.textMuted}`}>Compatibility</p>
-                    <p className="font-semibold text-sm mt-0.5">Android 7.0+</p>
+                    <p className={`font-semibold text-sm mt-0.5 ${t.textPrimary}`}>Android 7.0+</p>
                   </div>
                   <div>
                     <p className={`text-[11px] ${t.textMuted}`}>Integrity</p>
-                    <p className="font-semibold text-sm mt-0.5 text-emerald-400 flex items-center gap-1">
+                    <p
+                      className={`font-semibold text-sm mt-0.5 flex items-center gap-1 ${
+                        t.dark ? 'text-emerald-400' : 'text-emerald-600'
+                      }`}
+                    >
                       <ShieldCheck className="h-3.5 w-3.5" /> Verified
                     </p>
                   </div>
@@ -220,7 +265,11 @@ export function DownloadSection({
                   {distribution.android.sha256Checksum && (
                     <div className={`rounded-xl border p-3 text-xs space-y-1 ${t.railBorder} ${t.surfaceBg}`}>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1 font-semibold text-[#15E7CA] text-[11px]">
+                        <span
+                          className={`inline-flex items-center gap-1 font-semibold text-[11px] ${
+                            t.dark ? 'text-[#15E7CA]' : 'text-teal-700'
+                          }`}
+                        >
                           <ShieldCheck className="h-3 w-3" /> SHA-256 Checksum
                         </span>
                         <button
@@ -258,7 +307,7 @@ export function DownloadSection({
                       <button
                         type="button"
                         onClick={() => setNotesExpanded((prev) => !prev)}
-                        className="w-full flex items-center justify-between font-semibold text-xs"
+                        className={`w-full flex items-center justify-between font-semibold text-xs ${t.textPrimary}`}
                       >
                         <span>What&apos;s New in v{distribution.android.version ?? 'Latest'}</span>
                         <ChevronDown
@@ -283,70 +332,43 @@ export function DownloadSection({
             </div>
 
             {/* Right Column: Sleek Smartphone Preview */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-full max-w-[280px] sm:max-w-[300px]">
-                {/* Device Frame */}
-                <div className="rounded-[2.8rem] p-3 border-2 border-slate-700/60 bg-[#080C14] shadow-2xl shadow-cyan-500/10 space-y-3 relative overflow-hidden">
-                  {/* Speaker Notch */}
-                  <div className="w-24 h-4 bg-slate-800 rounded-full mx-auto mb-2" />
+            <div className="lg:col-span-5 flex justify-center items-center">
+              <div className="relative w-full max-w-[380px] sm:max-w-[420px] lg:max-w-none group">
+                {/* Ambient glow matching theme */}
+                <div
+                  className={`absolute inset-0 rounded-3xl blur-2xl transition duration-500 group-hover:scale-105 pointer-events-none ${
+                    t.dark
+                      ? 'bg-gradient-to-tr from-[#003399]/30 to-[#15E7CA]/20'
+                      : 'bg-gradient-to-tr from-[#003399]/15 to-[#3898EC]/15'
+                  }`}
+                />
 
-                  {/* Screen Content */}
-                  <div className="rounded-[2rem] bg-gradient-to-b from-[#0D1524] to-[#040711] border border-white/10 p-4 space-y-3.5 text-xs text-white">
-                    {/* App Header Inside Phone */}
-                    <div className="flex items-center justify-between pb-2 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <SkaviaBrandMark variant="emblem" size={20} />
-                        <span className="font-bold tracking-tight text-xs">SKAVIA</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-400 font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <span>Live</span>
-                      </div>
-                    </div>
-
-                    {/* Active Dispatch Card */}
-                    <div className="rounded-xl bg-white/[0.04] border border-white/10 p-3 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono-code text-cyan-400 uppercase tracking-wider">
-                          Active Dispatch
-                        </span>
-                        <span className="text-[10px] text-slate-400">1.2 km away</span>
-                      </div>
-                      <p className="font-semibold text-xs text-white">AC & Electrical Specialist</p>
-                      <div className="flex items-center justify-between text-[11px] text-slate-300 pt-1">
-                        <span>Technician: Kamal H.</span>
-                        <span className="text-amber-400 font-medium">★ 4.9</span>
-                      </div>
-                    </div>
-
-                    {/* OTP Handoff Security Box */}
-                    <div className="rounded-xl bg-cyan-500/[0.06] border border-cyan-400/20 p-3 space-y-1.5 text-center">
-                      <p className="text-[10px] font-mono-code uppercase tracking-widest text-cyan-300">
-                        Job Completion OTP
-                      </p>
-                      <div className="flex items-center justify-center gap-2 font-mono-code font-bold text-base tracking-widest text-cyan-300">
-                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">4</span>
-                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">8</span>
-                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">2</span>
-                        <span className="px-2 py-1 rounded bg-black/40 border border-cyan-500/30">9</span>
-                      </div>
-                      <p className="text-[9px] text-slate-400">Provide code only when satisfied</p>
-                    </div>
-
-                    {/* Escrow Protected Pill */}
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.03] border border-white/5 text-[10px]">
-                      <span className="text-slate-400">Payment Status</span>
-                      <span className="font-semibold text-emerald-400">৳ 1,250 (Escrow Held)</span>
-                    </div>
-
-                    {/* Phone CTA Button */}
-                    <div className="w-full py-2 text-center rounded-lg bg-[#003399] font-medium text-[11px] text-white shadow-md">
-                      Track Live On Map
-                    </div>
+                <div
+                  className={`relative rounded-3xl p-3 sm:p-4 border shadow-2xl transition duration-300 ${t.railBorder} ${t.surfaceBg}`}
+                >
+                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-black/5 dark:bg-black/30">
+                    <Image
+                      src={t.dark ? '/images/skavia_app_mockup_dark.png' : '/images/skavia_app_mockup_light.png'}
+                      alt="SKAVIA Android Mobile App Interface"
+                      fill
+                      priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 420px"
+                      className="object-contain transition-transform duration-500 group-hover:scale-[1.02]"
+                    />
                   </div>
 
-                  {/* Home Bar */}
-                  <div className="w-28 h-1 bg-slate-700 rounded-full mx-auto mt-2" />
+                  {/* Verified App Tag */}
+                  <div
+                    className={`mt-3 px-3.5 py-2 rounded-xl border flex items-center justify-between text-[11px] ${t.railBorder} ${t.cardBg}`}
+                  >
+                    <span className={`inline-flex items-center gap-1.5 font-medium ${t.textSecondary}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Verified Android Production Build
+                    </span>
+                    <span className={`font-mono-code text-[10px] ${t.textMuted}`}>
+                      ARM64 · v{distribution.android.version ?? '1.0.0'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -384,7 +406,7 @@ export function FaqAndContactSection({
                 <button
                   type="button"
                   onClick={() => onToggleFaq(idx)}
-                  className="w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-sm font-semibold"
+                  className={`w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-sm font-semibold ${t.textPrimary}`}
                 >
                   <span>{item.q}</span>
                   <ChevronDown
@@ -407,7 +429,7 @@ export function FaqAndContactSection({
               <Hammer className="h-4 w-4" />
               <span>Contact &amp; Official Support</span>
             </div>
-            <h3 className="text-xl font-bold">Need Business Scoping or Support?</h3>
+            <h3 className={`text-xl font-bold ${t.textPrimary}`}>Need Business Scoping or Support?</h3>
             <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
               Reach SKAVIA Operations for enterprise facility partnerships, safety inquiries,
               or verified distribution questions.
@@ -416,14 +438,14 @@ export function FaqAndContactSection({
               <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
                 <Mail className="h-4 w-4 text-[#3898EC] shrink-0" />
                 <div>
-                  <p className="font-semibold">Official Support Email</p>
+                  <p className={`font-semibold ${t.textPrimary}`}>Official Support Email</p>
                   <p className={t.textSecondary}>support@skavia.com</p>
                 </div>
               </div>
               <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
                 <Phone className="h-4 w-4 text-[#15E7CA] shrink-0" />
                 <div>
-                  <p className="font-semibold">Operations Desk (Dhaka HQ)</p>
+                  <p className={`font-semibold ${t.textPrimary}`}>Operations Desk (Dhaka HQ)</p>
                   <p className={t.textSecondary}>Available daily 09:00 – 21:00 BST via SKAVIA In-App Support</p>
                 </div>
               </div>
@@ -441,7 +463,7 @@ export function PublicFooter({ t }: { t: PublicThemeTokens }) {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <SkaviaBrandMark variant="emblem" size={24} />
-          <span className="text-sm font-semibold">SKAVIA</span>
+          <span className={`text-sm font-semibold ${t.textPrimary}`}>SKAVIA</span>
           <span className={`text-xs ${t.textMuted}`}>
             &copy; {new Date().getFullYear()} Accountable Service &amp; Workforce Platform
           </span>
