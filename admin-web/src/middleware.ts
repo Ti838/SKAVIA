@@ -33,6 +33,8 @@ export function middleware(req: NextRequest) {
     pathname.startsWith('/_next') ||
     pathname.startsWith('/images') ||
     pathname === '/favicon.png' ||
+    pathname === '/favicon.ico' ||
+    pathname === '/apple-touch-icon.png' ||
     pathname === '/icon.png'
   ) {
     return NextResponse.next();

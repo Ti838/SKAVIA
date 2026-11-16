@@ -6,9 +6,12 @@ export const metadata: Metadata = {
   description:
     'On-demand technical, residential, and corporate operations with Haversine dispatch, cryptographic 4-digit OTP, atomic 85/15 escrow, and zero-trust governance.',
   icons: {
-    icon: '/favicon.png',
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.png', type: 'image/png' },
+    ],
     shortcut: '/favicon.png',
-    apple: '/images/skavia_emblem.png',
+    apple: '/apple-touch-icon.png',
   },
 };
 
