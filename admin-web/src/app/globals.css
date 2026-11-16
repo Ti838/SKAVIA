@@ -19,7 +19,7 @@
   --status-danger: #DC2626;
 }
 
-[data-theme="dark"] {
+[data-theme="dark"], .dark {
   --bg-canvas: #090E1A;
   --bg-surface: #111827;
   --bg-surface-subtle: #1E293B;

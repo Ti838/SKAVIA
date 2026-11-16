@@ -49,29 +49,29 @@ export function PublicHeader({
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <SkaviaBrandMark variant="emblem" size={32} priority />
-          <span className="text-base font-bold tracking-tight">SKAVIA</span>
+          <span className={`text-base font-bold tracking-tight ${t.textPrimary}`}>SKAVIA</span>
         </Link>
 
         <nav
           aria-label="Public Website Navigation"
           className={`hidden md:flex items-center gap-6 text-sm font-medium ${t.textSecondary}`}
         >
-          <a href="#about" className="hover:text-[#3898EC] transition-colors">
+          <a href="#about" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             About
           </a>
-          <a href="#how-it-works" className="hover:text-[#3898EC] transition-colors">
+          <a href="#how-it-works" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             How It Works
           </a>
-          <a href="#branches" className="hover:text-[#3898EC] transition-colors">
+          <a href="#branches" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             Branches
           </a>
-          <a href="#solutions" className="hover:text-[#3898EC] transition-colors">
+          <a href="#solutions" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             Solutions
           </a>
-          <a href="#workers" className="hover:text-[#3898EC] transition-colors">
+          <a href="#workers" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             Become a Worker
           </a>
-          <a href="#faq" className="hover:text-[#3898EC] transition-colors">
+          <a href="#faq" className={`transition-colors ${t.dark ? 'hover:text-white' : 'hover:text-[#003399]'}`}>
             FAQ
           </a>
         </nav>
@@ -143,14 +143,14 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
           <span>One Accountable Organization &middot; 8 Specialization Branches</span>
         </div>
 
-        <h1 className="mx-auto max-w-4xl text-4xl sm:text-6xl md:text-[4.15rem] font-bold tracking-[-0.04em] leading-[1.06]">
+        <h1 className={`mx-auto max-w-4xl text-4xl sm:text-6xl md:text-[4.15rem] font-bold tracking-[-0.04em] leading-[1.06] ${t.textPrimary}`}>
           Explain Your Requirement.
           <span
             className="block mt-2 bg-clip-text text-transparent"
             style={{
               backgroundImage: t.dark
                 ? 'linear-gradient(90deg, #FFFFFF 0%, #3898EC 55%, #15E7CA 100%)'
-                : 'linear-gradient(90deg, #003399 0%, #3898EC 55%, #0D9488 100%)',
+                : 'linear-gradient(90deg, #003399 0%, #0284C7 55%, #0D9488 100%)',
             }}
           >
             SKAVIA Delivers the Solution.
@@ -220,11 +220,11 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
               <div className="grid grid-cols-2 gap-2 w-full sm:w-auto text-left font-mono-code text-[11px]">
                 <div className={`rounded-lg border px-3 py-2 ${t.railBorder} ${t.surfaceBg}`}>
                   <p className={t.textMuted}>BRANCHES</p>
-                  <p className="font-semibold text-[#15E7CA]">8 Internal Units</p>
+                  <p className={`font-semibold ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>8 Internal Units</p>
                 </div>
                 <div className={`rounded-lg border px-3 py-2 ${t.railBorder} ${t.surfaceBg}`}>
                   <p className={t.textMuted}>DELIVERY</p>
-                  <p className="font-semibold text-[#3898EC]">Mobile App Only</p>
+                  <p className={`font-semibold ${t.dark ? 'text-[#3898EC]' : 'text-blue-700'}`}>Mobile App Only</p>
                 </div>
               </div>
             </div>
@@ -251,7 +251,7 @@ export function WorkflowSection({
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
             About &amp; Workflow
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
             Not just a directory. One accountable delivery engine.
           </h2>
           <p className={`text-sm mt-3 leading-relaxed ${t.textSecondary}`}>
@@ -289,7 +289,7 @@ export function WorkflowSection({
 
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between">
           <div>
-            <p className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA] mb-3">
+            <p className={`text-xs font-mono-code uppercase tracking-widest mb-3 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
               End-to-End Solution Lifecycle
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -302,7 +302,7 @@ export function WorkflowSection({
                     <span className="h-6 w-6 rounded-full bg-[#003399] text-white text-xs font-bold flex items-center justify-center">
                       {step.n}
                     </span>
-                    <h3 className="text-sm font-semibold">{step.title}</h3>
+                    <h3 className={`text-sm font-semibold ${t.textPrimary}`}>{step.title}</h3>
                   </div>
                   <p className={`text-xs leading-relaxed ${t.textSecondary}`}>{step.desc}</p>
                 </div>
@@ -314,7 +314,7 @@ export function WorkflowSection({
             className={`mt-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${t.railBorder} ${t.subtleCardBg}`}
           >
             <div className="flex items-center gap-3">
-              <ShieldCheck className="h-5 w-5 text-[#15E7CA] shrink-0" />
+              <ShieldCheck className={`h-5 w-5 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
               <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
                 Active focus:{' '}
                 <strong className={t.textPrimary}>
@@ -323,7 +323,7 @@ export function WorkflowSection({
                 — handled inside the SKAVIA mobile app.
               </p>
             </div>
-            <a href="#download" className="text-xs font-semibold text-[#3898EC] shrink-0 hover:underline">
+            <a href="#download" className={`text-xs font-semibold shrink-0 hover:underline ${t.dark ? 'text-[#3898EC]' : 'text-blue-700'}`}>
               Get App &rarr;
             </a>
           </div>
@@ -331,6 +331,11 @@ export function WorkflowSection({
       </div>
     </section>
   );
+}
+
+function branchAccentColor(code: string, accent: string, dark: boolean): string {
+  if (!dark && accent === '#15E7CA') return '#0D9488';
+  return accent;
 }
 
 export function BranchesSection({
@@ -352,7 +357,7 @@ export function BranchesSection({
         <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
           Internal Operational Branches
         </p>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
           Eight Specialization Branches. One Unified Organization.
         </h2>
         <p className={`text-sm mt-2 leading-relaxed ${t.textSecondary}`}>
@@ -384,7 +389,7 @@ export function BranchesSection({
                   {branch.code}
                 </span>
               </div>
-              <p className="text-sm font-semibold">{branch.name}</p>
+              <p className={`text-sm font-semibold ${t.textPrimary}`}>{branch.name}</p>
               <p className={`text-[11px] mt-1 line-clamp-1 ${t.textMuted}`}>{branch.tagline}</p>
             </button>
           );
@@ -397,13 +402,13 @@ export function BranchesSection({
             <div className="flex items-center gap-2">
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: activeBranch.accent }}
+                style={{ backgroundColor: branchAccentColor(activeBranch.code, activeBranch.accent, t.dark) }}
               />
               <span className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC]">
                 {activeBranch.name} &middot; Internal Branch
               </span>
             </div>
-            <h3 className="text-xl font-bold">{activeBranch.tagline}</h3>
+            <h3 className={`text-xl font-bold ${t.textPrimary}`}>{activeBranch.tagline}</h3>
             <p className={`text-sm leading-relaxed ${t.textSecondary}`}>{activeBranch.scope}</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -412,7 +417,7 @@ export function BranchesSection({
                 key={ex}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${t.railBorder} ${t.cardBg}`}
               >
-                <CheckCircle2 className="h-3.5 w-3.5 text-[#15E7CA]" />
+                <CheckCircle2 className={`h-3.5 w-3.5 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
                 {ex}
               </span>
             ))}
@@ -428,11 +433,11 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
     <section id="solutions" className={`border-b ${t.railBorder} ${t.surfaceBg}`}>
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-px ${t.hairlineBg}`}>
         <div className={`p-8 sm:p-10 ${t.surfaceBg}`}>
-          <div className="inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#15E7CA] mb-3">
+          <div className={`inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest mb-3 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
             <Wrench className="h-4 w-4" />
             <span>Individual Service Solutions</span>
           </div>
-          <h3 className="text-2xl font-bold tracking-tight">Reliable Everyday &amp; Urgent Help</h3>
+          <h3 className={`text-2xl font-bold tracking-tight ${t.textPrimary}`}>Reliable Everyday &amp; Urgent Help</h3>
           <p className={`text-sm mt-2 leading-relaxed ${t.textSecondary}`}>
             Book vetted technicians or skilled craftspeople for home repairs, AC &amp; electrical work,
             renovations, and household support directly from your phone.
@@ -440,7 +445,7 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
           <ul className={`mt-5 space-y-2.5 text-xs ${t.textSecondary}`}>
             {INDIVIDUAL_HIGHLIGHTS.map((item) => (
               <li key={item} className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#15E7CA] shrink-0" />
+                <CheckCircle2 className={`h-4 w-4 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
                 {item}
               </li>
             ))}
@@ -452,7 +457,7 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
             <Building2 className="h-4 w-4" />
             <span>Business &amp; Organization Solutions</span>
           </div>
-          <h3 className="text-2xl font-bold tracking-tight">Multi-Skill Teams &amp; Turnkey Projects</h3>
+          <h3 className={`text-2xl font-bold tracking-tight ${t.textPrimary}`}>Multi-Skill Teams &amp; Turnkey Projects</h3>
           <p className={`text-sm mt-2 leading-relaxed ${t.textSecondary}`}>
             For offices, factories, farms, retail chains, and events, SKAVIA assembles structured
             project crews supervised by a dedicated Team Leader.

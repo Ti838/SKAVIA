@@ -29,7 +29,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
     <section id="workers" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-10`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-6 space-y-4">
-          <p className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA]">
+          <p className={`text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
             Worker Opportunities
           </p>
           <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
@@ -67,7 +67,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
                   key={feat.title}
                   className={`rounded-xl border p-4 ${t.railBorder} ${t.surfaceBg}`}
                 >
-                  <Icon className="h-4 w-4 text-[#15E7CA] mb-2.5" />
+                  <Icon className={`h-4 w-4 mb-2.5 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
                   <p className={`text-sm font-semibold ${t.textPrimary}`}>{feat.title}</p>
                   <p className={`text-xs mt-1 leading-relaxed ${t.textSecondary}`}>{feat.desc}</p>
                 </div>
@@ -425,7 +425,7 @@ export function FaqAndContactSection({
 
         <div id="contact" className="lg:col-span-5">
           <div className={`rounded-2xl border p-6 space-y-4 ${t.railBorder} ${t.surfaceBg}`}>
-            <div className="flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#15E7CA]">
+            <div className={`flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
               <Hammer className="h-4 w-4" />
               <span>Contact &amp; Official Support</span>
             </div>
@@ -443,7 +443,7 @@ export function FaqAndContactSection({
                 </div>
               </div>
               <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <Phone className="h-4 w-4 text-[#15E7CA] shrink-0" />
+                <Phone className={`h-4 w-4 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
                 <div>
                   <p className={`font-semibold ${t.textPrimary}`}>Operations Desk (Dhaka HQ)</p>
                   <p className={t.textSecondary}>Available daily 09:00 – 21:00 BST via SKAVIA In-App Support</p>
@@ -476,7 +476,7 @@ export function PublicFooter({ t }: { t: PublicThemeTokens }) {
           <Link href="/terms" className={`${t.textSecondary} hover:text-[#3898EC]`}>
             Terms &amp; Conditions
           </Link>
-          <a href="#download" className="text-[#15E7CA] font-medium hover:underline">
+          <a href="#download" className={`font-semibold hover:underline ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
             Official Mobile App
           </a>
         </div>
