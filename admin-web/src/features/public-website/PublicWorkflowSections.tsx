@@ -133,9 +133,9 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
         className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 h-80 w-[760px] skavia-spectral-arc opacity-90"
       />
 
-      <div className="relative z-10 px-4 sm:px-8 pt-16 sm:pt-24 pb-16 sm:pb-24 text-center">
+      <div className="relative z-10 px-4 sm:px-8 pt-6 sm:pt-10 pb-10 sm:pb-14 text-center">
         <div
-          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-medium mb-7 ${t.railBorder} ${
+          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-medium mb-4 sm:mb-5 ${t.railBorder} ${
             t.dark ? 'bg-white/[0.04] text-slate-200' : 'bg-white text-slate-700 shadow-xs'
           }`}
         >
@@ -157,13 +157,13 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
           </span>
         </h1>
 
-        <p className={`mx-auto mt-6 max-w-2xl text-base sm:text-lg leading-relaxed ${t.textSecondary}`}>
+        <p className={`mx-auto mt-4 sm:mt-5 max-w-2xl text-base sm:text-lg leading-relaxed ${t.textSecondary}`}>
           SKAVIA is a complete solution-oriented service and workforce platform. Tell us what
           your home, farm, organization, or project needs — SKAVIA identifies required skills,
           matches verified workers or forms a Team-Leader-led crew, and manages delivery to verified completion.
         </p>
 
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3.5">
+        <div className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-3.5">
           <a
             href="#download"
             className={`inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold transition shadow-lg ${
@@ -189,7 +189,7 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
           </a>
         </div>
 
-        <div className="mt-14 mx-auto max-w-2xl">
+        <div className="mt-8 sm:mt-10 mx-auto max-w-2xl">
           <div
             className={`relative rounded-2xl border p-6 sm:p-7 backdrop-blur-md shadow-2xl ${t.railBorder} ${
               t.dark ? 'bg-[#070B14]/85' : 'bg-white/95'
@@ -247,20 +247,20 @@ export function WorkflowSection({
   return (
     <section id="about" className={`border-b ${t.railBorder} ${t.surfaceBg}`}>
       <div id="how-it-works" className="grid grid-cols-1 lg:grid-cols-12">
-        <div className={`lg:col-span-5 p-6 sm:p-10 border-b lg:border-b-0 lg:border-r ${t.railBorder}`}>
+        <div className={`lg:col-span-5 p-6 sm:p-8 border-b lg:border-b-0 lg:border-r ${t.railBorder}`}>
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
             About &amp; Workflow
           </p>
           <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
             Not just a directory. One accountable delivery engine.
           </h2>
-          <p className={`text-sm mt-3 leading-relaxed ${t.textSecondary}`}>
+          <p className={`text-sm mt-2.5 leading-relaxed ${t.textSecondary}`}>
             Unlike generic classifieds or freelancer boards that abandon users after sharing a phone number,
             SKAVIA remains responsible across requirement scoping, verified worker matching, Team Leader
             supervision, milestone escrow, and verified ratings.
           </p>
 
-          <div className="mt-7 space-y-2">
+          <div className="mt-5 space-y-2">
             {WORKFLOW_TABS.map((tab) => {
               const active = activeTab === tab.id;
               return (
@@ -268,7 +268,7 @@ export function WorkflowSection({
                   key={tab.id}
                   type="button"
                   onClick={() => onSelectTab(tab.id)}
-                  className={`w-full text-left rounded-xl border p-4 transition ${
+                  className={`w-full text-left rounded-xl border p-3.5 sm:p-4 transition ${
                     active
                       ? t.dark
                         ? 'border-[#3898EC]/60 bg-[#0B1938]/55'
@@ -287,16 +287,16 @@ export function WorkflowSection({
           </div>
         </div>
 
-        <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-between">
+        <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between">
           <div>
             <p className={`text-xs font-mono-code uppercase tracking-widest mb-3 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
               End-to-End Solution Lifecycle
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {LIFECYCLE_STEPS.map((step) => (
                 <div
                   key={step.n}
-                  className={`rounded-xl border p-4 ${t.railBorder} ${t.cardBg}`}
+                  className={`rounded-xl border p-3.5 sm:p-4 ${t.railBorder} ${t.cardBg}`}
                 >
                   <div className="flex items-center gap-2.5 mb-2">
                     <span className="h-6 w-6 rounded-full bg-[#003399] text-white text-xs font-bold flex items-center justify-center">
@@ -311,7 +311,7 @@ export function WorkflowSection({
           </div>
 
           <div
-            className={`mt-6 rounded-xl border p-4 flex items-center justify-between gap-4 ${t.railBorder} ${t.subtleCardBg}`}
+            className={`mt-5 rounded-xl border p-4 flex items-center justify-between gap-4 ${t.railBorder} ${t.subtleCardBg}`}
           >
             <div className="flex items-center gap-3">
               <ShieldCheck className={`h-5 w-5 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
@@ -352,8 +352,8 @@ export function BranchesSection({
     SPECIALIZATION_BRANCHES[0]!;
 
   return (
-    <section id="branches" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-10`}>
-      <div className="max-w-3xl mb-8">
+    <section id="branches" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
+      <div className="max-w-3xl mb-6">
         <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
           Internal Operational Branches
         </p>
@@ -366,7 +366,7 @@ export function BranchesSection({
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {SPECIALIZATION_BRANCHES.map((branch) => {
           const Icon = branch.icon;
           const selected = branch.code === selectedBranchCode;
@@ -375,7 +375,7 @@ export function BranchesSection({
               key={branch.code}
               type="button"
               onClick={() => onSelectBranch(branch.code)}
-              className={`text-left rounded-xl border p-4 transition ${
+              className={`text-left rounded-xl border p-3.5 sm:p-4 transition ${
                 selected
                   ? t.dark
                     ? 'border-[#3898EC] bg-[#0B1938]/60 shadow-md'
@@ -396,7 +396,7 @@ export function BranchesSection({
         })}
       </div>
 
-      <div className={`rounded-2xl border p-6 ${t.railBorder} ${t.surfaceBg}`}>
+      <div className={`rounded-2xl border p-5 sm:p-6 ${t.railBorder} ${t.surfaceBg}`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2">
@@ -432,7 +432,7 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
   return (
     <section id="solutions" className={`border-b ${t.railBorder} ${t.surfaceBg}`}>
       <div className={`grid grid-cols-1 md:grid-cols-2 gap-px ${t.hairlineBg}`}>
-        <div className={`p-8 sm:p-10 ${t.surfaceBg}`}>
+        <div className={`p-6 sm:p-8 ${t.surfaceBg}`}>
           <div className={`inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest mb-3 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
             <Wrench className="h-4 w-4" />
             <span>Individual Service Solutions</span>
@@ -452,7 +452,7 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
           </ul>
         </div>
 
-        <div className={`p-8 sm:p-10 ${t.surfaceBg}`}>
+        <div className={`p-6 sm:p-8 ${t.surfaceBg}`}>
           <div className="inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-3">
             <Building2 className="h-4 w-4" />
             <span>Business &amp; Organization Solutions</span>

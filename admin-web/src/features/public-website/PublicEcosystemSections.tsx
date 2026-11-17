@@ -26,7 +26,7 @@ import {
 
 export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
   return (
-    <section id="workers" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-10`}>
+    <section id="workers" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-6 space-y-4">
           <p className={`text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
@@ -100,12 +100,12 @@ export function DownloadSection({
     : null;
 
   return (
-    <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} py-12 sm:py-20 px-4 sm:px-8 overflow-hidden`}>
+    <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} py-10 sm:py-14 px-4 sm:px-8 overflow-hidden`}>
       {/* Background ambient lighting for pro aesthetic */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#003399]/20 via-[#15E7CA]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Centered Modern Header */}
-      <div className="max-w-3xl mx-auto text-center mb-10 sm:mb-14 relative z-10">
+      <div className="max-w-3xl mx-auto text-center mb-6 sm:mb-8 relative z-10">
         <div
           className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code mb-4 ${
             t.dark
@@ -389,7 +389,7 @@ export function FaqAndContactSection({
   onToggleFaq: (idx: number) => void;
 }) {
   return (
-    <section id="faq" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-10`}>
+    <section id="faq" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-7 space-y-3">
           <div className="flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
