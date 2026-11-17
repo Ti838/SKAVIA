@@ -1,0 +1,9 @@
+# Copy this file to android/key.properties (NEVER commit key.properties or *.jks to Git)
+# Place the shared team keystore file at android/skavia-release.jks
+# Ask the SKAVIA project owner for the shared team keystore and credentials,
+# OR trigger a cloud-signed build via GitHub Actions (.github/workflows/build-android-release.yml).
+
+storeFile=skavia-release.jks
+storePassword=REPLACE_WITH_SHARED_KEYSTORE_PASSWORD
+keyAlias=skavia-release
+keyPassword=REPLACE_WITH_SHARED_KEY_PASSWORD

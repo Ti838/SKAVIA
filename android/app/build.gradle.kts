@@ -16,6 +16,24 @@ if (keystorePropertiesFile.exists()) {
     FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
 }
 
+fun signingProp(propKey: String, envKey: String): String? {
+    val fromFile = keystoreProperties.getProperty(propKey)?.trim()
+    if (!fromFile.isNullOrEmpty()) return fromFile
+    val fromEnv = System.getenv(envKey)?.trim()
+    return if (!fromEnv.isNullOrEmpty()) fromEnv else null
+}
+
+val releaseStoreFilePath = signingProp("storeFile", "SKAVIA_KEYSTORE_FILE")
+val releaseStorePassword = signingProp("storePassword", "SKAVIA_KEYSTORE_PASSWORD")
+val releaseKeyAlias = signingProp("keyAlias", "SKAVIA_KEY_ALIAS")
+val releaseKeyPassword = signingProp("keyPassword", "SKAVIA_KEY_PASSWORD")
+val hasReleaseSigningConfig =
+    releaseStoreFilePath != null &&
+        releaseStorePassword != null &&
+        releaseKeyAlias != null &&
+        releaseKeyPassword != null &&
+        rootProject.file(releaseStoreFilePath).exists()
+
 android {
     namespace = "com.example.skavia"
     compileSdk = flutter.compileSdkVersion
@@ -39,12 +57,12 @@ android {
     }
 
     signingConfigs {
-        if (keystorePropertiesFile.exists() && keystoreProperties.getProperty("storeFile") != null) {
+        if (hasReleaseSigningConfig) {
             create("release") {
-                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
-                storePassword = keystoreProperties.getProperty("storePassword")
-                keyAlias = keystoreProperties.getProperty("keyAlias")
-                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = rootProject.file(releaseStoreFilePath!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
             }
         }
     }

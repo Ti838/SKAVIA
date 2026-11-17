@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileCheck2,
+  KeyRound,
   Lock,
   ShieldAlert,
   UploadCloud,
@@ -90,9 +91,11 @@ function uploadFileWithProgress(params: {
 export function PublishReleasePanel({
   signingPolicy,
   onCreated,
+  onSigningPolicyUpdated,
 }: {
   signingPolicy: ReleaseSigningPolicyDto | null;
   onCreated: (result: { release: AppReleaseDto; notifiedUsersCount: number }) => void;
+  onSigningPolicyUpdated?: (updated: ReleaseSigningPolicyDto) => void;
 }) {
   const [channel, setChannel] = useState<AppReleaseChannel>('stable');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -110,6 +113,7 @@ export function PublishReleasePanel({
 
   const [reviewConfirmed, setReviewConfirmed] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
+  const [updatingPin, setUpdatingPin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useSakugaToast();
 
@@ -262,6 +266,58 @@ export function PublishReleasePanel({
     }
   }
 
+  async function handleRotateSigningPinToUploadedApk() {
+    if (!inspection?.inspected.signingCertSha256 || !storagePath) return;
+    setError(null);
+    setUpdatingPin(true);
+    try {
+      const targetCert = inspection.inspected.signingCertSha256.trim().toLowerCase();
+      const updatedPolicyRes = await apiFetch<{ signingPolicy: ReleaseSigningPolicyDto }>(
+        '/api/admin/releases/signing-policy',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            expectedPackageName:
+              inspection.signingPolicy.expectedPackageName || inspection.inspected.packageName,
+            pinnedSigningCertSha256: targetCert,
+            notes: `Rotated signing pin inline while publishing v${inspection.inspected.versionName} (#${inspection.inspected.buildNumber}).`,
+            confirmed: true,
+          }),
+        }
+      );
+
+      const reInspected = await apiFetch<InspectApiResponse>('/api/admin/releases/inspect', {
+        method: 'POST',
+        body: JSON.stringify({
+          storagePath,
+          channel,
+        }),
+      });
+
+      setInspection(reInspected);
+      onSigningPolicyUpdated?.(updatedPolicyRes.signingPolicy);
+      showToast('Signing certificate pin updated & APK re-verified.', 'success');
+    } catch (err) {
+      if (err instanceof AdminApiError && err.code === 'STEP_UP_REQUIRED') {
+        setError('Step-Up verification opened. Complete verification, then click Update Signing Pin again.');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed updating signing certificate pin.');
+      }
+    } finally {
+      setUpdatingPin(false);
+    }
+  }
+
+  const uploadedCertSha256 = inspection?.inspected.signingCertSha256?.toLowerCase() ?? null;
+  const activePinnedCertSha256 =
+    inspection?.signingPolicy.pinnedSigningCertSha256?.toLowerCase() ??
+    signingPolicy?.pinnedSigningCertSha256?.toLowerCase() ??
+    null;
+  const hasCertMismatch = Boolean(
+    uploadedCertSha256 && activePinnedCertSha256 && uploadedCertSha256 !== activePinnedCertSha256
+  );
   const hasBlockers = (inspection?.compatibility.blockers.length ?? 0) > 0;
   const canSubmit =
     Boolean(inspection && storagePath && selectedFile) &&
@@ -415,6 +471,38 @@ export function PublishReleasePanel({
               <span>{blocker}</span>
             </div>
           ))}
+
+          {hasCertMismatch && (
+            <div className="rounded-lg border border-amber-300 dark:border-amber-700/70 bg-amber-50/80 dark:bg-amber-950/40 p-3.5 text-xs text-amber-950 dark:text-amber-100 space-y-2.5">
+              <div className="flex items-start gap-2">
+                <KeyRound className="h-4 w-4 shrink-0 mt-0.5 text-amber-700 dark:text-amber-300" />
+                <div className="space-y-1">
+                  <p className="font-semibold">
+                    Signed with a different keystore? (Team Keystore Rotation)
+                  </p>
+                  <p className="opacity-90">
+                    If you intentionally switched to the shared SKAVIA team keystore (
+                    <span className="font-mono-code">skavia-release.jks</span>) or rotated keys, you can update the trusted signing pin directly to this APK&apos;s certificate and re-verify without re-uploading. Note: Android devices running a build signed by the old key will need a one-time reinstall; after switching to one shared team keystore, all teammates&apos; builds will upgrade seamlessly in-place.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end">
+                <SakugaButton
+                  type="button"
+                  variant="secondary"
+                  intensity="subtle"
+                  disabled={updatingPin || uploading || submitting}
+                  onClick={() => void handleRotateSigningPinToUploadedApk()}
+                  className="px-3.5 py-2 text-xs"
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  <span>
+                    {updatingPin ? 'Updating Signing Pin…' : 'Update Signing Pin to This APK & Re-Verify'}
+                  </span>
+                </SakugaButton>
+              </div>
+            </div>
+          )}
 
           {inspection.compatibility.warnings.map((warning) => (
             <div

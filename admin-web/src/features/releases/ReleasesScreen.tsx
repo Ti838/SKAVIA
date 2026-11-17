@@ -510,6 +510,11 @@ export default function ReleasesScreen() {
       ) : tab === 'publish' ? (
         <PublishReleasePanel
           signingPolicy={signingPolicy}
+          onSigningPolicyUpdated={(updatedPolicy) => {
+            setSigningPolicy(updatedPolicy);
+            setPolicyPackage(updatedPolicy.expectedPackageName);
+            setPolicyCertPin(updatedPolicy.pinnedSigningCertSha256 ?? '');
+          }}
           onCreated={({ release, notifiedUsersCount }) => {
             const msg =
               release.status === 'published'
