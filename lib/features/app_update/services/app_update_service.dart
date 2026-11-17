@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../app/config/app_config.dart';
 import '../../../../app/router/app_routes.dart';
@@ -39,7 +40,7 @@ class AppUpdateDownloadResult {
 }
 
 class AppUpdateService {
-  static const Duration autoCheckThrottle = Duration(minutes: 30);
+  static const Duration autoCheckThrottle = Duration(minutes: 5);
   static const Duration optionalDeferDuration = Duration(hours: 24);
   static const String _deferKeyPrefix = 'skavia_update_deferred_build_';
   static const String _notifiedReleasePrefix = 'skavia_update_notified_rel_';
@@ -166,6 +167,13 @@ class AppUpdateService {
       uid = currentUserIdReader?.call() ?? FirebaseAuth.instance.currentUser?.uid;
     } catch (_) {
       uid = null;
+    }
+    if (uid == null || uid.isEmpty) {
+      try {
+        uid = Supabase.instance.client.auth.currentUser?.id;
+      } catch (_) {
+        uid = null;
+      }
     }
 
     if (uid != null && uid.isNotEmpty) {

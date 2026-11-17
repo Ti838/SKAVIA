@@ -3,14 +3,14 @@ class AppConfig {
   AppConfig._();
 
   static const String appName = 'SKAVIA';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.1';
 
   // Official SKAVIA Web & Release Distribution API Origin (e.g. your Vercel deployment)
-  // Inject via --dart-define=SKAVIA_WEB_ORIGIN=https://your-project.vercel.app (never trailing slash).
+  // Override via --dart-define=SKAVIA_WEB_ORIGIN=https://your-project.vercel.app (never trailing slash).
   // Never hardcode APK download URLs directly inside the app.
   static const String releaseApiBaseUrl = String.fromEnvironment(
     'SKAVIA_WEB_ORIGIN',
-    defaultValue: '',
+    defaultValue: 'https://skavia-bd.vercel.app',
   );
   static const String releaseChannel = String.fromEnvironment(
     'SKAVIA_RELEASE_CHANNEL',

@@ -65,7 +65,7 @@ jobs:
           SKAVIA_KEY_ALIAS: ${{ secrets.SKAVIA_KEY_ALIAS }}
           SKAVIA_KEY_PASSWORD: ${{ secrets.SKAVIA_KEY_PASSWORD }}
         run: |
-          flutter build apk --release --target-platform android-arm64
+          flutter build apk --release --target-platform android-arm64 --dart-define=SKAVIA_WEB_ORIGIN=https://skavia-bd.vercel.app
 
       - name: Compute APK metadata & SHA-256 checksum
         id: meta

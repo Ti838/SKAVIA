@@ -368,13 +368,13 @@ export class SupabaseReleasesStore {
   private async dispatchMobileUpdateNotifications(release: AppReleaseDto): Promise<number> {
     const { data: users, error } = await this.db
       .from('users')
-      .select('user_id, active_mode')
-      .neq('account_status', 'deleted');
+      .select('user_id, active_mode, account_status');
     if (error || !users) return 0;
 
     const mobileUsers = users.filter((u) => {
       const mode = String(u.active_mode ?? '').toLowerCase();
-      return mode !== 'admin';
+      const status = String(u.account_status ?? 'active').toLowerCase();
+      return mode !== 'admin' && status !== 'deleted';
     });
 
     if (mobileUsers.length === 0) return 0;
