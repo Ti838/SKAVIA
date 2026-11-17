@@ -142,15 +142,19 @@ class WorkerStatCards extends StatelessWidget {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(
-                    Icons.star_rounded,
+                  Icon(
+                    workerRating > 0
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
                     size: 14,
                     color: AppColors.accentPeach,
                   ),
                   const SizedBox(width: 3),
                   Flexible(
                     child: Text(
-                      '${AppLanguageService.tr('rating')} ${workerRating.toStringAsFixed(1)}',
+                      workerRating > 0
+                          ? '${AppLanguageService.tr('rating')} ${workerRating.toStringAsFixed(1)}'
+                          : (AppLanguageService.isBengali ? 'নতুন কারিগর' : 'New Specialist'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

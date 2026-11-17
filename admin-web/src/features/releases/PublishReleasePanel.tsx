@@ -12,6 +12,8 @@ import {
 import type { AppReleaseChannel } from '@/lib/contracts';
 import { AdminApiError, apiFetch } from '@/lib/api-client';
 import { formatBytes, shortFingerprint } from '@/lib/formatters';
+import { SakugaButton, SakugaProgress, useSakugaToast } from '@/components/sakuga';
+import { sakugaCelebrate } from '@/lib/sakuga/sakuga-core';
 import type { ApkInspectionSummaryDto, AppReleaseDto, ReleaseSigningPolicyDto } from '@/lib/types';
 
 interface InspectApiResponse {
@@ -109,6 +111,7 @@ export function PublishReleasePanel({
   const [reviewConfirmed, setReviewConfirmed] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useSakugaToast();
 
   async function handleFileSelectAndUpload(file: File | null) {
     setError(null);
@@ -127,11 +130,17 @@ export function PublishReleasePanel({
 
     setUploading(true);
     try {
-      const session = await apiFetch<{
-        storagePath: string;
-        signedUploadUrl: string;
-        token: string;
-        bucket: string;
+      const res = await apiFetch<{
+        uploadSession?: {
+          storagePath: string;
+          signedUploadUrl: string;
+          token: string;
+          bucket: string;
+        };
+        storagePath?: string;
+        signedUploadUrl?: string;
+        token?: string;
+        bucket?: string;
       }>('/api/admin/releases/upload-session', {
         method: 'POST',
         body: JSON.stringify({
@@ -141,22 +150,33 @@ export function PublishReleasePanel({
         }),
       });
 
+      const uploadSession = res.uploadSession ?? {
+        storagePath: res.storagePath ?? '',
+        signedUploadUrl: res.signedUploadUrl ?? '',
+        token: res.token ?? '',
+        bucket: res.bucket ?? 'app-releases',
+      };
+
+      if (!uploadSession.storagePath || !uploadSession.signedUploadUrl) {
+        throw new Error('Upload session did not return a valid signed URL.');
+      }
+
       await uploadFileWithProgress({
         file,
-        storagePath: session.storagePath,
-        signedUploadUrl: session.signedUploadUrl,
+        storagePath: uploadSession.storagePath,
+        signedUploadUrl: uploadSession.signedUploadUrl,
         onProgress: setUploadProgress,
       });
 
       const inspectRes = await apiFetch<InspectApiResponse>('/api/admin/releases/inspect', {
         method: 'POST',
         body: JSON.stringify({
-          storagePath: session.storagePath,
+          storagePath: uploadSession.storagePath,
           channel,
         }),
       });
 
-      setStoragePath(session.storagePath);
+      setStoragePath(uploadSession.storagePath);
       setInspection(inspectRes);
       setMinSupportedBuild(String(Math.min(1, inspectRes.inspected.buildNumber)));
     } catch (err) {
@@ -216,6 +236,15 @@ export function PublishReleasePanel({
       setReleaseNotes('');
       setReviewConfirmed(false);
       setAllowInitialSigningPin(false);
+      if (typeof window !== 'undefined') {
+        sakugaCelebrate(window.innerWidth / 2 + window.scrollX, window.innerHeight / 2 + window.scrollY, { r: 48 });
+      }
+      showToast(
+        publishImmediately
+          ? `Release v${result.release.version_name} published cleanly.`
+          : `Validated draft v${result.release.version_name} saved.`,
+        'success',
+      );
       onCreated({
         release: result.release,
         notifiedUsersCount: result.notifiedUsersCount ?? 0,
@@ -301,18 +330,10 @@ export function PublishReleasePanel({
         </label>
 
         {uploading && (
-          <div className="space-y-1.5">
-            <div className="flex justify-between text-xs font-medium">
-              <span>Uploading to private release staging & running cryptographic inspection…</span>
-              <span>{uploadProgress}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-              <div
-                className="h-full bg-blue-600 transition-all duration-200"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
+          <SakugaProgress
+            value={uploadProgress}
+            label="Uploading to private release staging & running cryptographic inspection…"
+          />
         )}
 
         {error && (
@@ -520,11 +541,12 @@ export function PublishReleasePanel({
           </label>
 
           <div className="flex justify-end gap-3">
-            <button
+            <SakugaButton
               type="submit"
+              variant="primary"
+              intensity="medium"
               disabled={!canSubmit || submitting}
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ backgroundColor: '#003399' }}
+              className="px-5 py-2.5"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span>
@@ -534,7 +556,7 @@ export function PublishReleasePanel({
                     ? `Publish v${inspection.inspected.versionName} (${channel})`
                     : 'Save Validated Draft'}
               </span>
-            </button>
+            </SakugaButton>
           </div>
         </div>
       )}

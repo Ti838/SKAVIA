@@ -25,14 +25,14 @@ class WorkerProfileDetailScreen extends StatefulWidget {
   const WorkerProfileDetailScreen({
     super.key,
     this.workerProfileId,
-    this.name = 'Rahul Ahmed',
-    this.title = 'Flutter Developer',
-    this.rating = 4.8,
-    this.reviewsCount = 32,
-    this.experience = '2+ years',
+    this.name = 'Specialist',
+    this.title = 'Trade Specialist',
+    this.rating = 0.0,
+    this.reviewsCount = 0,
+    this.experience = '',
     this.location = 'Dhaka, Bangladesh',
-    this.hourlyRate = '৳ 1,500/hr',
-    this.skills = const ['Flutter', 'Dart', 'Firebase', 'REST API', 'UI/UX'],
+    this.hourlyRate = '৳ 0/hr',
+    this.skills = const [],
     this.avatarUrl = '',
   });
 
@@ -125,27 +125,37 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
               ),
               const SizedBox(height: 6),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.star_rounded,
-                    color: Color(0xFFF59E0B),
-                    size: 18,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      '${widget.rating} (${widget.reviewsCount} reviews)',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+              if (widget.rating > 0)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.star_rounded,
+                      color: Color(0xFFF59E0B),
+                      size: 18,
+                    ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        '${widget.rating} (${widget.reviewsCount} reviews)',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
                     ),
+                  ],
+                )
+              else
+                Text(
+                  'New Specialist • No reviews yet',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: tokens.mutedText,
                   ),
-                ],
-              ),
+                ),
               const SizedBox(height: 22),
 
               // Action Buttons: Message & Hire

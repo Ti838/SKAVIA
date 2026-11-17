@@ -42,9 +42,6 @@ class NotificationCenterController extends ChangeNotifier {
     _notifications.clear();
     _seenDedupKeys.clear();
     _loadFromCache();
-    if (_notifications.isEmpty) {
-      _seedDefaultNotifications(trimmed);
-    }
     syncFromBackend(trimmed);
   }
 
@@ -309,19 +306,6 @@ class NotificationCenterController extends ChangeNotifier {
       category: 'profile',
       actionRoute: action.actionRoute,
       createdAt: DateTime.now(),
-    ));
-  }
-
-  void _seedDefaultNotifications(String userId) {
-    addNotification(AppNotificationModel(
-      id: UuidUtil.generateUuidV4(),
-      userId: userId,
-      dedupKey: 'welcome_skavia_$userId',
-      title: 'Welcome to SKAVIA Enterprise Platform',
-      body:
-          'Every Skill. Every Opportunity. All your home repairs and corporate turnkey projects are guaranteed with single-company accountability.',
-      category: 'general',
-      createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
     ));
   }
 }

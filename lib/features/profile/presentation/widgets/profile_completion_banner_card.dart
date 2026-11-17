@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/motion/sakuga_progress.dart';
 import '../../domain/services/profile_completion_engine.dart';
 
 /// Interactive Profile Completion Intelligence Banner Card.
@@ -112,20 +113,12 @@ class ProfileCompletionBannerCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: LinearProgressIndicator(
-                  value: result.percentage / 100,
-                  minHeight: 6,
-                  backgroundColor: colorScheme.outlineVariant.withValues(
-                    alpha: 0.4,
-                  ),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    result.percentage >= 80
-                        ? AppColors.success
-                        : AppColors.primarySky,
-                  ),
-                ),
+              SakugaProgress(
+                value: result.percentage / 100,
+                height: 7,
+                color: result.percentage >= 80
+                    ? AppColors.success
+                    : AppColors.primarySky,
               ),
               if (nextAction != null) ...[
                 const SizedBox(height: 12),

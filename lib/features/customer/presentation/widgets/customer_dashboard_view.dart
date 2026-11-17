@@ -13,7 +13,6 @@ import 'featured_service_pill.dart';
 import 'featured_workers_section.dart';
 import 'hero_banner_card.dart';
 import 'popular_services_section.dart';
-import '../../data/datasources/job_feed_seed_data.dart';
 import '../../data/models/requirement_model.dart';
 import 'feed_composer_prompt_card.dart';
 import 'job_requirement_feed_card.dart';
@@ -126,9 +125,7 @@ class CustomerDashboardView extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final feedItems = liveRequirements.isNotEmpty
-        ? liveRequirements.take(3).toList()
-        : JobFeedSeedData.seedJobs.take(3).toList();
+    final feedItems = liveRequirements.take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,7 +161,7 @@ class CustomerDashboardView extends StatelessWidget {
         PopularServicesSection(onSeeAll: onSelectServicesTab),
         const SizedBox(height: 24),
 
-        // 4. Featured Workers Section (Rahul Ahmed - UI/UX Designer)
+        // 4. Featured Trade Specialists Section (Live Supabase Query)
         FeaturedWorkersSection(
           onSeeAll: () => Navigator.pushNamed(context, AppRoutes.teamDiscovery),
         ),
@@ -173,7 +170,7 @@ class CustomerDashboardView extends StatelessWidget {
         // 5. Live Dhaka Vector Radar Map Card with interactive Map Sheet trigger
         RadarMapArtworkWidget(
           locationZone: currentLocationZone,
-          activeTechCount: 18,
+          activeTechCount: 0,
           onExpand: () => RadarMapSheet.show(
             context,
             locationZone: currentLocationZone,
@@ -427,47 +424,102 @@ class CustomerDashboardView extends StatelessWidget {
         ),
         const SizedBox(height: 10),
 
-        // Stream of interactive Facebook-style feed cards
-        ...feedItems.map(
-          (job) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: JobRequirementFeedCard(
-              job: job,
-              onApply: () =>
-                  Navigator.pushNamed(context, AppRoutes.postRequirement),
-              onMessage: onOpenChat,
+        if (feedItems.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: colorScheme.outlineVariant),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.dynamic_feed_outlined,
+                  size: 32,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  isBn ? 'এখনও কোনো পোস্ট নেই' : 'No Marketplace Posts Yet',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isBn
+                      ? 'আপনার প্রথম কাজের বিবরণ পোস্ট করুন এবং সমাধান পান।'
+                      : 'Post your first requirement to get matched with verified specialists.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      Navigator.pushNamed(context, AppRoutes.postRequirement),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: Text(
+                    isBn ? 'পোস্ট তৈরি করুন' : 'Create First Post',
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else ...[
+          // Stream of interactive Facebook-style feed cards
+          ...feedItems.map(
+            (job) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: JobRequirementFeedCard(
+                job: job,
+                onApply: () =>
+                    Navigator.pushNamed(context, AppRoutes.postRequirement),
+                onMessage: onOpenChat,
+              ),
             ),
           ),
-        ),
 
-        // Bottom CTA to open full-screen feed
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () =>
-                Navigator.pushNamed(context, AppRoutes.liveJobFeed),
-            icon: const Icon(Icons.explore_outlined, size: 16),
-            label: Text(
-              isBn
-                  ? 'আরও ১৮+ লাইভ সোশ্যাল পোস্ট ব্রাউজ করুন'
-                  : 'Explore All 18+ Live Marketplace Posts',
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w700,
+          // Bottom CTA to open full-screen feed
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () =>
+                  Navigator.pushNamed(context, AppRoutes.liveJobFeed),
+              icon: const Icon(Icons.explore_outlined, size: 16),
+              label: Text(
+                isBn
+                    ? 'সব পোস্ট দেখুন'
+                    : 'Explore All Marketplace Posts',
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            style: OutlinedButton.styleFrom(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+              style: OutlinedButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
               ),
             ),
           ),
-        ),
+        ],
         const SizedBox(height: 20),
         const SizedBox(height: 18),
 

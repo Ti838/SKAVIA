@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_button.dart';
@@ -71,39 +74,73 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     },
   ];
 
-  User? _tryCurrentUser() {
+  String? _resolveCurrentUserId() {
     try {
-      return FirebaseAuth.instance.currentUser;
-    } catch (_) {
-      return null;
-    }
+      final fbUid = FirebaseAuth.instance.currentUser?.uid;
+      if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    } catch (_) {}
+    try {
+      final spUid = tryGetSupabaseClient()?.auth.currentUser?.id;
+      if (spUid != null && spUid.isNotEmpty) return spUid;
+    } catch (_) {}
+    try {
+      final sessionUid = tryGetSupabaseClient()?.auth.currentSession?.user.id;
+      if (sessionUid != null && sessionUid.isNotEmpty) return sessionUid;
+    } catch (_) {}
+    return null;
   }
 
   Future<void> _confirmSelection() async {
-    if (_selectedRole == null || _isSaving) return;
+    final selectedRole = _selectedRole;
+    if (selectedRole == null || _isSaving) return;
 
     setState(() => _isSaving = true);
 
-    final customerType = _selectedRole == 'enterprise'
+    final customerType = selectedRole == 'enterprise'
         ? _corporateSubtype
         : 'Individual';
 
     try {
-      final user = _tryCurrentUser();
-      if (user != null) {
-        await DashboardRepository().updateActiveMode(user.uid, _selectedRole!);
+      final uid = _resolveCurrentUserId();
+
+      // 1. Guaranteed Immediate Local Persistence (disk + memory mirror)
+      await LocalCacheService.instance.putPersisted(
+        AppConstants.userModeStorageKey,
+        selectedRole,
+      );
+      if (uid != null && uid.isNotEmpty) {
+        await LocalCacheService.instance.putPersisted(
+          '${AppConstants.userModeStorageKey}_$uid',
+          selectedRole,
+        );
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.userModeStorageKey, selectedRole);
+      if (uid != null && uid.isNotEmpty) {
+        await prefs.setString(
+          '${AppConstants.userModeStorageKey}_$uid',
+          selectedRole,
+        );
+      }
+
+      // 2. Synchronize to Backend Database
+      if (uid != null && uid.isNotEmpty) {
+        await DashboardRepository().updateActiveMode(uid, selectedRole);
         final supabase = tryGetSupabaseClient();
         if (supabase != null) {
           await supabase.from(DatabaseTables.customerProfiles).upsert({
-            'user_id': user.uid,
+            'user_id': uid,
             'customer_type': customerType,
           }, onConflict: 'user_id');
         }
+
+        final fbUser = FirebaseAuth.instance.currentUser;
         await ProfileController.shared.loadProfile(
-          user.uid,
-          fallbackEmail: user.email,
-          fallbackName: user.displayName,
-          fallbackPhone: user.phoneNumber,
+          uid,
+          fallbackEmail: fbUser?.email,
+          fallbackName: fbUser?.displayName,
+          fallbackPhone: fbUser?.phoneNumber,
         );
         if (ProfileController.shared.profile != null) {
           await ProfileController.shared.updateProfile(
@@ -111,7 +148,9 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
           );
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('[RoleSelectionScreen] Mode confirmation notice: $e');
+    }
 
     if (!mounted) return;
     setState(() => _isSaving = false);
@@ -119,7 +158,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     Navigator.of(context).pushReplacementNamed(
       AppRoutes.appShell,
       arguments: {
-        'initialMode': _selectedRole,
+        'initialMode': selectedRole,
         'customerType': customerType,
       },
     );

@@ -1,12 +1,14 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../app/theme/app_colors.dart';
 import '../../../core/services/app_language_service.dart';
+import '../../../core/services/location_service.dart';
 
-/// High-performance GPU CustomPainter widget rendering a live vector radar map of Dhaka,
-/// displaying user GPS pulse pin and nearby active trade technicians (⚡, ❄️, 🔧).
+/// Live interactive-preview street map card powered by real OpenStreetMap / CartoDB
+/// Google-style Retina tiles and real device GPS coordinates.
+/// Tapping anywhere expands the full interactive [RadarMapSheet].
 class RadarMapArtworkWidget extends StatefulWidget {
   final String locationZone;
   final int activeTechCount;
@@ -15,7 +17,7 @@ class RadarMapArtworkWidget extends StatefulWidget {
   const RadarMapArtworkWidget({
     super.key,
     required this.locationZone,
-    this.activeTechCount = 18,
+    this.activeTechCount = 0,
     this.onExpand,
   });
 
@@ -25,410 +27,398 @@ class RadarMapArtworkWidget extends StatefulWidget {
 
 class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
     with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
+  late final AnimationController _pulseController;
+  final MapController _mapController = MapController();
+  late LatLng _centerCoords;
+  bool _hasGpsLock = false;
 
   @override
   void initState() {
     super.initState();
+    _centerCoords = _resolveZoneCoordinates(widget.locationZone);
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(milliseconds: 2200),
     )..repeat();
+    _syncLiveGps();
+  }
+
+  @override
+  void didUpdateWidget(covariant RadarMapArtworkWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.locationZone != widget.locationZone && !_hasGpsLock) {
+      final updated = _resolveZoneCoordinates(widget.locationZone);
+      setState(() => _centerCoords = updated);
+      try {
+        _mapController.move(updated, 14.5);
+      } catch (_) {}
+    }
+  }
+
+  Future<void> _syncLiveGps() async {
+    try {
+      final result = await LocationService.getRealTimeLocation();
+      if (!mounted) return;
+      final livePoint = LatLng(result.latitude, result.longitude);
+      setState(() {
+        _centerCoords = livePoint;
+        _hasGpsLock = result.isFromGps;
+      });
+      try {
+        _mapController.move(livePoint, 14.8);
+      } catch (_) {}
+    } catch (_) {}
+  }
+
+  static LatLng _resolveZoneCoordinates(String zone) {
+    final lower = zone.toLowerCase();
+    if (lower.contains('gulshan')) return const LatLng(23.7925, 90.4078);
+    if (lower.contains('banani')) return const LatLng(23.7937, 90.4066);
+    if (lower.contains('uttara')) return const LatLng(23.8759, 90.3795);
+    if (lower.contains('mirpur')) return const LatLng(23.8069, 90.3687);
+    if (lower.contains('mohakhali')) return const LatLng(23.7778, 90.4057);
+    if (lower.contains('bashundhara')) return const LatLng(23.8191, 90.4526);
+    if (lower.contains('mohammadpur')) return const LatLng(23.7658, 90.3584);
+    if (lower.contains('badda')) return const LatLng(23.7805, 90.4267);
+    if (lower.contains('baridhara')) return const LatLng(23.8058, 90.4202);
+    if (lower.contains('tejgaon')) return const LatLng(23.7598, 90.3912);
+    if (lower.contains('motijheel')) return const LatLng(23.7330, 90.4172);
+    if (lower.contains('khilgaon')) return const LatLng(23.7566, 90.4263);
+    if (lower.contains('malibagh')) return const LatLng(23.7493, 90.4126);
+    if (lower.contains('lalbagh')) return const LatLng(23.7196, 90.3881);
+    return const LatLng(23.7461, 90.3742); // Dhanmondi, Dhaka
   }
 
   @override
   void dispose() {
     _pulseController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final isBn = AppLanguageService.isBengali;
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    final isLargeText = textScale > 1.3;
-    final radarHeight = isLargeText ? 182.0 : 152.0;
+    final mapHeight = textScale > 1.3 ? 196.0 : 172.0;
 
-    return Container(
-      width: double.infinity,
-      height: radarHeight,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1E36), // Deep Night Radar Slate
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF003399).withValues(alpha: 0.18),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+    // CartoDB Voyager (Google Maps aesthetic) for Light, Dark Matter for Dark
+    final tileUrl = isDark
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    final isRetina = RetinaMode.isHighDensity(context);
+
+    return GestureDetector(
+      onTap: widget.onExpand,
+      child: Container(
+        width: double.infinity,
+        height: mapHeight,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF141B29) : const Color(0xFFE8EEF5),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : const Color(0xFFD5DFEA),
+            width: 1,
           ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
-        child: Stack(
-          children: [
-            // Animated Vector Canvas
-            AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                return CustomPaint(
-                  size: Size(double.infinity, radarHeight),
-                  painter: _RadarMapPainter(
-                    animationValue: _pulseController.value,
-                  ),
-                );
-              },
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
-
-            // Subtle vignette & grid gradient
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    const Color(0xFF0F1E36).withValues(alpha: 0.2),
-                    const Color(0xFF0F1E36).withValues(alpha: 0.75),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(21),
+          child: Stack(
+            children: [
+              // 1. Real Street Map Canvas (Non-blocking preview; tap opens full map)
+              IgnorePointer(
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: _centerCoords,
+                    initialZoom: 14.5,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.none,
+                    ),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: tileUrl,
+                      fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      subdomains: const ['a', 'b', 'c', 'd'],
+                      retinaMode: isRetina,
+                      userAgentPackageName: 'com.skavia.app',
+                      maxZoom: 19,
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: _centerCoords,
+                          width: 64,
+                          height: 64,
+                          child: AnimatedBuilder(
+                            animation: _pulseController,
+                            builder: (context, _) {
+                              final t = _pulseController.value;
+                              final haloSize = 22.0 + (t * 36.0);
+                              final haloOpacity = (1.0 - t) * 0.35;
+                              return Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: haloSize,
+                                    height: haloSize,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1A73E8)
+                                          .withValues(alpha: haloOpacity),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 18,
+                                    height: 18,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1A73E8),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 3,
+                                      ),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
                 ),
               ),
-            ),
 
-            // Top Status Header: Zone & Active Count + Expand Action (Zero Overflow Row)
-            Positioned(
-              top: 10,
-              left: 12,
-              right: 12,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
+              // 2. Subtle bottom readability scrim
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 64,
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: isDark ? 0.65 : 0.38),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. Top-Left Live Location Pill (Google Maps Clean Pill)
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF0F172A).withValues(alpha: 0.92)
+                        : Colors.white.withValues(alpha: 0.95),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.14),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _hasGpsLock
+                            ? Icons.my_location_rounded
+                            : Icons.location_on_rounded,
+                        size: 14,
+                        color: const Color(0xFF1A73E8),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        widget.locationZone,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 4. Top-Right Live Specialist Badge (only shown if genuine count > 0)
+              if (widget.activeTechCount > 0)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.successGreen,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.16),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.engineering_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${widget.activeTechCount} ${isBn ? "জন সক্রিয়" : "Online"}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 5. Bottom-Left Title & Bottom-Right "Open Full Map" CTA
+              Positioned(
+                left: 14,
+                right: 12,
+                bottom: 12,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isBn ? 'লাইভ সার্ভিস ম্যাপ' : 'Live Service Map',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black45,
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            isBn
+                                ? 'কাছাকাছি দক্ষ কারিগর খুঁজতে ট্যাপ করুন'
+                                : 'Tap to explore nearby pros & streets',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.92),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              shadows: const [
+                                Shadow(
+                                  color: Colors.black45,
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
+                        horizontal: 12,
+                        vertical: 7,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.14),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.22),
-                        ),
+                        color: AppColors.primaryRoyal,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.22),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: AppColors.accentAqua,
-                              shape: BoxShape.circle,
+                          Text(
+                            isBn ? 'ম্যাপ দেখুন' : 'Explore Map',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              '${widget.locationZone} ${AppLanguageService.tr('radar_title')} • ${widget.activeTechCount} ${AppLanguageService.tr('pros_active')}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.open_in_full_rounded,
+                            color: Colors.white,
+                            size: 13,
                           ),
                         ],
-                      ),
-                    ),
-                  ),
-                  if (widget.onExpand != null) ...[
-                    const SizedBox(width: 8),
-                    Flexible(
-                      flex: 0,
-                      child: GestureDetector(
-                        onTap: widget.onExpand,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primarySky.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppColors.primarySky.withValues(alpha: 0.5),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.fullscreen_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              if (!isLargeText) ...[
-                                const SizedBox(width: 4),
-                                Text(
-                                  AppLanguageService.tr('expand_radar'),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
                       ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
-
-            // Bottom Info Row: Trade Chips & Arrival Time (Zero Overflow Guaranteed)
-            Positioned(
-              bottom: 10,
-              left: 12,
-              right: 12,
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final arrivalPill = Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.successGreen.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      '~15 ${AppLanguageService.tr('min_arrival')}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.accentAqua,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  );
-
-                  final compactBottom =
-                      constraints.maxWidth < 300 || isLargeText;
-
-                  final chipsStrip = SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        if (compactBottom) ...[
-                          arrivalPill,
-                          const SizedBox(width: 6),
-                        ],
-                        _buildTechMarkerChip(
-                          Icons.electric_bolt_rounded,
-                          AppColors.accentPeach,
-                          AppLanguageService.isBengali
-                              ? 'ইলেকট্রিশিয়ান'
-                              : 'Electricians',
-                        ),
-                        const SizedBox(width: 6),
-                        _buildTechMarkerChip(
-                          Icons.ac_unit_rounded,
-                          AppColors.primarySky,
-                          AppLanguageService.isBengali
-                              ? 'এসি টেকনিশিয়ান'
-                              : 'HVAC',
-                        ),
-                        const SizedBox(width: 6),
-                        _buildTechMarkerChip(
-                          Icons.plumbing_rounded,
-                          AppColors.accentAqua,
-                          AppLanguageService.isBengali
-                              ? 'প্লাম্বার'
-                              : 'Plumbers',
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (compactBottom) {
-                    return chipsStrip;
-                  }
-
-                  return Row(
-                    children: [
-                      Expanded(child: chipsStrip),
-                      const SizedBox(width: 8),
-                      arrivalPill,
-                    ],
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Widget _buildTechMarkerChip(IconData icon, Color color, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.35),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: color),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Colors.white70,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RadarMapPainter extends CustomPainter {
-  final double animationValue;
-
-  _RadarMapPainter({required this.animationValue});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final center = Offset(w * 0.48, h * 0.52);
-
-    // 1. Draw Street Grids (Vector Roads)
-    final roadPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.2;
-
-    // Horizontal & diagonal road avenues
-    final path = Path();
-    path.moveTo(0, h * 0.35);
-    path.lineTo(w, h * 0.42);
-    path.moveTo(0, h * 0.72);
-    path.lineTo(w, h * 0.65);
-    path.moveTo(w * 0.22, 0);
-    path.lineTo(w * 0.38, h);
-    path.moveTo(w * 0.68, 0);
-    path.lineTo(w * 0.78, h);
-    path.moveTo(w * 0.1, h * 0.85);
-    path.quadraticBezierTo(w * 0.5, h * 0.4, w * 0.9, h * 0.9);
-    canvas.drawPath(path, roadPaint);
-
-    // 2. Concentric Radar Pulse Rings
-    for (int i = 1; i <= 3; i++) {
-      final ringRadius = (i * 36.0) + (animationValue * 24.0) % 72.0;
-      final opacity = (1.0 - (ringRadius / 110.0)).clamp(0.0, 0.4);
-      final ringPaint = Paint()
-        ..color = AppColors.primarySky.withValues(alpha: opacity)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0;
-      canvas.drawCircle(center, ringRadius, ringPaint);
-    }
-
-    // 3. Radar Beam Sector Sweep
-    final sweepPaint = Paint()
-      ..shader = SweepGradient(
-        center: FractionalOffset(center.dx / w, center.dy / h),
-        startAngle: 0.0,
-        endAngle: math.pi * 2,
-        colors: [
-          Colors.transparent,
-          AppColors.accentAqua.withValues(alpha: 0.0),
-          AppColors.accentAqua.withValues(alpha: 0.16),
-        ],
-        stops: const [0.0, 0.75, 1.0],
-        transform: GradientRotation(animationValue * math.pi * 2),
-      ).createShader(Rect.fromLTWH(0, 0, w, h));
-    canvas.drawCircle(center, 90, sweepPaint);
-
-    // 4. Draw Center User Pin (📍 Hardware GPS)
-    final userPulseRadius = 8.0 + (animationValue * 12.0);
-    final userPulsePaint = Paint()
-      ..color = AppColors.primarySky.withValues(
-        alpha: (1.0 - animationValue).clamp(0.0, 0.6),
-      )
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, userPulseRadius, userPulsePaint);
-
-    final userCorePaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, 5.0, userCorePaint);
-
-    final userDotPaint = Paint()
-      ..color = AppColors.primaryRoyal
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, 2.5, userDotPaint);
-
-    // 5. Draw Nearby Active Technicians (Pins)
-    _drawTechPin(
-      canvas,
-      Offset(w * 0.28, h * 0.42),
-      AppColors.accentPeach,
-      '⚡',
-    );
-    _drawTechPin(
-      canvas,
-      Offset(w * 0.72, h * 0.38),
-      AppColors.primarySky,
-      '❄️',
-    );
-    _drawTechPin(
-      canvas,
-      Offset(w * 0.62, h * 0.72),
-      AppColors.accentAqua,
-      '🔧',
-    );
-    _drawTechPin(
-      canvas,
-      Offset(w * 0.18, h * 0.68),
-      AppColors.accentPeach,
-      '⚡',
-    );
-  }
-
-  void _drawTechPin(Canvas canvas, Offset pos, Color color, String glyph) {
-    // Halo glow
-    final glowPaint = Paint()
-      ..color = color.withValues(alpha: 0.35)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(pos, 8.0, glowPaint);
-
-    // Core circle
-    final corePaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(pos, 5.0, corePaint);
-
-    // White dot inside
-    final innerPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(pos, 2.0, innerPaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant _RadarMapPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue;
   }
 }

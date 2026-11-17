@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,6 +9,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/utils/job_otp_util.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../app_update/presentation/widgets/app_update_banner.dart';
 import '../../../app_update/presentation/widgets/app_update_dialog.dart';
 import '../../../app_update/providers/app_update_provider.dart';
@@ -64,7 +66,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
   // Worker Mode Metrics (Worker)
   double _workerEarnings = 0.0;
   int _workerCompletedJobs = 0;
-  double _workerRating = 5.0;
+  double _workerRating = 0.0;
   bool _isWorkerAvailable = true;
   List<Map<String, dynamic>> _liveJobRequests = [];
 
@@ -195,28 +197,48 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
 
   dynamic _safeCurrentUser() {
     try {
-      return _authController.user;
+      final user = _authController.user;
+      if (user != null) return user;
+    } catch (_) {}
+    try {
+      return FirebaseAuth.instance.currentUser;
     } catch (_) {
       return null;
     }
   }
 
+  String? _safeCurrentUserId() {
+    try {
+      final uid = _authController.user?.uid;
+      if (uid != null && uid.isNotEmpty) return uid;
+    } catch (_) {}
+    try {
+      final fbUid = FirebaseAuth.instance.currentUser?.uid;
+      if (fbUid != null && fbUid.isNotEmpty) return fbUid;
+    } catch (_) {}
+    try {
+      final suUid = tryGetSupabaseClient()?.auth.currentUser?.id;
+      if (suUid != null && suUid.isNotEmpty) return suUid;
+    } catch (_) {}
+    try {
+      final sessionUid = tryGetSupabaseClient()?.auth.currentSession?.user.id;
+      if (sessionUid != null && sessionUid.isNotEmpty) return sessionUid;
+    } catch (_) {}
+    return null;
+  }
+
   /// 2. Load Real Supabase Data for Dashboard via DashboardRepository
   Future<void> _loadDashboardData() async {
-    final user = _safeCurrentUser();
-    if (user == null) return;
+    final uid = _safeCurrentUserId();
+    if (uid == null) return;
 
     try {
       final activeBookingRes = await _dashboardRepository
-          .getActiveClientBooking(user.uid);
-      final userRecord = await _dashboardRepository.getUserProfileRecord(
-        user.uid,
-      );
-      final workerStats = await _dashboardRepository.getWorkerStats(user.uid);
+          .getActiveClientBooking(uid);
+      final userRecord = await _dashboardRepository.getUserProfileRecord(uid);
+      final workerStats = await _dashboardRepository.getWorkerStats(uid);
       final liveReqs = await _dashboardRepository.getOpenRequirements();
-      final hasUnread = await _dashboardRepository.hasUnreadNotifications(
-        user.uid,
-      );
+      final hasUnread = await _dashboardRepository.hasUnreadNotifications(uid);
 
       if (mounted) {
         setState(() {
@@ -281,7 +303,7 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
       _activeClientBooking = null;
       _workerEarnings = 0.0;
       _workerCompletedJobs = 0;
-      _workerRating = 5.0;
+      _workerRating = 0.0;
       _liveJobRequests = [];
       _customAvatarUrl = null;
       _customCoverUrl = null;
@@ -298,9 +320,12 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
     AvatarPickerSheet.show(
       context,
       currentAvatarUrl: _customAvatarUrl,
-      userId: _safeCurrentUser()?.uid,
+      userId: _safeCurrentUserId(),
       slot: ProfileMediaSlot.avatar,
-      onAvatarSelected: (url) => setState(() => _customAvatarUrl = url),
+      onAvatarSelected: (url) {
+        setState(() => _customAvatarUrl = url);
+        _loadDashboardData();
+      },
     );
   }
 
@@ -308,9 +333,12 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
     AvatarPickerSheet.show(
       context,
       currentAvatarUrl: _customCoverUrl,
-      userId: _safeCurrentUser()?.uid,
+      userId: _safeCurrentUserId(),
       slot: ProfileMediaSlot.cover,
-      onAvatarSelected: (url) => setState(() => _customCoverUrl = url),
+      onAvatarSelected: (url) {
+        setState(() => _customCoverUrl = url);
+        _loadDashboardData();
+      },
     );
   }
 

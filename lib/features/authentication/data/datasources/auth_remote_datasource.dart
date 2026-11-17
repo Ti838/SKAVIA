@@ -209,7 +209,7 @@ class AuthRemoteDataSource {
         'working_area': 'All Dhaka City',
         'expected_rate': 500.00,
         'verification_status': 'Pending',
-        'rating_average': 5.0,
+        'rating_average': 0.0,
         'total_reviews': 0,
         'completed_jobs': 0,
         'is_available': true,

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/motion/sakuga_rating.dart';
 
-/// Interactive 5-star rating selector with descriptive feedback labels.
+/// Interactive 5-star rating selector with Sakuga spring pop-in & glints.
 class ReviewRatingSelector extends StatelessWidget {
   final int rating;
   final ValueChanged<int> onRatingChanged;
@@ -50,25 +51,12 @@ class ReviewRatingSelector extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 8,
-          runSpacing: 8,
-          children: List.generate(5, (index) {
-            final starValue = index + 1;
-            return GestureDetector(
-              onTap: () => onRatingChanged(starValue),
-              child: Icon(
-                starValue <= rating
-                    ? Icons.star_rounded
-                    : Icons.star_outline_rounded,
-                size: 40,
-                color: starValue <= rating
-                    ? AppColors.warningAmber
-                    : tokens.mutedText,
-              ),
-            );
-          }),
+        SakugaRating(
+          rating: rating,
+          starSize: 40,
+          activeColor: AppColors.warningAmber,
+          inactiveColor: tokens.mutedText,
+          onChanged: onRatingChanged,
         ),
         const SizedBox(height: 8),
         Text(

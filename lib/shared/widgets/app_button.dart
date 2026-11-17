@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
+import '../motion/sakuga_physics.dart';
+import '../motion/sakuga_pressable.dart';
 
 enum AppButtonVariant { primary, secondary, outline, whitePill }
 
@@ -13,6 +15,7 @@ class AppButton extends StatelessWidget {
   final AppButtonVariant variant;
   final double? width;
   final double height;
+  final SakugaIntensity? motionIntensity;
 
   const AppButton({
     super.key,
@@ -23,6 +26,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.primary,
     this.width,
     this.height = AppDimensions.buttonHeight,
+    this.motionIntensity,
   });
 
   @override
@@ -60,51 +64,65 @@ class AppButton extends StatelessWidget {
         break;
     }
 
-    return SizedBox(
-      width: width ?? double.infinity,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppDimensions.roundedPill,
-            side: borderSide,
+    final resolvedIntensity = motionIntensity ??
+        (variant == AppButtonVariant.primary ||
+                variant == AppButtonVariant.secondary
+            ? SakugaIntensity.medium
+            : SakugaIntensity.subtle);
+    final isEnabled = !isLoading && onPressed != null;
+
+    return SakugaPressable(
+      enabled: isEnabled,
+      intensity: resolvedIntensity,
+      vfxColor: variant == AppButtonVariant.primary
+          ? AppColors.primarySky
+          : AppColors.primaryRoyal,
+      child: SizedBox(
+        width: width ?? double.infinity,
+        height: height,
+        child: ElevatedButton(
+          onPressed: isLoading ? null : onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            foregroundColor: foregroundColor,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: AppDimensions.roundedPill,
+              side: borderSide,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-        ),
-        child: isLoading
-            ? SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (icon != null) ...[icon!, const SizedBox(width: 10)],
-                  Flexible(
-                    child: Text(
-                      text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: foregroundColor,
-                        letterSpacing: 0.1,
+          child: isLoading
+              ? SizedBox(
+                  height: 22,
+                  width: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (icon != null) ...[icon!, const SizedBox(width: 10)],
+                    Flexible(
+                      child: Text(
+                        text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: foregroundColor,
+                          letterSpacing: 0.1,
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                  ],
+                ),
+        ),
       ),
     );
   }

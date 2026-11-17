@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/category_resolver.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../customer/data/models/requirement_model.dart';
@@ -24,7 +26,7 @@ class DashboardWorkerStats {
   factory DashboardWorkerStats.empty() {
     return const DashboardWorkerStats(
       completedJobs: 0,
-      ratingAverage: 5.0,
+      ratingAverage: 0.0,
       isAvailable: true,
       totalEarnings: 0.0,
       incomingRequests: [],
@@ -74,6 +76,12 @@ class DashboardRepository {
           .select('avatar_url, cover_url, active_mode, location')
           .eq('user_id', userId)
           .maybeSingle();
+
+      if (res != null && res['active_mode'] != null) {
+        final mode = res['active_mode'].toString();
+        LocalCacheService.instance.put('${AppConstants.userModeStorageKey}_$userId', mode);
+        LocalCacheService.instance.put(AppConstants.userModeStorageKey, mode);
+      }
       return res;
     } catch (e) {
       debugPrint('[DashboardRepository] getUserProfileRecord error: $e');
@@ -101,7 +109,7 @@ class DashboardRepository {
       final wpId = workerProfile['worker_profile_id'];
       final jobs = (workerProfile['completed_jobs'] as num?)?.toInt() ?? 0;
       final rating =
-          (workerProfile['rating_average'] as num?)?.toDouble() ?? 5.0;
+          (workerProfile['rating_average'] as num?)?.toDouble() ?? 0.0;
       final available = workerProfile['is_available'] as bool? ?? true;
 
       // Earnings calculation (column is `amount`, status 'Available' / 'Withdrawn')
@@ -241,8 +249,16 @@ class DashboardRepository {
 
   /// Updates active user mode ('client' / 'customer' / 'enterprise' / 'worker') in database
   Future<void> updateActiveMode(String userId, String mode) async {
+    await LocalCacheService.instance.putPersisted(
+      '${AppConstants.userModeStorageKey}_$userId',
+      mode,
+    );
+    await LocalCacheService.instance.putPersisted(
+      AppConstants.userModeStorageKey,
+      mode,
+    );
     final client = _client;
-    if (client == null) return;
+    if (client == null || userId.isEmpty) return;
     try {
       await client
           .from('users')

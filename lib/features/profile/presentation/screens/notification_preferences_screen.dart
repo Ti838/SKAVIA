@@ -5,6 +5,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/sound_haptic_preferences.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../shared/motion/sakuga_toggle.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/app_card.dart';
 import '../controllers/profile_controller.dart';
@@ -309,7 +310,7 @@ class _NotificationPreferencesScreenState
     final tokens = context.skavia;
     final isEnabled = prefs[keyName] as bool? ?? true;
 
-    return SwitchListTile(
+    return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(
         title,
@@ -323,10 +324,16 @@ class _NotificationPreferencesScreenState
         subtitle,
         style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
       ),
-      value: isEnabled,
-      activeThumbColor: tokens.brandAccent,
-      onChanged: (val) {
-        widget.controller.toggleNotificationPreference(keyName, val);
+      trailing: SakugaToggle(
+        value: isEnabled,
+        activeColor: tokens.brandAccent,
+        semanticLabel: title,
+        onChanged: (val) {
+          widget.controller.toggleNotificationPreference(keyName, val);
+        },
+      ),
+      onTap: () {
+        widget.controller.toggleNotificationPreference(keyName, !isEnabled);
       },
     );
   }

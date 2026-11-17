@@ -201,7 +201,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                       <Link
                         href={item.href}
                         onClick={() => setMobileNavOpen(false)}
-                        className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                        className={`sakuga-spring-tap flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
                           active
                             ? 'bg-blue-600 text-white shadow-sm'
                             : 'text-slate-300 hover:bg-white/10 hover:text-white'

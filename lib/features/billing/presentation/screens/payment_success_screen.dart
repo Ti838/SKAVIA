@@ -5,10 +5,12 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../shared/motion/sakuga_physics.dart';
+import '../../../../shared/motion/sakuga_vfx_overlay.dart';
 import '../../../../shared/widgets/app_button.dart';
 
 /// Screen displayed upon verified payment and escrow authorization.
-class PaymentSuccessScreen extends StatelessWidget {
+class PaymentSuccessScreen extends StatefulWidget {
   final double amount;
   final String transactionId;
   final String paymentMethod;
@@ -31,10 +33,38 @@ class PaymentSuccessScreen extends StatelessWidget {
   });
 
   @override
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+  final GlobalKey _badgeKey = GlobalKey();
+  bool _entered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() => _entered = true);
+      final badgeCtx = _badgeKey.currentContext;
+      final origin = badgeCtx != null ? SakugaFx.globalCenterOf(badgeCtx) : null;
+      if (origin != null) {
+        SakugaFx.celebrate(
+          context,
+          origin: origin,
+          radius: 56,
+          accentColor: AppColors.successGreen,
+        );
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final tokens = context.skavia;
     final colorScheme = context.colorScheme;
-    final isCash = paymentMethod.toLowerCase() == 'cash';
+    final isCash = widget.paymentMethod.toLowerCase() == 'cash';
+    final reduced = SakugaMotion.isReduced(context);
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,
@@ -46,18 +76,26 @@ class PaymentSuccessScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
 
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  color: tokens.softMintBg,
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.successGreen,
-                    size: 64,
+              AnimatedScale(
+                key: _badgeKey,
+                scale: (_entered || reduced) ? 1.0 : 0.72,
+                duration: reduced
+                    ? Duration.zero
+                    : const Duration(milliseconds: 360),
+                curve: Curves.easeOutBack,
+                child: Container(
+                  width: 90,
+                  height: 90,
+                  decoration: BoxDecoration(
+                    color: tokens.softMintBg,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      color: AppColors.successGreen,
+                      size: 64,
+                    ),
                   ),
                 ),
               ),
@@ -79,8 +117,8 @@ class PaymentSuccessScreen extends StatelessWidget {
 
               Text(
                 isCash
-                    ? 'Your booking is confirmed with $specialistName. Pay ${Formatters.formatCurrency(amount)} directly in cash upon inspection.'
-                    : 'Your test transaction of ${Formatters.formatCurrency(amount)} via $paymentMethod has been processed in developer sandbox mode.',
+                    ? 'Your booking is confirmed with ${widget.specialistName}. Pay ${Formatters.formatCurrency(widget.amount)} directly in cash upon inspection.'
+                    : 'Your test transaction of ${Formatters.formatCurrency(widget.amount)} via ${widget.paymentMethod} has been processed in developer sandbox mode.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -104,19 +142,19 @@ class PaymentSuccessScreen extends StatelessWidget {
                   children: [
                     _buildRow(
                       isCash ? 'Booking Reference' : 'Sandbox TRX ID',
-                      transactionId,
+                      widget.transactionId,
                       context,
                     ),
                     Divider(height: 20, color: tokens.border),
-                    _buildRow('Service / Work', jobTitle, context),
+                    _buildRow('Service / Work', widget.jobTitle, context),
                     Divider(height: 20, color: tokens.border),
-                    _buildRow('Assigned Specialist', specialistName, context),
+                    _buildRow('Assigned Specialist', widget.specialistName, context),
                     Divider(height: 20, color: tokens.border),
                     _buildRow(
                       'Payment Rail',
                       isCash
                           ? 'Cash on Completion'
-                          : '$paymentMethod (Sandbox Test)',
+                          : '${widget.paymentMethod} (Sandbox Test)',
                       context,
                       isHighlight: true,
                     ),
@@ -161,7 +199,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               OutlinedButton(
-                onPressed: onViewInvoice,
+                onPressed: widget.onViewInvoice,
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: tokens.brandAccent, width: 1.5),
                   padding: const EdgeInsets.symmetric(vertical: 14),

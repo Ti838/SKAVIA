@@ -4,6 +4,8 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../controllers/auth_controller.dart';
 
@@ -49,10 +51,15 @@ class OnboardingAuthSheet extends StatelessWidget {
                       if (user != null) {
                         final profile = await DashboardRepository()
                             .getUserProfileRecord(user.uid);
-                        final activeMode = profile?['active_mode']?.toString();
-                        if (activeMode != null &&
-                            activeMode.isNotEmpty &&
-                            context.mounted) {
+                        final activeMode = profile?['active_mode']?.toString() ??
+                            LocalCacheService.instance
+                                .get('${AppConstants.userModeStorageKey}_${user.uid}')
+                                ?.toString() ??
+                            LocalCacheService.instance
+                                .get(AppConstants.userModeStorageKey)
+                                ?.toString() ??
+                            'customer';
+                        if (context.mounted) {
                           Navigator.of(context).pushReplacementNamed(
                             AppRoutes.appShell,
                             arguments: {'initialMode': activeMode},

@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
+import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/user_avatar.dart';
 
@@ -22,7 +24,9 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
   String _selectedLocation = 'All Locations';
   String _selectedAvailability = 'Any';
 
-  late final List<Map<String, dynamic>> _teams;
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _teams = [];
+  Set<String> _savedIds = {};
 
   @override
   void initState() {
@@ -30,64 +34,47 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
     final cachedSaved = LocalCacheService.instance.get(
       _savedTeamsCacheKey,
     );
-    final savedIds = cachedSaved is List
+    _savedIds = cachedSaved is List
         ? cachedSaved.map((e) => e.toString()).toSet()
-        : null;
+        : {};
+    _loadTeams();
+  }
 
-    _teams = [
-      {
-        'id': 'team_01',
-        'name': 'TechCraft Team',
-        'membersCount': 5,
-        'projectsCount': 3,
-        'rating': 4.8,
-        'reviews': 12,
-        'avatar': '',
-        'skills': ['Flutter', 'Firebase', 'UI/UX'],
-        'location': 'Dhanmondi',
-        'availability': 'Immediate',
-        'isSaved': savedIds?.contains('team_01') ?? false,
-      },
-      {
-        'id': 'team_02',
-        'name': 'Dream Builders',
-        'membersCount': 4,
-        'projectsCount': 2,
-        'rating': 4.6,
-        'reviews': 9,
-        'avatar': '',
-        'skills': ['React', 'Node.js', 'Design'],
-        'location': 'Gulshan',
-        'availability': 'Full-time',
-        'isSaved': savedIds?.contains('team_02') ?? true,
-      },
-      {
-        'id': 'team_03',
-        'name': 'Pixel Squad',
-        'membersCount': 3,
-        'projectsCount': 1,
-        'rating': 4.7,
-        'reviews': 7,
-        'avatar': '',
-        'skills': ['Flutter', 'Firebase', 'Design'],
-        'location': 'Uttara',
-        'availability': 'Part-time',
-        'isSaved': savedIds?.contains('team_03') ?? false,
-      },
-      {
-        'id': 'team_04',
-        'name': 'Code Crafters',
-        'membersCount': 6,
-        'projectsCount': 5,
-        'rating': 4.9,
-        'reviews': 18,
-        'avatar': '',
-        'skills': ['Mobile', 'Cloud', 'DevOps'],
-        'location': 'Gulshan',
-        'availability': 'Immediate',
-        'isSaved': savedIds?.contains('team_04') ?? false,
-      },
-    ];
+  Future<void> _loadTeams() async {
+    final client = tryGetSupabaseClient();
+    if (client == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+    try {
+      final res = await client
+          .from(DatabaseTables.teams)
+          .select('team_id, name')
+          .limit(20);
+      if (mounted) {
+        setState(() {
+          _teams = (res as List).map((t) {
+            final id = t['team_id']?.toString() ?? '';
+            return {
+              'id': id,
+              'name': t['name']?.toString() ?? 'Project Crew',
+              'membersCount': 0,
+              'projectsCount': 0,
+              'rating': 0.0,
+              'reviews': 0,
+              'avatar': '',
+              'skills': <String>[],
+              'location': 'Dhaka',
+              'availability': 'Active',
+              'isSaved': _savedIds.contains(id),
+            };
+          }).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   List<Map<String, dynamic>> get _filteredTeams {
@@ -177,7 +164,13 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
 
             // Teams List or Contextual Empty State
             Expanded(
-              child: visibleTeams.isEmpty
+              child: _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: tokens.brandAccent,
+                      ),
+                    )
+                  : visibleTeams.isEmpty
                   ? Center(
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(24),
@@ -191,7 +184,11 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              'No teams match these filters',
+                              (_selectedSkill != 'All Skills' ||
+                                      _selectedLocation != 'All Locations' ||
+                                      _selectedAvailability != 'Any')
+                                  ? 'No teams match these filters'
+                                  : 'No teams registered yet',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 15,
@@ -201,29 +198,37 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Try adjusting skills, location, or availability.',
+                              (_selectedSkill != 'All Skills' ||
+                                      _selectedLocation != 'All Locations' ||
+                                      _selectedAvailability != 'Any')
+                                  ? 'Try adjusting skills, location, or availability.'
+                                  : 'Multi-disciplinary and turnkey project teams will appear here once formed.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: tokens.mutedText,
                               ),
                             ),
-                            const SizedBox(height: 14),
-                            TextButton.icon(
-                              onPressed: _resetFilters,
-                              icon: Icon(
-                                Icons.refresh_rounded,
-                                size: 18,
-                                color: tokens.brandAccent,
-                              ),
-                              label: Text(
-                                'Reset Filters',
-                                style: TextStyle(
+                            if (_selectedSkill != 'All Skills' ||
+                                _selectedLocation != 'All Locations' ||
+                                _selectedAvailability != 'Any') ...[
+                              const SizedBox(height: 14),
+                              TextButton.icon(
+                                onPressed: _resetFilters,
+                                icon: Icon(
+                                  Icons.refresh_rounded,
+                                  size: 18,
                                   color: tokens.brandAccent,
-                                  fontWeight: FontWeight.w700,
+                                ),
+                                label: Text(
+                                  'Reset Filters',
+                                  style: TextStyle(
+                                    color: tokens.brandAccent,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ],
                         ),
                       ),

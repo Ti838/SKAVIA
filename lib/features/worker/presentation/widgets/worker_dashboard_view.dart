@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/motion/sakuga_toggle.dart';
 import 'worker_incoming_requests_list.dart';
 import 'worker_stat_cards.dart';
 import 'worker_weekly_schedule_selector.dart';
@@ -108,9 +109,10 @@ class _WorkerDashboardViewState extends State<WorkerDashboardView> {
                 ),
               ),
               const SizedBox(width: 8),
-              Switch.adaptive(
+              SakugaToggle(
                 value: widget.isWorkerAvailable,
-                activeTrackColor: AppColors.successGreen,
+                activeColor: AppColors.successGreen,
+                semanticLabel: 'Worker availability status',
                 onChanged: widget.onToggleAvailability,
               ),
             ],

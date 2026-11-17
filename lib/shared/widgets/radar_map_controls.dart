@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/extensions/context_extensions.dart';
 
-/// Floating zoom and GPS recenter controls for radar map sheets.
+/// Floating map layer, zoom, and GPS recenter controls for radar map sheets.
 class RadarMapControls extends StatelessWidget {
   final bool isLocatingUser;
   final VoidCallback onRecenter;
   final VoidCallback onZoomIn;
   final VoidCallback onZoomOut;
+  final VoidCallback? onCycleLayer;
+  final String? layerLabel;
 
   const RadarMapControls({
     super.key,
@@ -15,6 +17,8 @@ class RadarMapControls extends StatelessWidget {
     required this.onRecenter,
     required this.onZoomIn,
     required this.onZoomOut,
+    this.onCycleLayer,
+    this.layerLabel,
   });
 
   Widget _buildButton({
@@ -30,12 +34,12 @@ class RadarMapControls extends StatelessWidget {
       child: Material(
         color: tokens.cardBg,
         shape: CircleBorder(side: BorderSide(color: tokens.border)),
-        elevation: 2,
+        elevation: 3,
         child: InkWell(
           onTap: onTap,
           customBorder: const CircleBorder(),
           child: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(9),
             child: Icon(icon, size: 20, color: tokens.brandAccent),
           ),
         ),
@@ -48,6 +52,15 @@ class RadarMapControls extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (onCycleLayer != null) ...[
+          _buildButton(
+            context: context,
+            icon: Icons.layers_rounded,
+            tooltip: layerLabel ?? 'Switch Map Style (Street / Satellite / Dark)',
+            onTap: onCycleLayer!,
+          ),
+          const SizedBox(height: 8),
+        ],
         _buildButton(
           context: context,
           icon: isLocatingUser

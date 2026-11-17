@@ -10,6 +10,7 @@ import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../core/utils/uuid_util.dart';
 import '../../../../data/tables/database_tables.dart';
+import '../../../../shared/motion/sakuga_vfx_overlay.dart';
 import '../../../billing/presentation/screens/simulated_checkout_screen.dart';
 import '../widgets/booking_payment_details_card.dart';
 import '../widgets/booking_payment_method_list.dart';
@@ -195,6 +196,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       }
 
       if (mounted) {
+        SakugaFx.celebrate(context, radius: 52);
         final effectiveTitle = widget.jobTitle.isNotEmpty
             ? widget.jobTitle
             : 'Certified Trade Service';

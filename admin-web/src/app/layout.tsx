@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SakugaProvider } from '@/components/sakuga';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -82,6 +83,26 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('skavia-theme');
+                  var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  var isDark = saved === 'dark' || ((!saved || saved === 'system') && prefersDark);
+                  if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -102,7 +123,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        <SakugaProvider>{children}</SakugaProvider>
+      </body>
     </html>
   );
 }

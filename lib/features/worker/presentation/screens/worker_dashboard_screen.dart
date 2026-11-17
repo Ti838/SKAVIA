@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -5,6 +6,7 @@ import '../../../../app/router/app_routes.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../shared/dialogs/notification_permission_sheet.dart';
+import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../widgets/worker_dashboard_view.dart';
 
 /// Full-page screen wrapper for Worker Dashboard when accessed directly or via deep link.
@@ -16,17 +18,43 @@ class WorkerDashboardScreen extends StatefulWidget {
 }
 
 class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
-  final double _earnings = 18450.0;
-  final int _completedJobs = 28;
-  final double _rating = 4.9;
+  final DashboardRepository _dashboardRepository = DashboardRepository();
+
+  double _earnings = 0.0;
+  int _completedJobs = 0;
+  double _rating = 0.0;
   bool _isAvailable = true;
   String _currentZone = 'Dhanmondi';
+  List<Map<String, dynamic>> _incomingRequests = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _loadLocation();
+    _loadWorkerData();
     _checkNotificationPermission();
+  }
+
+  Future<void> _loadWorkerData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final stats = await _dashboardRepository.getWorkerStats(user.uid);
+        if (mounted) {
+          setState(() {
+            _earnings = stats.totalEarnings;
+            _completedJobs = stats.completedJobs;
+            _rating = stats.ratingAverage;
+            _isAvailable = stats.isAvailable;
+            _incomingRequests = stats.incomingRequests;
+            _isLoading = false;
+          });
+        }
+        return;
+      } catch (_) {}
+    }
+    if (mounted) setState(() => _isLoading = false);
   }
 
   Future<void> _checkNotificationPermission() async {
@@ -69,15 +97,23 @@ class _WorkerDashboardScreenState extends State<WorkerDashboardScreen> {
           ),
         ],
       ),
-      body: WorkerDashboardView(
-        isWorkerAvailable: _isAvailable,
-        onToggleAvailability: (val) => setState(() => _isAvailable = val),
-        workerEarnings: _earnings,
-        workerCompletedJobs: _completedJobs,
-        workerRating: _rating,
-        locationZone: _currentZone,
-        liveJobRequests: const [],
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+          : WorkerDashboardView(
+              isWorkerAvailable: _isAvailable,
+              onToggleAvailability: (val) {
+                setState(() => _isAvailable = val);
+                final user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  _dashboardRepository.updateWorkerAvailability(user.uid, val);
+                }
+              },
+              workerEarnings: _earnings,
+              workerCompletedJobs: _completedJobs,
+              workerRating: _rating,
+              locationZone: _currentZone,
+              liveJobRequests: _incomingRequests,
+            ),
     );
   }
 }

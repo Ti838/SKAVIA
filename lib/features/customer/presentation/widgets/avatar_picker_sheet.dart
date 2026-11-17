@@ -143,7 +143,13 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
       setState(() => _isUploading = true);
     }
 
-    if (widget.userId != null && widget.userId!.isNotEmpty) {
+    final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
+        ? widget.userId
+        : (FirebaseAuth.instance.currentUser?.uid ??
+            tryGetSupabaseClient()?.auth.currentUser?.id ??
+            tryGetSupabaseClient()?.auth.currentSession?.user.id);
+
+    if (effectiveUid != null && effectiveUid.isNotEmpty) {
       final supabase = tryGetSupabaseClient();
       if (supabase != null) {
         try {
@@ -151,12 +157,12 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
             await supabase
                 .from(DatabaseTables.users)
                 .update({'cover_url': trimmed.isEmpty ? null : trimmed})
-                .eq('user_id', widget.userId!);
+                .eq('user_id', effectiveUid);
           } else {
             await supabase
                 .from(DatabaseTables.users)
                 .update({'avatar_url': trimmed.isEmpty ? null : trimmed})
-                .eq('user_id', widget.userId!);
+                .eq('user_id', effectiveUid);
           }
         } catch (_) {}
       }

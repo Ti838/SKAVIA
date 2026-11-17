@@ -217,6 +217,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ],
                       ),
+                      Divider(color: tokens.subtleBorder, height: 22),
+                      Text(
+                        isBn ? 'অ্যাপের থিম' : 'App Theme',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ValueListenableBuilder<ThemeMode>(
+                        valueListenable: AppThemeService.themeModeNotifier,
+                        builder: (context, activeMode, _) {
+                          return Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: [
+                              _buildOptionPill(
+                                context,
+                                label: isBn ? 'সিস্টেম অটো' : 'System Auto',
+                                selected: activeMode == ThemeMode.system,
+                                onTap: () =>
+                                    AppThemeService.setThemeMode(ThemeMode.system),
+                              ),
+                              _buildOptionPill(
+                                context,
+                                label: isBn ? 'লাইট মোড' : 'Light Mode',
+                                selected: activeMode == ThemeMode.light,
+                                onTap: () =>
+                                    AppThemeService.setThemeMode(ThemeMode.light),
+                              ),
+                              _buildOptionPill(
+                                context,
+                                label: isBn ? 'ডার্ক মোড' : 'Dark Mode',
+                                selected: activeMode == ThemeMode.dark,
+                                onTap: () =>
+                                    AppThemeService.setThemeMode(ThemeMode.dark),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

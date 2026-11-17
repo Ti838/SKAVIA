@@ -24,22 +24,17 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final WorkerProfileRemoteDataSource _dataSource =
       WorkerProfileRemoteDataSource();
-  final _titleController = TextEditingController(
-    text: 'Certified Electrician & HVAC Specialist',
-  );
-  final _rateController = TextEditingController(text: '650');
-  final _bioController = TextEditingController(
-    text:
-        'Experienced technician with 5+ years servicing residential, corporate, and industrial electrical boards, AC cooling systems, and backup generators across Dhaka.',
-  );
+  final _titleController = TextEditingController();
+  final _rateController = TextEditingController();
+  final _bioController = TextEditingController();
   final AuthController _authController = AuthController();
 
   String _workingArea = 'All Dhaka City';
-  String _verificationStatus = 'Pending';
+  String _verificationStatus = 'Unverified';
   bool _isAvailable = true;
   bool _isLoading = false;
-  bool _nidUploaded = true;
-  bool _certUploaded = true;
+  bool _nidUploaded = false;
+  bool _certUploaded = false;
 
   final List<String> _workingZones = [
     'All Dhaka City',
@@ -98,9 +93,15 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
     final response = await _dataSource.fetchWorkerProfile(user.uid);
     if (response != null && mounted) {
       setState(() {
-        _titleController.text = response['title'] ?? _titleController.text;
-        _rateController.text = (response['expected_rate'] ?? 650).toString();
-        _bioController.text = response['bio'] ?? _bioController.text;
+        if (response['title'] != null) {
+          _titleController.text = response['title'].toString();
+        }
+        if (response['expected_rate'] != null) {
+          _rateController.text = response['expected_rate'].toString();
+        }
+        if (response['bio'] != null) {
+          _bioController.text = response['bio'].toString();
+        }
         final area = response['working_area']?.toString();
         if (area != null && _workingZones.contains(area)) {
           _workingArea = area;
@@ -119,7 +120,7 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
 
     try {
       final user = _authController.user;
-      final rate = double.tryParse(_rateController.text.trim()) ?? 650.0;
+      final rate = double.tryParse(_rateController.text.trim()) ?? 0.0;
 
       await _dataSource.saveWorkerProfile(
         userId: user?.uid,
@@ -306,7 +307,7 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                             final rateField = AppTextField(
                               controller: _rateController,
                               label: 'Rate (৳/Hour)',
-                              hint: '650',
+                              hint: 'e.g. 500',
                               keyboardType: TextInputType.number,
                               prefixIcon: Icon(
                                 Icons.sell_outlined,

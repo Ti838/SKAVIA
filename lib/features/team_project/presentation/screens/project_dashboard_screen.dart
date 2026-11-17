@@ -6,7 +6,6 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/uuid_util.dart';
-import '../../data/models/project_fallback_data.dart';
 import '../widgets/project_action_dialogs.dart';
 import '../widgets/project_members_tab_view.dart';
 import '../widgets/project_overview_tab_view.dart';
@@ -180,20 +179,6 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
               .toList();
         }
         setState(() {
-          if (_teamMembers.isEmpty) {
-            _teamMembers = List<Map<String, dynamic>>.from(
-              ProjectFallbackData.fallbackMembers.map(
-                (e) => Map<String, dynamic>.from(e),
-              ),
-            );
-          }
-          if (_tasks.isEmpty) {
-            _tasks = List<Map<String, dynamic>>.from(
-              ProjectFallbackData.fallbackTasks.map(
-                (e) => Map<String, dynamic>.from(e),
-              ),
-            );
-          }
           _isLoading = false;
         });
       }

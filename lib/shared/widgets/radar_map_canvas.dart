@@ -7,8 +7,11 @@ import '../../../core/extensions/context_extensions.dart';
 import '../models/radar_technician.dart';
 import 'radar_map_controls.dart';
 
-/// Interactive OpenStreetMap canvas widget with user pin, tap marker, and technician dots.
-class RadarMapCanvas extends StatelessWidget {
+enum SkaviaMapStyle { street, satellite, dark }
+
+/// Interactive Google-style street, satellite, and dark map canvas widget
+/// powered by free Retina CartoDB & Esri World Imagery tiles.
+class RadarMapCanvas extends StatefulWidget {
   final MapController mapController;
   final LatLng userPosition;
   final double currentZoom;
@@ -43,35 +46,104 @@ class RadarMapCanvas extends StatelessWidget {
   });
 
   @override
+  State<RadarMapCanvas> createState() => _RadarMapCanvasState();
+}
+
+class _RadarMapCanvasState extends State<RadarMapCanvas> {
+  SkaviaMapStyle? _selectedStyle;
+
+  SkaviaMapStyle _effectiveStyle(BuildContext context) {
+    if (_selectedStyle != null) return _selectedStyle!;
+    return Theme.of(context).brightness == Brightness.dark
+        ? SkaviaMapStyle.dark
+        : SkaviaMapStyle.street;
+  }
+
+  void _cycleMapStyle(BuildContext context) {
+    final current = _effectiveStyle(context);
+    final next = switch (current) {
+      SkaviaMapStyle.street => SkaviaMapStyle.satellite,
+      SkaviaMapStyle.satellite => SkaviaMapStyle.dark,
+      SkaviaMapStyle.dark => SkaviaMapStyle.street,
+    };
+    setState(() => _selectedStyle = next);
+  }
+
+  String _styleLabel(SkaviaMapStyle style) {
+    return switch (style) {
+      SkaviaMapStyle.street => widget.isBn ? 'স্ট্রিট ম্যাপ' : 'Street',
+      SkaviaMapStyle.satellite => widget.isBn ? 'স্যাটেলাইট' : 'Satellite',
+      SkaviaMapStyle.dark => widget.isBn ? 'ডার্ক ম্যাপ' : 'Dark',
+    };
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
+    final activeStyle = _effectiveStyle(context);
+    final isRetina = RetinaMode.isHighDensity(context);
 
     return Stack(
       children: [
         FlutterMap(
-          mapController: mapController,
+          mapController: widget.mapController,
           options: MapOptions(
-            initialCenter: userPosition,
-            initialZoom: currentZoom,
+            initialCenter: widget.userPosition,
+            initialZoom: widget.currentZoom,
             minZoom: 4.0,
             maxZoom: 18.0,
             interactionOptions: const InteractionOptions(
               flags: InteractiveFlag.all,
             ),
-            onTap: onMapTap,
+            onTap: widget.onMapTap,
           ),
           children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: 'com.skavia.app',
-              maxZoom: 19,
-            ),
+            // Base Tile Layer (100% Free Retina Google-Style / Satellite / Dark with OSM fallback)
+            if (activeStyle == SkaviaMapStyle.satellite) ...[
+              TileLayer(
+                urlTemplate:
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 18,
+              ),
+              // Hybrid road & area labels overlay on satellite imagery
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                retinaMode: isRetina,
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 19,
+              ),
+            ] else if (activeStyle == SkaviaMapStyle.dark)
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                retinaMode: isRetina,
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 19,
+              )
+            else
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+                retinaMode: isRetina,
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 19,
+              ),
+
+            // Live Markers (Custom Pin, Google-Style Blue GPS Dot, Real Technicians)
             MarkerLayer(
               markers: [
-                if (selectedCustomPoint != null)
+                if (widget.selectedCustomPoint != null)
                   Marker(
-                    point: selectedCustomPoint!,
+                    point: widget.selectedCustomPoint!,
                     width: 50,
                     height: 50,
                     child: const Column(
@@ -86,7 +158,7 @@ class RadarMapCanvas extends StatelessWidget {
                     ),
                   ),
                 Marker(
-                  point: userPosition,
+                  point: widget.userPosition,
                   width: 52,
                   height: 52,
                   child: GestureDetector(
@@ -94,9 +166,9 @@ class RadarMapCanvas extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            isBn
-                                ? 'আপনার আসল জিপিএস লোকেশন'
-                                : 'Your Live GPS Location: $locationZone',
+                            widget.isBn
+                                ? 'আপনার আসল জিপিএস লোকেশন: ${widget.locationZone}'
+                                : 'Your Live GPS Location: ${widget.locationZone}',
                           ),
                           duration: const Duration(seconds: 2),
                         ),
@@ -109,7 +181,7 @@ class RadarMapCanvas extends StatelessWidget {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryRoyal.withValues(
+                            color: const Color(0xFF1A73E8).withValues(
                               alpha: 0.22,
                             ),
                             shape: BoxShape.circle,
@@ -119,7 +191,7 @@ class RadarMapCanvas extends StatelessWidget {
                           width: 20,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryRoyal,
+                            color: const Color(0xFF1A73E8),
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: Colors.white,
@@ -138,14 +210,14 @@ class RadarMapCanvas extends StatelessWidget {
                     ),
                   ),
                 ),
-                ...filteredTechnicians.map((tech) {
-                  final isSelected = selectedTech?.id == tech.id;
+                ...widget.filteredTechnicians.map((tech) {
+                  final isSelected = widget.selectedTech?.id == tech.id;
                   return Marker(
                     point: LatLng(tech.latitude, tech.longitude),
                     width: isSelected ? 56 : 46,
                     height: isSelected ? 56 : 46,
                     child: GestureDetector(
-                      onTap: () => onTechnicianTap(tech),
+                      onTap: () => widget.onTechnicianTap(tech),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
                         decoration: BoxDecoration(
@@ -179,57 +251,139 @@ class RadarMapCanvas extends StatelessWidget {
           ],
         ),
 
-        // Floating Controls (Recenter, Zoom)
+        // Floating Controls (Map Layer Switcher, Recenter, Zoom)
         Positioned(
           top: 14,
           right: 14,
           child: RadarMapControls(
-            isLocatingUser: isLocatingUser,
-            onRecenter: onRecenter,
-            onZoomIn: onZoomIn,
-            onZoomOut: onZoomOut,
+            isLocatingUser: widget.isLocatingUser,
+            onRecenter: widget.onRecenter,
+            onZoomIn: widget.onZoomIn,
+            onZoomOut: widget.onZoomOut,
+            onCycleLayer: () => _cycleMapStyle(context),
+            layerLabel:
+                '${widget.isBn ? "ম্যাপ ধরন" : "Map Style"}: ${_styleLabel(activeStyle)}',
           ),
         ),
 
-        // Floating Status Pill
+        // Top-Left Floating Status & Active Map Style Pills
         Positioned(
           top: 14,
           left: 14,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              color: tokens.cardBg,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: tokens.border),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
                 ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.successGreen,
-                    shape: BoxShape.circle,
+                decoration: BoxDecoration(
+                  color: tokens.cardBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: tokens.border),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.successGreen,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${widget.filteredTechnicians.length} ${widget.isBn ? "কারিগর অনলাইন" : "Pros Online"}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => _cycleMapStyle(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: tokens.cardBg.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: tokens.border),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        activeStyle == SkaviaMapStyle.satellite
+                            ? Icons.satellite_alt_rounded
+                            : (activeStyle == SkaviaMapStyle.dark
+                                  ? Icons.dark_mode_rounded
+                                  : Icons.map_rounded),
+                        size: 13,
+                        color: tokens.brandAccent,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        _styleLabel(activeStyle),
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '${filteredTechnicians.length} ${isBn ? "কারিগর অনলাইন" : "Pros Online"}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.onSurface,
-                  ),
+              ),
+            ],
+          ),
+        ),
+
+        // Compact OpenStreetMap / CARTO / Esri Attribution Badge
+        Positioned(
+          left: 10,
+          bottom: 8,
+          child: IgnorePointer(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                activeStyle == SkaviaMapStyle.satellite
+                    ? '© Esri · © CARTO · © OSM'
+                    : '© OpenStreetMap · © CARTO',
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
+              ),
             ),
           ),
         ),
@@ -237,4 +391,3 @@ class RadarMapCanvas extends StatelessWidget {
     );
   }
 }
-

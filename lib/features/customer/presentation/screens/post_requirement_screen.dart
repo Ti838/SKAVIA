@@ -31,7 +31,7 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _budgetController = TextEditingController(text: '1500');
+  final _budgetController = TextEditingController();
   final AuthController _authController = AuthController();
 
   String _requirementType = 'Individual'; // 'Individual' vs 'Team Project'

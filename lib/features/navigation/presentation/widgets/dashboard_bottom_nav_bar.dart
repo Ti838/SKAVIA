@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/motion/sakuga_physics.dart';
+import '../../../../shared/motion/sakuga_pressable.dart';
 import '../screens/main_scaffold_screen.dart';
 
 /// 5-Tab Bottom Navigation Bar matching the SKAVIA Reference Design
@@ -34,38 +36,49 @@ class DashboardBottomNavBar extends StatelessWidget {
         label: label,
         selected: isSelected,
         button: true,
-        child: InkWell(
-          onTap: () => onTabSelected(index),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, anim) =>
-                      ScaleTransition(scale: anim, child: child),
-                  child: Icon(
-                    isSelected ? activeIcon : inactiveIcon,
-                    key: ValueKey<bool>(isSelected),
-                    size: 22,
-                    color: isSelected ? activeColor : inactiveColor,
+        child: SakugaPressable(
+          intensity: SakugaIntensity.subtle,
+          emitVfx: false,
+          child: InkWell(
+            onTap: () => onTabSelected(index),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    transitionBuilder: (child, anim) => ScaleTransition(
+                      scale: CurvedAnimation(
+                        parent: anim,
+                        curve: Curves.easeOutBack,
+                      ),
+                      child: child,
+                    ),
+                    child: Icon(
+                      isSelected ? activeIcon : inactiveIcon,
+                      key: ValueKey<bool>(isSelected),
+                      size: 22,
+                      color: isSelected ? activeColor : inactiveColor,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
-                    color: isSelected ? activeColor : inactiveColor,
+                  const SizedBox(height: 3),
+                  Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w500,
+                      color: isSelected ? activeColor : inactiveColor,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

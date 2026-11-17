@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_dimensions.dart';
+import '../motion/sakuga_physics.dart';
 
 class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
@@ -34,11 +35,28 @@ class AppTextField extends StatefulWidget {
 
 class _AppTextFieldState extends State<AppTextField> {
   late bool _obscureText;
+  late final FocusNode _focusNode;
+  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _obscureText = widget.isPassword;
+    _focusNode = FocusNode()..addListener(_handleFocusChange);
+  }
+
+  void _handleFocusChange() {
+    if (!mounted) return;
+    if (_isFocused != _focusNode.hasFocus) {
+      setState(() => _isFocused = _focusNode.hasFocus);
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.removeListener(_handleFocusChange);
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -46,9 +64,31 @@ class _AppTextFieldState extends State<AppTextField> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final reduced = SakugaMotion.isReduced(context);
 
-    return TextFormField(
-      controller: widget.controller,
+    return AnimatedScale(
+      scale: (_isFocused && !reduced) ? 1.008 : 1.0,
+      duration: reduced ? Duration.zero : const Duration(milliseconds: 180),
+      curve: Curves.easeOutBack,
+      child: AnimatedContainer(
+        duration: reduced ? Duration.zero : const Duration(milliseconds: 180),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppDimensions.radius14),
+          boxShadow: _isFocused
+              ? [
+                  BoxShadow(
+                    color: colorScheme.primary.withValues(
+                      alpha: isDark ? 0.24 : 0.14,
+                    ),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : const [],
+        ),
+        child: TextFormField(
+          focusNode: _focusNode,
+          controller: widget.controller,
       obscureText: _obscureText,
       maxLines: widget.isPassword ? 1 : widget.maxLines,
       keyboardType: widget.keyboardType,
@@ -122,6 +162,8 @@ class _AppTextFieldState extends State<AppTextField> {
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radius14),
           borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+        ),
+      ),
         ),
       ),
     );

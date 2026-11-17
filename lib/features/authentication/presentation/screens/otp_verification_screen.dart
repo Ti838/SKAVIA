@@ -8,7 +8,9 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
@@ -200,7 +202,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         final profile = await DashboardRepository().getUserProfileRecord(
           user.uid,
         );
-        activeMode = profile?['active_mode']?.toString();
+        activeMode = profile?['active_mode']?.toString() ??
+            LocalCacheService.instance
+                .get('${AppConstants.userModeStorageKey}_${user.uid}')
+                ?.toString() ??
+            LocalCacheService.instance
+                .get(AppConstants.userModeStorageKey)
+                ?.toString();
       }
       if (!mounted) return;
       if (activeMode != null && activeMode.isNotEmpty) {

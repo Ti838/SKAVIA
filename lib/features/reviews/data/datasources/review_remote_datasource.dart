@@ -49,7 +49,7 @@ class ReviewRemoteDataSource {
       }
       final double averageRating = totalRatings > 0
           ? (sum / totalRatings)
-          : 5.0;
+          : 0.0;
 
       await client
           .from(DatabaseTables.workerProfiles)
@@ -58,11 +58,13 @@ class ReviewRemoteDataSource {
           })
           .eq('worker_profile_id', workerProfileId);
 
-      String badge = 'Verified Specialist';
+      String badge = 'New Specialist';
       if (averageRating >= 4.8 && totalRatings >= 5) {
         badge = 'Top Rated Elite';
-      } else if (averageRating >= 4.5) {
+      } else if (averageRating >= 4.5 && totalRatings >= 3) {
         badge = 'Top Rated Specialist';
+      } else if (totalRatings > 0) {
+        badge = 'Verified Specialist';
       }
 
       await client.from(DatabaseTables.reputations).upsert({

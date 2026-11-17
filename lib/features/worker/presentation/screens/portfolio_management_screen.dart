@@ -20,35 +20,7 @@ class PortfolioManagementScreen extends StatefulWidget {
 class _PortfolioManagementScreenState extends State<PortfolioManagementScreen> {
   static const String _cacheKey = 'worker_portfolio_items_v1';
 
-  List<Map<String, dynamic>> _portfolioItems = [
-    {
-      'title': 'High-Rise Commercial HVAC & Chiller Overhaul',
-      'category': 'HVAC & AC Engineering',
-      'year': '2025',
-      'description':
-          'Complete inspection, refrigerant recharge, and compressor replacement for a 12-story corporate tower in Banani.',
-      'skills': ['Commercial HVAC', '3-Phase Electrical', 'Safety Auditing'],
-      'verified': true,
-    },
-    {
-      'title': 'Smart Home IoT Electrical Automation',
-      'category': 'Electrical & Lighting',
-      'year': '2026',
-      'description':
-          'Installed 48-channel smart breakers, automated circuit protection, and voice-controlled lighting panel in Dhanmondi.',
-      'skills': ['Smart Breakers', 'Surge Protection', 'Wiring Diagnostics'],
-      'verified': true,
-    },
-    {
-      'title': 'Emergency High-Pressure Main Line Plumbing',
-      'category': 'Plumbing & Water Systems',
-      'year': '2026',
-      'description':
-          'Repaired ruptured underground 4-inch supply line and restored clean pressure distribution for residential complex.',
-      'skills': ['PPR Welding', 'Hydrostatic Testing', 'Leak Detection'],
-      'verified': false,
-    },
-  ];
+  List<Map<String, dynamic>> _portfolioItems = [];
 
   @override
   void initState() {
@@ -209,7 +181,54 @@ class _PortfolioManagementScreenState extends State<PortfolioManagementScreen> {
           ),
         ],
       ),
-      body: ListView.separated(
+      body: _portfolioItems.isEmpty
+          ? Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.work_outline_rounded,
+                      size: 56,
+                      color: tokens.mutedText,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No Work Samples Yet',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Add your completed projects and verified trade work samples to showcase your skills to clients.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: tokens.secondaryText,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    ElevatedButton.icon(
+                      onPressed: _addNewProject,
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      label: const Text('Add First Work Sample'),
+                      style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.separated(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
         itemCount: _portfolioItems.length,
         separatorBuilder: (_, _) => const SizedBox(height: 14),

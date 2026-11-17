@@ -120,13 +120,13 @@ abstract class AppRouter {
         return MaterialPageRoute(
           builder: (_) => WorkerProfileDetailScreen(
             workerProfileId: args?['workerProfileId'] as String?,
-            name: args?['name'] as String? ?? 'SKAVIA Specialist',
-            title: args?['title'] as String? ?? 'Certified Technician',
-            rating: (args?['rating'] as num?)?.toDouble() ?? 4.8,
+            name: args?['name'] as String? ?? 'Specialist',
+            title: args?['title'] as String? ?? 'Trade Specialist',
+            rating: (args?['rating'] as num?)?.toDouble() ?? 0.0,
             reviewsCount: (args?['reviewsCount'] as num?)?.toInt() ?? 0,
-            experience: args?['experience'] as String? ?? '2+ years',
+            experience: args?['experience'] as String? ?? '',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
-            hourlyRate: args?['hourlyRate'] as String? ?? '৳ 1,500/hr',
+            hourlyRate: args?['hourlyRate'] as String? ?? '৳ 0/hr',
             avatarUrl: args?['avatarUrl'] as String? ?? '',
           ),
         );
@@ -236,10 +236,10 @@ abstract class AppRouter {
         return MaterialPageRoute(
           builder: (_) => BookingConfirmationScreen(
             requirementId: args?['requirementId'] as String?,
-            workerProfileId: args?['workerProfileId'] as String? ?? 'wp_001',
-            workerName: args?['workerName'] as String? ?? 'SKAVIA Specialist',
-            tradeTitle: args?['tradeTitle'] as String? ?? 'Certified Technician',
-            hourlyRate: (args?['hourlyRate'] as num?)?.toDouble() ?? 1500.0,
+            workerProfileId: args?['workerProfileId'] as String? ?? '',
+            workerName: args?['workerName'] as String? ?? 'Specialist',
+            tradeTitle: args?['tradeTitle'] as String? ?? 'Trade Service',
+            hourlyRate: (args?['hourlyRate'] as num?)?.toDouble() ?? 0.0,
             jobTitle: args?['jobTitle'] as String? ?? 'Technical Service',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
           ),
@@ -250,12 +250,12 @@ abstract class AppRouter {
         return MaterialPageRoute(
           builder: (_) => SimulatedCheckoutScreen(
             title: args?['title'] as String? ?? 'On-Demand Service',
-            amount: (args?['amount'] as num?)?.toDouble() ?? 1000.0,
+            amount: (args?['amount'] as num?)?.toDouble() ?? 0.0,
             serviceRequestId: args?['serviceRequestId'] as String?,
             projectId: args?['projectId'] as String?,
             workerProfileId: args?['workerProfileId'] as String?,
             specialistName:
-                args?['specialistName'] as String? ?? 'SKAVIA Specialist',
+                args?['specialistName'] as String? ?? 'Specialist',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
           ),
         );
@@ -264,32 +264,31 @@ abstract class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => InvoiceScreen(
-            invoiceNumber: args?['invoiceNumber'] as String? ?? 'INV-1001',
+            invoiceNumber: args?['invoiceNumber'] as String? ?? '',
             serviceTitle:
-                args?['serviceTitle'] as String? ?? 'General Technical Service',
-            clientName: args?['clientName'] as String? ?? 'Valued Client',
-            clientPhone: args?['clientPhone'] as String? ?? '01700000000',
+                args?['serviceTitle'] as String? ?? 'Technical Service',
+            clientName: args?['clientName'] as String? ?? 'Client',
+            clientPhone: args?['clientPhone'] as String? ?? '',
             specialistName:
-                args?['specialistName'] as String? ?? 'SKAVIA Specialist',
-            baseAmount: (args?['baseAmount'] as num?)?.toDouble() ?? 1000.0,
-            platformFee: (args?['platformFee'] as num?)?.toDouble() ?? 150.0,
-            totalAmount: (args?['totalAmount'] as num?)?.toDouble() ?? 1150.0,
+                args?['specialistName'] as String? ?? 'Specialist',
+            baseAmount: (args?['baseAmount'] as num?)?.toDouble() ?? 0.0,
+            platformFee: (args?['platformFee'] as num?)?.toDouble() ?? 0.0,
+            totalAmount: (args?['totalAmount'] as num?)?.toDouble() ?? 0.0,
             paymentMethod: args?['paymentMethod'] as String? ?? 'bKash',
-            transactionId: args?['transactionId'] as String? ?? 'TRX-1001',
+            transactionId: args?['transactionId'] as String? ?? '',
             paidAt: args?['paidAt'] as DateTime? ?? DateTime.now(),
           ),
         );
 
       case AppRoutes.paymentSuccess:
         final args = settings.arguments as Map<String, dynamic>?;
-        final totalAmount = (args?['amount'] as num?)?.toDouble() ?? 1150.0;
+        final totalAmount = (args?['amount'] as num?)?.toDouble() ?? 0.0;
         final baseAmount =
-            (args?['baseAmount'] as num?)?.toDouble() ?? (totalAmount / 1.15);
+            (args?['baseAmount'] as num?)?.toDouble() ?? totalAmount;
         final platformFee =
-            (args?['platformFee'] as num?)?.toDouble() ??
-            (totalAmount - baseAmount);
+            (args?['platformFee'] as num?)?.toDouble() ?? 0.0;
         final transactionId =
-            args?['transactionId'] as String? ?? 'TRX-1001';
+            args?['transactionId'] as String? ?? '';
         final paymentMethod =
             args?['paymentMethod'] as String? ?? 'bKash';
         final jobTitle = args?['jobTitle'] as String? ?? 'Service';

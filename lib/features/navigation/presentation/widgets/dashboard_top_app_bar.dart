@@ -6,9 +6,11 @@ import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/services/app_theme_service.dart';
 import '../../../../shared/widgets/skavia_brand_image.dart';
 import '../../../../shared/widgets/user_avatar.dart';
 import '../screens/main_scaffold_screen.dart';
+import 'theme_picker_sheet.dart';
 
 /// Top App Bar matching Reference Board: User Avatar, SKAVIA Brand Logo,
 /// Notification Bell, and responsive header pills (GPS, Mode switcher, Lang, AI).
@@ -102,39 +104,104 @@ class DashboardTopAppBar extends StatelessWidget {
                 ),
               ),
 
-              // Notification Bell Icon with Badge
-              GestureDetector(
-                onTap: onNotificationsTap,
-                child: Stack(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                        color: pillBg,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: pillBorder),
-                      ),
-                      child: Icon(
-                        Icons.notifications_none_rounded,
-                        size: 20,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    if (hasUnreadNotifications)
-                      Positioned(
-                        top: 4,
-                        right: 4,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.errorRed,
-                            shape: BoxShape.circle,
+              // Right Action Icons: Theme Selector & Notification Bell
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<ThemeMode>(
+                    valueListenable: AppThemeService.themeModeNotifier,
+                    builder: (context, mode, _) {
+                      final IconData themeIcon;
+                      final String themeTooltip;
+                      switch (mode) {
+                        case ThemeMode.light:
+                          themeIcon = Icons.light_mode_rounded;
+                          themeTooltip = isBn ? 'লাইট মোড' : 'Light Mode';
+                          break;
+                        case ThemeMode.dark:
+                          themeIcon = Icons.dark_mode_rounded;
+                          themeTooltip = isBn ? 'ডার্ক মোড' : 'Dark Mode';
+                          break;
+                        case ThemeMode.system:
+                          themeIcon = Icons.brightness_auto_rounded;
+                          themeTooltip = isBn ? 'সিস্টেম অটো' : 'System Theme';
+                          break;
+                      }
+
+                      return GestureDetector(
+                        onTap: () => ThemePickerSheet.show(context),
+                        onLongPress: () {
+                          AppThemeService.cycleThemeMode();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                AppThemeService.getThemeLabel(isBengali: isBn),
+                              ),
+                              duration: const Duration(seconds: 1),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Tooltip(
+                          message: themeTooltip,
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: pillBorder),
+                            ),
+                            child: Icon(
+                              themeIcon,
+                              size: 19,
+                              color: mode == ThemeMode.light
+                                  ? const Color(0xFFF59E0B)
+                                  : (mode == ThemeMode.dark
+                                      ? const Color(0xFF818CF8)
+                                      : colorScheme.onSurface),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Notification Bell Icon with Badge
+                  GestureDetector(
+                    onTap: onNotificationsTap,
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: pillBg,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: pillBorder),
+                          ),
+                          child: Icon(
+                            Icons.notifications_none_rounded,
+                            size: 20,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        if (hasUnreadNotifications)
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: AppColors.errorRed,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

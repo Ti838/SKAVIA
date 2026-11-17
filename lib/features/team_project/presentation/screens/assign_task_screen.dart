@@ -26,14 +26,12 @@ class _AssignTaskScreenState extends State<AssignTaskScreen> {
   final _budgetController = TextEditingController();
 
   String _priority = 'Medium';
-  String _assignedWorkerName = 'Rahul Ahmed (Electrician)';
-  String _assignedWorkerId = 'worker_01';
+  String _assignedWorkerName = 'Unassigned (Project Pool)';
+  String _assignedWorkerId = 'unassigned';
 
   final List<Map<String, String>> _availableSpecialists = const [
-    {'id': 'worker_01', 'name': 'Rahul Ahmed (Electrician)'},
-    {'id': 'worker_02', 'name': 'Kamal Hossain (Plumbing Lead)'},
-    {'id': 'worker_03', 'name': 'Engr. Tariqul Islam (HVAC Consultant)'},
-    {'id': 'worker_04', 'name': 'Sultana Begum (Quality Auditor)'},
+    {'id': 'unassigned', 'name': 'Unassigned (Project Pool)'},
+    {'id': 'leader', 'name': 'Team Leader'},
   ];
 
   @override

@@ -31,10 +31,10 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
 
   bool _isLoading = true;
   String _displayName = 'Specialist';
-  double _averageRating = 5.0;
+  double _averageRating = 0.0;
   int _completedJobs = 0;
   int _totalRatings = 0;
-  String _badgeLevel = 'Verified Specialist';
+  String _badgeLevel = 'Specialist';
   List<ReviewModel> _reviews = [];
 
   @override
@@ -76,7 +76,7 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
             name = user.displayName ?? 'My Profile';
             _completedJobs = (profile['completed_jobs'] as num?)?.toInt() ?? 0;
             _averageRating =
-                (profile['rating_average'] as num?)?.toDouble() ?? 5.0;
+                (profile['rating_average'] as num?)?.toDouble() ?? 0.0;
           }
         }
       }
@@ -219,7 +219,9 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
                                     ),
                                     const SizedBox(width: 4),
                                     Text(
-                                      _averageRating.toStringAsFixed(1),
+                                      _totalRatings > 0
+                                          ? _averageRating.toStringAsFixed(1)
+                                          : '—',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 20,

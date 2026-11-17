@@ -48,29 +48,69 @@ class LocalCacheService {
   /// Stores data in cache with an optional Time-To-Live (TTL).
   void put(String key, dynamic value, {Duration? ttl}) {
     final expiry = ttl != null ? DateTime.now().add(ttl) : null;
+    final valStr = value is String ? value : jsonEncode(value);
     _memoryStore[key] = _CacheEntry(
-      value: value is String ? value : jsonEncode(value),
+      value: valStr,
       expiry: expiry,
     );
+    _prefs?.setString(key, valStr);
     _persistAsync();
+  }
+
+  /// Stores data in cache and awaits immediate disk persistence.
+  Future<void> putPersisted(String key, dynamic value, {Duration? ttl}) async {
+    final expiry = ttl != null ? DateTime.now().add(ttl) : null;
+    final valStr = value is String ? value : jsonEncode(value);
+    _memoryStore[key] = _CacheEntry(
+      value: valStr,
+      expiry: expiry,
+    );
+    try {
+      _prefs ??= await SharedPreferences.getInstance();
+      await _prefs?.setString(key, valStr);
+      final serialized = <String, Map<String, dynamic>>{};
+      _memoryStore.forEach((k, entry) {
+        if (!entry.isExpired) {
+          serialized[k] = {
+            'value': entry.value,
+            if (entry.expiry != null) 'expiry': entry.expiry!.toIso8601String(),
+          };
+        }
+      });
+      await _prefs?.setString(_diskStorageKey, jsonEncode(serialized));
+    } catch (e) {
+      debugPrint('[LocalCacheService] putPersisted error: $e');
+    }
   }
 
   /// Retrieves data if present and not expired.
   dynamic get(String key) {
     final entry = _memoryStore[key];
-    if (entry == null) return null;
-
-    if (entry.isExpired) {
-      _memoryStore.remove(key);
-      _persistAsync();
-      return null;
+    if (entry != null) {
+      if (entry.isExpired) {
+        _memoryStore.remove(key);
+        _persistAsync();
+        return null;
+      }
+      try {
+        return jsonDecode(entry.value);
+      } catch (_) {
+        return entry.value;
+      }
     }
 
-    try {
-      return jsonDecode(entry.value);
-    } catch (_) {
-      return entry.value;
+    // Secondary fallback: Direct SharedPreferences read if memory missed
+    final direct = _prefs?.getString(key);
+    if (direct != null && direct.isNotEmpty) {
+      _memoryStore[key] = _CacheEntry(value: direct);
+      try {
+        return jsonDecode(direct);
+      } catch (_) {
+        return direct;
+      }
     }
+
+    return null;
   }
 
   /// Checks if key exists and is valid.

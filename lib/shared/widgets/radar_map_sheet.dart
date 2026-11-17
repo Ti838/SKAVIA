@@ -79,15 +79,13 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   String? _selectedPointAddress;
   bool _isReverseGeocoding = false;
 
-  List<RadarTechnician> _allTechnicians = List<RadarTechnician>.from(
-    RadarTechnician.seedTechnicians,
-  );
+  List<RadarTechnician> _allTechnicians = [];
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
-    _selectedTech = _allTechnicians.first;
+    _selectedTech = null;
     _fetchRealUserLocation();
     _fetchRemoteTechnicians();
   }
@@ -112,7 +110,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
           final name =
               row['display_name']?.toString() ?? 'Verified Specialist';
           final rate = (row['expected_rate'] as num?)?.toDouble() ?? 500.0;
-          final rating = (row['rating_average'] as num?)?.toDouble() ?? 5.0;
+          final rating = (row['rating_average'] as num?)?.toDouble() ?? 0.0;
           final jobs = (row['completed_jobs'] as num?)?.toInt() ?? 0;
           final loc = row['location']?.toString() ?? 'Dhaka';
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { SakugaButton } from '@/components/sakuga';
 
 export function ConfirmModal({
   open,
@@ -86,26 +87,24 @@ export function ConfirmModal({
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button
-            type="button"
+          <SakugaButton
+            variant="secondary"
+            intensity="subtle"
             onClick={() => {
               setReason('');
               onCancel();
             }}
-            className="rounded-lg border px-4 py-2 text-sm font-medium"
-            style={{ borderColor: 'var(--border-subtle)' }}
           >
             Cancel
-          </button>
-          <button
-            type="button"
+          </SakugaButton>
+          <SakugaButton
+            variant={danger ? 'danger' : 'primary'}
+            intensity="medium"
             disabled={!canSubmit || loading}
             onClick={() => onConfirm(reason.trim())}
-            className="rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-            style={{ backgroundColor: danger ? '#DC2626' : '#003399' }}
           >
             {loading ? 'Processing...' : confirmLabel}
-          </button>
+          </SakugaButton>
         </div>
       </div>
     </div>

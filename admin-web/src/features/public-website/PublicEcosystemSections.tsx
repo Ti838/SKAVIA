@@ -15,7 +15,9 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { useSakugaToast } from '@/components/sakuga';
 import { formatBytes } from '@/lib/formatters';
+import { elementCenter, sakugaKira, sakugaTicks } from '@/lib/sakuga/sakuga-core';
 import {
   FAQ_ITEMS,
   MOBILE_FEATURES,
@@ -89,6 +91,7 @@ export function DownloadSection({
 }) {
   const [copiedSha, setCopiedSha] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
+  const { showToast } = useSakugaToast();
   const apkSizeLabel =
     distribution.android.fileSizeBytes && distribution.android.fileSizeBytes > 0
       ? formatBytes(distribution.android.fileSizeBytes, 1)
@@ -250,7 +253,12 @@ export function DownloadSection({
                     download={distribution.android.fileName ?? undefined}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-4 text-base font-semibold text-white transition hover:opacity-95 shadow-xl shadow-[#003399]/30 active:scale-[0.99]"
+                    onClick={(e) => {
+                      const c = elementCenter(e.currentTarget, 0.5, 0);
+                      sakugaTicks(c.x, c.y, { n: 4, r: 8, len: 11, color: '#15E7CA' });
+                      showToast('Downloading official SKAVIA Android APK...', 'info');
+                    }}
+                    className="sakuga-spring-tap inline-flex w-full items-center justify-center gap-2.5 rounded-xl px-6 py-4 text-base font-semibold text-white transition hover:opacity-95 shadow-xl shadow-[#003399]/30"
                     style={{ backgroundColor: '#003399' }}
                   >
                     <Download className="h-5 w-5" />
@@ -274,13 +282,16 @@ export function DownloadSection({
                         </span>
                         <button
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
                             if (!distribution.android.sha256Checksum) return;
                             void navigator.clipboard?.writeText(distribution.android.sha256Checksum);
+                            const c = elementCenter(e.currentTarget);
+                            sakugaKira(c.x, c.y, { r: 9, color: '#16A34A' });
+                            showToast('SHA-256 checksum copied to clipboard', 'success');
                             setCopiedSha(true);
                             setTimeout(() => setCopiedSha(false), 2000);
                           }}
-                          className={`inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] text-[11px] transition`}
+                          className={`sakuga-spring-tap inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] text-[11px] transition`}
                         >
                           {copiedSha ? (
                             <>
@@ -406,11 +417,11 @@ export function FaqAndContactSection({
                 <button
                   type="button"
                   onClick={() => onToggleFaq(idx)}
-                  className={`w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-sm font-semibold ${t.textPrimary}`}
+                  className={`sakuga-spring-tap w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-sm font-semibold ${t.textPrimary}`}
                 >
                   <span>{item.q}</span>
                   <ChevronDown
-                    className={`h-4 w-4 shrink-0 transition-transform ${open ? 'rotate-180' : ''}`}
+                    className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
                   />
                 </button>
                 {open && (

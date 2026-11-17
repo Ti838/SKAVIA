@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
@@ -163,8 +165,16 @@ class _LoginScreenState extends State<LoginScreen> {
       final profile = await DashboardRepository().getUserProfileRecord(
         user.uid,
       );
-      final activeMode = profile?['active_mode']?.toString();
-      if (activeMode != null && activeMode.isNotEmpty && mounted) {
+      final activeMode = profile?['active_mode']?.toString() ??
+          LocalCacheService.instance
+              .get('${AppConstants.userModeStorageKey}_${user.uid}')
+              ?.toString() ??
+          LocalCacheService.instance
+              .get(AppConstants.userModeStorageKey)
+              ?.toString() ??
+          'customer';
+
+      if (mounted) {
         Navigator.of(context).pushReplacementNamed(
           AppRoutes.appShell,
           arguments: {'initialMode': activeMode},
@@ -213,7 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Header Logo & Greeting
                     const AuthHeaderWidget(
                       title: 'Welcome Back',
-                      subtitle: 'Sign in to continue to SKAVIA',
+                      subtitle: 'Sign in to continue your journey with SKAVIA.',
                     ),
                     const SizedBox(height: 24),
 
@@ -319,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            'Sign Up',
+                            'Create Account',
                             style: TextStyle(
                               fontSize: 13,
                               color: skavia.brandAccent,

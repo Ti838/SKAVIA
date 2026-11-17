@@ -32,52 +32,7 @@ class _TaskBoardScreenState extends State<TaskBoardScreen>
 
   String get _cacheKey => 'task_board_tasks_${widget.projectId}';
 
-  static final List<TaskItemModel> _defaultTasks = [
-    const TaskItemModel(
-      taskId: 'task_001',
-      projectId: 'proj_001',
-      title: 'Architectural Blueprint & Load Calculations',
-      description:
-          'Review structural engineering drawings for HVAC ductwork and MEP layout.',
-      status: 'Done',
-      priority: 'High',
-      assignedWorkerName: 'Engr. Tariqul Islam',
-      budgetWeight: 15000.0,
-    ),
-    const TaskItemModel(
-      taskId: 'task_002',
-      projectId: 'proj_001',
-      title: '3-Phase Main Switchboard & Conduit Installation',
-      description:
-          'Complete high-voltage distribution wiring and grounding rod certification.',
-      status: 'In Progress',
-      priority: 'Urgent',
-      assignedWorkerName: 'Rahul Ahmed',
-      budgetWeight: 25000.0,
-    ),
-    const TaskItemModel(
-      taskId: 'task_003',
-      projectId: 'proj_001',
-      title: 'Fire Suppression & Sensor Calibration',
-      description:
-          'Install heat and smoke detectors connected to emergency central control.',
-      status: 'In Review',
-      priority: 'High',
-      assignedWorkerName: 'Kamal Hossain',
-      budgetWeight: 12000.0,
-    ),
-    const TaskItemModel(
-      taskId: 'task_004',
-      projectId: 'proj_001',
-      title: 'Final Quality Audit & Handover Signoff',
-      description:
-          'Complete client inspection walkthrough and generate signed digital handover certificate.',
-      status: 'To Do',
-      priority: 'Medium',
-      assignedWorkerName: 'Pending Specialist',
-      budgetWeight: 8000.0,
-    ),
-  ];
+  static final List<TaskItemModel> _defaultTasks = const [];
 
   @override
   void initState() {

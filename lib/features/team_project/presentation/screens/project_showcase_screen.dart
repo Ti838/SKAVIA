@@ -1,10 +1,15 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
+import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/utils/supabase_guard.dart';
+import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
 
 /// Screen 15: Project Showcase ("Project Showcase") with "My Projects" and "Explore" tabs.
+/// Completely data-driven with live Supabase integration and clean empty states.
 class ProjectShowcaseScreen extends StatefulWidget {
   const ProjectShowcaseScreen({super.key});
 
@@ -14,54 +19,55 @@ class ProjectShowcaseScreen extends StatefulWidget {
 
 class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
   int _selectedTab = 0; // 0: My Projects, 1: Explore
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _myProjects = [];
+  List<Map<String, dynamic>> _exploreProjects = [];
 
-  final List<Map<String, dynamic>> _myProjects = [
-    {
-      'title': 'HealthCare App',
-      'category': 'Mobile App • Flutter',
-      'thumbnail': '',
-      'tagColor': Color(0xFF10B981),
-      'progress': 0.85,
-    },
-    {
-      'title': 'E-commerce Platform',
-      'category': 'Web App • React',
-      'thumbnail': '',
-      'tagColor': Color(0xFF2563EB),
-      'progress': 0.60,
-    },
-    {
-      'title': 'Portfolio Website',
-      'category': 'Web • Next.js',
-      'thumbnail': '',
-      'tagColor': Color(0xFF8B5CF6),
-      'progress': 1.0,
-    },
-    {
-      'title': 'Task Manager',
-      'category': 'Mobile App • Flutter',
-      'thumbnail': '',
-      'tagColor': Color(0xFFF59E0B),
-      'progress': 0.45,
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadProjects();
+  }
 
-  final List<Map<String, dynamic>> _exploreProjects = [
-    {
-      'title': 'Smart FinTech Dashboard',
-      'category': 'Finance • Flutter & Golang',
-      'thumbnail': '',
-      'tagColor': Color(0xFF0EA5E9),
-      'progress': 0.90,
-    },
-    {
-      'title': 'IoT Smart Logistics',
-      'category': 'Hardware & Mobile • Python',
-      'thumbnail': '',
-      'tagColor': Color(0xFF10B981),
-      'progress': 0.70,
-    },
-  ];
+  Future<void> _loadProjects() async {
+    final client = tryGetSupabaseClient();
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (client == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+
+    try {
+      final res = await client
+          .from(DatabaseTables.projects)
+          .select('project_id, title, status, budget, created_at, client_id')
+          .limit(20);
+
+      if (mounted) {
+        final all = (res as List).map((p) {
+          return {
+            'id': p['project_id']?.toString() ?? '',
+            'title': p['title']?.toString() ?? 'Project',
+            'category': 'Turnkey Solution',
+            'thumbnail': '',
+            'tagColor': const Color(0xFF10B981),
+            'progress': (p['status'] == 'completed') ? 1.0 : 0.4,
+            'client_id': p['client_id']?.toString(),
+          };
+        }).toList();
+
+        setState(() {
+          _myProjects = uid != null
+              ? all.where((p) => p['client_id'] == uid).toList()
+              : [];
+          _exploreProjects = all;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,28 +100,94 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
             ),
             const SizedBox(height: 8),
 
-            // Responsive Projects Grid
+            // Responsive Projects Grid or Contextual Empty State
             Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final textScale = MediaQuery.textScalerOf(context).scale(1);
-                  final isSingleCol =
-                      constraints.maxWidth < 360 || textScale > 1.3;
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: isSingleCol ? 1 : 2,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: isSingleCol ? 1.65 : 0.82,
-                    ),
-                    itemCount: activeList.length,
-                    itemBuilder: (context, index) {
-                      return _buildProjectCard(activeList[index]);
-                    },
-                  );
-                },
-              ),
+              child: _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: tokens.brandAccent,
+                      ),
+                    )
+                  : activeList.isEmpty
+                      ? Center(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.folder_open_rounded,
+                                  size: 56,
+                                  color: tokens.mutedText,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _selectedTab == 0
+                                      ? 'No Projects Yet'
+                                      : 'No Public Showcases',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: context.colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  _selectedTab == 0
+                                      ? 'Your ongoing and completed turnkey projects will appear here.'
+                                      : 'Showcase projects created by verified team leaders will appear here.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: tokens.mutedText,
+                                  ),
+                                ),
+                                if (_selectedTab == 0) ...[
+                                  const SizedBox(height: 16),
+                                  ElevatedButton.icon(
+                                    onPressed: () => Navigator.pushNamed(
+                                      context,
+                                      AppRoutes.postRequirement,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.add_rounded,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Start New Project'),
+                                    style: ElevatedButton.styleFrom(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        )
+                      : LayoutBuilder(
+                          builder: (context, constraints) {
+                            final textScale =
+                                MediaQuery.textScalerOf(context).scale(1);
+                            final isSingleCol =
+                                constraints.maxWidth < 360 || textScale > 1.3;
+                            return GridView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: isSingleCol ? 1 : 2,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
+                                childAspectRatio: isSingleCol ? 1.65 : 0.82,
+                              ),
+                              itemCount: activeList.length,
+                              itemBuilder: (context, index) {
+                                return _buildProjectCard(activeList[index]);
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -158,102 +230,119 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
     final colorScheme = context.colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final thumbUrl = (proj['thumbnail'] as String?)?.trim() ?? '';
-    final hasValidUrl =
-        thumbUrl.startsWith('http://') || thumbUrl.startsWith('https://');
-    final accentColor = proj['tagColor'] as Color? ?? tokens.brandAccent;
+    final progress = (proj['progress'] as double?) ?? 0.0;
+    final tagColor = (proj['tagColor'] as Color?) ?? const Color(0xFF10B981);
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          AppRoutes.projectDashboard,
-          arguments: {
-            'projectId': 'proj_${proj['title']}',
-            'projectTitle': proj['title'] as String,
-          },
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: tokens.cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: tokens.border),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.02),
-              blurRadius: 6,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(15),
-                ),
-                child: hasValidUrl
-                    ? Image.network(
-                        thumbUrl,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) =>
-                            _buildThumbnailFallback(tokens, accentColor),
-                      )
-                    : _buildThumbnailFallback(tokens, accentColor),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    proj['title'] as String,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    proj['category'] as String,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: tokens.mutedText,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildThumbnailFallback(
-    dynamic tokens,
-    Color accentColor,
-  ) {
     return Container(
-      width: double.infinity,
-      color: tokens.softBlueBg,
-      child: Center(
-        child: Icon(
-          Icons.apps_rounded,
-          color: accentColor,
-          size: 32,
-        ),
+      decoration: BoxDecoration(
+        color: tokens.cardBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tokens.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Project Thumbnail / Category Header
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? colorScheme.surfaceContainerHighest
+                    : tagColor.withValues(alpha: 0.12),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(19),
+                ),
+              ),
+              child: thumbUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(19),
+                      ),
+                      child: Image.network(
+                        thumbUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => Center(
+                          child: Icon(
+                            Icons.work_outline_rounded,
+                            size: 32,
+                            color: tagColor,
+                          ),
+                        ),
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.work_outline_rounded,
+                        size: 32,
+                        color: tagColor,
+                      ),
+                    ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  proj['title'] as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: AppTypography.headingFont,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  proj['category'] as String,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: tokens.mutedText,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // Linear Progress Indicator
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 5,
+                    backgroundColor: tokens.border,
+                    valueColor: AlwaysStoppedAnimation<Color>(tagColor),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: tokens.mutedText,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

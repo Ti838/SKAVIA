@@ -119,9 +119,9 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
     final customerName =
         (user.displayName != null && user.displayName!.isNotEmpty)
             ? user.displayName!
-            : 'Valued Client';
-    final customerEmail = user.email ?? 'client@skavia.com';
-    final customerPhone = user.phoneNumber ?? '01700000000';
+            : 'Client';
+    final customerEmail = user.email ?? '';
+    final customerPhone = user.phoneNumber ?? '';
 
     try {
       await _paymentController.initiateCheckout(

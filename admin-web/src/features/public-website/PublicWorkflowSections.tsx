@@ -1,8 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import {
   ArrowRight,
   Building2,
   CheckCircle2,
+  Laptop,
   Moon,
   ShieldCheck,
   Smartphone,
@@ -10,6 +13,7 @@ import {
   Wrench,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { elementCenter, sakugaTicks } from '@/lib/sakuga/sakuga-core';
 import {
   BUSINESS_HIGHLIGHTS,
   INDIVIDUAL_HIGHLIGHTS,
@@ -35,10 +39,12 @@ function Crosshair({ dark }: { dark: boolean }) {
 
 export function PublicHeader({
   t,
-  onToggleTheme,
+  themeMode,
+  onCycleTheme,
 }: {
   t: PublicThemeTokens;
-  onToggleTheme: () => void;
+  themeMode: 'system' | 'light' | 'dark';
+  onCycleTheme: () => void;
 }) {
   return (
     <header
@@ -79,13 +85,35 @@ export function PublicHeader({
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
           <button
             type="button"
-            onClick={onToggleTheme}
+            onClick={onCycleTheme}
+            title={
+              themeMode === 'system'
+                ? `System Theme (${t.dark ? 'Dark' : 'Light'}) — Click to switch to Light`
+                : themeMode === 'light'
+                ? 'Light Mode — Click to switch to Dark'
+                : 'Dark Mode — Click to switch to System Auto'
+            }
             aria-label="Toggle color theme"
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition ${t.railBorder} ${
+            className={`inline-flex items-center gap-1.5 h-9 px-2.5 rounded-full border text-xs font-medium transition ${t.railBorder} ${
               t.dark ? 'hover:bg-white/10 text-slate-300' : 'hover:bg-slate-100 text-slate-700'
             }`}
           >
-            {t.dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {themeMode === 'system' ? (
+              <>
+                <Laptop className="h-4 w-4 text-[#3898EC]" />
+                <span className="text-[11px] font-mono-code uppercase tracking-wider hidden sm:inline">Auto</span>
+              </>
+            ) : themeMode === 'light' ? (
+              <>
+                <Sun className="h-4 w-4 text-amber-500" />
+                <span className="text-[11px] font-mono-code uppercase tracking-wider hidden sm:inline">Light</span>
+              </>
+            ) : (
+              <>
+                <Moon className="h-4 w-4 text-indigo-400" />
+                <span className="text-[11px] font-mono-code uppercase tracking-wider hidden sm:inline">Dark</span>
+              </>
+            )}
           </button>
 
           <a
@@ -99,7 +127,11 @@ export function PublicHeader({
 
           <a
             href="#download"
-            className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition shadow-sm ${
+            onClick={(e) => {
+              const c = elementCenter(e.currentTarget, 0.5, 0);
+              sakugaTicks(c.x, c.y, { n: 3, r: 6, len: 8 });
+            }}
+            className={`sakuga-spring-tap inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition shadow-sm ${
               t.dark
                 ? 'bg-white text-slate-950 hover:bg-slate-200'
                 : 'bg-[#003399] text-white hover:bg-[#00287a]'
@@ -133,9 +165,9 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
         className="pointer-events-none absolute -bottom-24 left-1/2 -translate-x-1/2 h-80 w-[760px] skavia-spectral-arc opacity-90"
       />
 
-      <div className="relative z-10 px-4 sm:px-8 pt-6 sm:pt-10 pb-10 sm:pb-14 text-center">
+      <div className="relative z-10 px-4 sm:px-8 pt-4 sm:pt-6 pb-8 sm:pb-12 text-center">
         <div
-          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-medium mb-4 sm:mb-5 ${t.railBorder} ${
+          className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-medium mb-3 sm:mb-4 ${t.railBorder} ${
             t.dark ? 'bg-white/[0.04] text-slate-200' : 'bg-white text-slate-700 shadow-xs'
           }`}
         >
@@ -166,7 +198,11 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
         <div className="mt-6 sm:mt-7 flex flex-wrap items-center justify-center gap-3.5">
           <a
             href="#download"
-            className={`inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold transition shadow-lg ${
+            onClick={(e) => {
+              const c = elementCenter(e.currentTarget, 0.5, 0);
+              sakugaTicks(c.x, c.y, { n: 4, r: 8, len: 10, color: '#3898EC' });
+            }}
+            className={`sakuga-spring-tap inline-flex items-center gap-2.5 rounded-full px-6 py-3 text-sm font-semibold transition shadow-lg ${
               t.dark
                 ? 'bg-white text-slate-950 hover:bg-slate-200'
                 : 'bg-[#003399] text-white hover:bg-[#00287a]'
@@ -179,7 +215,7 @@ export function HeroSection({ t }: { t: PublicThemeTokens }) {
 
           <a
             href="#branches"
-            className={`inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${t.railBorder} ${
+            className={`sakuga-spring-tap inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition ${t.railBorder} ${
               t.dark
                 ? 'bg-[#0A0F1C]/80 text-white hover:border-white/40'
                 : 'bg-white text-slate-900 hover:border-slate-400'
@@ -267,8 +303,14 @@ export function WorkflowSection({
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => onSelectTab(tab.id)}
-                  className={`w-full text-left rounded-xl border p-3.5 sm:p-4 transition ${
+                  onClick={(e) => {
+                    if (!active) {
+                      const c = elementCenter(e.currentTarget, 0.95, 0.5);
+                      sakugaTicks(c.x, c.y, { n: 3, r: 4, len: 7, dir: 0 });
+                    }
+                    onSelectTab(tab.id);
+                  }}
+                  className={`sakuga-spring-tap w-full text-left rounded-xl border p-3.5 sm:p-4 transition ${
                     active
                       ? t.dark
                         ? 'border-[#3898EC]/60 bg-[#0B1938]/55'

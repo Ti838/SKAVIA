@@ -3,14 +3,24 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
 import '../../app/theme/app_typography.dart';
+import '../../shared/motion/sakuga_toast.dart';
 
-/// Centralized UI feedback helper for toasts, snackbars, and alert dialogs.
+/// Centralized UI feedback helper for Sakuga spring toasts, snackbars, and alert dialogs.
 abstract class UiFeedbackHelper {
   static void showSuccess(
     BuildContext context,
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) {
+    if (Overlay.maybeOf(context, rootOverlay: true) != null) {
+      SakugaToast.show(
+        context,
+        message: message,
+        tone: SakugaToastTone.success,
+        duration: duration,
+      );
+      return;
+    }
     _showSnackBar(
       context,
       message,
@@ -25,6 +35,15 @@ abstract class UiFeedbackHelper {
     String message, {
     Duration duration = const Duration(seconds: 4),
   }) {
+    if (Overlay.maybeOf(context, rootOverlay: true) != null) {
+      SakugaToast.show(
+        context,
+        message: message,
+        tone: SakugaToastTone.error,
+        duration: duration,
+      );
+      return;
+    }
     _showSnackBar(
       context,
       message,
@@ -39,6 +58,15 @@ abstract class UiFeedbackHelper {
     String message, {
     Duration duration = const Duration(seconds: 3),
   }) {
+    if (Overlay.maybeOf(context, rootOverlay: true) != null) {
+      SakugaToast.show(
+        context,
+        message: message,
+        tone: SakugaToastTone.info,
+        duration: duration,
+      );
+      return;
+    }
     _showSnackBar(
       context,
       message,
