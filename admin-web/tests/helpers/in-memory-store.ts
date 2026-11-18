@@ -1847,10 +1847,10 @@ export class InMemoryAdminRepository implements AdminRepository {
     const idx = this.releases.findIndex((r) => r.release_id === input.releaseId);
     const rec = idx >= 0 ? this.releases[idx] : undefined;
     if (!rec) throw new ReleaseValidationError('RELEASE_NOT_FOUND', 'Release not found.', 404);
-    if (rec.status !== 'draft' && rec.status !== 'validated') {
+    if (rec.is_current && rec.status === 'published') {
       throw new ReleaseValidationError(
-        'CANNOT_DELETE_HISTORICAL_RELEASE',
-        'Cannot delete published, suspended, or archived release.',
+        'CANNOT_DELETE_ACTIVE_RELEASE',
+        'Cannot delete the currently live release. Publish a newer release or suspend this release first.',
         409
       );
     }

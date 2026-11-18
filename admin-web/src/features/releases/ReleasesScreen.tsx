@@ -109,7 +109,9 @@ export default function ReleasesScreen() {
           method: 'DELETE',
         });
         setSelectedRelease(null);
-        setBanner(`Deleted draft release v${release.version_name} (#${release.build_number}).`);
+        setBanner(
+          `Deleted release v${release.version_name} (#${release.build_number}) and freed ${formatBytes(release.file_size_bytes)} from storage.`
+        );
       } else {
         const payload: Record<string, unknown> =
           action === 'publish'

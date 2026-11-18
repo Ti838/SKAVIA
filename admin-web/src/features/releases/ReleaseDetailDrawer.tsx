@@ -253,24 +253,23 @@ export function ReleaseDetailDrawer({
               </button>
             )}
 
-            {(release.status === 'draft' || release.status === 'validated') && (
+            {!(release.is_current && release.status === 'published') && (
               <button
                 type="button"
                 onClick={() =>
                   onRequestAction({
                     release,
                     action: 'delete',
-                    title: `Delete Unpublished Release v${release.version_name}?`,
-                    description:
-                      'Deletes this unpublished staging release record and removes its staged APK artifact.',
-                    confirmLabel: 'Delete Draft',
+                    title: `Delete Release v${release.version_name} (#${release.build_number}) & Free Storage?`,
+                    description: `Permanently deletes this non-active release record and removes its ${formatBytes(release.file_size_bytes)} APK file from Supabase Storage.`,
+                    confirmLabel: 'Delete & Free Storage',
                     danger: true,
                     requireReason: false,
                   })
                 }
-                className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 dark:border-red-800/70 px-3 py-2 font-semibold text-red-600 dark:text-red-400"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 dark:border-red-800/70 px-3 py-2 font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"
               >
-                <Trash2 className="h-3.5 w-3.5" /> Delete
+                <Trash2 className="h-3.5 w-3.5" /> Delete &amp; Free {formatBytes(release.file_size_bytes)}
               </button>
             )}
           </div>

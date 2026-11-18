@@ -544,10 +544,10 @@ export class SupabaseReleasesStore {
     if (!existing) {
       throw new ReleaseValidationError('RELEASE_NOT_FOUND', 'Release not found.', 404);
     }
-    if (existing.status !== 'draft' && existing.status !== 'validated') {
+    if (existing.is_current && existing.status === 'published') {
       throw new ReleaseValidationError(
-        'CANNOT_DELETE_HISTORICAL_RELEASE',
-        'Published, suspended, or archived releases cannot be deleted to preserve audit history.',
+        'CANNOT_DELETE_ACTIVE_RELEASE',
+        'Cannot delete the currently live release. Publish a newer release or suspend this release first.',
         409
       );
     }
