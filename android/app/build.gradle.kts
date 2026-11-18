@@ -50,10 +50,15 @@ android {
         // Preserve applicationId across releases so in-app APK upgrades overwrite cleanly
         // without invalidating Android app data or user sessions.
         applicationId = "com.example.skavia"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 24
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Ship complete native libraries for both 32-bit and 64-bit ARM phones while
+        // excluding emulator-only x86_64 binaries to stay compact and universally installable.
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
     }
 
     signingConfigs {
@@ -63,6 +68,9 @@ android {
                 storePassword = releaseStorePassword
                 keyAlias = releaseKeyAlias
                 keyPassword = releaseKeyPassword
+                enableV1Signing = true
+                enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }

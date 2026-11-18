@@ -58,14 +58,14 @@ jobs:
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      - name: Build compact signed ARM64 release APK
+      - name: Build universal signed ARM (32-bit + 64-bit) release APK
         env:
           SKAVIA_KEYSTORE_FILE: skavia-release.jks
           SKAVIA_KEYSTORE_PASSWORD: ${{ secrets.SKAVIA_KEYSTORE_PASSWORD }}
           SKAVIA_KEY_ALIAS: ${{ secrets.SKAVIA_KEY_ALIAS }}
           SKAVIA_KEY_PASSWORD: ${{ secrets.SKAVIA_KEY_PASSWORD }}
         run: |
-          flutter build apk --release --target-platform android-arm64 --dart-define=SKAVIA_WEB_ORIGIN=https://skavia-bd.vercel.app
+          flutter build apk --release --target-platform android-arm,android-arm64 --dart-define=SKAVIA_WEB_ORIGIN=https://skavia-bd.vercel.app
 
       - name: Compute APK metadata & SHA-256 checksum
         id: meta
