@@ -12,7 +12,28 @@
           "package_name": "com.example.skavia"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "691596725478-omu9g517rl3i3nbimjjj4r47g84cbbkd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.skavia",
+            "certificate_hash": "40efadaabc8715a58e3a147a4022994059f0a9b5"
+          }
+        },
+        {
+          "client_id": "691596725478-osvquvk3m9ophl8c9i4926u5n4hfv395.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.skavia",
+            "certificate_hash": "e3c7af66df1d8363c10ce722daebfe6d4e91fb9f"
+          }
+        },
+        {
+          "client_id": "691596725478-qf8kcvtltvjh8mio4su339jh9iqp24s1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB4xzpdzXMTWFSDrzpTD4lxE6l8ZdV1bMQ"
@@ -20,7 +41,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "691596725478-qf8kcvtltvjh8mio4su339jh9iqp24s1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "691596725478-lpe236j89d3fdoc909hhn08atpf6qrvu.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.skavia"
+              }
+            }
+          ]
         }
       }
     }

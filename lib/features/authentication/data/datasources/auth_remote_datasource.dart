@@ -18,9 +18,14 @@ class AuthRemoteDataSource {
 
   SupabaseClient? get _supabase => tryGetSupabaseClient();
 
+  static const String _googleWebClientId =
+      '691596725478-qf8kcvtltvjh8mio4su339jh9iqp24s1.apps.googleusercontent.com';
+
   GoogleSignIn? _googleSignInInstance;
-  GoogleSignIn get _googleSignIn =>
-      _googleSignInInstance ??= GoogleSignIn(scopes: ['email', 'profile']);
+  GoogleSignIn get _googleSignIn => _googleSignInInstance ??= GoogleSignIn(
+        scopes: ['email', 'profile'],
+        serverClientId: kIsWeb ? null : _googleWebClientId,
+      );
 
   fb.User? get currentFirebaseUser => _firebaseAuth?.currentUser;
   Session? get currentSupabaseSession => _supabase?.auth.currentSession;

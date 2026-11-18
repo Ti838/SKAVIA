@@ -3,7 +3,7 @@ class AppConfig {
   AppConfig._();
 
   static const String appName = 'SKAVIA';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.1';
 
   // Official SKAVIA Web & Release Distribution API Origin (e.g. your Vercel deployment)
   // Override via --dart-define=SKAVIA_WEB_ORIGIN=https://your-project.vercel.app (never trailing slash).
