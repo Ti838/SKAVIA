@@ -70,7 +70,7 @@ function LoginPortalContent() {
         method: 'POST',
         body: JSON.stringify({
           idToken,
-          ...(isSingleHost ? {} : { surface: surfaceView }),
+          surface: surfaceView,
           deviceLabel: navigator.userAgent.slice(0, 100),
         }),
       }
@@ -121,7 +121,7 @@ function LoginPortalContent() {
           body: JSON.stringify({
             idToken: loginRes.idToken,
             recoveryCode: recoveryCode.trim(),
-            ...(isSingleHost ? {} : { surface: surfaceView }),
+            surface: surfaceView,
             mode: 'login',
             deviceLabel: navigator.userAgent.slice(0, 100),
           }),
@@ -187,7 +187,7 @@ function LoginPortalContent() {
           body: JSON.stringify({
             challengeId: startRes.challengeId,
             mode: 'login',
-            ...(isSingleHost ? {} : { surface: surfaceView }),
+            surface: surfaceView,
             deviceLabel: `Passkey (${navigator.platform || 'Device'})`,
             response: assertion,
           }),
@@ -242,7 +242,10 @@ function LoginPortalContent() {
           <div className="mb-5 flex items-center gap-1 rounded-xl border p-1 text-xs" style={{ borderColor: 'var(--border-subtle)' }}>
             <button
               type="button"
-              onClick={() => setSurfaceView('superadmin')}
+              onClick={() => {
+                setSurfaceView('superadmin');
+                setErrorMessage(null);
+              }}
               className={`flex-1 rounded-lg py-1.5 font-semibold transition ${
                 isSuperAdminView ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
@@ -251,7 +254,10 @@ function LoginPortalContent() {
             </button>
             <button
               type="button"
-              onClick={() => setSurfaceView('admin')}
+              onClick={() => {
+                setSurfaceView('admin');
+                setErrorMessage(null);
+              }}
               className={`flex-1 rounded-lg py-1.5 font-semibold transition ${
                 !isSuperAdminView ? 'bg-[#003399] text-white' : 'text-slate-500 hover:text-slate-900'
               }`}
