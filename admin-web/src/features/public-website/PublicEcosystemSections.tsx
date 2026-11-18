@@ -90,6 +90,7 @@ export function DownloadSection({
   distribution: DistributionInfo;
 }) {
   const [copiedSha, setCopiedSha] = useState(false);
+  const [shaExpanded, setShaExpanded] = useState(false);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const { showToast } = useSakugaToast();
   const apkSizeLabel =
@@ -269,46 +270,108 @@ export function DownloadSection({
                     Direct APK download · No Play Store sign-in required
                   </p>
 
-                  {/* SHA-256 Checksum Accordion */}
+                  {/* Verified APK Integrity Accordion (Clean & Collapsible) */}
                   {distribution.android.sha256Checksum && (
-                    <div className={`rounded-xl border p-3 text-xs space-y-1 ${t.railBorder} ${t.surfaceBg}`}>
-                      <div className="flex items-center justify-between gap-2">
-                        <span
-                          className={`inline-flex items-center gap-1 font-semibold text-[11px] ${
-                            t.dark ? 'text-[#15E7CA]' : 'text-teal-700'
-                          }`}
-                        >
-                          <ShieldCheck className="h-3 w-3" /> SHA-256 Checksum
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            if (!distribution.android.sha256Checksum) return;
-                            void navigator.clipboard?.writeText(distribution.android.sha256Checksum);
-                            const c = elementCenter(e.currentTarget);
-                            sakugaKira(c.x, c.y, { r: 9, color: '#16A34A' });
-                            showToast('SHA-256 checksum copied to clipboard', 'success');
-                            setCopiedSha(true);
-                            setTimeout(() => setCopiedSha(false), 2000);
-                          }}
-                          className={`sakuga-spring-tap inline-flex items-center gap-1 ${t.textSecondary} hover:text-[#3898EC] text-[11px] transition`}
-                        >
-                          {copiedSha ? (
-                            <>
-                              <Check className="h-3 w-3 text-emerald-400" />
-                              <span>Copied</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-3 w-3" />
-                              <span>Copy</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <p className={`font-mono-code break-all text-[10px] ${t.textMuted}`}>
-                        {distribution.android.sha256Checksum}
-                      </p>
+                    <div
+                      className={`rounded-xl border transition-colors ${t.railBorder} ${t.surfaceBg} overflow-hidden`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setShaExpanded((prev) => !prev)}
+                        aria-expanded={shaExpanded}
+                        className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 text-left transition hover:bg-slate-500/5"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span
+                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border ${
+                              t.dark
+                                ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400'
+                                : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+                            }`}
+                          >
+                            <ShieldCheck className="h-3.5 w-3.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <p className={`text-xs font-semibold leading-tight ${t.textPrimary}`}>
+                              Verified Official Build
+                            </p>
+                            <p className={`text-[11px] leading-tight mt-0.5 ${t.textMuted}`}>
+                              Signed &amp; integrity-checked (SHA-256)
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span
+                            className={`hidden sm:inline-flex items-center rounded-md border px-2 py-0.5 font-mono-code text-[10px] ${
+                              t.dark
+                                ? 'border-slate-700/80 bg-slate-900/70 text-slate-300'
+                                : 'border-slate-200 bg-slate-50 text-slate-600'
+                            }`}
+                          >
+                            {distribution.android.sha256Checksum.slice(0, 6)}…
+                            {distribution.android.sha256Checksum.slice(-6)}
+                          </span>
+                          <ChevronDown
+                            className={`h-3.5 w-3.5 transition-transform duration-200 ${t.textMuted} ${
+                              shaExpanded ? 'rotate-180' : ''
+                            }`}
+                          />
+                        </div>
+                      </button>
+
+                      {shaExpanded && (
+                        <div className={`border-t px-3.5 py-3 space-y-2.5 ${t.railBorder}`}>
+                          <div className="flex items-center justify-between gap-2">
+                            <p className={`text-[11px] leading-relaxed ${t.textSecondary}`}>
+                              Verify this SHA-256 fingerprint after download to confirm your APK is genuine and unmodified.
+                            </p>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                if (!distribution.android.sha256Checksum) return;
+                                void navigator.clipboard?.writeText(distribution.android.sha256Checksum);
+                                const c = elementCenter(e.currentTarget);
+                                sakugaKira(c.x, c.y, { r: 9, color: '#16A34A' });
+                                showToast('SHA-256 checksum copied to clipboard', 'success');
+                                setCopiedSha(true);
+                                setTimeout(() => setCopiedSha(false), 2000);
+                              }}
+                              className={`sakuga-spring-tap shrink-0 inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-medium transition ${
+                                copiedSha
+                                  ? t.dark
+                                    ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-300'
+                                    : 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                                  : t.dark
+                                    ? 'border-slate-700 bg-slate-800/80 text-slate-200 hover:border-[#3898EC]/60 hover:text-white'
+                                    : 'border-slate-200 bg-white text-slate-700 hover:border-[#003399]/40 hover:text-[#003399]'
+                              }`}
+                            >
+                              {copiedSha ? (
+                                <>
+                                  <Check className="h-3 w-3" />
+                                  <span>Copied</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="h-3 w-3" />
+                                  <span>Copy SHA-256</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+
+                          <div
+                            className={`rounded-lg border px-3 py-2 font-mono-code break-all text-[10.5px] leading-relaxed select-all ${
+                              t.dark
+                                ? 'border-slate-800 bg-slate-950/70 text-slate-300'
+                                : 'border-slate-200/80 bg-slate-50 text-slate-700'
+                            }`}
+                          >
+                            {distribution.android.sha256Checksum}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
