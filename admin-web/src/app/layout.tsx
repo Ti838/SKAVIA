@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import { SakugaProvider } from '@/components/sakuga';
 import { LanguageProvider } from '@/lib/l10n/LanguageContext';
 import './globals.css';
@@ -15,13 +15,6 @@ const inter = Inter({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-inter',
-  display: 'swap',
-});
-
-const notoSansBengali = Noto_Sans_Bengali({
-  subsets: ['bengali'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-bengali',
   display: 'swap',
 });
 
@@ -147,7 +140,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${plusJakartaSans.variable} ${inter.variable} ${notoSansBengali.variable} min-h-screen antialiased`}
+        className={`${plusJakartaSans.variable} ${inter.variable} min-h-screen antialiased`}
       >
         <LanguageProvider>
           <SakugaProvider>{children}</SakugaProvider>
