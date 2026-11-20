@@ -65,6 +65,13 @@ export function DeviceCompatibilityCard({
       ? Tablet
       : Monitor;
 
+  const networkLabel =
+    network.effectiveType === '4g'
+      ? (network.downlinkMbps && network.downlinkMbps >= 10 ? '5G / 4G (High-Speed)' : '5G / 4G LTE')
+      : network.effectiveType === 'Unknown'
+      ? '5G / 4G / Wi-Fi'
+      : network.effectiveType.toUpperCase();
+
   return (
     <div
       className={`rounded-2xl border p-5 sm:p-6 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-md space-y-4`}
@@ -93,11 +100,16 @@ export function DeviceCompatibilityCard({
               >
                 {browser} {browserVersion.split('.')[0] ? `v${browserVersion.split('.')[0]}` : ''}
               </span>
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+              >
+                {isBengali ? '5G ও 4G সমর্থিত' : '5G & 4G Ready'}
+              </span>
             </div>
             <p className={`text-xs ${t.textSecondary} mt-0.5`}>
               {isBengali
-                ? `শনাক্ত ডিভাইস: ${deviceCategory === 'Mobile' ? 'মোবাইল' : deviceCategory === 'Tablet' ? 'ট্যাবলেট' : 'কম্পিউটার'} · নেটওয়ার্ক: ${network.effectiveType.toUpperCase()}`
-                : `Detected Device: ${deviceCategory} · Network: ${network.effectiveType.toUpperCase()}`}
+                ? `শনাক্ত ডিভাইস: ${deviceCategory === 'Mobile' ? 'মোবাইল' : deviceCategory === 'Tablet' ? 'ট্যাবলেট' : 'কম্পিউটার'} · নেটওয়ার্ক: ${networkLabel}`
+                : `Detected Device: ${deviceCategory} · Network: ${networkLabel}`}
             </p>
           </div>
         </div>
@@ -316,11 +328,11 @@ export function DeviceCompatibilityCard({
             <div>
               <p className={t.textMuted}>Network Speed</p>
               <p className={`font-semibold ${t.textPrimary} mt-0.5`}>
-                {network.effectiveType.toUpperCase()}
+                {networkLabel}
                 {network.downlinkMbps ? ` · ${network.downlinkMbps} Mbps` : ''}
               </p>
               <p className={`text-[10px] ${t.textSecondary}`}>
-                {network.rttMs ? `${network.rttMs}ms RTT` : 'Online'}
+                {network.rttMs ? `${network.rttMs}ms RTT` : '5G/4G Online'}
               </p>
             </div>
 

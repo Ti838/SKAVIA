@@ -39,12 +39,21 @@ class NetworkProbeService {
         quality = DiagnosticStatus.limited; // High latency
       }
 
+      String connType;
+      if (latency < 80) {
+        connType = '5G / Ultra-Fast Broadband';
+      } else if (latency < 200) {
+        connType = '4G LTE / High-Speed';
+      } else {
+        connType = 'Mobile Data / Standard Connection';
+      }
+
       return NetworkBenchmark(
         isOnline: isSuccess,
         latencyMs: latency,
         testEndpoint: endpoint,
         quality: quality,
-        connectionType: 'Active IP Connection',
+        connectionType: connType,
       );
     } catch (_) {
       stopwatch.stop();

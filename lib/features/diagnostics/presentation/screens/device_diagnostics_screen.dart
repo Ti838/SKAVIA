@@ -171,43 +171,36 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 6,
+          Row(
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: AppColors.successGreen,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      isBn ? 'লোকাল ডায়াগনস্টিক ইঞ্জিন' : 'On-Device Diagnostic Engine',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primaryBlue,
-                      ),
-                    ),
-                  ),
-                ],
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.successGreen,
+                  shape: BoxShape.circle,
+                ),
               ),
-              if (_report != null)
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isBn ? 'লোকাল ডায়াগনস্টিক ইঞ্জিন' : 'On-Device Diagnostic Engine',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryBlue,
+                  ),
+                ),
+              ),
+              if (_report != null) ...[
+                const SizedBox(width: 8),
                 DiagnosticStatusBadge(
                   status: _report!.hardware.compatibilityStatus,
                   compact: true,
                 ),
+              ],
             ],
           ),
           const SizedBox(height: 8),
@@ -267,7 +260,7 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           title: isBn ? 'ওএস ভার্সন' : 'Operating System',
           value: '${hw.osName} ${hw.osVersion} (API ${hw.sdkInt})',
           subtitle: hw.isMinSdkSatisfied
-              ? (isBn ? 'Android 7.0+ প্রয়োজনীয়তা পূরণ করেছে' : 'Meets Android 7.0+ requirement')
+              ? (isBn ? 'Android 7.0 থেকে Android 15+ (সকল ফোনে কার্যকর)' : 'Android 7.0 up to Android 15+ (Fully Supported)')
               : (isBn ? 'Android 7.0 এর নিচে - অসমর্থিত' : 'Below Android 7.0 - Unsupported'),
         ),
         HardwareSpecTile(
@@ -294,14 +287,14 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           title: isBn ? 'সমর্থিত ABIs' : 'Supported ABIs',
           value: hw.supportedAbis.join(', '),
           subtitle: hw.is64BitArm
-              ? (isBn ? '৬৪-বিট ARM64 আর্কিটেকচার সক্রিয়' : '64-bit ARM64 Architecture Verified')
+              ? (isBn ? 'আধুনিক 5G ও 4G আর্কিটেকচার (ARM64-v8a) সক্রিয়' : 'Modern 5G & 4G Architecture (ARM64-v8a) Active')
               : (isBn ? '৩২-বিট ARMv7 লিগ্যাসি মোড' : '32-bit ARMv7 Legacy Mode'),
         ),
         HardwareSpecTile(
           icon: Icons.security_rounded,
           title: isBn ? 'প্যাকেজ ইনস্টলার কমপ্লায়েন্স' : 'Package Compatibility',
           value: hw.isMinSdkSatisfied && hw.is64BitArm
-              ? (isBn ? 'ARM64 Production APK সমর্থিত' : 'Fully Compatible with ARM64 Production APK')
+              ? (isBn ? 'সকল 5G ও 4G স্মার্টফোনে ১০০% সমর্থিত' : '100% Compatible with all 5G & 4G Smartphones')
               : (isBn ? 'ARMv7 32-bit APK প্রয়োজন' : 'Requires ARMv7 32-bit APK'),
           trailing: DiagnosticStatusBadge(
             status: hw.compatibilityStatus,

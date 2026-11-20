@@ -224,7 +224,7 @@ export function DownloadSection({
                     >
                       <Download className="h-4 w-4" />
                       <span>
-                        {isBengali ? 'অ্যান্ড্রয়েড APK (ARM64 · ২২.৬ MB)' : 'Download APK (ARM64 · 22.6 MB)'}
+                        {isBengali ? 'অ্যান্ড্রয়েড APK (5G ও 4G · ARM64 · ২২.৬ MB)' : 'Download APK (5G & 4G · ARM64 · 22.6 MB)'}
                       </span>
                     </a>
                   </div>
@@ -246,7 +246,7 @@ export function DownloadSection({
                           : `${t.railBorder} ${t.surfaceBg} ${t.textSecondary} hover:${t.textPrimary}`
                       }`}
                     >
-                      <span>{isBengali ? 'ARMv7 ৩২-বিট (২০.৩ MB)' : 'ARMv7 32-bit (20.3 MB)'}</span>
+                      <span>{isBengali ? 'ARMv7 ৩২-বিট পুরোনো ফোন (২০.৩ MB)' : 'ARMv7 32-bit Legacy (20.3 MB)'}</span>
                     </a>
                   </div>
                 </div>
