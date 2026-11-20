@@ -167,7 +167,47 @@ graph TD
 
 ## 🏗️ 6. System Architecture
 
-SKAVIA is built following **Clean Architecture** principles to keep code modular, testable, and maintainable:
+SKAVIA is built following **Clean Feature-First Architecture** principles to keep code modular, testable, and maintainable. Every feature is isolated in its own domain module with distinct presentation, data, and domain responsibilities:
+
+```
+lib/
+├── main.dart                          # Application entry point (44 lines)
+├── app/                               # Core Application Orchestration
+│   ├── app.dart                       # Root MaterialApp widget & providers
+│   ├── config/                        # Environment & application config
+│   ├── router/                        # Typed route generator & routing guards
+│   └── theme/                         # Light & Dark themes, design tokens & typography
+│       ├── app_theme.dart             # Modular theme orchestrator
+│       ├── app_theme_light.dart       # Light theme definition
+│       ├── app_theme_dark.dart        # Dark theme definition
+│       ├── app_colors.dart            # Unified semantic color palette
+│       └── app_typography.dart        # Responsive font specifications
+├── core/                              # Cross-Cutting Infrastructure
+│   ├── constants/                     # Constants, assets, storage & database tables
+│   ├── errors/ & exceptions/          # Resilient error models & handlers
+│   ├── extensions/                    # Context, Theme, and L10n extensions
+│   ├── network/ & storage/            # Local cache & remote storage data sources
+│   ├── services/                      # Sound, language, update, and AI services
+│   └── utils/                         # Validators, formatters, and Supabase guards
+├── shared/                            # Centralized Reusable Component System
+│   ├── enums/                         # Shared domain enums (AppRoleMode, etc.)
+│   ├── widgets/                       # Buttons, TextFields, Badges, UserAvatars
+│   ├── screens/                       # Shared utility canvas tools (image crop/resize)
+│   ├── motion/                        # Sakuga VFX & micro-interactions
+│   └── empty_states/ & error_states/  # Standardized empty & error views
+├── features/                          # Feature-First Modular Domains
+│   ├── authentication/                # Auth, OTP verification, Role selection
+│   ├── profile/                       # Unified profile, settings, privacy, addresses
+│   ├── customer/                      # Requirements, live job feed, booking & payments
+│   ├── worker/                        # Dispatch radar, active jobs, verification
+│   ├── team_project/                  # Multi-specialist teams, discovery, roster
+│   ├── billing/                       # Itemized invoices, checkout, escrow records
+│   ├── navigation/                    # Shell scaffold, dynamic dashboard, role modes
+│   ├── chat/                          # Real-time WebSocket messaging
+│   ├── review/ & complaint/           # Ratings, mediation, and dispute resolution
+│   └── admin/                         # In-app administration and role auditing
+└── l10n/                              # Bilingual ARB translations (en, bn)
+```
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -191,7 +231,7 @@ SKAVIA is built following **Clean Architecture** principles to keep code modular
 └────────────────────────────────────────────────────────┘
 ```
 
-* **Frontend:** Flutter 3.38+ with Dart 3.10+ (Null-Safe).
+* **Frontend:** Flutter 3.38+ with Dart 3.10+ (Null-Safe, strict `--fatal-infos` compliance).
 * **Database & Realtime:** Supabase PostgreSQL 15 across **58 tables** (`supabase_schema.sql` + **8 migrations**) with Row Level Security (RLS).
 * **Authentication & Media:** Firebase Auth (SMS OTP, Google, Email/Password) + Firebase Cloud Storage (mobile) and HMAC Session + WebAuthn/TOTP MFA (`admin-web`).
 * **Payments:** SSLCommerz, bKash, and Nagad (verified server-side via `verify-sslcommerz-ipn` Edge Function).
@@ -289,7 +329,7 @@ See [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) for Vercel deployment
 ========================================================================================
 SKAVIA ECOSYSTEM ARCHITECTURE SUMMARY
 ========================================================================================
-[1] Mobile Static Analysis & Tests  : flutter analyze --no-fatal-infos + flutter test (152 tests / 17 files)
+[1] Mobile Static Analysis & Tests  : flutter analyze --fatal-infos (0 issues) + flutter test (175 tests / 18 files)
 [2] Admin Portal Verification       : tsc --noEmit, eslint (--max-warnings=0), vitest (20 tests), next build, Playwright (5 specs)
 [3] Database & Security             : PostgreSQL RLS + 8 Migrations + Immutable Audit Logs + Maker-Checker
 [4] Modularity                      : Feature-first Flutter (lib/features/*) & Admin Portal (admin-web/src/features/*)
