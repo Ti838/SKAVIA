@@ -5,7 +5,6 @@ import {
   ArrowRight,
   BadgeCheck,
   Briefcase,
-  Building2,
   CheckCircle2,
   Clock,
   Cpu,
@@ -53,28 +52,17 @@ export function BusinessSolutionsScreen() {
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-16 py-12 md:py-16">
+        <div className="space-y-16 pt-4 pb-16 sm:pt-6 sm:pb-24">
           {/* Hero */}
           <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
-            <HeroAtmosphere dark={t.dark} variant="enterprise" />
+            <HeroAtmosphere dark={t.dark} variant="subpage" />
 
-            <div className="max-w-4xl mx-auto text-center space-y-5 relative z-10">
-              <div
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono-code ${
-                  t.dark
-                    ? 'border-purple-400/30 bg-purple-500/10 text-purple-300'
-                    : 'border-purple-300 bg-purple-50 text-purple-800'
-                }`}
-              >
-                <Building2 className="h-4 w-4 text-purple-400" />
-                <span>ENTERPRISE SOLUTIONS &amp; COMMERCIAL SLAS</span>
-              </div>
-
-              <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight ${t.textPrimary}`}>
+            <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
+              <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
                 Enterprise Turnkey Facility Infrastructure
               </h1>
 
-              <p className={`text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto ${t.textSecondary}`}>
+              <p className="mt-4 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
                 Commercial facility maintenance, turnkey office renovations, multi-branch service contracts, and dedicated on-site Team Leaders backed by single-enterprise accountability.
               </p>
 

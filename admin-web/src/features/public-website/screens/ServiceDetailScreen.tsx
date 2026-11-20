@@ -19,7 +19,7 @@ export function ServiceDetailScreen({ service }: { service: PublicServiceDetail 
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-12 py-12 md:py-16">
+        <div className="space-y-12 pt-4 pb-16 sm:pt-6 sm:pb-24">
           {/* Breadcrumbs & Navigation */}
           <section className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs font-mono-code text-slate-500">
