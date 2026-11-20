@@ -3,15 +3,22 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
+  ArrowRight,
+  BadgeCheck,
   Check,
   ChevronDown,
+  Clock,
   Copy,
   Download,
   Hammer,
   HelpCircle,
+  KeyRound,
   Mail,
+  MapPin,
   Phone,
   ShieldCheck,
+  Smartphone,
+  Wallet,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
 import { useSakugaToast } from '@/components/sakuga';
@@ -35,54 +42,196 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
   const mobileFeatures = getMobileFeatures(isBengali);
 
   return (
-    <section id="workers" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <div className="lg:col-span-6 space-y-4">
-          <p className={`text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
-            {isBengali ? 'কর্মী হিসেবে সম্ভাবনা ও ক্যারিয়ার' : 'Worker Opportunities'}
-          </p>
-          <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
-            {isBengali ? 'কীভাবে স্ক্যাভিয়া ভেরিফাইড কর্মী হবেন' : 'How to Become a Verified SKAVIA Worker'}
+    <section id="workers" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+      {/* Ambient background light */}
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-r from-blue-600/10 via-cyan-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div
+            className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code ${
+              t.dark
+                ? 'border-cyan-400/25 bg-cyan-500/10 text-cyan-300'
+                : 'border-sky-300 bg-sky-50 text-sky-700'
+            }`}
+          >
+            <span className={`w-1.5 h-1.5 rounded-full ${t.dark ? 'bg-cyan-400' : 'bg-sky-600'} animate-pulse`} />
+            <span>{isBengali ? 'যাচাইকৃত দক্ষ কর্মী প্ল্যাটফর্ম · ৯০% সরাসরি আয়' : 'VERIFIED SKILLED WORKFORCE · 90% DIRECT EARNINGS'}</span>
+          </div>
+
+          <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight ${t.textPrimary}`}>
+            {isBengali ? 'দক্ষ কারিগর ও ফিল্ড স্পেশালিস্টদের ক্ষমতায়ন' : "Empowering Bangladesh's Field Specialists"}
           </h2>
-          <p className={`text-sm leading-relaxed ${t.textSecondary}`}>
+
+          <p className={`text-base sm:text-lg max-w-2xl mx-auto leading-relaxed ${t.textSecondary}`}>
             {isBengali
-              ? 'স্ক্যাভিয়ার অধীনে নিশ্চিত নিয়মিত আয় ও স্থায়ী পেশাদার সুনাম গড়ে তুলুন। কর্মীরা সরাসরি মোবাইল অ্যাপ থেকে নিবন্ধন করতে পারেন — কোনো মধ্যস্বত্বভোগী বা দালালের প্রয়োজন নেই।'
-              : 'Build consistent income and lasting professional reputation under SKAVIA. Workers register directly in the mobile app — no public web forms or third-party brokers required.'}
+              ? 'মধ্যস্বত্বভোগী ও অনৈতিক দালাল ব্যবস্থার অবসান। সরাসরি মোবাইল অ্যাপে কাজের অর্ডার, সাপ্তাহিক ব্যাংকিং/এমএফএস পেআউট এবং নিশ্চিত পেশাদার সম্মান।'
+              : "Direct job dispatches, zero broker exploitation, weekly bank and MFS settlements, and verifiable reputation building on Bangladesh's accountable workforce platform."}
           </p>
-          <div className="space-y-3 pt-2">
-            {onboardingSteps.map((item) => (
-              <div
-                key={item.step}
-                className={`rounded-xl border p-4 ${t.railBorder} ${t.surfaceBg}`}
-              >
-                <p className="text-xs font-semibold text-[#3898EC]">{item.step}</p>
-                <p className={`text-xs mt-1 ${t.textSecondary}`}>{item.detail}</p>
-              </div>
-            ))}
+        </div>
+
+        {/* 3 High-Impact KPI Stat Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6">
+          <div className={`p-6 rounded-2xl border transition-all ${t.railBorder} ${t.cardBg} backdrop-blur-md hover:border-[#15E7CA]/40`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-mono-code uppercase tracking-wider text-[#15E7CA] font-semibold">
+                {isBengali ? 'কর্মী রাজস্ব অংশীদারিত্ব' : 'Revenue Share'}
+              </span>
+              <Wallet className="h-5 w-5 text-[#15E7CA]" />
+            </div>
+            <div className={`text-3xl sm:text-4xl font-extrabold ${t.textPrimary}`}>
+              90% <span className="text-sm font-normal text-slate-400">Direct</span>
+            </div>
+            <p className={`text-xs mt-2 leading-relaxed ${t.textSecondary}`}>
+              {isBengali
+                ? 'কাজের মোট মূল্যের ৯০% সরাসরি কর্মীর ব্যাংক বা bKash/Nagad একাউন্টে ট্রান্সফার হয়।'
+                : "90% of order value is transferred directly to the verified specialist's account."}
+            </p>
+          </div>
+
+          <div className={`p-6 rounded-2xl border transition-all ${t.railBorder} ${t.cardBg} backdrop-blur-md hover:border-[#3898EC]/40`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-mono-code uppercase tracking-wider text-[#3898EC] font-semibold">
+                {isBengali ? 'দালালমুক্ত প্ল্যাটফর্ম' : 'Zero Middlemen'}
+              </span>
+              <ShieldCheck className="h-5 w-5 text-[#3898EC]" />
+            </div>
+            <div className={`text-3xl sm:text-4xl font-extrabold ${t.textPrimary}`}>
+              ৳0 <span className="text-sm font-normal text-slate-400">Broker Fee</span>
+            </div>
+            <p className={`text-xs mt-2 leading-relaxed ${t.textSecondary}`}>
+              {isBengali
+                ? 'কোনো অনাকাঙ্ক্ষিত মধ্যস্থতাকারী নেই। স্ক্যাভিয়ার কেন্দ্রীয় অডিটের অধীনে প্রতিটি কাজ সুরক্ষিত।'
+                : 'Zero commission leakage to external touts or brokers. Transparent corporate oversight.'}
+            </p>
+          </div>
+
+          <div className={`p-6 rounded-2xl border transition-all ${t.railBorder} ${t.cardBg} backdrop-blur-md hover:border-emerald-400/40`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-mono-code uppercase tracking-wider text-emerald-400 font-semibold">
+                {isBengali ? 'দ্রুত সেটেলমেন্ট' : 'Settlement Cycle'}
+              </span>
+              <Clock className="h-5 w-5 text-emerald-400" />
+            </div>
+            <div className={`text-3xl sm:text-4xl font-extrabold ${t.textPrimary}`}>
+              {isBengali ? 'সাপ্তাহিক' : 'Weekly'} <span className="text-sm font-normal text-slate-400">Payout</span>
+            </div>
+            <p className={`text-xs mt-2 leading-relaxed ${t.textSecondary}`}>
+              {isBengali
+                ? 'প্রতি সপ্তাহে স্বয়ংক্রিয় পেআউট সাইকেল। কাজের সাইন-অফ হওয়ার পর তাত্ক্ষণিক ব্যালেন্স ক্রেডিট।'
+                : 'Automated weekly payout disbursement with real-time balance tracking in the worker app.'}
+            </p>
           </div>
         </div>
 
-        <div className="lg:col-span-6 space-y-4">
-          <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC]">
-            {isBengali ? 'মোবাইল অ্যাপ ফিচারসমূহ' : 'Mobile App Features'}
-          </p>
-          <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
-            {isBengali ? 'একটি অ্যাপ। সম্পূর্ণ ইকোসিস্টেম নিয়ন্ত্রণ।' : 'One App. Complete Ecosystem Control.'}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            {mobileFeatures.map((feat) => {
-              const Icon = feat.icon;
-              return (
+        {/* Two-Column Split: Onboarding Stepper vs Unified Mobile Features */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* Left Column: Onboarding Stepper (6 cols) */}
+          <div className={`lg:col-span-6 p-6 sm:p-8 rounded-3xl border ${t.railBorder} ${t.cardBg} backdrop-blur-md space-y-6`}>
+            <div className="space-y-2">
+              <span className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC] font-semibold">
+                {isBengali ? 'অনবোর্ডিং প্রক্রিয়া' : 'Step-by-Step Pathway'}
+              </span>
+              <h3 className={`text-xl sm:text-2xl font-bold ${t.textPrimary}`}>
+                {isBengali ? 'কীভাবে স্ক্যাভিয়া ভেরিফাইড স্পেশালিস্ট হবেন' : 'How to Become a Verified SKAVIA Specialist'}
+              </h3>
+              <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                {isBengali
+                  ? 'সকল অনবোর্ডিং প্রক্রিয়া অফিসিয়াল অ্যান্ড্রয়েড অ্যাপের ওয়ার্কার মোডে সম্পন্ন হয়। কোনো ফিজিক্যাল কাগজপত্র নিয়ে ঘুরতে হয় না।'
+                  : 'Onboarding is executed directly inside the SKAVIA Android App. No tedious paperwork or office visits required.'}
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              {onboardingSteps.map((item, idx) => (
                 <div
-                  key={feat.title}
-                  className={`rounded-xl border p-4 ${t.railBorder} ${t.surfaceBg}`}
+                  key={item.step}
+                  className={`group relative p-4 rounded-2xl border transition-all ${t.railBorder} ${t.surfaceBg} hover:border-[#003399]/50 dark:hover:border-[#15E7CA]/40`}
                 >
-                  <Icon className={`h-4 w-4 mb-2.5 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
-                  <p className={`text-sm font-semibold ${t.textPrimary}`}>{feat.title}</p>
-                  <p className={`text-xs mt-1 leading-relaxed ${t.textSecondary}`}>{feat.desc}</p>
+                  <div className="flex items-start gap-3.5">
+                    <span className="flex items-center justify-center h-7 w-7 rounded-full bg-[#003399]/15 dark:bg-[#15E7CA]/15 text-[#003399] dark:text-[#15E7CA] font-mono-code font-bold text-xs shrink-0 mt-0.5">
+                      0{idx + 1}
+                    </span>
+                    <div>
+                      <h4 className={`text-sm font-semibold ${t.textPrimary} group-hover:text-[#003399] dark:group-hover:text-[#15E7CA] transition-colors`}>
+                        {item.step}
+                      </h4>
+                      <p className={`text-xs mt-1 leading-relaxed ${t.textSecondary}`}>
+                        {item.detail}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+
+            <div className={`p-4 rounded-2xl border border-dashed ${t.railBorder} bg-slate-50/50 dark:bg-slate-900/40 flex flex-col sm:flex-row items-center justify-between gap-3`}>
+              <div className="flex items-center gap-2.5">
+                <Smartphone className="h-5 w-5 text-[#3898EC] shrink-0" />
+                <span className={`text-xs font-medium ${t.textPrimary}`}>
+                  {isBengali ? 'মোবাইল অ্যাপে রেজিস্ট্রেশন করুন' : 'Apply via Official Mobile App'}
+                </span>
+              </div>
+              <a
+                href="#download"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#003399] hover:bg-[#002266] transition-all shrink-0"
+              >
+                <span>{isBengali ? 'অ্যাপ ডাউনলোড' : 'Get The App'}</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </div>
+          </div>
+
+          {/* Right Column: Unified Mobile App Features (6 cols) */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="space-y-2">
+              <span className="text-xs font-mono-code uppercase tracking-widest text-[#15E7CA] font-semibold">
+                {isBengali ? 'একক মোবাইল আর্কিটেকচার' : 'Single Mobile Architecture'}
+              </span>
+              <h3 className={`text-xl sm:text-2xl font-bold ${t.textPrimary}`}>
+                {isBengali ? 'একটি অ্যাপ। ক্লায়েন্ট ও কর্মী উভয়ের জন্য সম্পূর্ণ নিয়ন্ত্রণ।' : 'One App. Client & Worker Ecosystem Control.'}
+              </h3>
+              <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                {isBengali
+                  ? 'পৃথক দুটি অ্যাপের দরকার নেই। আপনার একই ভেরিফাইড প্রোফাইল থেকে এক ট্যাপে ক্লায়েন্ট ও ওয়ার্কার মোডের মধ্যে স্যুইচ করুন।'
+                  : 'Zero duplicate applications. Seamlessly toggle between Client Mode and Verified Worker Mode inside one unified binary.'}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {mobileFeatures.map((feat) => {
+                const Icon = feat.icon;
+                return (
+                  <div
+                    key={feat.title}
+                    className={`p-5 rounded-2xl border transition-all ${t.railBorder} ${t.surfaceBg} hover:border-[#3898EC]/50 hover:shadow-lg hover:shadow-blue-500/5 group`}
+                  >
+                    <div className="h-9 w-9 rounded-xl bg-blue-500/10 dark:bg-cyan-500/10 border border-blue-500/20 dark:border-cyan-500/20 flex items-center justify-center mb-3 text-[#003399] dark:text-[#15E7CA] group-hover:scale-105 transition-transform">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <h4 className={`text-sm font-semibold ${t.textPrimary}`}>
+                      {feat.title}
+                    </h4>
+                    <p className={`text-xs mt-1.5 leading-relaxed ${t.textSecondary}`}>
+                      {feat.desc}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Verification & Trust Callout */}
+            <div className={`p-4 rounded-2xl border ${t.railBorder} ${t.subtleCardBg} flex items-center gap-3.5`}>
+              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
+                {isBengali
+                  ? 'সকল কর্মী জাতীয় পরিচয়পত্র (NID), পুলিশ ক্লিয়ারেন্স ও নির্দিষ্ট ট্রেড টেস্টের মাধ্যমে যাচাইকৃত।'
+                  : 'Every technician is verified via Bangladesh National ID (NID) and certified in their trade specialization.'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -137,14 +286,14 @@ export function DownloadSection({
   };
 
   return (
-    <section id="download" className={`relative border-b ${t.railBorder} ${t.surfaceBg} py-10 sm:py-14 px-4 sm:px-8 overflow-hidden`}>
+    <section id="download" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
       {/* Background ambient lighting for pro aesthetic */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#003399]/20 via-[#15E7CA]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] bg-gradient-to-tr from-[#003399]/25 via-[#15E7CA]/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       {/* Centered Modern Header */}
-      <div className="max-w-3xl mx-auto text-center mb-8 relative z-10">
+      <div className="max-w-3xl mx-auto text-center mb-12 relative z-10 space-y-4">
         <div
-          className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code mb-4 ${
+          className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code ${
             t.dark
               ? 'border-cyan-400/25 bg-cyan-500/10 text-cyan-300'
               : 'border-sky-300 bg-sky-50 text-sky-700'
@@ -155,19 +304,19 @@ export function DownloadSection({
               t.dark ? 'bg-cyan-400' : 'bg-sky-600'
             } animate-pulse`}
           />
-          <span>{isBengali ? 'অফিসিয়াল মোবাইল অভিজ্ঞতা' : 'Official Mobile App'}</span>
+          <span>{isBengali ? 'অফিসিয়াল অ্যান্ড্রয়েড প্রোডাকশন রিলিজ' : 'OFFICIAL ANDROID PRODUCTION RELEASE'}</span>
         </div>
         <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight ${t.textPrimary}`}>
-          {isBengali ? 'অফিসিয়াল স্ক্যাভিয়া অ্যান্ড্রয়েড অ্যাপ' : 'Get SKAVIA on Android'}
+          {isBengali ? 'অফিসিয়াল স্ক্যাভিয়া অ্যান্ড্রয়েড অ্যাপ ডাউনলোড' : 'Download SKAVIA for Android'}
         </h2>
-        <p className={`text-base sm:text-lg mt-3.5 max-w-xl mx-auto leading-relaxed ${t.textSecondary}`}>
+        <p className={`text-base sm:text-lg max-w-xl mx-auto leading-relaxed ${t.textSecondary}`}>
           {isBengali
-            ? 'ইনস্ট্যান্ট সার্ভিস বুকিং, লাইভ টেকনিশিয়ান ডিসপ্যাচ ও আগমন ওটিপি হ্যান্ডশেক — সব একটি মাত্র অ্যাপে।'
+            ? 'ইনস্ট্যান্ট সার্ভিস বুকিং, লাইভ টেকনিশিয়ান ডিসপ্যাচ ও আগমন ওটিপি হ্যান্ডশেক — সব একটি মাত্র নিরাপদ অ্যাপে।'
             : 'Instant client bookings, live technician dispatch, and cryptographic OTP handoff — built for high-accountability workforce operations.'}
         </p>
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Direct Download Actions & Technical Verification */}
           <div className="lg:col-span-7 space-y-6">
@@ -178,98 +327,100 @@ export function DownloadSection({
               t={t}
             />
 
-            <div className={`rounded-2xl border p-6 sm:p-8 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-xl`}>
-              <div className="flex items-center gap-3 mb-4 flex-wrap">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    t.dark
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                      : 'bg-emerald-50 text-emerald-700 border border-emerald-300'
-                  }`}
-                >
-                  v{version} (Production)
-                </span>
-                <span className={`text-xs ${t.textMuted}`}>
-                  {isBengali
-                    ? `অফিসিয়াল রিলিজ · হালকা ও দ্রুত (${apkSizeLabel})`
-                    : `Official Direct Release · Lightweight ${apkSizeLabel} APK`}
+            <div className={`rounded-3xl border p-6 sm:p-8 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-xl space-y-6`}>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-bold ${
+                      t.dark
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                    }`}
+                  >
+                    v{version} (Production)
+                  </span>
+                  <span className={`text-xs ${t.textMuted}`}>
+                    {publishedDateLabel}
+                  </span>
+                </div>
+                <span className="text-xs font-mono-code px-2.5 py-0.5 rounded-full border border-blue-500/20 bg-blue-500/5 text-[#3898EC]">
+                  Lightweight {apkSizeLabel}
                 </span>
               </div>
 
-              <div className="space-y-4">
-                <p className={`text-sm leading-relaxed ${t.textSecondary}`}>
-                  {isBengali
-                    ? 'ক্লায়েন্ট ও ওয়ার্কার উভয়ের জন্য এক সমন্বিত অভিজ্ঞতা। শারীরিক আগমন ব্যতিরেকে কোনো জব শুরু বা বিলিং হয় না।'
-                    : 'Download the official SKAVIA client and worker companion app for Android. No third-party stores required.'}
-                </p>
+              <p className={`text-sm leading-relaxed ${t.textSecondary}`}>
+                {isBengali
+                  ? 'ক্লায়েন্ট ও ওয়ার্কার উভয়ের জন্য এক সমন্বিত অভিজ্ঞতা। শারীরিক আগমন ও ৪-সংখ্যার ওটিপি ব্যতিরেকে কোনো জব শুরু বা বিলিং হয় না।'
+                  : 'Download the official SKAVIA client and worker companion app for Android. No third-party stores or intermediary brokers required.'}
+              </p>
 
-                {/* Primary Download Button with Auto-Recommendation Highlighting */}
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                  {/* ARM64 Primary Option */}
-                  <div className="relative flex-1">
-                    {telemetry.isLoaded && telemetry.recommendedApk === 'arm64' && (
-                      <span className="absolute -top-3 left-4 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
-                        <span>★</span>
-                        <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
-                      </span>
-                    )}
-                    <a
-                      href={primaryApkUrl}
-                      download="skavia-v1.0.0-arm64-v8a.apk"
-                      className={`sakuga-spring-tap w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#003399] to-[#1D4ED8] hover:from-[#002266] hover:to-[#1e40af] text-white font-semibold text-sm shadow-lg shadow-blue-900/30 transition-all text-center ${
-                        telemetry.isLoaded && telemetry.recommendedApk === 'arm64'
-                          ? 'ring-2 ring-amber-400/80 shadow-amber-400/10'
-                          : ''
-                      }`}
-                      onClick={(e) => {
-                        const pos = elementCenter(e.currentTarget);
-                        sakugaTicks(pos.x, pos.y);
-                        sakugaKira(pos.x, pos.y);
-                      }}
-                    >
-                      <Download className="h-4 w-4" />
-                      <span>
-                        {isBengali ? 'অ্যান্ড্রয়েড APK (5G ও 4G · ARM64 · ২২.৬ MB)' : 'Download APK (5G & 4G · ARM64 · 22.6 MB)'}
-                      </span>
-                    </a>
-                  </div>
-
-                  {/* ARMv7 32-bit Legacy Option */}
-                  <div className="relative">
-                    {telemetry.isLoaded && telemetry.recommendedApk === 'armv7' && (
-                      <span className="absolute -top-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
-                        <span>★</span>
-                        <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
-                      </span>
-                    )}
-                    <a
-                      href={armv7ApkUrl}
-                      download="skavia-v1.0.0-armeabi-v7a.apk"
-                      className={`sakuga-spring-tap inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border text-xs font-medium transition-all text-center ${
-                        telemetry.isLoaded && telemetry.recommendedApk === 'armv7'
-                          ? 'border-amber-400 text-amber-300 ring-2 ring-amber-400/60 bg-amber-500/10'
-                          : `${t.railBorder} ${t.surfaceBg} ${t.textSecondary} hover:${t.textPrimary}`
-                      }`}
-                    >
-                      <span>{isBengali ? 'ARMv7 ৩২-বিট পুরোনো ফোন (২০.৩ MB)' : 'ARMv7 32-bit Legacy (20.3 MB)'}</span>
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-xs pt-1 flex-wrap">
-                  <div className="flex items-center gap-1.5 text-emerald-500">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span className="font-medium">
-                      {isBengali ? 'প্লে প্রটেক্ট ও ভাইরাসটোটাল দ্বারা পরীক্ষিত' : 'Play Protect & VirusTotal Verified'}
+              {/* Primary Download Button with Auto-Recommendation Highlighting */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                {/* ARM64 Primary Option */}
+                <div className="relative flex-1">
+                  {telemetry.isLoaded && telemetry.recommendedApk === 'arm64' && (
+                    <span className="absolute -top-3 left-4 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
+                      <span>★</span>
+                      <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
                     </span>
-                  </div>
-                  <span className={t.textMuted}>•</span>
-                  <span className={t.textMuted}>{publishedDateLabel}</span>
+                  )}
+                  <a
+                    href={primaryApkUrl}
+                    download="skavia-v1.0.0-arm64-v8a.apk"
+                    className={`sakuga-spring-tap w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#003399] to-[#1D4ED8] hover:from-[#002266] hover:to-[#1e40af] text-white font-semibold text-sm shadow-xl shadow-blue-900/30 transition-all text-center hover:scale-[1.01] ${
+                      telemetry.isLoaded && telemetry.recommendedApk === 'arm64'
+                        ? 'ring-2 ring-amber-400/80 shadow-amber-400/10'
+                        : ''
+                    }`}
+                    onClick={(e) => {
+                      const pos = elementCenter(e.currentTarget);
+                      sakugaTicks(pos.x, pos.y);
+                      sakugaKira(pos.x, pos.y);
+                    }}
+                  >
+                    <Download className="h-4 w-4 shrink-0" />
+                    <span>
+                      {isBengali ? 'অ্যান্ড্রয়েড APK (5G ও 4G · ARM64 · ২২.৬ MB)' : 'Download APK (5G & 4G · ARM64 · 22.6 MB)'}
+                    </span>
+                  </a>
                 </div>
+
+                {/* ARMv7 32-bit Legacy Option */}
+                <div className="relative">
+                  {telemetry.isLoaded && telemetry.recommendedApk === 'armv7' && (
+                    <span className="absolute -top-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
+                      <span>★</span>
+                      <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
+                    </span>
+                  )}
+                  <a
+                    href={armv7ApkUrl}
+                    download="skavia-v1.0.0-armeabi-v7a.apk"
+                    className={`sakuga-spring-tap inline-flex items-center justify-center gap-2 px-4 py-4 rounded-2xl border text-xs font-semibold transition-all text-center hover:scale-[1.01] ${
+                      telemetry.isLoaded && telemetry.recommendedApk === 'armv7'
+                        ? 'border-amber-400 text-amber-300 ring-2 ring-amber-400/60 bg-amber-500/10'
+                        : `${t.railBorder} ${t.surfaceBg} ${t.textSecondary} hover:${t.textPrimary}`
+                    }`}
+                  >
+                    <span>{isBengali ? 'ARMv7 ৩২-বিট পুরোনো ফোন (২০.৩ MB)' : 'ARMv7 32-bit Legacy (20.3 MB)'}</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Security Trust Badges */}
+              <div className="flex items-center gap-4 text-xs pt-1 flex-wrap">
+                <div className="flex items-center gap-1.5 text-emerald-500">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="font-semibold">
+                    {isBengali ? 'গুগল প্লে প্রটেক্ট ও ভাইরাসটোটাল দ্বারা পরীক্ষিত' : 'Play Protect & VirusTotal Verified'}
+                  </span>
+                </div>
+                <span className={t.textMuted}>•</span>
+                <span className={t.textMuted}>Android 7.0 (Nougat) – 15/16 Ready</span>
               </div>
 
               {/* SHA-256 Checksum Accordion */}
-              <div className={`mt-6 pt-5 border-t ${t.railBorder} space-y-3`}>
+              <div className={`pt-4 border-t ${t.railBorder} space-y-3`}>
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
@@ -312,7 +463,7 @@ export function DownloadSection({
                 )}
 
                 {/* Release Notes Accordion */}
-                <div className="pt-2">
+                <div className="pt-1">
                   <button
                     type="button"
                     onClick={() => setNotesExpanded(!notesExpanded)}
@@ -335,37 +486,46 @@ export function DownloadSection({
 
             {/* 3 Core Accountability Badges */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className={`rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <p className={`text-xs font-semibold ${t.textPrimary}`}>
-                  {isBengali ? 'হাভারসাইন ডিসপ্যাচ' : 'Haversine Dispatch'}
-                </p>
-                <p className={`text-[11px] mt-1 ${t.textSecondary}`}>
-                  {isBengali ? 'নিকটবর্তী যাচাইকৃত টেকনিশিয়ান।' : 'Matches verified specialists nearby.'}
-                </p>
-              </div>
-
-              <div className={`rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <p className={`text-xs font-semibold ${t.textPrimary}`}>
-                  {isBengali ? '৪-সংখ্যার আগমন ওটিপি' : '4-Digit Arrival OTP'}
-                </p>
-                <p className={`text-[11px] mt-1 ${t.textSecondary}`}>
-                  {isBengali ? 'আগমন ব্যতিরেকে কাজ শুরু নয়।' : 'Zero billable time before handoff.'}
+              <div className={`rounded-2xl border p-4 ${t.railBorder} ${t.cardBg} backdrop-blur-md`}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <MapPin className="h-4 w-4 text-[#3898EC]" />
+                  <p className={`text-xs font-bold ${t.textPrimary}`}>
+                    {isBengali ? 'হাভারসাইন ডিসপ্যাচ' : 'Haversine Dispatch'}
+                  </p>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${t.textSecondary}`}>
+                  {isBengali ? 'নিকটবর্তী যাচাইকৃত টেকনিশিয়ান অনুসন্ধান।' : 'Matches verified specialists nearby.'}
                 </p>
               </div>
 
-              <div className={`rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <p className={`text-xs font-semibold ${t.textPrimary}`}>
-                  {isBengali ? 'এসক্রো সেটেলমেন্ট' : 'Escrow Settlement'}
+              <div className={`rounded-2xl border p-4 ${t.railBorder} ${t.cardBg} backdrop-blur-md`}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <KeyRound className="h-4 w-4 text-[#15E7CA]" />
+                  <p className={`text-xs font-bold ${t.textPrimary}`}>
+                    {isBengali ? '৪-সংখ্যার আগমন ওটিপি' : '4-Digit Arrival OTP'}
+                  </p>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${t.textSecondary}`}>
+                  {isBengali ? 'আগমন ব্যতিরেকে কাজ শুরু বা বিলিং নয়।' : 'Zero billable time before handoff.'}
                 </p>
-                <p className={`text-[11px] mt-1 ${t.textSecondary}`}>
-                  {isBengali ? 'কাজ সন্তোষজনক হলে স্বয়ংক্রিয় পেআউট।' : 'Guaranteed payout upon completion.'}
+              </div>
+
+              <div className={`rounded-2xl border p-4 ${t.railBorder} ${t.cardBg} backdrop-blur-md`}>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <BadgeCheck className="h-4 w-4 text-emerald-400" />
+                  <p className={`text-xs font-bold ${t.textPrimary}`}>
+                    {isBengali ? 'এসক্রো সেটেলমেন্ট' : 'Escrow Settlement'}
+                  </p>
+                </div>
+                <p className={`text-[11px] leading-relaxed ${t.textSecondary}`}>
+                  {isBengali ? 'কাজ সন্তোষজনক হলে স্বয়ংক্রিয় পেআউট।' : 'Guaranteed payout upon sign-off.'}
                 </p>
               </div>
             </div>
           </div>
 
           {/* Right Column: Realistic Flagship Smartphone Device Mockup */}
-          <div className="lg:col-span-5 flex justify-center items-center">
+          <div className="lg:col-span-5 flex justify-center items-center relative">
             <SmartphoneDeviceMockup t={t} version={version} />
           </div>
         </div>
@@ -387,76 +547,152 @@ export function FaqAndContactSection({
   const faqItems = getFaqItems(isBengali);
 
   return (
-    <section id="faq" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-7 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2 font-semibold">
-            <HelpCircle className="h-4 w-4" />
-            <span>{isBengali ? 'সাধারণ জিজ্ঞাসা ও প্রশ্নোত্তর' : 'Frequently Asked Questions'}</span>
+    <section id="faq" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+      <div className="max-w-7xl mx-auto space-y-12 relative z-10">
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div
+            className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code ${
+              t.dark
+                ? 'border-cyan-400/25 bg-cyan-500/10 text-cyan-300'
+                : 'border-sky-300 bg-sky-50 text-sky-700'
+            }`}
+          >
+            <HelpCircle className="h-3.5 w-3.5" />
+            <span>{isBengali ? 'স্বচ্ছতা ও প্রাতিষ্ঠানিক সহায়তা' : 'TRANSPARENCY & OPERATIONS HUB'}</span>
           </div>
-          {faqItems.map((item, idx) => {
-            const open = openFaq === idx;
-            return (
-              <div
-                key={item.q}
-                className={`rounded-xl border ${t.railBorder} ${t.surfaceBg} overflow-hidden`}
-              >
-                <button
-                  type="button"
-                  onClick={() => onToggleFaq(idx)}
-                  className={`sakuga-spring-tap w-full px-5 py-4 text-left flex items-center justify-between gap-4 text-sm font-semibold ${t.textPrimary}`}
-                >
-                  <span>{item.q}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-                  />
-                </button>
-                {open && (
-                  <div className={`px-5 pb-4 text-xs leading-relaxed ${t.textSecondary}`}>
-                    {item.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+
+          <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight ${t.textPrimary}`}>
+            {isBengali ? 'সাধারণ জিজ্ঞাসা ও অপারেশনস সাপোর্ট' : 'Frequently Asked Questions & Operations'}
+          </h2>
+
+          <p className={`text-base sm:text-lg max-w-2xl mx-auto leading-relaxed ${t.textSecondary}`}>
+            {isBengali
+              ? 'স্ক্যাভিয়ার পরিচালনা কাঠামো, অর্ডার পদ্ধতি ও এন্টারপ্রাইজ সাপোর্ট সম্পর্কে আপনার যা জানা প্রয়োজন।'
+              : "Clear answers on SKAVIA's managed branch model, verification standards, and operational command protocols."}
+          </p>
         </div>
 
-        <div id="contact" className="lg:col-span-5">
-          <div className={`rounded-2xl border p-6 space-y-4 ${t.railBorder} ${t.surfaceBg}`}>
-            <div className={`flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest font-semibold ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
-              <Hammer className="h-4 w-4" />
-              <span>{isBengali ? 'যোগাযোগ ও প্রাতিষ্ঠানিক সহায়তা' : 'Contact & Official Support'}</span>
-            </div>
-            <h3 className={`text-xl font-bold ${t.textPrimary}`}>
-              {isBengali ? 'ব্যবসায়িক সমন্বয় বা সহায়তা প্রয়োজন?' : 'Need Business Scoping or Support?'}
-            </h3>
-            <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
-              {isBengali
-                ? 'প্রাতিষ্ঠানিক চুক্তি, সুরক্ষা অনুসন্ধান বা যাচাইকৃত সেবা সংক্রান্ত যেকোনো তথ্যের জন্য স্ক্যাভিয়া অপারেশনস টিমের সাথে যোগাযোগ করুন।'
-                : 'Reach SKAVIA Operations for enterprise facility partnerships, safety inquiries, or verified distribution questions.'}
-            </p>
-            <div className="space-y-3 pt-2 text-xs">
-              <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <Mail className="h-4 w-4 text-[#3898EC] shrink-0" />
-                <div>
-                  <p className={`font-semibold ${t.textPrimary}`}>
-                    {isBengali ? 'অফিসিয়াল সাপোর্ট ইমেইল' : 'Official Support Email'}
-                  </p>
-                  <p className={t.textSecondary}>support@skavia.com</p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          {/* FAQ Accordion (7 cols) */}
+          <div className="lg:col-span-7 space-y-4">
+            {faqItems.map((item, idx) => {
+              const open = openFaq === idx;
+              return (
+                <div
+                  key={item.q}
+                  className={`rounded-2xl border transition-all overflow-hidden ${
+                    open
+                      ? `${t.cardBg} border-[#003399]/40 dark:border-[#15E7CA]/40 shadow-lg shadow-blue-500/5`
+                      : `${t.surfaceBg} ${t.railBorder} hover:border-slate-400/40 dark:hover:border-slate-700/60`
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onToggleFaq(idx)}
+                    className={`sakuga-spring-tap w-full px-6 py-5 text-left flex items-center justify-between gap-4 text-sm sm:text-base font-semibold transition-colors ${
+                      open ? (t.dark ? 'text-[#15E7CA]' : 'text-[#003399]') : t.textPrimary
+                    }`}
+                  >
+                    <span>{item.q}</span>
+                    <div
+                      className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                        open ? 'bg-[#003399]/10 dark:bg-[#15E7CA]/15 rotate-180' : 'bg-slate-100 dark:bg-slate-800'
+                      }`}
+                    >
+                      <ChevronDown
+                        className={`h-4 w-4 ${open ? (t.dark ? 'text-[#15E7CA]' : 'text-[#003399]') : 'text-slate-500'}`}
+                      />
+                    </div>
+                  </button>
+                  {open && (
+                    <div className={`px-6 pb-6 text-xs sm:text-sm leading-relaxed border-t ${t.railBorder} pt-4 ${t.textSecondary}`}>
+                      {item.a}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Dhaka HQ Operations Desk Card (5 cols) */}
+          <div id="contact" className="lg:col-span-5">
+            <div className={`rounded-3xl border p-6 sm:p-8 space-y-6 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-xl`}>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className={`inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-wider font-semibold ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
+                  <Hammer className="h-4 w-4" />
+                  <span>{isBengali ? 'অপারেশনস হেডকোয়ার্টার' : 'Dhaka Operations Desk'}</span>
+                </div>
+                <span className="flex items-center gap-1.5 text-[11px] font-mono-code px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>SLA &lt; 15m</span>
+                </span>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className={`text-xl sm:text-2xl font-bold ${t.textPrimary}`}>
+                  {isBengali ? 'প্রাতিষ্ঠানিক চুক্তি বা জরুরী সহায়তা' : 'Enterprise SLAs & Priority Support'}
+                </h3>
+                <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                  {isBengali
+                    ? 'বাণিজ্যিক ফ্যাসিলিটি চুক্তি, মাল্টি-সাইট প্রজেক্ট বা জরুরী টেকনিক্যাল ডিসপ্যাচের জন্য স্ক্যাভিয়া সেন্ট্রাল কন্ট্রোল ডেস্কে যোগাযোগ করুন।'
+                    : 'Direct escalation to the SKAVIA Operations Command Center for commercial facility contracts and critical technical response.'}
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2 text-xs">
+                <div className={`flex items-start gap-3.5 rounded-2xl border p-4 ${t.railBorder} ${t.surfaceBg}`}>
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-[#3898EC] shrink-0">
+                    <Mail className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${t.textPrimary}`}>
+                      {isBengali ? 'অফিসিয়াল অপারেশনস ইমেইল' : 'Official Operations Desk'}
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400 font-mono-code text-[11px] mt-0.5">
+                      operations@skavia.com &middot; support@skavia.com
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-3.5 rounded-2xl border p-4 ${t.railBorder} ${t.surfaceBg}`}>
+                  <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 shrink-0">
+                    <Phone className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${t.textPrimary}`}>
+                      {isBengali ? 'জরুরী ডিসপ্যাচ ও হেল্পডেস্ক (ঢাকা)' : 'Emergency Dispatch (Dhaka Hub)'}
+                    </p>
+                    <p className="text-slate-500 dark:text-slate-400 font-mono-code text-[11px] mt-0.5">
+                      +880 9612-SKAVIA (09:00 – 21:00 BST Daily)
+                    </p>
+                  </div>
+                </div>
+
+                <div className={`flex items-start gap-3.5 rounded-2xl border p-4 ${t.railBorder} ${t.surfaceBg}`}>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 shrink-0">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${t.textPrimary}`}>
+                      {isBengali ? 'প্রধান কার্যালয়' : 'Headquarters & Dispatch Center'}
+                    </p>
+                    <p className={`text-[11px] mt-0.5 ${t.textSecondary}`}>
+                      {isBengali ? 'গুলশান-২, ঢাকা-১২১২, বাংলাদেশ' : 'Gulshan-2, Dhaka-1212, Bangladesh'}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
-                <Phone className={`h-4 w-4 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
-                <div>
-                  <p className={`font-semibold ${t.textPrimary}`}>
-                    {isBengali ? 'অপারেশনস হেল্পডেস্ক (ঢাকা হেডকোয়ার্টার)' : 'Operations Desk (Dhaka HQ)'}
-                  </p>
-                  <p className={t.textSecondary}>
-                    {isBengali
-                      ? 'প্রতিদিন সকাল ০৯:০০ – রাত ২১:০০ পর্যন্ত স্ক্যাভিয়া ইন-অ্যাপ সাপোর্টে উপলব্ধ'
-                      : 'Available daily 09:00 – 21:00 BST via SKAVIA In-App Support'}
-                  </p>
-                </div>
+
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-all"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  <span>{isBengali ? 'প্রশাসনিক পোর্টাল লগইন' : 'Administrative Console Sign In'}</span>
+                  <ArrowRight className="h-3.5 w-3.5 text-[#3898EC]" />
+                </Link>
               </div>
             </div>
           </div>

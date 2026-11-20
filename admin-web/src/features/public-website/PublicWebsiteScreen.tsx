@@ -93,7 +93,7 @@ export function PublicWebsiteScreen({
   return (
     <div
       className={`min-h-screen transition-colors duration-300 overflow-x-clip ${
-        effectiveDark ? 'bg-[#03050A] text-white' : 'bg-[#FAFAFA] text-slate-950'
+        effectiveDark ? 'bg-[#05080F] text-slate-100' : 'bg-[#F8FAFC] text-slate-900'
       }`}
     >
       <PublicHeader
@@ -101,14 +101,14 @@ export function PublicWebsiteScreen({
         onCycleTheme={handleCycleTheme}
       />
 
-      <main className={`max-w-[1200px] mx-auto border-x ${t.railBorder}`}>
+      <main className="w-full">
         <HeroSection t={t} />
-        <WorkflowSection t={t} activeTab={activeTab} onSelectTab={setActiveTab} />
         <BranchesSection
           t={t}
           selectedBranchCode={selectedBranchCode}
           onSelectBranch={setSelectedBranchCode}
         />
+        <WorkflowSection t={t} activeTab={activeTab} onSelectTab={setActiveTab} />
         <SolutionsSection t={t} />
         <WorkerAndFeaturesSection t={t} />
         <DownloadSection t={t} distribution={distribution} />
@@ -117,8 +117,9 @@ export function PublicWebsiteScreen({
           openFaq={openFaq}
           onToggleFaq={(idx) => setOpenFaq((prev) => (prev === idx ? null : idx))}
         />
-        <PublicFooter />
       </main>
+
+      <PublicFooter />
     </div>
   );
 }

@@ -21,14 +21,14 @@ export function PublicFooter() {
 
   return (
     <footer
-      className="border-t py-12 px-4 sm:px-6 transition-colors"
+      className="border-t py-14 px-4 sm:px-6 lg:px-8 transition-colors"
       style={{
         backgroundColor: 'var(--bg-surface)',
         borderColor: 'var(--border-subtle)',
         color: 'var(--text-secondary)',
       }}
     >
-      <div className="max-w-[1280px] mx-auto space-y-10">
+      <div className="max-w-7xl mx-auto space-y-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           {/* Brand Column */}
           <div className="lg:col-span-2 space-y-3.5">
