@@ -36,11 +36,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget build(BuildContext context) {
     final tokens = context.skavia;
     final colorScheme = context.colorScheme;
+    final isBn = context.isBengali;
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,
       appBar: AppAppBar(
-        title: 'Admin & Governance Hub',
+        title: isBn ? 'অ্যাডমিন ও পরিচালনা কেন্দ্র' : 'Admin & Governance Hub',
         actions: [
           IconButton(
             icon: Icon(Icons.refresh_rounded, color: colorScheme.onSurface),
@@ -56,6 +57,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               (_controller.metrics['activeRequests'] as num?)?.toInt() ?? 0;
           final totalVolume =
               (_controller.metrics['totalVolume'] as num?)?.toDouble() ?? 0.0;
+
+          final displayUsers = isBn
+              ? Formatters.toBengaliDigits('$totalUsers')
+              : '$totalUsers';
+          final displayRequests = isBn
+              ? Formatters.toBengaliDigits('$activeRequests')
+              : '$activeRequests';
+          final displayVolume =
+              Formatters.formatCurrency(totalVolume, useBnDigits: isBn);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.paddingLarge),
@@ -84,7 +94,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Live admin backend offline or unavailable. Showing verified local counts (0 until synced).',
+                            isBn
+                                ? 'লাইভ অ্যাডমিন ব্যাকএন্ড অফলাইন। সিঙ্ক না হওয়া পর্যন্ত স্থানীয় মান প্রদর্শিত হচ্ছে।'
+                                : 'Live admin backend offline or unavailable. Showing verified local counts (0 until synced).',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -106,15 +118,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       return Column(
                         children: [
                           _buildMetricTile(
-                            'Total Verified Users',
-                            '$totalUsers',
+                            isBn ? 'যাচাইকৃত মোট ব্যবহারকারী' : 'Total Verified Users',
+                            displayUsers,
                             Icons.people_rounded,
                             tokens.brandAccent,
                           ),
                           const SizedBox(height: 12),
                           _buildMetricTile(
-                            'Active Service Jobs',
-                            '$activeRequests',
+                            isBn ? 'সক্রিয় সার্ভিস কাজ' : 'Active Service Jobs',
+                            displayRequests,
                             Icons.handyman_rounded,
                             AppColors.accent,
                           ),
@@ -125,8 +137,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Expanded(
                           child: _buildMetricTile(
-                            'Total Verified Users',
-                            '$totalUsers',
+                            isBn ? 'যাচাইকৃত মোট ব্যবহারকারী' : 'Total Verified Users',
+                            displayUsers,
                             Icons.people_rounded,
                             tokens.brandAccent,
                           ),
@@ -134,8 +146,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildMetricTile(
-                            'Active Service Jobs',
-                            '$activeRequests',
+                            isBn ? 'সক্রিয় সার্ভিস কাজ' : 'Active Service Jobs',
+                            displayRequests,
                             Icons.handyman_rounded,
                             AppColors.accent,
                           ),
@@ -146,8 +158,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 const SizedBox(height: 12),
                 _buildMetricTile(
-                  'Gross Platform Volume',
-                  Formatters.formatCurrency(totalVolume),
+                  isBn ? 'প্ল্যাটফর্মের মোট লেনদেন' : 'Gross Platform Volume',
+                  displayVolume,
                   Icons.account_balance_rounded,
                   AppColors.successGreen,
                   isFullWidth: true,
@@ -155,7 +167,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: AppDimensions.paddingLarge),
 
                 Text(
-                  'Operations & Moderation Workflows',
+                  isBn ? 'অপারেশন ও মডারেশন ওয়ার্কফ্লো' : 'Operations & Moderation Workflows',
                   style: TextStyle(
                     fontFamily: AppTypography.headingFont,
                     fontWeight: FontWeight.w800,
@@ -167,9 +179,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildActionCard(
                   context,
-                  title: 'Worker Verification Queue',
-                  subtitle:
-                      'Review government NID, trade licenses, and certificates',
+                  title: isBn ? 'কর্মী যাচাইকরণ কিউ' : 'Worker Verification Queue',
+                  subtitle: isBn
+                      ? 'এনআইডি, ট্রেড লাইসেন্স ও সনদপত্র পর্যালোচনা'
+                      : 'Review government NID, trade licenses, and certificates',
                   icon: Icons.verified_user_rounded,
                   color: tokens.brandAccent,
                   badgeCount: _controller.verifications.length,
@@ -180,9 +193,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildActionCard(
                   context,
-                  title: 'Escrow Dispute Resolution',
-                  subtitle:
-                      'Mediate client-worker claims, cancellations, and refunds',
+                  title: isBn ? 'এসক্রো বিরোধ নিষ্পত্তি' : 'Escrow Dispute Resolution',
+                  subtitle: isBn
+                      ? 'গ্রাহক ও কর্মীর দাবি, বাতিল ও রিফান্ড নিষ্পত্তি'
+                      : 'Mediate client-worker claims, cancellations, and refunds',
                   icon: Icons.gavel_rounded,
                   color: AppColors.errorRed,
                   badgeCount: _controller.disputes.length,
@@ -193,9 +207,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildActionCard(
                   context,
-                  title: 'Turnkey Team Assembly',
-                  subtitle:
-                      'Form cross-functional specialized trade units for enterprise clients',
+                  title: isBn ? 'টার্নকি টিম গঠন' : 'Turnkey Team Assembly',
+                  subtitle: isBn
+                      ? 'কর্পোরেট ক্লায়েন্টদের জন্য বিশেষ ট্রেড টিম প্রস্তুত'
+                      : 'Form cross-functional specialized trade units for enterprise clients',
                   icon: Icons.group_work_rounded,
                   color: AppColors.accent,
                   onTap: () =>

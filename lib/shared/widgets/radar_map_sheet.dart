@@ -80,6 +80,8 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   bool _isReverseGeocoding = false;
 
   List<RadarTechnician> _allTechnicians = [];
+  bool _isLoadingTechnicians = false;
+  bool _hasTechnicianError = false;
 
   @override
   void initState() {
@@ -93,29 +95,37 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
   Future<void> _fetchRemoteTechnicians() async {
     final client = tryGetSupabaseClient();
     if (client == null) return;
+    if (mounted) {
+      setState(() {
+        _isLoadingTechnicians = true;
+        _hasTechnicianError = false;
+      });
+    }
     try {
       final res = await client
           .from('marketplace_public_profiles')
           .select(
-            'worker_profile_id, display_name, title, expected_rate, rating_average, completed_jobs, location',
+            'worker_profile_id, display_name, title, expected_rate, rating_average, completed_jobs, location, verification_status',
           )
           .eq('is_available', true)
           .limit(20);
 
-      if (res.isNotEmpty && mounted) {
+      if (mounted) {
         final List<RadarTechnician> remote = [];
         for (final row in res) {
           final id = row['worker_profile_id']?.toString() ?? '';
           final title = row['title']?.toString() ?? 'Specialist';
-          final name =
-              row['display_name']?.toString() ?? 'Verified Specialist';
-          final rate = (row['expected_rate'] as num?)?.toDouble() ?? 500.0;
+          final name = row['display_name']?.toString() ?? 'Specialist';
+          final rate = (row['expected_rate'] as num?)?.toDouble() ?? 0.0;
           final rating = (row['rating_average'] as num?)?.toDouble() ?? 0.0;
           final jobs = (row['completed_jobs'] as num?)?.toInt() ?? 0;
           final loc = row['location']?.toString() ?? 'Dhaka';
+          final isVerified =
+              row['verification_status']?.toString().toLowerCase() ==
+                  'verified';
 
           // Map text zone to canonical Dhaka operating coordinates cleanly
-          final anchor = _resolveDhakaZoneCoords(loc, remote.length);
+          final anchor = _resolveDhakaZoneCoords(loc);
           final realDist = LocationService.calculateDistanceKm(
             _userPosition.latitude,
             _userPosition.longitude,
@@ -151,21 +161,29 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
               latitude: anchor.latitude,
               longitude: anchor.longitude,
               zone: loc,
+              isVerified: isVerified,
             ),
           );
         }
 
-        if (remote.isNotEmpty) {
-          setState(() {
-            _allTechnicians = remote;
-            _selectedTech = remote.first;
-          });
-        }
+        setState(() {
+          _allTechnicians = remote;
+          _selectedTech = remote.isNotEmpty ? remote.first : null;
+          _isLoadingTechnicians = false;
+        });
       }
     } catch (e) {
       debugPrint('[RadarMapSheet Remote Tech Notice]: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingTechnicians = false;
+          _hasTechnicianError = true;
+        });
+      }
     }
   }
+
+  static const LatLng _dhakaCenter = LatLng(23.7808, 90.4071);
 
   static const Map<String, LatLng> _dhakaZoneCoordinates = {
     'dhanmondi': LatLng(23.7465, 90.3760),
@@ -185,15 +203,14 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
     'lalbagh': LatLng(23.7196, 90.3881),
   };
 
-  LatLng _resolveDhakaZoneCoords(String locationText, int index) {
+  LatLng _resolveDhakaZoneCoords(String locationText) {
     final lower = locationText.toLowerCase();
     for (final entry in _dhakaZoneCoordinates.entries) {
       if (lower.contains(entry.key)) {
         return entry.value;
       }
     }
-    final fallbackValues = _dhakaZoneCoordinates.values.toList();
-    return fallbackValues[index % fallbackValues.length];
+    return _dhakaCenter;
   }
 
   Future<void> _fetchRealUserLocation() async {
@@ -339,7 +356,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
               onLocationSelected: widget.onLocationSelected,
             ),
 
-          // 5. Selected Technician Bottom Preview & Action Card
+          // 5. Selected Technician Bottom Preview & Action Card (or honest status strip)
           if (_selectedTech != null)
             RadarTechnicianCard(
               technician: _selectedTech!,
@@ -350,6 +367,74 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
                   widget.onSelectTechnician!(tech);
                 }
               },
+            )
+          else if (_selectedCustomPoint == null)
+            SafeArea(
+              top: false,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
+                  border: Border(
+                    top: BorderSide(color: colorScheme.outlineVariant),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    if (_isLoadingTechnicians) ...[
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          isBn
+                              ? 'কাছাকাছি কারিগর খোঁজা হচ্ছে...'
+                              : 'Searching for available specialists nearby...',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ] else if (_hasTechnicianError) ...[
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        size: 18,
+                        color: colorScheme.error,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isBn
+                              ? 'কারিগরদের তথ্য লোড করা যায়নি।'
+                              : 'Could not load nearby specialists.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _fetchRemoteTechnicians,
+                        child: Text(isBn ? 'আবার চেষ্টা' : 'Retry'),
+                      ),
+                    ] else ...[
+                      Icon(
+                        Icons.location_searching_rounded,
+                        size: 18,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          isBn
+                              ? 'এই এলাকায় এখনও কোনো সক্রিয় কারিগর নেই। ম্যাপে ট্যাপ করে আপনার অবস্থান নির্বাচন করুন।'
+                              : 'No active specialists in this area yet. Tap the map to pin your location.',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
         ],
       ),

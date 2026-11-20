@@ -1,38 +1,51 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
-import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/widgets/skavia_badge.dart';
 import '../screens/main_scaffold_screen.dart';
 
-/// Interactive modal sheet allowing users to switch between the 3 distinct SKAVIA account modes.
+/// Interactive modal sheet for switching between authorized SKAVIA account modes
+/// or initiating guided onboarding for an additional workspace role.
 class RoleSwitchBottomSheet extends StatelessWidget {
   final AppRoleMode currentMode;
+  final Set<AppRoleMode>? authorizedModes;
   final ValueChanged<AppRoleMode> onRoleSelected;
+  final ValueChanged<AppRoleMode>? onSetupRole;
 
   const RoleSwitchBottomSheet({
     super.key,
     required this.currentMode,
+    this.authorizedModes,
     required this.onRoleSelected,
+    this.onSetupRole,
   });
 
   static Future<void> show(
     BuildContext context, {
     required AppRoleMode currentMode,
+    Set<AppRoleMode>? authorizedModes,
     required ValueChanged<AppRoleMode> onRoleSelected,
+    ValueChanged<AppRoleMode>? onSetupRole,
   }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      showDragHandle: true,
       builder: (ctx) => RoleSwitchBottomSheet(
         currentMode: currentMode,
+        authorizedModes: authorizedModes,
         onRoleSelected: (mode) {
           Navigator.of(ctx).pop();
           onRoleSelected(mode);
         },
+        onSetupRole: onSetupRole != null
+            ? (mode) {
+                Navigator.of(ctx).pop();
+                onSetupRole(mode);
+              }
+            : null,
       ),
     );
   }
@@ -41,225 +54,183 @@ class RoleSwitchBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final isBn = AppLanguageService.isBengali;
+    final tokens = context.skavia;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
 
     final roles = [
-      {
-        'mode': AppRoleMode.customer,
-        'titleEn': 'Individual Customer Mode',
-        'titleBn': 'ব্যক্তিগত গ্রাহক মোড',
-        'subtitleEn':
-            'Book verified home electricians, AC, plumbing & civil repairs with 4-digit OTP protection.',
-        'subtitleBn':
-            'বাসা-বাড়ির ইলেকট্রিশিয়ান, এসি, প্লাম্বার বুকিং এবং ওটিপি ভেরিফিকেশনে নিরাপদ সেবা।',
-        'icon': Icons.person_search_rounded,
-        'color': AppColors.primaryRoyal,
-        'badgeEn': 'Home Services',
-        'badgeBn': 'সার্ভিস বুকিং',
-      },
-      {
-        'mode': AppRoleMode.enterprise,
-        'titleEn': 'Corporate & Business Client',
-        'titleBn': 'কর্পোরেট / প্রাতিষ্ঠানিক মোড',
-        'subtitleEn':
-            'Turnkey commercial fit-outs, assemble multidisciplinary units, milestone escrow & VAT invoices.',
-        'subtitleBn':
-            'বাণিজ্যিক প্রজেক্ট, টিম হায়ার, মাইলস্টোন এসক্রো ও ভ্যাট চালান ব্যবস্থাপনা।',
-        'icon': Icons.business_center_rounded,
-        'color': AppColors.successGreen,
-        'badgeEn': 'Turnkey Projects',
-        'badgeBn': 'টার্নকি প্রজেক্ট',
-      },
-      {
-        'mode': AppRoleMode.worker,
-        'titleEn': 'Specialist & Worker Mode',
-        'titleBn': 'দক্ষ কারিগর / টেকনিশিয়ান মোড',
-        'subtitleEn':
-            'Accept local job requests, verify completion with client OTP & withdraw earnings to bKash.',
-        'subtitleBn':
-            'কাজের লাইভ রিকোয়েস্ট গ্রহণ, কাজ শেষে ওটিপিতে পেমেন্ট আনলক এবং ওয়ালেট উইথড্র।',
-        'icon': Icons.handyman_rounded,
-        'color': AppColors.accent,
-        'badgeEn': 'Earn & Jobs',
-        'badgeBn': 'কাজ ও আয়',
-      },
+      (
+        mode: AppRoleMode.customer,
+        title: l10n.roleIndividualCustomer,
+        subtitle: isBn
+            ? 'যাচাইকৃত টেকনিশিয়ান বুকিং, সার্ভিস রিকোয়েস্ট এবং ওটিপি সুরক্ষা।'
+            : 'Book verified home services, post requirements, and track bookings with OTP verification.',
+        icon: Icons.person_outline_rounded,
+        bg: colorScheme.primaryContainer,
+        fg: colorScheme.onPrimaryContainer,
+        accent: colorScheme.primary,
+        tone: SkaviaBadgeTone.primary,
+      ),
+      (
+        mode: AppRoleMode.enterprise,
+        title: '${l10n.roleBusinessClient} & ${l10n.roleOrganization}',
+        subtitle: isBn
+            ? 'প্রজেক্ট সমন্বয়, সার্ভিস রিকোয়ারমেন্ট, টিম অ্যাসাইনমেন্ট এবং ইনভয়েস ব্যবস্থাপনা।'
+            : 'Coordinate commercial service requirements, active project teams, and business billing.',
+        icon: Icons.business_center_outlined,
+        bg: colorScheme.secondaryContainer,
+        fg: colorScheme.onSecondaryContainer,
+        accent: colorScheme.secondary,
+        tone: SkaviaBadgeTone.violet,
+      ),
+      (
+        mode: AppRoleMode.worker,
+        title: l10n.roleSpecialistWorker,
+        subtitle: isBn
+            ? 'কাজের অনুরোধ গ্রহণ, সক্রিয় কাজ পরিচালনা এবং আয় ট্র্যাকিং।'
+            : 'Manage availability, accept incoming job requests, and track verified earnings.',
+        icon: Icons.handyman_outlined,
+        bg: colorScheme.tertiaryContainer,
+        fg: colorScheme.onTertiaryContainer,
+        accent: colorScheme.tertiary,
+        tone: SkaviaBadgeTone.verified,
+      ),
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -6),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(22, 12, 22, 28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag Handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4.5,
-                  decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
+    return SafeArea(
+      top: false,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.switchAccountMode,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 18),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      isBn ? 'অ্যাকাউন্ট মোড পরিবর্তন' : 'Switch Account Mode',
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
+                IconButton(
+                  tooltip: l10n.commonClose,
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: tokens.secondaryText,
+                    size: 20,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: colorScheme.onSurfaceVariant,
-                      size: 20,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-          Text(
-            isBn
-                ? 'আপনার প্রয়োজন অনুযায়ী মোড বেছে নিন — সব ফিচার এই একটি অ্যাপ থেকেই ব্যবহার করতে পারবেন।'
-                : 'Seamlessly switch your active workspace without logging into separate apps.',
-            style: TextStyle(
-              fontSize: 12.5,
-              color: colorScheme.onSurfaceVariant,
-              height: 1.35,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 16),
+            Text(
+              l10n.chooseWorkspaceSubtitle,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: tokens.secondaryText,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...roles.map((r) {
+              final isCurrent = currentMode == r.mode;
+              final isAuthorized =
+                  authorizedModes == null ||
+                  authorizedModes!.contains(r.mode) ||
+                  isCurrent;
 
-          ...roles.map((r) {
-            final mode = r['mode'] as AppRoleMode;
-            final isCurrent = currentMode == mode;
-            final color = r['color'] as Color;
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                onTap: () => onRoleSelected(mode),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusMedium),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: isCurrent
-                        ? color.withValues(alpha: isDark ? 0.2 : 0.08)
-                        : context.skavia.cardBg,
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusMedium,
-                    ),
-                    border: Border.all(
-                      color: isCurrent ? color : colorScheme.outlineVariant,
-                      width: isCurrent ? 2 : 1,
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Material(
+                  color: isCurrent
+                      ? r.bg.withValues(alpha: 0.45)
+                      : tokens.cardBg,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+                    side: BorderSide(
+                      color: isCurrent ? r.accent : tokens.border,
+                      width: isCurrent ? 1.8 : 1,
                     ),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          r['icon'] as IconData,
-                          color: color,
-                          size: 22,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    isBn
-                                        ? (r['titleBn'] as String)
-                                        : (r['titleEn'] as String),
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.headingFont,
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w800,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ),
-                                if (isCurrent)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: color,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      isBn ? 'সক্রিয়' : 'ACTIVE',
-                                      style: const TextStyle(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-                            Text(
-                              isBn
-                                  ? (r['subtitleBn'] as String)
-                                  : (r['subtitleEn'] as String),
-                              style: TextStyle(
-                                fontSize: 11.5,
-                                color: colorScheme.onSurfaceVariant,
-                                height: 1.3,
+                  clipBehavior: Clip.antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      if (isAuthorized || onSetupRole == null) {
+                        onRoleSelected(r.mode);
+                      } else {
+                        onSetupRole!(r.mode);
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              color: r.bg,
+                              borderRadius: BorderRadius.circular(
+                                AppDimensions.radiusMd,
                               ),
                             ),
-                          ],
-                        ),
+                            alignment: Alignment.center,
+                            child: Icon(r.icon, color: r.fg, size: 22),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        r.title,
+                                        style: theme.textTheme.titleSmall
+                                            ?.copyWith(
+                                              color: colorScheme.onSurface,
+                                              fontWeight: FontWeight.w700,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    if (isCurrent)
+                                      SkaviaBadge(
+                                        label: l10n.roleStatusActive,
+                                        tone: r.tone,
+                                        compact: true,
+                                      )
+                                    else if (!isAuthorized)
+                                      SkaviaBadge(
+                                        label: l10n.roleStatusSetup,
+                                        tone: SkaviaBadgeTone.neutral,
+                                        compact: true,
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  r.subtitle,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: tokens.secondaryText,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            );
-          }),
-            ],
-          ),
+              );
+            }),
+          ],
         ),
       ),
     );
   }
 }
-

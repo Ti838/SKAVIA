@@ -1,32 +1,44 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/utils/category_resolver.dart';
 import '../../../../core/utils/supabase_guard.dart';
+import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../data/tables/database_tables.dart';
+import '../../../../shared/widgets/app_button.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
+import '../../data/datasources/live_job_feed_datasource.dart';
 import '../../data/models/requirement_model.dart';
 import 'post_composer_fields.dart';
 import 'post_type_selector.dart';
 
-/// Modal composer for posting opportunities, service requests, or professional updates
+/// Modal composer for posting jobs, service requests, or professional updates.
 class PostComposerSheet extends StatefulWidget {
+  final String initialPostType;
   final Function(JobRequirementItem newItem)? onPostCreated;
 
-  const PostComposerSheet({super.key, this.onPostCreated});
+  const PostComposerSheet({
+    super.key,
+    this.initialPostType = 'Job',
+    this.onPostCreated,
+  });
 
   static void show(
     BuildContext context, {
+    String initialPostType = 'Job',
     Function(JobRequirementItem)? onPostCreated,
   }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => PostComposerSheet(onPostCreated: onPostCreated),
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (ctx) => PostComposerSheet(
+        initialPostType: initialPostType,
+        onPostCreated: onPostCreated,
+      ),
     );
   }
 
@@ -38,21 +50,29 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
-  final _budgetController = TextEditingController(text: '1500');
+  final _budgetController = TextEditingController();
   final AuthController _authController = AuthController();
 
-  String _postType = 'Job'; // 'Job', 'Service Request', 'Professional Update'
+  late String _postType;
   String _selectedCategory = 'cat_electrical';
   String _selectedLocation = 'Dhanmondi, Dhaka';
   String _urgency = 'Standard';
   bool _isSubmitting = false;
 
-  final Map<String, String> _categories = {
+  final Map<String, String> _categories = const {
     'cat_electrical': 'Electrical',
     'cat_ac_hvac': 'HVAC & AC',
     'cat_plumbing': 'Plumbing',
     'cat_civil_carpentry': 'Carpentry',
+    'cat_it_creative': 'IT & Security',
+    'cat_renovation': 'Interior & Paint',
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _postType = widget.initialPostType;
+  }
 
   @override
   void dispose() {
@@ -68,37 +88,37 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
 
     final user = _authController.user;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please sign in to publish an opportunity.'),
-          backgroundColor: AppColors.error,
-        ),
+      UiFeedbackHelper.showError(
+        context,
+        'Please sign in to publish a post.',
       );
       return;
     }
 
     final client = tryGetSupabaseClient();
     if (client == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Offline mode: publishing opportunities requires an active backend connection.',
-          ),
-          backgroundColor: AppColors.warning,
-        ),
+      UiFeedbackHelper.showError(
+        context,
+        'An active backend connection is required to publish posts.',
       );
       return;
     }
 
     setState(() => _isSubmitting = true);
-    final title = _titleController.text.trim();
+    final rawTitle = _titleController.text.trim();
     final desc = _descController.text.trim();
-    final budget = double.tryParse(_budgetController.text.trim()) ?? 1500.0;
-    final catName = _categories[_selectedCategory] ?? 'General Trade';
+    final budgetText = _budgetController.text.trim();
+    final budget = budgetText.isEmpty
+        ? 0.0
+        : (double.tryParse(budgetText) ?? 0.0);
+    final catName = _categories[_selectedCategory] ?? 'General';
     final normalizedUrgency = CategoryResolver.normalizeUrgency(_urgency);
     final normalizedType = CategoryResolver.normalizeRequirementType(
-      _postType == 'Job' ? 'Simple' : 'Complex',
+      _postType == 'Service Request' ? 'Complex' : 'Simple',
     );
+    final persistedTitle = _postType == 'Professional Update'
+        ? '${LiveJobFeedDataSource.updatePrefix}$rawTitle'
+        : rawTitle;
 
     try {
       final resolvedCategoryUuid = await CategoryResolver.resolveCategoryUuid(
@@ -106,13 +126,12 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
         _selectedCategory,
       );
 
-      // 1. Persist to Supabase `requirements` table (SRS Section 3.1.D & 4.4)
       final inserted = await client
           .from(DatabaseTables.requirements)
           .insert({
             'submitted_by': user.uid,
             'category_id': ?resolvedCategoryUuid,
-            'title': title,
+            'title': persistedTitle,
             'description': desc,
             'requirement_type': normalizedType,
             'budget': budget,
@@ -127,19 +146,19 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
 
       final newItem = JobRequirementItem(
         id: reqId,
-        title: title,
+        title: rawTitle,
         category: catName,
         categoryId: resolvedCategoryUuid ?? _selectedCategory,
         description: desc,
         location: _selectedLocation,
-        budgetMin: budget * 0.9,
-        budgetMax: budget * 1.2,
+        budgetMin: budget,
+        budgetMax: budget,
         urgency: normalizedUrgency,
         timeAgo: 'Just now',
         clientName:
-            user.displayName ?? user.email?.split('@').first ?? 'Member',
+            user.displayName ?? user.email?.split('@').first ?? 'SKAVIA Member',
         postType: _postType,
-        authorRole: 'Client',
+        authorRole: 'Member',
         status: 'Open',
         likesCount: 0,
         commentsCount: 0,
@@ -149,21 +168,21 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
       if (mounted) {
         widget.onPostCreated?.call(newItem);
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Opportunity published successfully!'),
-            backgroundColor: AppColors.primaryRoyal,
-          ),
+        UiFeedbackHelper.showSuccess(
+          context,
+          AppLanguageService.isBengali
+              ? 'পোস্ট সফলভাবে প্রকাশিত হয়েছে!'
+              : 'Post published successfully.',
         );
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error posting: $e'),
-            backgroundColor: AppColors.error,
-          ),
+        UiFeedbackHelper.showError(
+          context,
+          AppLanguageService.isBengali
+              ? 'পোস্ট প্রকাশ করা যায়নি। আবার চেষ্টা করুন।'
+              : 'Could not publish your post. Please try again.',
         );
       }
     }
@@ -171,33 +190,18 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final isBn = AppLanguageService.isBengali;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final colorScheme = context.colorScheme;
+    final colorScheme = theme.colorScheme;
     final tokens = context.skavia;
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
-      decoration: BoxDecoration(
-        color: tokens.sheetBg,
-        borderRadius: AppDimensions.roundedSheet,
-      ),
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.84,
       child: SafeArea(
         top: false,
         child: Column(
           children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: tokens.border,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 14),
-
-            // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
@@ -205,34 +209,34 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: tokens.softBlueBg,
-                      shape: BoxShape.circle,
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusMd,
+                      ),
                     ),
                     child: Icon(
-                      Icons.add_task_rounded,
-                      color: tokens.brandAccent,
+                      Icons.edit_note_rounded,
+                      color: colorScheme.onPrimaryContainer,
                       size: 20,
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      isBn
-                          ? 'নতুন সুযোগ বা পোস্ট তৈরি করুন'
-                          : 'Create Opportunity or Post',
+                      isBn ? 'নতুন পোস্ট তৈরি করুন' : 'Create Post',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
                         color: colorScheme.onSurface,
                       ),
                     ),
                   ),
                   IconButton(
+                    tooltip: isBn ? 'বন্ধ করুন' : 'Close',
                     icon: Icon(
                       Icons.close_rounded,
-                      color: colorScheme.onSurfaceVariant,
+                      color: tokens.secondaryText,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -240,7 +244,6 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
               ),
             ),
             Divider(height: 12, color: tokens.border),
-
             Expanded(
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
@@ -250,15 +253,12 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Post Type Pill Selector
                       PostTypeSelector(
                         selectedType: _postType,
                         onTypeChanged: (type) =>
                             setState(() => _postType = type),
                       ),
                       const SizedBox(height: 18),
-
-                      // Modular Post Composer Input Fields
                       PostComposerFields(
                         titleController: _titleController,
                         descController: _descController,
@@ -275,41 +275,10 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                         categories: _categories,
                       ),
                       const SizedBox(height: 24),
-
-                      // Publish Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(minHeight: 50),
-                          child: ElevatedButton(
-                            onPressed: _isSubmitting ? null : _submitPost,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: tokens.brandAccent,
-                              foregroundColor: tokens.onBrandAccent,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: AppDimensions.roundedPill,
-                              ),
-                            ),
-                            child: _isSubmitting
-                                ? SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: tokens.onBrandAccent,
-                                    ),
-                                  )
-                                : Text(
-                                    isBn
-                                        ? 'পোস্ট প্রকাশ করুন'
-                                        : 'Publish Opportunity',
-                                    style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                          ),
-                        ),
+                      AppButton(
+                        text: isBn ? 'পোস্ট প্রকাশ করুন' : 'Publish Post',
+                        isLoading: _isSubmitting,
+                        onPressed: _isSubmitting ? null : _submitPost,
                       ),
                     ],
                   ),

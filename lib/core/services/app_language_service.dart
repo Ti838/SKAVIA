@@ -53,15 +53,19 @@ class AppLanguageService {
   static const Map<String, Map<String, String>> _localizedValues = {
     'en': {
       'app_name': 'SKAVIA',
+      'super_admin': 'Super Admin',
+      'company_admin': 'Company Admin',
+      'branch_manager': 'Branch Manager',
+      'worker': 'Worker',
+      'individual_customer': 'Individual Customer',
+      'business_client': 'Business Client',
+      'organization': 'Organization',
       'client_mode': 'Client Mode',
       'worker_mode': 'Worker Mode',
       'enterprise_mode': 'Business Mode',
       'client': 'Client',
-      'worker': 'Worker',
       'business': 'Business',
       'switch_mode': 'Switch Account Mode',
-      'individual_customer': 'Individual Customer',
-      'corporate_client': 'Corporate Client',
       'specialist_worker': 'Specialist / Worker',
       'hello': 'Hello',
       'welcome_subtitle': 'Verified on-demand services in',
@@ -165,16 +169,20 @@ class AppLanguageService {
     },
     'bn': {
       'app_name': 'স্ক্যাভিয়া',
-      'client_mode': 'ক্লায়েন্ট মোড',
-      'worker_mode': 'ওয়ার্কার মোড',
-      'enterprise_mode': 'কর্পোরেট মোড',
-      'client': 'ক্লায়েন্ট',
-      'worker': 'ওয়ার্কার',
-      'business': 'কর্পোরেট',
-      'switch_mode': 'অ্যাকাউন্ট মোড পরিবর্তন',
+      'super_admin': 'সুপার অ্যাডমিন',
+      'company_admin': 'কোম্পানি অ্যাডমিন',
+      'branch_manager': 'ব্রাঞ্চ ম্যানেজার',
+      'worker': 'কর্মী',
       'individual_customer': 'ব্যক্তিগত গ্রাহক',
-      'corporate_client': 'কর্পোরেট ক্লায়েন্ট',
-      'specialist_worker': 'দক্ষ কারিগর',
+      'business_client': 'বিজনেস ক্লায়েন্ট',
+      'organization': 'প্রতিষ্ঠান',
+      'client_mode': 'গ্রাহক মোড',
+      'worker_mode': 'কর্মী মোড',
+      'enterprise_mode': 'বিজনেস মোড',
+      'client': 'গ্রাহক',
+      'business': 'বিজনেস',
+      'switch_mode': 'অ্যাকাউন্ট মোড পরিবর্তন',
+      'specialist_worker': 'দক্ষ কর্মী',
       'hello': 'হ্যালো',
       'welcome_subtitle': 'ভেরিফায়েড অন-ডিমান্ড সার্ভিসেস —',
       'worker_hub_title': 'ওয়ার্কার ও ক্লায়েন্ট হাব',
@@ -282,6 +290,27 @@ class AppLanguageService {
   static String tr(String key) {
     final lang = localeNotifier.value;
     return _localizedValues[lang]?[key] ?? _localizedValues['en']?[key] ?? key;
+  }
+
+  /// Localizes any of SKAVIA's 7 official roles
+  static String getRoleName(String roleText) {
+    final lower = roleText.toLowerCase().trim();
+    if (lower.contains('super')) return tr('super_admin');
+    if (lower.contains('company') || (lower.contains('admin') && !lower.contains('branch'))) {
+      return tr('company_admin');
+    }
+    if (lower.contains('branch')) return tr('branch_manager');
+    if (lower.contains('worker') || lower.contains('technician') || lower.contains('specialist')) {
+      return tr('worker');
+    }
+    if (lower.contains('business') || lower.contains('corporate')) {
+      return tr('business_client');
+    }
+    if (lower.contains('org')) return tr('organization');
+    if (lower.contains('customer') || lower.contains('individual') || lower.contains('client')) {
+      return tr('individual_customer');
+    }
+    return roleText;
   }
 
   /// Helper to localize trade category names

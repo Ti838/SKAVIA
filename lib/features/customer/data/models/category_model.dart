@@ -1,5 +1,5 @@
 /// Represents a service category aligned with Supabase `categories` table
-/// and SKAVIA SRS Section 3.1.C (50 Pages).
+/// and SKAVIA SRS Section 3.1.C.
 class CategoryModel {
   final String categoryId;
   final String name;
@@ -43,15 +43,16 @@ class CategoryModel {
     };
   }
 
-  /// Official default SKAVIA categories defined in SRS Section 3.1.C & Page 18
+  /// System-defined SKAVIA trade categories (SRS Section 3.1.C).
+  /// Zero fabricated serviceCount metrics.
   static const List<CategoryModel> defaultCategories = [
     CategoryModel(
       categoryId: 'cat_electrical',
       name: 'Electrical & Power',
       slug: 'electrical',
       iconName: 'electric_bolt_rounded',
-      description: 'Certified electricians, wiring, DB boards, circuit breakers & generators.',
-      serviceCount: 24,
+      description:
+          'Electricians, wiring, DB boards, circuit breakers & generators.',
     ),
     CategoryModel(
       categoryId: 'cat_plumbing',
@@ -60,15 +61,14 @@ class CategoryModel {
       iconName: 'plumbing_rounded',
       description:
           'Pipe fittings, water pumps, bathroom fittings & drainage repair.',
-      serviceCount: 18,
     ),
     CategoryModel(
       categoryId: 'cat_ac_hvac',
       name: 'AC & HVAC Cooling',
       slug: 'ac_hvac',
       iconName: 'ac_unit_rounded',
-      description: 'AC servicing, gas refill, compressor maintenance & inverter PCB repair.',
-      serviceCount: 15,
+      description:
+          'AC servicing, gas refill, compressor maintenance & inverter PCB repair.',
     ),
     CategoryModel(
       categoryId: 'cat_it_creative',
@@ -76,8 +76,7 @@ class CategoryModel {
       slug: 'it_software',
       iconName: 'code_rounded',
       description:
-          'Mobile/Web apps, UI/UX, network setup, CCTV & tech automation.',
-      serviceCount: 32,
+          'Network setup, CCTV security, software & technical infrastructure.',
     ),
     CategoryModel(
       categoryId: 'cat_civil_carpentry',
@@ -86,23 +85,22 @@ class CategoryModel {
       iconName: 'carpenter_rounded',
       description:
           'Furniture crafting, gypsum ceiling, tiles laying & masonry work.',
-      serviceCount: 20,
     ),
     CategoryModel(
       categoryId: 'cat_automotive',
       name: 'Automotive Mechanics',
       slug: 'automotive',
       iconName: 'directions_car_rounded',
-      description: 'Car maintenance, hybrid battery check, engine tune-up & electrical diagnostics.',
-      serviceCount: 14,
+      description:
+          'Car maintenance, battery check, engine tune-up & diagnostics.',
     ),
     CategoryModel(
       categoryId: 'cat_industrial',
       name: 'Industrial Machinery',
       slug: 'industrial',
       iconName: 'precision_manufacturing_rounded',
-      description: 'Industrial PLC, boiler maintenance, textile machinery & high-torque motors.',
-      serviceCount: 11,
+      description:
+          'Industrial PLC, boiler maintenance & heavy equipment service.',
     ),
     CategoryModel(
       categoryId: 'cat_appliance',
@@ -111,7 +109,6 @@ class CategoryModel {
       iconName: 'home_repair_service_rounded',
       description:
           'Refrigerator, washing machine, microwave & kitchen chimney repair.',
-      serviceCount: 28,
     ),
   ];
 }

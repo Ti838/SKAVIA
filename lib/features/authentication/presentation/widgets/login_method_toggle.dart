@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Reusable pill switch toggle between Email and Phone OTP authentication modes.
 class LoginMethodToggle extends StatelessWidget {
@@ -18,6 +19,7 @@ class LoginMethodToggle extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final isBn = context.isBengali;
 
     return Container(
       padding: const EdgeInsets.all(4),
@@ -54,7 +56,7 @@ class LoginMethodToggle extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Email',
+                    isBn ? 'ইমেইল' : 'Email',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
@@ -92,7 +94,7 @@ class LoginMethodToggle extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Phone OTP',
+                    isBn ? 'ফোন ওটিপি' : 'Phone OTP',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,

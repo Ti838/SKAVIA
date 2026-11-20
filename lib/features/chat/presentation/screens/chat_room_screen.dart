@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
-import '../../../../shared/widgets/app_app_bar.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
+import '../../../../shared/error_states/error_view.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/chat_remote_datasource.dart';
 import '../../data/models/chat_message_model.dart';
@@ -36,16 +38,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final AuthController _authController = AuthController();
 
   bool _isSending = false;
+  int _lastMessageCount = 0;
   late final String _currentUserId;
-  late String _conversationId;
+  late final String _conversationId;
+  late Stream<List<ChatMessageModel>> _messagesStream;
 
   @override
   void initState() {
     super.initState();
-    _currentUserId = _authController.user?.uid ?? 'guest_user';
+    _currentUserId = _authController.user?.uid ?? '';
     _conversationId = widget.conversationId.isNotEmpty
         ? widget.conversationId
         : 'conv_${widget.otherParticipantId}';
+    _messagesStream = _chatDataSource.getMessagesStream(_conversationId);
     _markRead();
   }
 
@@ -58,15 +63,26 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   void _markRead() {
+    if (_currentUserId.isEmpty) return;
     _chatDataSource.markMessagesAsRead(
       conversationId: _conversationId,
       currentUserId: _currentUserId,
     );
   }
 
+  void _resubscribe() {
+    setState(() {
+      _messagesStream = _chatDataSource.getMessagesStream(_conversationId);
+    });
+  }
+
   Future<void> _sendMessage() async {
     final text = _messageController.text.trim();
     if (text.isEmpty || _isSending) return;
+    if (_currentUserId.isEmpty) {
+      UiFeedbackHelper.showError(context, 'Please sign in to send messages.');
+      return;
+    }
 
     setState(() => _isSending = true);
     _messageController.clear();
@@ -78,17 +94,23 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         text: text,
       );
 
-      Future.delayed(const Duration(milliseconds: 150), () {
-        if (_scrollController.hasClients) {
+      Future.delayed(const Duration(milliseconds: 120), () {
+        if (mounted && _scrollController.hasClients) {
           _scrollController.animateTo(
             _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 250),
+            duration: const Duration(milliseconds: 220),
             curve: Curves.easeOut,
           );
         }
       });
-    } catch (e) {
-      debugPrint('[ChatRoomScreen] Send message fallback notice: $e');
+    } catch (_) {
+      if (mounted) {
+        _messageController.text = text;
+        UiFeedbackHelper.showError(
+          context,
+          'Could not send message. Please try again.',
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -96,50 +118,52 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final timeFormat = DateFormat('hh:mm a');
     final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
+    final colorScheme = theme.colorScheme;
     final roomTitle = widget.otherParticipantName.isNotEmpty
         ? widget.otherParticipantName
         : 'SKAVIA Chat';
 
     return Scaffold(
-      backgroundColor: tokens.sheetBg,
-      appBar: AppAppBar(
-        title: roomTitle,
-        centerTitle: false,
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            UserAvatar(
+              imageUrl: widget.otherParticipantAvatar,
+              name: roomTitle,
+              radius: 17,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                roomTitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert_rounded, color: colorScheme.onSurface),
             color: tokens.cardBg,
             onSelected: (value) {
-              if (value == 'call_info') {
-                UiFeedbackHelper.showInfo(
-                  context,
-                  'In-app voice & video calls are not enabled on this build yet. Coordinate securely via direct text chat.',
-                );
-              } else if (value == 'report') {
+              if (value == 'report') {
                 Navigator.pushNamed(context, AppRoutes.submitComplaint);
               }
             },
             itemBuilder: (_) => [
-              PopupMenuItem(
-                value: 'call_info',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.phone_in_talk_outlined,
-                      size: 18,
-                      color: tokens.brandAccent,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Voice & Video Info',
-                      style: TextStyle(color: colorScheme.onSurface),
-                    ),
-                  ],
-                ),
-              ),
               PopupMenuItem(
                 value: 'report',
                 child: Row(
@@ -166,8 +190,16 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           children: [
             Expanded(
               child: StreamBuilder<List<ChatMessageModel>>(
-                stream: _chatDataSource.getMessagesStream(_conversationId),
+                stream: _messagesStream,
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return ErrorView(
+                      title: 'Connection Interrupted',
+                      message: 'Unable to load messages for this conversation.',
+                      onRetry: _resubscribe,
+                    );
+                  }
+
                   if (snapshot.connectionState == ConnectionState.waiting &&
                       !snapshot.hasData) {
                     return const Center(
@@ -178,65 +210,32 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   final messages = snapshot.data ?? [];
 
                   if (messages.isEmpty) {
-                    return Center(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: tokens.softBlueBg,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.chat_bubble_outline_rounded,
-                                size: 40,
-                                color: tokens.brandAccent,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Secure Chat Initialized',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: colorScheme.onSurface,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Send a message to coordinate service details with $roomTitle.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: tokens.mutedText,
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return EmptyDataView(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      title: 'Start the Conversation',
+                      message:
+                          'Send a message to coordinate service details with $roomTitle.',
                     );
                   }
 
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    if (_scrollController.hasClients) {
-                      _scrollController.animateTo(
-                        _scrollController.position.maxScrollExtent,
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOut,
-                      );
-                    }
-                  });
+                  if (messages.length > _lastMessageCount) {
+                    _lastMessageCount = messages.length;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted && _scrollController.hasClients) {
+                        _scrollController.animateTo(
+                          _scrollController.position.maxScrollExtent,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                        );
+                      }
+                    });
+                  }
 
                   return ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 20,
+                      vertical: 16,
                     ),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
@@ -253,7 +252,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 },
               ),
             ),
-
             ChatInputBar(
               controller: _messageController,
               isSending: _isSending,

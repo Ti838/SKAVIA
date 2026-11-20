@@ -12,7 +12,7 @@ abstract class RouteGuards {
     'Branch Manager',
   ];
 
-  /// Checks whether a valid Firebase Auth user session exists (fail-closed)
+  /// Checks whether a valid Firebase Auth user session exists (fail-closed).
   static bool isAuthenticated() {
     try {
       return FirebaseAuth.instance.currentUser != null;
@@ -21,7 +21,7 @@ abstract class RouteGuards {
     }
   }
 
-  /// Verifies if user has required role access
+  /// Verifies if user has required role access.
   static bool hasRole(String role, List<String> userRoles) {
     if (userRoles.contains('Super Admin') ||
         userRoles.contains('Company Admin')) {
@@ -57,8 +57,9 @@ abstract class RouteGuards {
 }
 
 /// Fail-closed Flutter route guard wrapper protecting legacy mobile admin screens.
-/// Full admin operations are hosted in the dedicated Admin Web Portal (`admin-web/`).
-class ProtectedAdminRoute extends StatelessWidget {
+/// Caches the verification future in State so theme/locale rebuilds do not
+/// re-trigger backend permission queries.
+class ProtectedAdminRoute extends StatefulWidget {
   final Widget child;
   final Future<bool> Function()? checkAdminAccess;
 
@@ -69,8 +70,24 @@ class ProtectedAdminRoute extends StatelessWidget {
   });
 
   @override
+  State<ProtectedAdminRoute> createState() => _ProtectedAdminRouteState();
+}
+
+class _ProtectedAdminRouteState extends State<ProtectedAdminRoute> {
+  Future<bool>? _accessFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    if (RouteGuards.isAuthenticated()) {
+      _accessFuture =
+          (widget.checkAdminAccess ?? RouteGuards.hasAnyAdminRole)();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (!RouteGuards.isAuthenticated()) {
+    if (!RouteGuards.isAuthenticated() || _accessFuture == null) {
       return const _UnauthorizedAdminView(
         title: 'Authentication Required',
         message:
@@ -79,7 +96,7 @@ class ProtectedAdminRoute extends StatelessWidget {
     }
 
     return FutureBuilder<bool>(
-      future: (checkAdminAccess ?? RouteGuards.hasAnyAdminRole)(),
+      future: _accessFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -93,7 +110,7 @@ class ProtectedAdminRoute extends StatelessWidget {
                 'This module requires verified Super Admin, Company Admin, or Branch Manager privileges via the SKAVIA Admin Web Portal.',
           );
         }
-        return child;
+        return widget.child;
       },
     );
   }
@@ -103,31 +120,51 @@ class _UnauthorizedAdminView extends StatelessWidget {
   final String title;
   final String message;
 
-  const _UnauthorizedAdminView({
-    required this.title,
-    required this.message,
-  });
+  const _UnauthorizedAdminView({required this.title, required this.message});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Access Restricted')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.lock_outline_rounded, size: 52),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(message, textAlign: TextAlign.center),
-            ],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: colorScheme.errorContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.lock_outline_rounded,
+                    size: 40,
+                    color: colorScheme.onErrorContainer,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  title,
+                  style: theme.textTheme.titleLarge,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),

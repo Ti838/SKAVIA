@@ -153,7 +153,7 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
       ),
       body: SingleChildScrollView(
         physics: const ClampingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: CustomerDashboardView(
           searchController: _searchController,
           currentLocationZone: _currentZone,

@@ -47,19 +47,28 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
     try {
       final res = await client
           .from(DatabaseTables.teamMembers)
-          .select('team_member_id, role, users(full_name, avatar_url), worker_profiles(title, rating_average, completed_jobs, verification_status)')
+          .select(
+            'team_member_id, role_in_team, '
+            'worker_profiles(title, rating_average, total_reviews, completed_jobs, verification_status, users(full_name, avatar_url))',
+          )
           .limit(20);
 
       if (mounted) {
         setState(() {
           _members = (res as List).map((m) {
-            final user = m['users'] as Map<String, dynamic>?;
             final worker = m['worker_profiles'] as Map<String, dynamic>?;
+            final user = worker?['users'] as Map<String, dynamic>?;
             final name = (user?['full_name'] as String?)?.trim() ?? 'Specialist';
-            final role = (m['role'] as String?)?.trim() ?? 'Team Member';
-            final trade = (worker?['title'] as String?)?.trim() ?? 'Trade Specialist';
-            final rating = (worker?['rating_average'] as num?)?.toDouble() ?? 0.0;
-            final isVerified = (worker?['verification_status'] as String?) == 'verified';
+            final role =
+                (m['role_in_team'] as String?)?.trim() ?? 'Team Member';
+            final trade =
+                (worker?['title'] as String?)?.trim() ?? 'Trade Specialist';
+            final reviews = (worker?['total_reviews'] as num?)?.toInt() ?? 0;
+            final rawRating =
+                (worker?['rating_average'] as num?)?.toDouble() ?? 0.0;
+            final isVerified =
+                (worker?['verification_status'] as String?)?.toLowerCase() ==
+                'verified';
 
             return {
               'name': name,
@@ -67,7 +76,7 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
               'trade': trade,
               'activeTasks': 0,
               'isVerified': isVerified,
-              'rating': rating,
+              'rating': reviews > 0 ? rawRating : 0.0,
             };
           }).toList();
           _isLoading = false;

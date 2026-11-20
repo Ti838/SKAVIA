@@ -49,24 +49,10 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   bool _isGenerating = false;
 
   final List<String> _analysisChecklist = [
-    'Scanning verified talent database...',
-    'Evaluating skill compatibility...',
-    'Budget & timeline optimization...',
-    'Team composition matching...',
-  ];
-
-  final List<String> _requiredSkills = [
-    'Flutter',
-    'Node.js',
-    'UI/UX Design',
-    'Payment Gateway',
-    'DevOps (optional)',
-  ];
-
-  final List<Map<String, String>> _recommendedTeam = [
-    {'role': 'Full Stack Developer', 'index': '1'},
-    {'role': 'UI/UX Designer', 'index': '2'},
-    {'role': 'QA Specialist', 'index': '3'},
+    'Reviewing requirement scope...',
+    'Identifying required trade skills...',
+    'Checking service categories...',
+    'Preparing recommendations...',
   ];
 
   final List<Map<String, dynamic>> _quickSuggestions = [
@@ -102,7 +88,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
     if (fromAnalysis is List && fromAnalysis.isNotEmpty) {
       return fromAnalysis.map((e) => e.toString()).toList();
     }
-    return _requiredSkills;
+    return const [];
   }
 
   List<Map<String, String>> get _resolvedRecommendedTeam {
@@ -141,7 +127,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
       return result;
     }
 
-    return _recommendedTeam;
+    return const [];
   }
 
   String get _resolvedSummary {
@@ -149,7 +135,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
     if (summary != null && summary.isNotEmpty) return summary;
     final prompt = widget.initialPrompt?.trim();
     if (prompt != null && prompt.isNotEmpty) return prompt;
-    return 'Mobile app for e-commerce with payment integration and admin panel.';
+    return '';
   }
 
   String get _resolvedProjectTitle {
@@ -159,7 +145,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
     if (categoryName != null && categoryName.isNotEmpty) {
       return '$categoryName Project';
     }
-    return 'Mobile App for E-Commerce';
+    return '';
   }
 
   @override
@@ -230,10 +216,19 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   }
 
   Widget _buildCurrentView() {
+    final isBn = context.isBengali;
     switch (_currentMode) {
       case AiScreenMode.analyzing:
+        final checklist = isBn
+            ? [
+                'প্রয়োজনীয় কাজের পরিধি পর্যালোচনা করা হচ্ছে...',
+                'প্রয়োজনীয় ট্রেড ও দক্ষতা চিহ্নিত করা হচ্ছে...',
+                'সেবা বিভাগ যাচাই করা হচ্ছে...',
+                'সুপারিশ প্রস্তুত করা হচ্ছে...',
+              ]
+            : _analysisChecklist;
         return AiAnalyzingView(
-          checklist: _analysisChecklist,
+          checklist: checklist,
           onResultsTap: () =>
               setState(() => _currentMode = AiScreenMode.results),
         );
@@ -243,8 +238,9 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
           recommendedTeam: _resolvedRecommendedTeam,
           projectSummary: _resolvedSummary,
           projectTitle: _resolvedProjectTitle,
+          projectId: widget.analysisData?['project_id']?.toString(),
           onEditRequest: () =>
-              setState(() => _currentMode = AiScreenMode.analyzing),
+              setState(() => _currentMode = AiScreenMode.chat),
         );
       case AiScreenMode.chat:
         return AiChatView(
@@ -261,6 +257,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   Widget _buildModeTogglePill(BuildContext context, {bool fullWidth = false}) {
     final colorScheme = context.colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
     final isChat = _currentMode == AiScreenMode.chat;
 
     Widget buildOption({
@@ -309,12 +306,12 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
         mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
         children: [
           buildOption(
-            label: 'Chat',
+            label: isBn ? 'চ্যাট' : 'Chat',
             active: isChat,
             onTap: () => setState(() => _currentMode = AiScreenMode.chat),
           ),
           buildOption(
-            label: 'Match',
+            label: isBn ? 'ম্যাচিং' : 'Match',
             active: !isChat,
             onTap: () => setState(() => _currentMode = AiScreenMode.analyzing),
           ),
@@ -327,6 +324,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isBn = context.isBengali;
     final width = MediaQuery.sizeOf(context).width;
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     final compactModeBar = width < 360 || textScale > 1.3;
@@ -391,8 +389,8 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
                   ),
                   Text(
                     _currentMode == AiScreenMode.chat
-                        ? 'Copilot • Online'
-                        : 'Diagnostic Mode',
+                        ? (isBn ? 'কপাইলট • অনলাইন' : 'Copilot • Online')
+                        : (isBn ? 'ডায়াগনস্টিক মোড' : 'Diagnostic Mode'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

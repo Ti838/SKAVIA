@@ -57,6 +57,7 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
 
     return AnimatedBuilder(
       animation: _provider,
@@ -72,12 +73,14 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
           child: Scaffold(
             backgroundColor: tokens.sheetBg,
             appBar: AppAppBar(
-              title: isBlocking ? 'Required Update' : 'App Updates',
+              title: isBlocking
+                  ? (isBn ? 'বাধ্যতামূলক আপডেট' : 'Required Update')
+                  : (isBn ? 'অ্যাপ আপডেট' : 'App Updates'),
               leading: isBlocking ? const SizedBox.shrink() : null,
               actions: [
                 if (!isBlocking && !_provider.isBusy)
                   IconButton(
-                    tooltip: 'Check Again',
+                    tooltip: isBn ? 'পুনরায় পরীক্ষা করুন' : 'Check Again',
                     onPressed: () => _provider.checkForUpdates(
                       trigger: 'manual_refresh',
                       force: true,
@@ -103,11 +106,16 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 8,
+                            runSpacing: 6,
                             children: [
                               Text(
-                                'Available Release: v${release.versionName}',
+                                isBn
+                                    ? 'নতুন সংস্করণ: v${release.versionName}'
+                                    : 'Available Release: v${release.versionName}',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w800,
@@ -248,17 +256,25 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
   ) {
     final phase = _provider.phase;
 
+    final isBn = context.isBengali;
+
     if (phase == AppUpdatePhase.downloading) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Downloading Official APK...',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+              Expanded(
+                child: Text(
+                  isBn
+                      ? 'অফিসিয়াল APK ডাউনলোড হচ্ছে...'
+                      : 'Downloading Official APK...',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${(_provider.progress * 100).toStringAsFixed(0)}%',
                 style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),

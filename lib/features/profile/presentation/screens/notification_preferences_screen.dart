@@ -249,27 +249,67 @@ class _NotificationPreferencesScreenState
                   spacing: 10,
                   runSpacing: 10,
                   children: [
-                    OutlinedButton(
+                    OutlinedButton.icon(
                       onPressed: () async {
-                        await NotificationService.instance
-                            .previewNotificationSound();
+                        await NotificationService.instance.previewNotificationSound(
+                          soundType: NotificationSoundType.urgent,
+                        );
                         if (context.mounted) {
                           UiFeedbackHelper.showInfo(
                             context,
-                            'Alert chime preview played.',
+                            'Urgent dispatch chime played.',
                           );
                         }
                       },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.volume_up_rounded, size: 18),
-                          SizedBox(width: 8),
-                          Flexible(child: Text('Preview Chime')),
-                        ],
-                      ),
+                      icon: const Icon(Icons.flash_on_rounded, size: 16),
+                      label: const Text('Dispatch Chime'),
                     ),
-                    OutlinedButton(
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await NotificationService.instance.previewNotificationSound(
+                          soundType: NotificationSoundType.message,
+                        );
+                        if (context.mounted) {
+                          UiFeedbackHelper.showInfo(
+                            context,
+                            'In-app message tone played.',
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      label: const Text('Message Tone'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await NotificationService.instance.previewNotificationSound(
+                          soundType: NotificationSoundType.completed,
+                        );
+                        if (context.mounted) {
+                          UiFeedbackHelper.showInfo(
+                            context,
+                            'Job completed chime played.',
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.task_alt_rounded, size: 16),
+                      label: const Text('Success Chime'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await NotificationService.instance.previewNotificationSound(
+                          soundType: NotificationSoundType.general,
+                        );
+                        if (context.mounted) {
+                          UiFeedbackHelper.showInfo(
+                            context,
+                            'General notification chime played.',
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.notifications_active_outlined, size: 16),
+                      label: const Text('General Chime'),
+                    ),
+                    OutlinedButton.icon(
                       onPressed: () async {
                         final opened = await NotificationService.instance
                             .openAppSettingsPage();
@@ -280,14 +320,8 @@ class _NotificationPreferencesScreenState
                           );
                         }
                       },
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.tune_rounded, size: 18),
-                          SizedBox(width: 8),
-                          Flexible(child: Text('Device Settings')),
-                        ],
-                      ),
+                      icon: const Icon(Icons.tune_rounded, size: 16),
+                      label: const Text('Device Settings'),
                     ),
                   ],
                 ),

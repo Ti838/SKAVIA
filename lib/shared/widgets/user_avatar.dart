@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../core/extensions/context_extensions.dart';
 
 /// Reusable user avatar with verified badge and safe network image fallback.
+/// Uses adaptive semantic tokens and always renders genuine user initials
+/// when no profile image URL is present.
 class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String name;
@@ -23,9 +24,9 @@ class UserAvatar extends StatelessWidget {
   });
 
   String get _initials {
-    if (name.trim().isEmpty) return '?';
-    final parts = name
-        .trim()
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+    final parts = trimmed
         .split(RegExp(r'\s+'))
         .where((p) => p.isNotEmpty)
         .toList();
@@ -37,14 +38,14 @@ class UserAvatar extends StatelessWidget {
   }
 
   Widget _buildInitialsFallback(BuildContext context) {
-    final tokens = context.skavia;
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
       child: Text(
         _initials,
         style: TextStyle(
           fontWeight: FontWeight.w700,
-          fontSize: radius * 0.75,
-          color: tokens.brandAccent,
+          fontSize: radius * 0.72,
+          color: colorScheme.onPrimaryContainer,
         ),
       ),
     );
@@ -52,19 +53,22 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
     final hasValidUrl =
         imageUrl != null &&
         imageUrl!.trim().isNotEmpty &&
-        (imageUrl!.startsWith('http://') || imageUrl!.startsWith('https://'));
+        (imageUrl!.trim().startsWith('http://') ||
+            imageUrl!.trim().startsWith('https://'));
 
     final diameter = radius * 2;
     Widget avatar = Container(
       width: diameter,
       height: diameter,
       decoration: BoxDecoration(
-        color: AppColors.primarySky.withValues(alpha: 0.16),
+        color: colorScheme.primaryContainer,
         shape: BoxShape.circle,
+        border: Border.all(color: tokens.border, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
       child: hasValidUrl
@@ -93,9 +97,9 @@ class UserAvatar extends StatelessWidget {
                   color: tokens.cardBg,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.verified_rounded,
-                  color: AppColors.primarySky,
+                  color: tokens.tealAccent,
                   size: 14,
                 ),
               ),
@@ -108,7 +112,7 @@ class UserAvatar extends StatelessWidget {
                 width: 10,
                 height: 10,
                 decoration: BoxDecoration(
-                  color: AppColors.successGreen,
+                  color: tokens.success,
                   shape: BoxShape.circle,
                   border: Border.all(color: tokens.cardBg, width: 1.5),
                 ),
@@ -119,7 +123,15 @@ class UserAvatar extends StatelessWidget {
     }
 
     if (onTap != null) {
-      return GestureDetector(onTap: onTap, child: avatar);
+      return Semantics(
+        button: true,
+        label: name.trim().isEmpty ? 'User profile' : '$name profile',
+        child: InkResponse(
+          onTap: onTap,
+          radius: radius + 8,
+          child: avatar,
+        ),
+      );
     }
     return avatar;
   }

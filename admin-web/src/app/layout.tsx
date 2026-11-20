@@ -1,6 +1,29 @@
 import type { Metadata } from 'next';
+import { Inter, Noto_Sans_Bengali, Plus_Jakarta_Sans } from 'next/font/google';
 import { SakugaProvider } from '@/components/sakuga';
+import { LanguageProvider } from '@/lib/l10n/LanguageContext';
 import './globals.css';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoSansBengali = Noto_Sans_Bengali({
+  subsets: ['bengali'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-bengali',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://skavia-bd.vercel.app'),
@@ -123,8 +146,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen antialiased">
-        <SakugaProvider>{children}</SakugaProvider>
+      <body
+        className={`${plusJakartaSans.variable} ${inter.variable} ${notoSansBengali.variable} min-h-screen antialiased`}
+      >
+        <LanguageProvider>
+          <SakugaProvider>{children}</SakugaProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

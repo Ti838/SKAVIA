@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/services/app_language_service.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../shared/widgets/user_avatar.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../../customer/presentation/widgets/avatar_picker_sheet.dart';
@@ -77,7 +78,6 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
     final user = widget.authController.user;
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
-    final isBn = AppLanguageService.isBengali;
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return ListenableBuilder(
@@ -126,13 +126,16 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
         final completionResult =
             ProfileCompletionEngine.evaluate(effectiveProfile);
 
+        final l10n = context.l10n;
+        final isBn = context.isBengali;
+
         final roleLabel = widget.currentMode == AppRoleMode.worker
-            ? (isBn ? 'দক্ষ কারিগর' : 'Specialist Worker')
+            ? l10n.roleSpecialistWorker
             : (widget.currentMode == AppRoleMode.enterprise
                   ? (profile?.customerType == 'Organization'
-                        ? 'Organization'
-                        : (isBn ? 'কর্পোরেট ক্লায়েন্ট' : 'Business Client'))
-                  : (isBn ? 'ব্যক্তিগত গ্রাহক' : 'Individual Customer'));
+                        ? l10n.roleOrganization
+                        : l10n.roleBusinessClient)
+                  : l10n.roleIndividualCustomer);
 
         final roleAccent = widget.currentMode == AppRoleMode.worker
             ? AppColors.accent
@@ -383,6 +386,9 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               LayoutBuilder(
                 builder: (context, constraints) {
                   final compact = constraints.maxWidth < 300 || textScale > 1.45;
+                  final ratingDisplay = stats.hasVerifiedRating
+                      ? stats.ratingAverage.toStringAsFixed(1)
+                      : '—';
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
@@ -391,15 +397,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                     ),
                     decoration: BoxDecoration(
                       color: tokens.cardBg,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(
+                        AppDimensions.radiusLg,
+                      ),
                       border: Border.all(color: tokens.border),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
                     child: compact
                         ? Wrap(
@@ -409,18 +410,20 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                             children: [
                               _buildProfileStatColumn(
                                 context,
-                                '${stats.servicesCount}',
-                                'Services',
+                                Formatters.toBengaliDigits(stats.servicesCount),
+                                l10n.profileServicesStat,
                               ),
                               _buildProfileStatColumn(
                                 context,
-                                '${stats.projectsCount}',
-                                'Projects',
+                                Formatters.toBengaliDigits(stats.projectsCount),
+                                l10n.profileProjectsStat,
                               ),
                               _buildProfileStatColumn(
                                 context,
-                                stats.ratingAverage.toStringAsFixed(1),
-                                'Rating',
+                                isBn && stats.hasVerifiedRating
+                                    ? Formatters.toBengaliDigits(ratingDisplay)
+                                    : ratingDisplay,
+                                l10n.profileRatingStat,
                               ),
                             ],
                           )
@@ -429,8 +432,8 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                               Expanded(
                                 child: _buildProfileStatColumn(
                                   context,
-                                  '${stats.servicesCount}',
-                                  'Services',
+                                  Formatters.toBengaliDigits(stats.servicesCount),
+                                  l10n.profileServicesStat,
                                 ),
                               ),
                               Container(
@@ -441,8 +444,8 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                               Expanded(
                                 child: _buildProfileStatColumn(
                                   context,
-                                  '${stats.projectsCount}',
-                                  'Projects',
+                                  Formatters.toBengaliDigits(stats.projectsCount),
+                                  l10n.profileProjectsStat,
                                 ),
                               ),
                               Container(
@@ -453,8 +456,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                               Expanded(
                                 child: _buildProfileStatColumn(
                                   context,
-                                  stats.ratingAverage.toStringAsFixed(1),
-                                  'Rating',
+                                  isBn && stats.hasVerifiedRating
+                                      ? Formatters.toBengaliDigits(ratingDisplay)
+                                      : ratingDisplay,
+                                  l10n.profileRatingStat,
                                 ),
                               ),
                             ],
@@ -481,8 +486,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.edit_outlined,
-                title: 'Edit Personal Details',
-                subtitle: 'Name, birthday, emergency contact & organization info',
+                title: l10n.profileEditPersonalDetails,
+                subtitle: isBn
+                    ? 'নাম, জন্মদিন, জরুরি যোগাযোগ ও প্রাতিষ্ঠানিক তথ্য'
+                    : 'Name, birthday, emergency contact & organization info',
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRoutes.editDetailedProfile,
@@ -493,8 +500,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.location_on_outlined,
-                title: 'Saved Delivery Addresses',
-                subtitle: 'Manage home, office and dispatch locations',
+                title: l10n.profileSavedAddresses,
+                subtitle: isBn
+                    ? 'বাসা, অফিস ও ডেলিভারি অবস্থান পরিচালনা করুন'
+                    : 'Manage home, office and dispatch locations',
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRoutes.savedAddresses,
@@ -505,8 +514,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.notifications_none_rounded,
-                title: 'Notification Preferences',
-                subtitle: 'Push alerts, audio chime, SMS & haptics',
+                title: l10n.settingsNotifications,
+                subtitle: isBn
+                    ? 'পুশ অ্যালার্ট, অডিও চাইম, এসএমএস ও হ্যাপটিক্স'
+                    : 'Push alerts, audio chime, SMS & haptics',
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRoutes.notificationPreferences,
@@ -517,8 +528,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.shield_outlined,
-                title: 'Privacy & Security',
-                subtitle: 'Device sessions, password reset & account controls',
+                title: l10n.profilePrivacySecurity,
+                subtitle: isBn
+                    ? 'ডিভাইস সেশন, পাসওয়ার্ড রিসেট ও নিরাপত্তা নিয়ন্ত্রণ'
+                    : 'Device sessions, password reset & account controls',
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRoutes.privacySecurity,
@@ -529,16 +542,20 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.grid_view_outlined,
-                title: 'My Services',
-                subtitle: 'View booking history and service requests',
+                title: l10n.profileMyBookings,
+                subtitle: isBn
+                    ? 'বুকিং ইতিহাস, সার্ভিস রিকোয়েস্ট ও ইনভয়েস দেখুন'
+                    : 'View booking history, service requests and invoices',
                 onTap: widget.onOpenServices,
               ),
               const SizedBox(height: 8),
               _buildProfileTile(
                 context: context,
                 icon: Icons.folder_outlined,
-                title: 'My Projects',
-                subtitle: 'Enterprise deliverables & team leader milestones',
+                title: l10n.profileTurnkeyProjects,
+                subtitle: isBn
+                    ? 'বাণিজ্যিক কাজ ও টিম লিডার মাইলস্টোনসমূহ'
+                    : 'Enterprise deliverables & team leader milestones',
                 onTap: widget.onOpenProjects,
               ),
               const SizedBox(height: 8),
@@ -546,8 +563,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                 _buildProfileTile(
                   context: context,
                   icon: Icons.account_balance_wallet_outlined,
-                  title: 'Worker Wallet & Payouts',
-                  subtitle: 'Balance, completed jobs & payout history',
+                  title: l10n.profilePayoutAccount,
+                  subtitle: isBn
+                      ? 'ব্যালেন্স, সম্পন্ন কাজ ও টাকা তোলার হিসাব'
+                      : 'Balance, completed jobs & payout history',
                   onTap: () =>
                       Navigator.pushNamed(context, AppRoutes.workerEarnings),
                 ),
@@ -556,8 +575,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.receipt_long_outlined,
-                title: 'Transaction History & Invoices',
-                subtitle: 'Escrow settlements & itemized digital VAT receipts',
+                title: isBn ? 'লেনদেন ইতিহাস ও ইনভয়েস' : 'Transaction History & Invoices',
+                subtitle: isBn
+                    ? 'এসক্রো সেটেলমেন্ট ও ডিজিটাল ভ্যাট রসিদ'
+                    : 'Escrow settlements & itemized digital VAT receipts',
                 onTap: () =>
                     Navigator.pushNamed(context, AppRoutes.transactionHistory),
               ),
@@ -565,50 +586,49 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.settings_outlined,
-                title: 'Settings',
-                subtitle: 'Theme, language, offline sync & legal policies',
+                title: l10n.profileSettings,
+                subtitle: isBn
+                    ? 'থিম, ভাষা, অফলাইন সিঙ্ক ও নীতিসমূহ'
+                    : 'Theme, language, offline sync & legal policies',
                 onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
               ),
               const SizedBox(height: 8),
               _buildProfileTile(
                 context: context,
                 icon: Icons.help_outline_rounded,
-                title: 'Help Center & FAQ',
-                subtitle: 'Search guides or contact dispatch support',
+                title: l10n.profileHelpSupport,
+                subtitle: isBn
+                    ? 'গাইড দেখুন অথবা ডিসপ্যাচ সাপোর্টে যোগাযোগ করুন'
+                    : 'Search guides or contact dispatch support',
                 onTap: () => Navigator.pushNamed(context, AppRoutes.supportFaq),
               ),
               const SizedBox(height: 8),
               _buildProfileTile(
                 context: context,
-                icon: Icons.report_problem_outlined,
-                title: 'Submit a Complaint',
-                subtitle: 'Escalate quality, billing or behavior concerns',
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRoutes.submitComplaint),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
                 icon: Icons.phone_in_talk_outlined,
-                title: '24/7 Helpline: 16524',
-                subtitle: 'Emergency dispatch support hotline',
+                title: l10n.homeHelpline,
+                subtitle: isBn ? 'জরুরি ডিসপ্যাচ সাপোর্ট হটলাইন' : 'Emergency dispatch support hotline',
                 onTap: widget.onCallHelpline,
               ),
               const SizedBox(height: 8),
               _buildProfileTile(
                 context: context,
                 icon: Icons.info_outline_rounded,
-                title: 'About SKAVIA',
-                subtitle: 'Platform version & 9 specialization branches',
+                title: l10n.profileAboutSkavia,
+                subtitle: isBn
+                    ? 'প্ল্যাটফর্ম সংস্করণ ও ৯টি ট্রেড স্পেশালাইজেশন'
+                    : 'Platform version & 9 specialization branches',
                 onTap: () => Navigator.pushNamed(context, AppRoutes.aboutSkavia),
               ),
-              if (!isCustomerMode) ...[
+              if (widget.currentMode == AppRoleMode.worker) ...[
                 const SizedBox(height: 8),
                 _buildProfileTile(
                   context: context,
                   icon: Icons.workspace_premium_outlined,
-                  title: 'Worker Reputation & Badges',
-                  subtitle: 'View your verified rating, trust tier & reviews',
+                  title: l10n.workerReputationTitle,
+                  subtitle: isBn
+                      ? 'আপনার যাচাইকৃত রেটিং, ট্রাস্ট টিয়ার ও রিভিউ দেখুন'
+                      : 'View your verified rating, trust tier & reviews',
                   onTap: () => Navigator.pushNamed(
                     context,
                     AppRoutes.workerReputation,
@@ -621,9 +641,9 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               _buildProfileTile(
                 context: context,
                 icon: Icons.swap_horiz_rounded,
-                title: AppLanguageService.tr('switch_mode'),
+                title: l10n.switchAccountMode,
                 subtitle: isBn
-                    ? 'ব্যক্তিগত, কর্পোরেট ও কারিগর মোড পরিবর্তন করুন'
+                    ? 'ব্যক্তিগত, বিজনেস ও কর্মী মোড পরিবর্তন করুন'
                     : 'Toggle between Customer, Business and Specialist modes',
                 onTap: widget.onSwitchRole,
               ),
@@ -645,11 +665,10 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
                   child: Text(
-                    AppLanguageService.tr('logout'),
+                    l10n.authSignOut,
                     style: const TextStyle(
                       color: AppColors.errorRed,
                       fontWeight: FontWeight.w700,
-                      fontSize: 14,
                     ),
                   ),
                 ),

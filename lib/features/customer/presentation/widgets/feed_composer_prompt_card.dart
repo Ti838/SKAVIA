@@ -1,82 +1,87 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 
-/// Top card in the live feed prompting user to create a post, job, or service request.
+/// Top card in the Feed prompting the user to create a Job, Service Request, or Update.
+/// Displays the synchronized user avatar and 3 evenly-aligned single-row actions.
 class FeedComposerPromptCard extends StatelessWidget {
   final String userInitial;
+  final String? userName;
+  final String? userAvatarUrl;
   final VoidCallback onOpenComposer;
+  final ValueChanged<String>? onOpenComposerWithType;
   final bool isBn;
+  final EdgeInsetsGeometry margin;
 
   const FeedComposerPromptCard({
     super.key,
     required this.userInitial,
+    this.userName,
+    this.userAvatarUrl,
     required this.onOpenComposer,
+    this.onOpenComposerWithType,
     required this.isBn,
+    this.margin = const EdgeInsets.fromLTRB(16, 8, 16, 12),
   });
+
+  void _triggerType(String type) {
+    if (onOpenComposerWithType != null) {
+      onOpenComposerWithType!(type);
+    } else {
+      onOpenComposer();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final tokens = context.skavia;
-    final isDark = context.isDarkMode;
+    final l10n = context.l10n;
+    final effectiveName =
+        (userName != null && userName!.trim().isNotEmpty) ? userName! : userInitial;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+      margin: margin,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
+        color: tokens.cardBg,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         border: Border.all(color: tokens.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: Column(
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: tokens.softBlueBg,
-                child: Text(
-                  userInitial,
-                  style: TextStyle(
-                    color: tokens.brandAccent,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 14,
-                  ),
-                ),
+              UserAvatar(
+                imageUrl: userAvatarUrl,
+                name: effectiveName,
+                radius: 19,
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Material(
                   color: tokens.subtleCardBg,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: AppDimensions.roundedPill,
                   child: InkWell(
                     onTap: onOpenComposer,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: AppDimensions.roundedPill,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 14,
-                        vertical: 10,
+                        vertical: 11,
                       ),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: AppDimensions.roundedPill,
                         border: Border.all(color: tokens.border),
                       ),
                       child: Text(
-                        isBn
-                            ? 'একটি কাজ পোস্ট করুন বা সেবা চান...'
-                            : 'Share an opportunity, post a job, or request a service...',
-                        style: TextStyle(
-                          color: colorScheme.onSurfaceVariant,
-                          fontSize: 12,
+                        l10n.feedComposerPlaceholder,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: tokens.mutedText,
+                          fontSize: 13,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -87,72 +92,74 @@ class FeedComposerPromptCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Divider(height: 1, color: tokens.border),
           const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: Wrap(
-              alignment: WrapAlignment.spaceAround,
-              spacing: 10,
-              runSpacing: 8,
-              children: [
-                _buildActionItem(
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
                   context: context,
                   icon: Icons.work_outline_rounded,
-                  color: tokens.brandAccent,
-                  label: isBn ? 'কাজের পোস্ট' : 'Post Job',
-                  onTap: onOpenComposer,
+                  color: colorScheme.primary,
+                  label: l10n.homePostJob,
+                  onTap: () => _triggerType('Job'),
                 ),
-                _buildActionItem(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildActionButton(
                   context: context,
                   icon: Icons.handyman_outlined,
-                  color: AppColors.accentAqua,
-                  label: isBn ? 'সেবা চান' : 'Request Service',
-                  onTap: onOpenComposer,
+                  color: tokens.tealAccent,
+                  label: l10n.homeRequestService,
+                  onTap: () => _triggerType('Service Request'),
                 ),
-                _buildActionItem(
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: _buildActionButton(
                   context: context,
                   icon: Icons.campaign_outlined,
-                  color: AppColors.accentCoral,
-                  label: isBn ? 'আপডেট' : 'Share Update',
-                  onTap: onOpenComposer,
+                  color: tokens.violetAccent,
+                  label: l10n.homeShareUpdate,
+                  onTap: () => _triggerType('Professional Update'),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionItem({
+  Widget _buildActionButton({
     required BuildContext context,
     required IconData icon,
     required Color color,
     required String label,
     required VoidCallback onTap,
   }) {
-    final colorScheme = context.colorScheme;
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppDimensions.radiusSm),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 16, color: color),
-            const SizedBox(width: 5),
+            const SizedBox(width: 4),
             Flexible(
               child: Text(
                 label,
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

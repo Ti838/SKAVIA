@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
+import '../../../../shared/widgets/skavia_badge.dart';
 
 /// Official itemized digital invoice screen with tax breakdown, payment rail details, and sharing.
 class InvoiceScreen extends StatelessWidget {
@@ -21,6 +22,7 @@ class InvoiceScreen extends StatelessWidget {
   final String paymentMethod;
   final String transactionId;
   final DateTime paidAt;
+  final String status;
 
   const InvoiceScreen({
     super.key,
@@ -35,30 +37,79 @@ class InvoiceScreen extends StatelessWidget {
     required this.paymentMethod,
     required this.transactionId,
     required this.paidAt,
+    this.status = 'Paid',
   });
+
+  SkaviaBadgeTone _statusTone(String normalized) {
+    if (normalized.contains('paid') ||
+        normalized.contains('settled') ||
+        normalized.contains('completed')) {
+      return SkaviaBadgeTone.success;
+    }
+    if (normalized.contains('pending') || normalized.contains('escrow')) {
+      return SkaviaBadgeTone.warning;
+    }
+    if (normalized.contains('refund') ||
+        normalized.contains('fail') ||
+        normalized.contains('cancel')) {
+      return SkaviaBadgeTone.error;
+    }
+    return SkaviaBadgeTone.neutral;
+  }
+
+  IconData _statusIcon(String normalized) {
+    if (normalized.contains('paid') ||
+        normalized.contains('settled') ||
+        normalized.contains('completed')) {
+      return Icons.check_circle_rounded;
+    }
+    if (normalized.contains('pending') || normalized.contains('escrow')) {
+      return Icons.schedule_rounded;
+    }
+    return Icons.info_outline_rounded;
+  }
+
+  String _shareSummary() {
+    return [
+      'SKAVIA Invoice $invoiceNumber',
+      'Service: $serviceTitle',
+      'Client: $clientName',
+      'Specialist: $specialistName',
+      'Total: ${Formatters.formatCurrency(totalAmount)}',
+      'Status: $status',
+      'Method: $paymentMethod',
+      if (transactionId.isNotEmpty) 'Ref: $transactionId',
+      'Date: ${Formatters.formatDate(paidAt)}',
+    ].join('\n');
+  }
 
   @override
   Widget build(BuildContext context) {
     final tokens = context.skavia;
     final colorScheme = context.colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = context.l10n;
+    final normalizedStatus = status.trim().toLowerCase();
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,
       appBar: AppAppBar(
-        title: 'Tax & Escrow Invoice',
+        title: l10n.invoiceTitle,
         actions: [
           IconButton(
             icon: Icon(
-              Icons.share_rounded,
+              Icons.copy_rounded,
               size: 20,
               color: colorScheme.onSurface,
             ),
-            onPressed: () {
-              UiFeedbackHelper.showSuccess(
-                context,
-                'Invoice link copied to clipboard',
-              );
+            tooltip: l10n.invoiceCopySummary,
+            onPressed: () async {
+              await Clipboard.setData(ClipboardData(text: _shareSummary()));
+              if (context.mounted) {
+                UiFeedbackHelper.showSuccess(
+                  context,
+                  l10n.invoiceSummaryCopied,
+                );
+              }
             },
           ),
         ],
@@ -69,15 +120,8 @@ class InvoiceScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: tokens.cardBg,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
             border: Border.all(color: tokens.border),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,42 +150,18 @@ class InvoiceScreen extends StatelessWidget {
                         Text(
                           'Every Skill. Every Opportunity.',
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 11,
                             color: tokens.mutedText,
                           ),
                         ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: tokens.softMintBg,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.successGreen,
-                            size: 14,
-                          ),
-                          SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              'PAID & SETTLED',
-                              style: TextStyle(
-                                color: AppColors.successGreen,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    SkaviaBadge(
+                      label: status.trim().isEmpty
+                          ? 'PAID'
+                          : status.trim().toUpperCase(),
+                      icon: _statusIcon(normalizedStatus),
+                      tone: _statusTone(normalizedStatus),
                     ),
                   ],
                 ),
@@ -159,7 +179,7 @@ class InvoiceScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'INVOICE TO:',
+                          '${l10n.invoiceTo}:',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
@@ -188,7 +208,7 @@ class InvoiceScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'INVOICE NO:',
+                          '${l10n.invoiceNumber}:',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,

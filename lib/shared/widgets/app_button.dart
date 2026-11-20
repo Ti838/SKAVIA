@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_dimensions.dart';
+import '../../core/extensions/context_extensions.dart';
 import '../motion/sakuga_physics.dart';
 import '../motion/sakuga_pressable.dart';
 
-enum AppButtonVariant { primary, secondary, outline, whitePill }
+enum AppButtonVariant {
+  primary,
+  secondary,
+  outline,
+  whitePill,
+  destructive,
+  ghost,
+}
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -32,41 +39,46 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
 
     Color backgroundColor;
     Color foregroundColor;
-    BorderSide? borderSide;
+    BorderSide borderSide = BorderSide.none;
 
     switch (variant) {
       case AppButtonVariant.primary:
-        backgroundColor = AppColors.primarySky;
-        foregroundColor = Colors.white;
-        borderSide = BorderSide.none;
+        backgroundColor = colorScheme.primary;
+        foregroundColor = colorScheme.onPrimary;
         break;
       case AppButtonVariant.secondary:
-        backgroundColor = AppColors.accentPeach;
-        foregroundColor = const Color(0xFF0F172A);
-        borderSide = BorderSide.none;
+        backgroundColor = colorScheme.primaryContainer;
+        foregroundColor = colorScheme.onPrimaryContainer;
         break;
       case AppButtonVariant.whitePill:
-        backgroundColor = isDark
-            ? colorScheme.surfaceContainerHighest
-            : Colors.white;
+        backgroundColor = tokens.cardBg;
         foregroundColor = colorScheme.onSurface;
-        borderSide = BorderSide(color: colorScheme.outlineVariant, width: 1.5);
+        borderSide = BorderSide(color: tokens.interactiveBorder, width: 1.2);
         break;
       case AppButtonVariant.outline:
         backgroundColor = Colors.transparent;
         foregroundColor = colorScheme.onSurface;
-        borderSide = BorderSide(color: colorScheme.outlineVariant, width: 1.5);
+        borderSide = BorderSide(color: tokens.interactiveBorder, width: 1.2);
+        break;
+      case AppButtonVariant.destructive:
+        backgroundColor = colorScheme.error;
+        foregroundColor = colorScheme.onError;
+        break;
+      case AppButtonVariant.ghost:
+        backgroundColor = Colors.transparent;
+        foregroundColor = colorScheme.primary;
         break;
     }
 
-    final resolvedIntensity = motionIntensity ??
+    final resolvedIntensity =
+        motionIntensity ??
         (variant == AppButtonVariant.primary ||
-                variant == AppButtonVariant.secondary
+                variant == AppButtonVariant.destructive
             ? SakugaIntensity.medium
             : SakugaIntensity.subtle);
     final isEnabled = !isLoading && onPressed != null;
@@ -74,9 +86,8 @@ class AppButton extends StatelessWidget {
     return SakugaPressable(
       enabled: isEnabled,
       intensity: resolvedIntensity,
-      vfxColor: variant == AppButtonVariant.primary
-          ? AppColors.primarySky
-          : AppColors.primaryRoyal,
+      emitVfx: variant == AppButtonVariant.primary,
+      vfxColor: colorScheme.primary,
       child: SizedBox(
         width: width ?? double.infinity,
         height: height,
@@ -85,20 +96,26 @@ class AppButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: backgroundColor,
             foregroundColor: foregroundColor,
+            disabledBackgroundColor: colorScheme.surfaceContainerHigh,
+            disabledForegroundColor: tokens.mutedText,
             elevation: 0,
             shadowColor: Colors.transparent,
             shape: RoundedRectangleBorder(
-              borderRadius: AppDimensions.roundedPill,
+              borderRadius: BorderRadius.circular(
+                variant == AppButtonVariant.whitePill
+                    ? AppDimensions.radiusPill
+                    : AppDimensions.radiusMd,
+              ),
               side: borderSide,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
           ),
           child: isLoading
               ? SizedBox(
-                  height: 22,
-                  width: 22,
+                  height: 20,
+                  width: 20,
                   child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
+                    strokeWidth: 2.2,
                     valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
                   ),
                 )
@@ -106,17 +123,15 @@ class AppButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (icon != null) ...[icon!, const SizedBox(width: 10)],
+                    if (icon != null) ...[icon!, const SizedBox(width: 8)],
                     Flexible(
                       child: Text(
                         text,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: isEnabled ? foregroundColor : tokens.mutedText,
                           fontWeight: FontWeight.w700,
-                          color: foregroundColor,
-                          letterSpacing: 0.1,
                         ),
                       ),
                     ),

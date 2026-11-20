@@ -1,0 +1,19 @@
+{
+  "extends": "./admin-web/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./admin-web",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "admin-web/next-env.d.ts",
+    "admin-web/**/*.ts",
+    "admin-web/**/*.tsx",
+    "admin-web/.next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "admin-web/node_modules"
+  ]
+}

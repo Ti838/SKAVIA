@@ -27,6 +27,13 @@ class AppConfig {
     defaultValue: 'sb_publishable_pdNZXWOsIM757lVSYOjwdw_LTk6aCDN',
   );
 
+  // Enable only after configuring Firebase as a Third-Party Auth provider in
+  // Supabase Dashboard -> Authentication -> Third-Party Auth.
+  static const bool enableFirebaseSupabaseJwtBridge = bool.fromEnvironment(
+    'ENABLE_FIREBASE_SUPABASE_JWT',
+    defaultValue: false,
+  );
+
   // Network timeouts
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);

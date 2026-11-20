@@ -80,9 +80,12 @@ class MatchingScoringEngine {
     for (int i = 0; i < rawWorkers.length; i++) {
       final worker = rawWorkers[i];
       final workerLocation = worker['location']?.toString() ?? 'Dhaka';
-      final workerRate = (worker['expected_rate'] as num?)?.toDouble() ?? 500.0;
-      final workerRating =
-          (worker['rating_average'] as num?)?.toDouble() ?? 4.8;
+      final workerRate = (worker['expected_rate'] as num?)?.toDouble() ?? 0.0;
+      final totalReviews = (worker['total_reviews'] as num?)?.toInt() ?? 0;
+      final rawRating = (worker['rating_average'] as num?)?.toDouble() ?? 0.0;
+      final workerRating = (totalReviews > 0 || worker['rating_average'] != null)
+          ? rawRating
+          : 0.0;
       final isVerified =
           worker['verification_status'] == 'Verified' ||
           worker['is_verified'] == true;
@@ -131,13 +134,13 @@ class MatchingScoringEngine {
           location: workerLocation,
           hourlyRate: workerRate,
           rating: workerRating,
-          completedJobs: (worker['completed_jobs'] as num?)?.toInt() ?? 12,
+          completedJobs: (worker['completed_jobs'] as num?)?.toInt() ?? 0,
           isVerified: isVerified,
           skills:
               (worker['skills'] as List<dynamic>?)
                   ?.map((e) => e.toString())
                   .toList() ??
-              ['Technical Specialist', 'Standard SLA'],
+              const [],
         ),
       );
     }

@@ -177,6 +177,20 @@ serve(async (req: Request) => {
       );
     }
 
+    if (!settlementResult || settlementResult.success === false) {
+      const errorCode = settlementResult?.error_code || "SETTLEMENT_REJECTED";
+      const statusCode = errorCode === "PAYMENT_NOT_FOUND" ? 404 : 400;
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: errorCode,
+          message: settlementResult?.message || "Payment settlement was rejected by backend validation.",
+          result: settlementResult ?? null,
+        }),
+        { status: statusCode, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // 8. Return Success to SSLCommerz / Client Listener
     return new Response(
       JSON.stringify({

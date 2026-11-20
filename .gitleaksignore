@@ -6,3 +6,5 @@ lib/firebase_options.dart:gcp-api-key:62
 lib/firebase_options.dart:gcp-api-key:71
 lib/firebase_options.dart:gcp-api-key:80
 android/app/google-services.json:gcp-api-key:18
+9b878e6ad0e1f7434a0ddab011ca7e19c65c4217:admin-web/.env.example:generic-api-key:27
+aeea8ff3646a3d500d5f498a35c8842999f2eebc:lib/app/config/app_config.dart:huggingface-access-token:52

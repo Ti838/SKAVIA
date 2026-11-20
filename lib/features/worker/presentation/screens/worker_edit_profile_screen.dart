@@ -181,7 +181,7 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                     ),
                   ),
                   const SizedBox(width: 4),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Worker Profile',
                       maxLines: 1,

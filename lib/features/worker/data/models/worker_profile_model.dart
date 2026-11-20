@@ -20,6 +20,17 @@ class WorkerProfileModel extends WorkerProfileEntity {
   });
 
   factory WorkerProfileModel.fromJson(Map<String, dynamic> json) {
+    final reviewsCount =
+        (json['reviews_count'] as num?)?.toInt() ??
+        (json['total_reviews'] as num?)?.toInt() ??
+        0;
+    final rawRating =
+        (json['rating'] as num?)?.toDouble() ??
+        (json['rating_average'] as num?)?.toDouble() ??
+        0.0;
+    final statusStr =
+        (json['verification_status'] ?? json['status'])?.toString().toLowerCase() ??
+        '';
     return WorkerProfileModel(
       workerProfileId: json['worker_profile_id']?.toString() ?? '',
       userId: json['user_id']?.toString() ?? '',
@@ -29,13 +40,16 @@ class WorkerProfileModel extends WorkerProfileEntity {
           json['title']?.toString() ??
           'Technician',
       bio: json['bio']?.toString() ?? '',
-      hourlyRate: (json['hourly_rate'] as num?)?.toDouble() ?? 150.0,
-      rating: (json['rating'] as num?)?.toDouble() ?? 5.0,
-      reviewsCount: (json['reviews_count'] as num?)?.toInt() ?? 0,
-      experience: json['experience']?.toString() ?? '2+ years',
+      hourlyRate:
+          (json['hourly_rate'] as num?)?.toDouble() ??
+          (json['expected_rate'] as num?)?.toDouble() ??
+          0.0,
+      rating: reviewsCount > 0 ? rawRating : 0.0,
+      reviewsCount: reviewsCount,
+      experience: json['experience']?.toString() ?? '',
       location: json['location']?.toString() ?? 'Dhaka, Bangladesh',
-      isVerified: json['is_verified'] == true || json['status'] == 'Verified',
-      isAvailable: json['is_available'] != false,
+      isVerified: json['is_verified'] == true || statusStr == 'verified',
+      isAvailable: json['is_available'] == true,
       skills:
           (json['skills'] as List<dynamic>?)
               ?.map((s) => s.toString())

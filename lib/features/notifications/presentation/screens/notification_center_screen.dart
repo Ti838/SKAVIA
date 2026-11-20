@@ -22,9 +22,20 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   String _selectedFilter = 'All';
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _controller.syncFromBackend();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final tokens = context.skavia;
+    final l10n = context.l10n;
 
     return AnimatedBuilder(
       animation: _controller,
@@ -49,7 +60,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         return Scaffold(
           backgroundColor: tokens.sheetBg,
           appBar: AppAppBar(
-            title: 'Notifications',
+            title: l10n.notificationsTitle,
             actions: [
               if (_controller.unreadCount > 0)
                 IconButton(
@@ -57,7 +68,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     Icons.done_all_rounded,
                     color: tokens.brandAccent,
                   ),
-                  tooltip: 'Mark all as read',
+                  tooltip: l10n.notificationsMarkAllRead,
                   onPressed: () => _controller.markAllAsRead(),
                 ),
             ],
@@ -135,55 +146,82 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                 Divider(height: 1, color: tokens.border),
 
                 Expanded(
-                  child: filtered.isEmpty
-                      ? Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.notifications_off_outlined,
-                                  size: 56,
-                                  color: tokens.mutedText,
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No Notifications',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: colorScheme.onSurface,
+                  child: _controller.isLoading && all.isEmpty
+                      ? const Center(child: CircularProgressIndicator())
+                      : RefreshIndicator(
+                          onRefresh: () => _controller.syncFromBackend(),
+                          child: filtered.isEmpty
+                              ? LayoutBuilder(
+                                  builder: (context, constraints) =>
+                                      SingleChildScrollView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.all(24),
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        minHeight:
+                                            (constraints.maxHeight - 48)
+                                                .clamp(0.0, double.infinity),
+                                      ),
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.notifications_off_outlined,
+                                              size: 56,
+                                              color: tokens.mutedText,
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Text(
+                                              _selectedFilter == 'All'
+                                                  ? l10n.notificationsEmptyTitle
+                                                  : 'No $_selectedFilter Notifications',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
+                                                color: colorScheme.onSurface,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              _selectedFilter == 'All'
+                                                  ? l10n.notificationsEmptySubtitle
+                                                  : l10n.notificationsFilteredEmpty,
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                color: colorScheme
+                                                    .onSurfaceVariant,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'You are all caught up!',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colorScheme.onSurfaceVariant,
+                                )
+                              : ListView.separated(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  padding: const EdgeInsets.all(
+                                    AppDimensions.paddingMedium,
                                   ),
+                                  itemCount: filtered.length,
+                                  separatorBuilder: (_, _) =>
+                                      const SizedBox(height: 8),
+                                  itemBuilder: (context, index) {
+                                    final notif = filtered[index];
+                                    return _buildNotificationCard(
+                                      context,
+                                      notif,
+                                      colorScheme,
+                                      tokens,
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-                          itemCount: filtered.length,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final notif = filtered[index];
-                            return _buildNotificationCard(
-                              context,
-                              notif,
-                              colorScheme,
-                              tokens,
-                            );
-                          },
                         ),
                 ),
               ],

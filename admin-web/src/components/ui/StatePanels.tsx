@@ -66,13 +66,17 @@ export function ErrorPanel({
 export function EmptyPanel({
   title,
   description,
+  actionLabel,
+  onAction,
 }: {
   title: string;
   description: string;
+  actionLabel?: string;
+  onAction?: () => void;
 }) {
   return (
     <div
-      className="rounded-xl border p-12 flex flex-col items-center justify-center text-center"
+      className="rounded-xl border p-10 sm:p-12 flex flex-col items-center justify-center text-center"
       style={{
         backgroundColor: 'var(--bg-surface)',
         borderColor: 'var(--border-subtle)',
@@ -85,6 +89,15 @@ export function EmptyPanel({
       <p className="mt-1 text-xs max-w-md" style={{ color: 'var(--text-muted)' }}>
         {description}
       </p>
+      {actionLabel && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#003399] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#00287a] transition shadow-xs"
+        >
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
 }

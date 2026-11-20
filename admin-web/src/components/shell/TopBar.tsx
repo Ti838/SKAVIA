@@ -6,6 +6,7 @@ import { Building2, LogOut, Menu, Moon, Search, ShieldCheck, Sun } from 'lucide-
 import { signOutFirebaseClient } from '@/lib/firebase-client';
 import { useAdminSession } from './SessionProvider';
 import { CommandPalette } from './CommandPalette';
+import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const router = useRouter();
@@ -153,6 +154,8 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             <ShieldCheck className="h-3.5 w-3.5" />
             {stepUpActive ? 'Step-Up Verified' : 'Verify Step-Up'}
           </button>
+
+          <LanguageSwitcher />
 
           <button
             type="button"

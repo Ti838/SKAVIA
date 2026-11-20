@@ -45,7 +45,7 @@ class ReviewRemoteDataSource {
       final int totalRatings = (allReviews as List).length;
       double sum = 0.0;
       for (final r in allReviews) {
-        sum += (r['rating'] as num?)?.toDouble() ?? 5.0;
+        sum += (r['rating'] as num?)?.toDouble() ?? 0.0;
       }
       final double averageRating = totalRatings > 0
           ? (sum / totalRatings)

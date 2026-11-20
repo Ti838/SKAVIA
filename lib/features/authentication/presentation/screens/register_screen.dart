@@ -169,6 +169,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final skavia = context.skavia;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
 
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.12)
@@ -193,9 +195,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const AuthHeaderWidget(
-                      title: 'Create Your Account',
-                      subtitle: 'Join SKAVIA and get started',
+                    AuthHeaderWidget(
+                      title: l10n.authSignUp,
+                      subtitle: isBn
+                          ? 'SKAVIA-তে যোগ দিন এবং সহজে শুরু করুন'
+                          : 'Join SKAVIA and get started',
                     ),
                     const SizedBox(height: 24),
 
@@ -242,8 +246,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _fullNameController,
-                      label: 'Full Name',
-                      hint: 'Your Full Name',
+                      label: l10n.authFullName,
+                      hint: l10n.authFullNameHint,
                       prefixIcon: Icon(
                         Icons.badge_outlined,
                         color: colorScheme.onSurfaceVariant,
@@ -251,7 +255,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (val) {
                         if (val == null || val.trim().length < 3) {
-                          return 'Full name must be at least 3 characters';
+                          return isBn
+                              ? 'সম্পূর্ণ নাম কমপক্ষে ৩ অক্ষরের হতে হবে'
+                              : 'Full name must be at least 3 characters';
                         }
                         return null;
                       },
@@ -260,8 +266,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _emailController,
-                      label: 'Email Address',
-                      hint: 'name@example.com',
+                      label: l10n.authEmail,
+                      hint: l10n.authEmailHint,
                       keyboardType: TextInputType.emailAddress,
                       prefixIcon: Icon(
                         Icons.alternate_email_rounded,
@@ -274,8 +280,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _phoneController,
-                      label: 'Phone Number',
-                      hint: '01700-000000',
+                      label: l10n.authPhone,
+                      hint: l10n.authPhoneHint,
                       keyboardType: TextInputType.phone,
                       prefixIcon: Icon(
                         Icons.phone_iphone_rounded,
@@ -288,7 +294,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _passwordController,
-                      label: 'Password',
+                      label: l10n.authPassword,
                       hint: '••••••••',
                       isPassword: true,
                       prefixIcon: Icon(
@@ -298,10 +304,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (val) {
                         if (val == null || val.isEmpty) {
-                          return 'Password is required';
+                          return isBn
+                              ? 'পাসওয়ার্ড আবশ্যক'
+                              : 'Password is required';
                         }
                         if (val.length < 6) {
-                          return 'Password must be at least 6 characters';
+                          return isBn
+                              ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে'
+                              : 'Password must be at least 6 characters';
                         }
                         return null;
                       },
@@ -310,7 +320,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     AppTextField(
                       controller: _confirmPasswordController,
-                      label: 'Confirm Password',
+                      label: l10n.authConfirmPassword,
                       hint: '••••••••',
                       isPassword: true,
                       prefixIcon: Icon(
@@ -320,7 +330,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       validator: (val) {
                         if (val != _passwordController.text) {
-                          return 'Passwords do not match';
+                          return isBn
+                              ? 'পাসওয়ার্ড দুটি মিলছে না'
+                              : 'Passwords do not match';
                         }
                         return null;
                       },
@@ -333,7 +345,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         SakugaCheckbox(
                           value: _agreeToTerms,
-                          semanticLabel: 'Agree to Terms and Privacy Policy',
+                          semanticLabel: isBn
+                              ? 'শর্তাবলী ও গোপনীয়তা নীতি স্বীকার করুন'
+                              : 'Agree to Terms and Privacy Policy',
                           activeColor: const Color(0xFF003399),
                           onChanged: (val) {
                             setState(() {
@@ -348,7 +362,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               Text(
-                                'I agree to the ',
+                                isBn ? 'আমি ' : 'I agree to the ',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: colorScheme.onSurfaceVariant,
@@ -356,11 +370,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               GestureDetector(
                                 onTap: () => _showLegalDialog(
-                                  'Terms of Service',
-                                  'By accessing or using SKAVIA, you agree to be bound by our platform service terms, verified operational procedures, escrow rules, and workplace safety standards.',
+                                  isBn ? 'সেবার শর্তাবলী' : 'Terms of Service',
+                                  isBn
+                                      ? 'SKAVIA ব্যবহার করার মাধ্যমে আপনি আমাদের প্ল্যাটফর্ম সেবার শর্তাবলী, এসক্রো নিয়মাবলী এবং কর্মক্ষেত্রের মান মেনে চলতে সম্মত হচ্ছেন।'
+                                      : 'By accessing or using SKAVIA, you agree to be bound by our platform service terms, verified operational procedures, escrow rules, and workplace safety standards.',
                                 ),
                                 child: Text(
-                                  'Terms of Service',
+                                  isBn ? 'সেবার শর্তাবলী' : 'Terms of Service',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -372,7 +388,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                               ),
                               Text(
-                                ' and ',
+                                isBn ? ' এবং ' : ' and ',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: colorScheme.onSurfaceVariant,
@@ -380,11 +396,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               GestureDetector(
                                 onTap: () => _showLegalDialog(
-                                  'Privacy Policy',
-                                  'SKAVIA collects and protects your personal data in accordance with our national data protection obligations and cryptographic access security rules.',
+                                  isBn ? 'গোপনীয়তা নীতি' : 'Privacy Policy',
+                                  isBn
+                                      ? 'SKAVIA আপনার ব্যক্তিগত তথ্য ডেটা সুরক্ষা আইন ও ক্রিপ্টোগ্রাফিক সুরক্ষা অনুযায়ী নিরাপদে সংরক্ষণ করে।'
+                                      : 'SKAVIA collects and protects your personal data in accordance with our national data protection obligations and cryptographic access security rules.',
                                 ),
                                 child: Text(
-                                  'Privacy Policy',
+                                  isBn ? 'গোপনীয়তা নীতি' : 'Privacy Policy',
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -395,6 +413,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                               ),
+                              if (isBn)
+                                Text(
+                                  ' মেনে নিচ্ছি',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -453,10 +479,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         ),
                                       ),
                                     )
-                                  : const Text(
-                                      'Create Account',
+                                  : Text(
+                                      l10n.authSignUp,
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 0.2,
@@ -474,14 +500,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Row(
                       children: [
                         Expanded(child: Divider(color: borderColor)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text(
-                            'or continue with',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurfaceVariant,
+                        Flexible(
+                          flex: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text(
+                              l10n.authOrContinueWith,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                         ),
@@ -525,12 +556,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 10),
-                                const Text(
-                                  'Sign up with Google',
-                                  style: TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.1,
+                                Flexible(
+                                  child: Text(
+                                    isBn
+                                        ? 'Google দিয়ে সাইন আপ করুন'
+                                        : 'Sign up with Google',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.1,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -550,7 +587,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       runSpacing: 4,
                       children: [
                         Text(
-                          'Already have an account?',
+                          l10n.authHaveAccount,
                           style: TextStyle(
                             fontSize: 13,
                             color: colorScheme.onSurfaceVariant,
@@ -564,7 +601,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             );
                           },
                           child: Text(
-                            'Sign In',
+                            l10n.authSignIn,
                             style: TextStyle(
                               fontSize: 13,
                               color: skavia.brandAccent,

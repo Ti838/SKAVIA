@@ -184,12 +184,16 @@ class AuthRemoteDataSource {
           ? 'worker'
           : ((isBusiness || isOrg) ? 'enterprise' : 'client');
 
-      // 1. Sync Base User Record for new user
+      final firebasePhotoUrl = _firebaseAuth?.currentUser?.photoURL;
+
+      // 1. Sync Base User Record for new user (including Google photoURL if present)
       await supabase.from(DatabaseTables.users).insert({
         'user_id': userId,
         'full_name': fullName,
         'email': email,
         'phone': phone,
+        if (firebasePhotoUrl != null && firebasePhotoUrl.trim().isNotEmpty)
+          'avatar_url': firebasePhotoUrl.trim(),
         'status': 'Active',
         'active_mode': defaultMode,
         'location': 'Dhaka, Bangladesh',
@@ -203,22 +207,22 @@ class AuthRemoteDataSource {
         'customer_type': customerType,
       }, onConflict: 'user_id');
 
-      // 3. Ensure Worker Profile exists for dual-mode switching
-      await supabase.from(DatabaseTables.workerProfiles).upsert({
-        'user_id': userId,
-        'title': isWorker
-            ? 'Registered Skill Provider'
-            : 'Skilled Professional',
-        'bio': 'Available for on-demand & scheduled services across Dhaka.',
-        'location': 'Dhaka',
-        'working_area': 'All Dhaka City',
-        'expected_rate': 500.00,
-        'verification_status': 'Pending',
-        'rating_average': 0.0,
-        'total_reviews': 0,
-        'completed_jobs': 0,
-        'is_available': true,
-      }, onConflict: 'user_id');
+      // 3. Only create Worker Profile when the user explicitly signed up as a Worker
+      //    (Strict Real Data & Role Integrity: never enroll pure customers as available workers)
+      if (isWorker) {
+        await supabase.from(DatabaseTables.workerProfiles).upsert({
+          'user_id': userId,
+          'title': 'Skilled Technician',
+          'bio': '',
+          'location': 'Dhaka',
+          'expected_rate': 0.0,
+          'verification_status': 'Unverified',
+          'rating_average': 0.0,
+          'total_reviews': 0,
+          'completed_jobs': 0,
+          'is_available': false,
+        }, onConflict: 'user_id');
+      }
 
       // 4. Register current device session
       await ProfileRemoteDataSource(

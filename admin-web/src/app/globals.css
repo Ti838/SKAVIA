@@ -10,24 +10,39 @@
   --text-secondary: #475569;
   --text-muted: #64748B;
   --border-subtle: #E2E8F0;
+  --border-strong: #CBD5E1;
   --brand-royal: #003399;
   --brand-sky: #3898EC;
   --brand-aqua: #15E7CA;
   --brand-peach: #FDBA74;
+  --brand-primary: #003399;
   --status-success: #16A34A;
-  --status-warning: #F59E0B;
+  --status-warning: #D97706;
   --status-danger: #DC2626;
+  --role-worker: #0284C7;
+  --role-business: #7C3AED;
+  --role-admin: #003399;
+  --focus-ring: rgba(56, 152, 236, 0.35);
 }
 
 [data-theme="dark"], .dark {
-  --bg-canvas: #090E1A;
-  --bg-surface: #111827;
-  --bg-surface-subtle: #1E293B;
-  --bg-sidebar: #050A14;
-  --text-primary: #F8FAFC;
-  --text-secondary: #CBD5E1;
-  --text-muted: #94A3B8;
-  --border-subtle: #1F2937;
+  --bg-canvas: #070A11;
+  --bg-surface: #0E1424;
+  --bg-surface-subtle: #141C30;
+  --bg-sidebar: #05080E;
+  --text-primary: #EDEFEF;
+  --text-secondary: #9BB0C9;
+  --text-muted: #7189A8;
+  --border-subtle: #192338;
+  --border-strong: #546C8D;
+  --brand-primary: #4C86F0;
+  --status-success: #34D399;
+  --status-warning: #F59E0B;
+  --status-danger: #F87171;
+  --role-worker: #38BDF8;
+  --role-business: #9D7BF2;
+  --role-admin: #4C86F0;
+  --focus-ring: rgba(76, 134, 240, 0.45);
 }
 
 * {
@@ -40,8 +55,33 @@ body {
   padding: 0;
   background-color: var(--bg-canvas);
   color: var(--text-primary);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-inter), var(--font-bengali), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dual-Script Typography Scale */
+.font-heading {
+  font-family: var(--font-jakarta), var(--font-bengali), -apple-system, sans-serif;
+}
+
+.font-body {
+  font-family: var(--font-inter), var(--font-bengali), -apple-system, sans-serif;
+}
+
+.font-bengali {
+  font-family: var(--font-bengali), -apple-system, sans-serif;
+  letter-spacing: 0px !important;
+  line-height: 1.48 !important;
+}
+
+/* Strict Bengali orthography: Never allow non-zero letter-spacing on Bengali text */
+:lang(bn),
+[data-lang="bn"],
+.bengali-text {
+  font-family: var(--font-bengali), var(--font-inter), sans-serif;
+  letter-spacing: 0px !important;
+  line-height: 1.48;
 }
 
 .font-mono-code {
@@ -53,33 +93,19 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Architectural blueprint grid lines for SKAVIA public hero canvas */
-.skavia-blueprint-dark {
-  background-size: 64px 64px;
+/* High-performance, clean background textures replacing AI template artifacts */
+.skavia-subtle-mesh-dark {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    radial-gradient(at 0% 0%, rgba(0, 51, 153, 0.18) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(21, 231, 202, 0.08) 0px, transparent 45%),
+    radial-gradient(at 50% 100%, rgba(56, 152, 236, 0.12) 0px, transparent 65%);
 }
 
-.skavia-blueprint-light {
-  background-size: 64px 64px;
+.skavia-subtle-mesh-light {
   background-image:
-    linear-gradient(to right, rgba(15, 23, 42, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.05) 1px, transparent 1px);
-}
-
-/* Spectral SKAVIA prism arc echoing Cobalt -> Sky -> Aqua brand identity */
-.skavia-spectral-arc {
-  background: conic-gradient(
-    from 180deg at 50% 100%,
-    rgba(0, 51, 153, 0.0) 0deg,
-    rgba(0, 51, 153, 0.42) 55deg,
-    rgba(56, 152, 236, 0.52) 125deg,
-    rgba(21, 231, 202, 0.46) 195deg,
-    rgba(253, 186, 116, 0.25) 245deg,
-    rgba(0, 51, 153, 0.0) 360deg
-  );
-  filter: blur(52px);
+    radial-gradient(at 0% 0%, rgba(0, 51, 153, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.03) 0px, transparent 40%),
+    radial-gradient(at 50% 100%, rgba(13, 148, 136, 0.03) 0px, transparent 60%);
 }
 
 @keyframes skavia-radar-spin {

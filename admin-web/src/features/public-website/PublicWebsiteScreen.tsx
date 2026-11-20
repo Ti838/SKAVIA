@@ -10,16 +10,16 @@ import {
 import {
   BranchesSection,
   HeroSection,
-  PublicHeader,
   SolutionsSection,
   WorkflowSection,
 } from './PublicWorkflowSections';
 import {
   DownloadSection,
   FaqAndContactSection,
-  PublicFooter,
   WorkerAndFeaturesSection,
 } from './PublicEcosystemSections';
+import { PublicHeader } from '@/components/navigation/PublicHeader';
+import { PublicFooter } from '@/components/navigation/PublicFooter';
 
 export function PublicWebsiteScreen({
   initialDistribution = INITIAL_DISTRIBUTION,
@@ -97,7 +97,6 @@ export function PublicWebsiteScreen({
       }`}
     >
       <PublicHeader
-        t={t}
         themeMode={themePreference}
         onCycleTheme={handleCycleTheme}
       />
@@ -118,7 +117,7 @@ export function PublicWebsiteScreen({
           openFaq={openFaq}
           onToggleFaq={(idx) => setOpenFaq((prev) => (prev === idx ? null : idx))}
         />
-        <PublicFooter t={t} />
+        <PublicFooter />
       </main>
     </div>
   );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../controllers/auth_controller.dart';
@@ -21,6 +22,8 @@ class PhoneLoginForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +31,7 @@ class PhoneLoginForm extends StatelessWidget {
         // Phone Number Field
         AppTextField(
           controller: phoneController,
-          label: 'Phone Number',
+          label: l10n.authPhone,
           hint: '+880 1700-000000',
           keyboardType: TextInputType.phone,
           prefixIcon: Icon(
@@ -42,7 +45,9 @@ class PhoneLoginForm extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            'A 6-digit OTP code will be sent to your mobile phone via SMS.',
+            isBn
+                ? 'আপনার মোবাইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
+                : 'A 6-digit OTP code will be sent to your mobile phone via SMS.',
             style: TextStyle(
               fontSize: 12,
               color: colorScheme.onSurfaceVariant,
@@ -84,10 +89,10 @@ class PhoneLoginForm extends StatelessWidget {
                             ),
                           ),
                         )
-                      : const Text(
-                          'Send Verification Code',
+                      : Text(
+                          isBn ? 'যাচাইকরণ কোড পাঠান' : 'Send Verification Code',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,

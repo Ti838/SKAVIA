@@ -24,98 +24,118 @@ import {
   X,
 } from 'lucide-react';
 import type { PermissionKey } from '@/lib/types';
+import { useTranslation } from '@/lib/l10n/LanguageContext';
+import type { TranslationDictionary } from '@/lib/l10n/translations';
 import { useAdminSession } from './SessionProvider';
 import { TopBar } from './TopBar';
 
-interface NavItem {
-  label: string;
+interface NavItemDef {
+  key: keyof TranslationDictionary;
   href: string;
   permission?: PermissionKey;
   primarySuperAdminOnly?: boolean;
   icon: ReactNode;
-  section: 'Operations' | 'Platform' | 'Governance';
+  section: 'Operations' | 'Platform' | 'Governance' | 'Portals';
 }
 
-const NAV_ITEMS: NavItem[] = [
+const NAV_ITEM_DEFS: NavItemDef[] = [
   {
-    label: 'Overview',
+    key: 'navDashboard',
     href: '/dashboard',
     permission: 'branch.analytics.view',
     icon: <LayoutDashboard className="h-4 w-4" />,
     section: 'Operations',
   },
   {
-    label: 'Bookings',
+    key: 'navBookings',
     href: '/bookings',
     permission: 'booking.view',
     icon: <CalendarClock className="h-4 w-4" />,
     section: 'Operations',
   },
   {
-    label: 'Verification Queue',
+    key: 'navVerifications',
     href: '/verifications',
     permission: 'worker.verify',
     icon: <BadgeCheck className="h-4 w-4" />,
     section: 'Operations',
   },
   {
-    label: 'Turnkey Teams',
+    key: 'navTeams',
     href: '/teams',
     permission: 'project.team.manage',
     icon: <Briefcase className="h-4 w-4" />,
     section: 'Operations',
   },
   {
-    label: 'Disputes',
+    key: 'navDisputes',
     href: '/disputes',
     permission: 'dispute.view',
     icon: <Scale className="h-4 w-4" />,
     section: 'Operations',
   },
   {
-    label: 'Customers',
+    key: 'navWorkerConsole',
+    href: '/worker-console',
+    icon: <Wrench className="h-4 w-4" />,
+    section: 'Portals',
+  },
+  {
+    key: 'navCustomerPortal',
+    href: '/customer-portal',
+    icon: <Users className="h-4 w-4" />,
+    section: 'Portals',
+  },
+  {
+    key: 'navBusinessPortal',
+    href: '/business-portal',
+    icon: <Building2 className="h-4 w-4" />,
+    section: 'Portals',
+  },
+  {
+    key: 'navCustomers',
     href: '/customers',
     permission: 'customer.view',
     icon: <Users className="h-4 w-4" />,
     section: 'Platform',
   },
   {
-    label: 'Workers',
+    key: 'navWorkers',
     href: '/workers',
     permission: 'worker.view',
     icon: <UserCheck className="h-4 w-4" />,
     section: 'Platform',
   },
   {
-    label: 'Branches',
+    key: 'navBranches',
     href: '/branches',
     permission: 'branch.view',
     icon: <Building2 className="h-4 w-4" />,
     section: 'Platform',
   },
   {
-    label: 'Services & Skills',
+    key: 'navServices',
     href: '/services',
     permission: 'service.view',
     icon: <Layers className="h-4 w-4" />,
     section: 'Platform',
   },
   {
-    label: 'Finance & Approvals',
+    key: 'navFinance',
     href: '/finance',
     permission: 'payment.view',
     icon: <CreditCard className="h-4 w-4" />,
     section: 'Governance',
   },
   {
-    label: 'Reports & Export',
+    key: 'navReports',
     href: '/reports',
     permission: 'report.view',
     icon: <BarChart3 className="h-4 w-4" />,
     section: 'Governance',
   },
   {
-    label: 'Admins & Invitations',
+    key: 'navAdmins',
     href: '/admins',
     permission: 'admin.view',
     primarySuperAdminOnly: true,
@@ -123,7 +143,7 @@ const NAV_ITEMS: NavItem[] = [
     section: 'Governance',
   },
   {
-    label: 'Security Center',
+    key: 'navSecurity',
     href: '/security',
     permission: 'security.audit.view',
     primarySuperAdminOnly: true,
@@ -131,7 +151,7 @@ const NAV_ITEMS: NavItem[] = [
     section: 'Governance',
   },
   {
-    label: 'App Releases',
+    key: 'navReleases',
     href: '/releases',
     permission: 'release.view',
     primarySuperAdminOnly: true,
@@ -139,7 +159,7 @@ const NAV_ITEMS: NavItem[] = [
     section: 'Governance',
   },
   {
-    label: 'Passkeys & Profile',
+    key: 'navSettings',
     href: '/settings',
     icon: <Settings className="h-4 w-4" />,
     section: 'Governance',
@@ -149,16 +169,23 @@ const NAV_ITEMS: NavItem[] = [
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { session } = useAdminSession();
+  const { t } = useTranslation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  const visibleItems = NAV_ITEMS.filter((item) => {
+  const visibleItems = NAV_ITEM_DEFS.filter((item) => {
     if (item.primarySuperAdminOnly && !session.isPrimarySuperAdmin) {
       return false;
     }
     return !item.permission || session.effectivePermissions.includes(item.permission);
   });
 
-  const sections: Array<NavItem['section']> = ['Operations', 'Platform', 'Governance'];
+  const sections: Array<NavItemDef['section']> = ['Portals', 'Operations', 'Platform', 'Governance'];
+  const sectionLabelKeys: Record<NavItemDef['section'], keyof TranslationDictionary> = {
+    Portals: 'sectionPortals',
+    Operations: 'sectionOperations',
+    Platform: 'sectionPlatform',
+    Governance: 'sectionGovernance',
+  };
 
   const renderSidebarContent = () => (
     <div className="flex flex-col h-full text-slate-100" style={{ backgroundColor: 'var(--bg-sidebar)' }}>
@@ -170,7 +197,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div>
             <p className="text-sm font-bold tracking-wide text-white">SKAVIA</p>
             <p className="text-[10px] uppercase tracking-widest text-teal-300">
-              {session.isPrimarySuperAdmin ? 'Super Admin Portal' : 'Internal Admin'}
+              {session.isPrimarySuperAdmin ? 'Super Admin Portal' : session.primaryRole}
             </p>
           </div>
         </Link>
@@ -191,7 +218,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           return (
             <div key={section}>
               <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                {section}
+                {t[sectionLabelKeys[section]]}
               </p>
               <ul className="space-y-0.5">
                 {items.map((item) => {
@@ -208,7 +235,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                         }`}
                       >
                         {item.icon}
-                        <span>{item.label}</span>
+                        <span>{t[item.key]}</span>
                       </Link>
                     </li>
                   );

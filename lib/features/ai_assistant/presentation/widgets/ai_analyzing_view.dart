@@ -19,6 +19,7 @@ class AiAnalyzingView extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
 
     return SingleChildScrollView(
       key: const ValueKey('analyzing_view'),
@@ -27,35 +28,27 @@ class AiAnalyzingView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 16),
-          // Glowing AI Center Badge
+          // Clean AI Center Badge
           Container(
-            width: 80,
-            height: 80,
+            width: 76,
+            height: 76,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2563EB), Color(0xFF60A5FA)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+              color: tokens.softVioletBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: tokens.violetAccent.withValues(alpha: 0.3),
               ),
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [
-                BoxShadow(
-                  color: tokens.brandAccent.withValues(alpha: 0.35),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
             ),
             child: Center(
               child: Image.asset(
                 AppAssets.emblem,
-                width: 44,
-                height: 44,
+                width: 42,
+                height: 42,
                 fit: BoxFit.contain,
-                errorBuilder: (_, error, stack) => const Icon(
+                errorBuilder: (_, error, stack) => Icon(
                   Icons.auto_awesome,
-                  color: Colors.white,
-                  size: 38,
+                  color: tokens.violetAccent,
+                  size: 36,
                 ),
               ),
             ),
@@ -73,7 +66,9 @@ class AiAnalyzingView extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            'Analyzing your requirements...',
+            isBn
+                ? 'আপনার কাজের বিবরণ পর্যালোচনা করা হচ্ছে...'
+                : 'Analyzing your requirements...',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -124,12 +119,11 @@ class AiAnalyzingView extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Linear Blue Gradient Progress Bar (85%)
+          // Indeterminate progress indicator (never displays fabricated percentage)
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-              value: 0.85,
-              minHeight: 8,
+              minHeight: 6,
               backgroundColor: tokens.border,
               valueColor: AlwaysStoppedAnimation<Color>(tokens.brandAccent),
             ),
@@ -169,7 +163,7 @@ class AiAnalyzingView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Analyzing completed!',
+                          isBn ? 'পর্যালোচনা সম্পন্ন হয়েছে!' : 'Analyzing completed!',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -178,7 +172,7 @@ class AiAnalyzingView extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Here are the results...',
+                          isBn ? 'ফলাফল দেখতে এখানে ট্যাপ করুন...' : 'Here are the results...',
                           style: TextStyle(
                             fontSize: 12,
                             color: tokens.mutedText,

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../core/services/app_language_service.dart';
+import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../data/tables/database_tables.dart';
+import '../../../../shared/widgets/skavia_badge.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 
-/// Screen 4 Featured Trade Specialist Section aligned with SRS Section 3.1.B & 3.1.C
-/// Genuine dynamic data loading from Supabase with zero fake profiles.
+/// Featured Trade Specialists Section backed strictly by live Supabase `worker_profiles`.
+/// Zero fabricated ratings, badges, or demo profiles.
 class FeaturedWorkersSection extends StatefulWidget {
   final VoidCallback? onSeeAll;
 
@@ -19,6 +21,7 @@ class FeaturedWorkersSection extends StatefulWidget {
 
 class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
   bool _isLoading = true;
+  bool _hasError = false;
   List<Map<String, dynamic>> _workers = [];
 
   @override
@@ -30,18 +33,47 @@ class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
   Future<void> _loadFeaturedWorkers() async {
     final client = tryGetSupabaseClient();
     if (client == null) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = false;
+        });
+      }
       return;
     }
 
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+
     try {
-      final response = await client
-          .from(DatabaseTables.workerProfiles)
-          .select(
-            'user_id, title, working_area, rating_average, total_ratings, completed_jobs, verification_status, users(full_name, avatar_url)',
-          )
-          .order('completed_jobs', ascending: false)
-          .limit(3);
+      // Query RLS-safe public marketplace projection first (avoids cross-user
+      // public.users RLS blocks), with fallback to worker_profiles.
+      List<dynamic> response;
+      try {
+        response = await client
+            .from(DatabaseTables.marketplacePublicProfiles)
+            .select(
+              'worker_profile_id, user_id, display_name, avatar_url, title, '
+              'location, expected_rate, rating_average, completed_jobs, '
+              'verification_status',
+            )
+            .eq('is_available', true)
+            .order('completed_jobs', ascending: false)
+            .limit(3);
+      } catch (_) {
+        response = await client
+            .from(DatabaseTables.workerProfiles)
+            .select(
+              'worker_profile_id, user_id, title, location, expected_rate, '
+              'rating_average, total_reviews, completed_jobs, verification_status, '
+              'users(full_name, avatar_url)',
+            )
+            .eq('is_available', true)
+            .order('completed_jobs', ascending: false)
+            .limit(3);
+      }
 
       if (mounted) {
         setState(() {
@@ -50,14 +82,22 @@ class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isBn = AppLanguageService.isBengali;
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,107 +106,116 @@ class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
           children: [
             Expanded(
               child: Text(
-                isBn ? 'শীর্ষ দক্ষ কারিগর' : 'Featured Specialists',
+                l10n.homeAvailableSpecialists,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap:
+            TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                minimumSize: Size.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              onPressed:
                   widget.onSeeAll ??
                   () => Navigator.pushNamed(context, AppRoutes.teamDiscovery),
-              child: Text(
-                AppLanguageService.tr('see_all'),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? colorScheme.primary
-                      : AppColors.primaryRoyal,
-                ),
-              ),
+              child: Text(l10n.commonSeeAll),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         if (_isLoading)
           Container(
-            height: 90,
+            height: 84,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: colorScheme.outlineVariant),
+              color: tokens.cardBg,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              border: Border.all(color: tokens.border),
             ),
             child: const SizedBox(
-              height: 24,
-              width: 24,
+              height: 22,
+              width: 22,
               child: CircularProgressIndicator(strokeWidth: 2),
             ),
           )
-        else if (_workers.isEmpty)
-          _buildEmptySpecialistsState(context, isBn, colorScheme)
-        else
-          ..._workers.map((worker) => _buildWorkerCard(context, worker, isBn, colorScheme)),
-      ],
-    );
-  }
-
-  Widget _buildEmptySpecialistsState(
-    BuildContext context,
-    bool isBn,
-    ColorScheme colorScheme,
-  ) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
+        else if (_hasError)
           Container(
-            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
+              color: tokens.cardBg,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              border: Border.all(color: tokens.border),
             ),
-            child: Icon(
-              Icons.engineering_outlined,
-              size: 28,
-              color: colorScheme.onSurfaceVariant,
+            child: Row(
+              children: [
+                Icon(Icons.cloud_off_rounded, color: tokens.error, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.homeCouldNotLoadSpecialists,
+                    style: theme.textTheme.bodyMedium,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _loadFeaturedWorkers,
+                  child: Text(l10n.commonRetry),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            isBn ? 'এখনও কোনো কারিগর নেই' : 'No Specialists Yet',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+          )
+        else if (_workers.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: BoxDecoration(
+              color: tokens.cardBg,
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+              border: Border.all(color: tokens.border),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            isBn
-                ? 'যাচাইকৃত পেশাদাররা প্ল্যাটফর্মে যুক্ত হলে এখানে প্রদর্শিত হবে।'
-                : 'Verified professionals will appear here once registered.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              color: colorScheme.onSurfaceVariant,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.engineering_outlined,
+                    size: 24,
+                    color: colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  l10n.homeNoSpecialistsTitle,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.homeNoSpecialistsSubtitle,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: tokens.secondaryText,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
+          )
+        else
+          ..._workers.map((worker) => _buildWorkerCard(context, worker, isBn)),
+      ],
     );
   }
 
@@ -174,169 +223,154 @@ class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
     BuildContext context,
     Map<String, dynamic> worker,
     bool isBn,
-    ColorScheme colorScheme,
   ) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = context.l10n;
+    final tokens = context.skavia;
     final userMap = worker['users'] as Map<String, dynamic>?;
-    final name = (userMap?['full_name'] as String?)?.trim() ?? (isBn ? 'কারিগর' : 'Specialist');
-    final title = (worker['title'] as String?)?.trim() ?? (isBn ? 'দক্ষ কারিগর' : 'Certified Specialist');
-    final location = (worker['working_area'] as String?)?.trim() ?? 'Dhaka';
-    final rating = (worker['rating_average'] as num?)?.toDouble() ?? 0.0;
-    final totalRatings = (worker['total_ratings'] as num?)?.toInt() ?? 0;
+    final rawName =
+        (worker['display_name'] as String?)?.trim().isNotEmpty == true
+            ? (worker['display_name'] as String).trim()
+            : (userMap?['full_name'] as String?)?.trim() ?? '';
+    final name = rawName.isNotEmpty
+        ? rawName
+        : (isBn ? 'দক্ষ কারিগর' : 'Specialist');
+    final avatarUrl =
+        (worker['avatar_url'] as String?)?.trim().isNotEmpty == true
+            ? (worker['avatar_url'] as String).trim()
+            : (userMap?['avatar_url'] as String?)?.trim() ?? '';
+    final title =
+        (worker['title'] as String?)?.trim().isNotEmpty == true
+            ? (worker['title'] as String).trim()
+            : (isBn ? 'টেকনিশিয়ান' : 'Technician');
+    final location = (worker['location'] as String?)?.trim() ?? '';
+    final expectedRate = (worker['expected_rate'] as num?)?.toDouble() ?? 0.0;
+    final totalReviews = (worker['total_reviews'] as num?)?.toInt() ?? 0;
+    final rawRating = (worker['rating_average'] as num?)?.toDouble() ?? 0.0;
+    final rating = totalReviews > 0 ? rawRating : 0.0;
     final completedJobs = (worker['completed_jobs'] as num?)?.toInt() ?? 0;
-    final isVerified = (worker['verification_status'] as String?) == 'verified';
+    final isVerified =
+        (worker['verification_status'] as String?)?.toLowerCase() == 'verified';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: GestureDetector(
-        onTap: () => Navigator.pushNamed(
-          context,
-          AppRoutes.workerProfile,
-          arguments: {
-            'name': name,
-            'title': title,
-            'rating': rating,
-            'reviewsCount': totalRatings,
-            'completedJobs': completedJobs,
-            'location': location,
-          },
+      child: Material(
+        color: tokens.cardBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+          side: BorderSide(color: tokens.border),
         ),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: colorScheme.outlineVariant),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-            ],
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => Navigator.pushNamed(
+            context,
+            AppRoutes.workerProfile,
+            arguments: {
+              'workerProfileId': worker['worker_profile_id']?.toString(),
+              'name': name,
+              'title': title,
+              'rating': rating,
+              'reviewsCount': totalReviews,
+              'completedJobs': completedJobs,
+              'location': location.isNotEmpty ? location : 'Dhaka, Bangladesh',
+              'hourlyRate': expectedRate > 0
+                  ? '৳ ${expectedRate.toStringAsFixed(0)}/hr'
+                  : '৳ 0/hr',
+              'avatarUrl': avatarUrl,
+              'isVerified': isVerified,
+            },
           ),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                child: const Icon(
-                  Icons.engineering_rounded,
-                  color: AppColors.primarySky,
-                  size: 28,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                UserAvatar(
+                  imageUrl: avatarUrl.isNotEmpty ? avatarUrl : null,
+                  name: name,
+                  radius: 22,
+                  isVerified: isVerified,
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        if (isVerified)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.successGreen.withValues(
-                                alpha: 0.12,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.verified_rounded,
-                                  color: AppColors.successGreen,
-                                  size: 11,
-                                ),
-                                const SizedBox(width: 3),
-                                Text(
-                                  isBn ? 'যাচাইকৃত' : 'Verified',
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.successGreen,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '$title • $location',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        if (rating > 0) ...[
-                          const Icon(
-                            Icons.star_rounded,
-                            color: Color(0xFFF59E0B),
-                            size: 16,
-                          ),
-                          const SizedBox(width: 3),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
                           Text(
-                            rating.toStringAsFixed(1),
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                        ],
-                        Expanded(
-                          child: Text(
-                            rating > 0
-                                ? (isBn
-                                    ? '($totalRatings রিভিউ • $completedJobs সম্পন্ন)'
-                                    : '($totalRatings reviews • $completedJobs jobs)')
-                                : (isBn ? 'নতুন কারিগর' : 'New Specialist'),
+                            name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurfaceVariant,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
+                          if (isVerified)
+                            SkaviaBadge(
+                              label: l10n.commonVerified,
+                              icon: Icons.verified_rounded,
+                              tone: SkaviaBadgeTone.verified,
+                              compact: true,
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        location.isNotEmpty ? '$title · $location' : title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: tokens.secondaryText,
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (totalReviews > 0) ...[
+                            Icon(
+                              Icons.star_rounded,
+                              color: tokens.warning,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${rating.toStringAsFixed(1)} ($totalReviews)',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              completedJobs > 0
+                                  ? l10n.workerJobsCompletedCount(completedJobs)
+                                  : l10n.workerNewlyRegistered,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: tokens.mutedText,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 14,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ],
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: tokens.mutedText,
+                ),
+              ],
+            ),
           ),
         ),
       ),

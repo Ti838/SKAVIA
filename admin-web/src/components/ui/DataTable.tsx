@@ -27,7 +27,7 @@ export function DataTable<T>({
   if (rows.length === 0) {
     return (
       <div
-        className="rounded-xl border p-10 text-center"
+        className="rounded-xl border p-8 sm:p-10 text-center"
         style={{
           backgroundColor: 'var(--bg-surface)',
           borderColor: 'var(--border-subtle)',
@@ -51,7 +51,35 @@ export function DataTable<T>({
         borderColor: 'var(--border-subtle)',
       }}
     >
-      <div className="overflow-x-auto">
+      {/* Mobile Card View (< 640px) */}
+      <div className="sm:hidden divide-y" style={{ borderColor: 'var(--border-subtle)' }}>
+        {rows.map((row) => (
+          <div
+            key={rowKey(row)}
+            onClick={onRowClick ? () => onRowClick(row) : undefined}
+            className={`p-4 space-y-2.5 transition ${
+              onRowClick ? 'cursor-pointer active:bg-blue-50/50 dark:active:bg-slate-800/50' : ''
+            }`}
+          >
+            {columns.map((col, idx) => (
+              <div key={col.key} className="flex items-start justify-between gap-3 text-xs">
+                <span className="font-semibold text-slate-500 shrink-0">{col.header}:</span>
+                <div
+                  className={`min-w-0 ${col.align === 'right' ? 'text-right' : 'text-left'} ${
+                    idx === 0 ? 'font-medium' : ''
+                  }`}
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  {col.render(row)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop / Tablet Table View (>= 640px) */}
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse text-sm">
           <thead>
             <tr
@@ -103,4 +131,3 @@ export function DataTable<T>({
     </div>
   );
 }
-

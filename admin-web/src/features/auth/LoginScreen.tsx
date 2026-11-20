@@ -2,17 +2,21 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { startAuthentication } from '@simplewebauthn/browser';
 import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/server';
 import type { MultiFactorResolver } from 'firebase/auth';
 import {
+  ArrowLeft,
   Fingerprint,
   KeyRound,
   Lock,
   ShieldAlert,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
+import { useTranslation } from '@/lib/l10n/LanguageContext';
 import { MfaChallengeForm } from '@/features/auth/MfaChallengeForm';
 import {
   completeTotpMfaChallenge,
@@ -29,6 +33,7 @@ type SurfaceView = 'superadmin' | 'admin';
 function LoginPortalContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { language } = useTranslation();
   const firebaseConfigured = isFirebaseWebConfigured();
 
   const [surfaceView, setSurfaceView] = useState<SurfaceView>('admin');
@@ -224,15 +229,26 @@ function LoginPortalContent() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-6"
+      className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6"
       style={{
         background: isSuperAdminView
           ? 'linear-gradient(135deg, #090D16 0%, #0F172A 50%, #1E1B4B 100%)'
           : 'linear-gradient(135deg, #003399 0%, #0B1938 55%, #0F172A 100%)',
       }}
     >
+      <div className="w-full max-w-md mb-3 flex items-center justify-between">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white transition px-2 py-1 rounded-lg hover:bg-white/10"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>{language === 'bn' ? 'ওয়েবসাইটে ফিরুন' : 'Back to Website'}</span>
+        </Link>
+        <LanguageSwitcher />
+      </div>
+
       <div
-        className="w-full max-w-md rounded-2xl border p-8 shadow-2xl"
+        className="w-full max-w-md rounded-2xl border p-5 sm:p-8 shadow-2xl"
         style={{
           backgroundColor: 'var(--bg-surface)',
           borderColor: 'var(--border-subtle)',
@@ -246,11 +262,10 @@ function LoginPortalContent() {
                 setSurfaceView('superadmin');
                 setErrorMessage(null);
               }}
-              className={`flex-1 rounded-lg py-1.5 font-semibold transition ${
-                isSuperAdminView ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`flex-1 rounded-lg py-1.5 font-semibold transition ${isSuperAdminView ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
-              Super Admin Portal
+              {language === 'bn' ? 'সুপার এডমিন' : 'Super Admin'}
             </button>
             <button
               type="button"
@@ -258,11 +273,10 @@ function LoginPortalContent() {
                 setSurfaceView('admin');
                 setErrorMessage(null);
               }}
-              className={`flex-1 rounded-lg py-1.5 font-semibold transition ${
-                !isSuperAdminView ? 'bg-[#003399] text-white' : 'text-slate-500 hover:text-slate-900'
-              }`}
+              className={`flex-1 rounded-lg py-1.5 font-semibold transition ${!isSuperAdminView ? 'bg-[#003399] text-white' : 'text-slate-500 hover:text-slate-900'
+                }`}
             >
-              Internal Admin Portal
+              {language === 'bn' ? 'কোম্পানি এডমিন' : 'Company Admin'}
             </button>
           </div>
         )}
@@ -273,21 +287,24 @@ function LoginPortalContent() {
           </div>
           <div>
             <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 ${
-                isSuperAdminView
-                  ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-200'
-                  : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200'
-              }`}
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest mb-1 ${isSuperAdminView
+                ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-200'
+                : 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-200'
+                }`}
             >
-              {isSuperAdminView ? 'Primary Super Admin Only' : 'Invitation-Only Admin Portal'}
+              {isSuperAdminView
+                ? (language === 'bn' ? 'সুপার এডমিন রুট এক্সেস' : 'Primary Super Admin Only')
+                : (language === 'bn' ? 'আমন্ত্রিত এডমিন পোর্টাল' : 'Invitation-Only Admin Portal')}
             </span>
             <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              {isSuperAdminView ? 'SKAVIA Super Admin' : 'SKAVIA Admin Portal'}
+              {isSuperAdminView
+                ? (language === 'bn' ? 'স্ক্যাভিয়া সুপার এডমিন' : 'SKAVIA Super Admin')
+                : (language === 'bn' ? 'স্ক্যাভিয়া এডমিন পোর্টাল' : 'SKAVIA Admin Portal')}
             </h1>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
               {isSuperAdminView
-                ? 'Executive Root Governance · MFA & Passkey Enforced'
-                : 'Company Admin & Branch Manager Operations'}
+                ? (language === 'bn' ? 'রুট গভর্ন্যান্স · এমএফএ ও পাসকি সুরক্ষিত' : 'Executive Root Governance · MFA & Passkey Enforced')
+                : (language === 'bn' ? 'কোম্পানি এডমিন ও শাখা ব্যবস্থাপক অপারেশনস' : 'Company Admin & Branch Manager Operations')}
             </p>
           </div>
         </div>
@@ -480,8 +497,22 @@ function LoginPortalContent() {
           className="mt-6 pt-4 border-t text-[11px] flex items-center justify-between"
           style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}
         >
-          <span>No Public Admin Registration</span>
-          <span>Fail-Closed RBAC + ABAC</span>
+          <span>{language === 'bn' ? 'শুধুমাত্র অনুমোদিত এডমিনদের জন্য' : 'No Public Admin Registration'}</span>
+          <span>{language === 'bn' ? 'কঠোর আরব্যাক (RBAC) নীতি' : 'Fail-Closed RBAC + ABAC'}</span>
+        </div>
+
+        <div
+          className="mt-4 rounded-xl border p-3.5 text-xs space-y-1.5"
+          style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-canvas)' }}
+        >
+          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {language === 'bn' ? 'অন্যান্য প্ল্যাটফর্ম ভূমিকা?' : 'Other Platform Roles?'}
+          </p>
+          <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            {language === 'bn'
+              ? 'দক্ষ কর্মী (Worker), ব্যক্তিগত গ্রাহক ও ব্যবসায়িক ক্লায়েন্টগণ মোবাইল অ্যাপ অথবা ক্লায়েন্ট কনসোল ব্যবহার করুন। এখানে শুধুমাত্র আমন্ত্রিত এডমিনগণ প্রবেশ করতে পারবেন।'
+              : 'Workers, Individual Customers, and Business Clients access the ecosystem via the SKAVIA Mobile App or dedicated Web Portals. This gateway is restricted to authorized administrative personnel.'}
+          </p>
         </div>
       </div>
     </div>

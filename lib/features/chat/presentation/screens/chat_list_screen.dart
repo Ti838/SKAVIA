@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_dimensions.dart';
-import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
+import '../../../../shared/error_states/error_view.dart';
+import '../../../../shared/loaders/list_shimmer_skeleton.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
+import '../../../../shared/widgets/skavia_search_field.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/chat_remote_datasource.dart';
 import '../../data/models/chat_message_model.dart';
@@ -22,9 +24,11 @@ class ChatListScreen extends StatefulWidget {
 class _ChatListScreenState extends State<ChatListScreen> {
   final ChatRemoteDataSource _chatDataSource = ChatRemoteDataSource();
   final AuthController _authController = AuthController();
+  final TextEditingController _searchController = TextEditingController();
 
   List<ConversationModel> _conversations = [];
   bool _isLoading = true;
+  bool _hasError = false;
   String _searchQuery = '';
 
   @override
@@ -35,13 +39,26 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _authController.dispose();
     super.dispose();
   }
 
   Future<void> _loadConversations() async {
-    setState(() => _isLoading = true);
-    final userId = _authController.user?.uid ?? 'guest_user';
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    final userId = _authController.user?.uid ?? '';
+    if (userId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _conversations = [];
+          _isLoading = false;
+        });
+      }
+      return;
+    }
     try {
       final list = await _chatDataSource.getConversations(userId);
       if (mounted) {
@@ -52,23 +69,29 @@ class _ChatListScreenState extends State<ChatListScreen> {
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
+    final l10n = context.l10n;
+    final userId = _authController.user?.uid ?? '';
+
     final filtered = _conversations.where((c) {
+      if (_searchQuery.trim().isEmpty) return true;
       final name = c.otherParticipantName?.toLowerCase() ?? '';
       final msg = c.lastMessageText?.toLowerCase() ?? '';
-      final q = _searchQuery.toLowerCase();
+      final q = _searchQuery.trim().toLowerCase();
       return name.contains(q) || msg.contains(q);
     }).toList();
-
-    final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
-    final userId = _authController.user?.uid ?? 'guest_user';
 
     final content = RefreshIndicator(
       onRefresh: _loadConversations,
@@ -76,123 +99,70 @@ class _ChatListScreenState extends State<ChatListScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.zero,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+          Container(
+            color: colorScheme.surface,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Direct Messages',
-                        style: TextStyle(
-                          fontFamily: AppTypography.headingFont,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: colorScheme.onSurface,
-                          letterSpacing: -0.4,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.refresh_rounded,
-                        color: tokens.brandAccent,
-                      ),
-                      onPressed: _loadConversations,
-                    ),
-                  ],
+                Text(
+                  l10n.messagesTitle,
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Instant coordination between clients & verified specialists',
-                  style: TextStyle(
-                    fontFamily: AppTypography.bodyFont,
-                    fontSize: 13,
-                    color: tokens.mutedText,
+                  l10n.messagesSubtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: tokens.secondaryText,
                   ),
                 ),
+                if (_conversations.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  SkaviaSearchField(
+                    controller: _searchController,
+                    hintText: l10n.messagesSearchHint,
+                    onChanged: (v) => setState(() => _searchQuery = v),
+                    onClear: () => setState(() => _searchQuery = ''),
+                  ),
+                ],
               ],
             ),
           ),
-
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            child: Container(
-              decoration: BoxDecoration(
-                color: tokens.subtleCardBg,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: tokens.border),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.search_rounded,
-                    color: tokens.mutedText,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      onChanged: (v) => setState(() => _searchQuery = v),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: colorScheme.onSurface,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Search chats or names...',
-                        hintStyle: TextStyle(
-                          fontSize: 13,
-                          color: tokens.mutedText,
-                        ),
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                        filled: false,
-                        fillColor: Colors.transparent,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (_searchQuery.isNotEmpty)
-                    IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: tokens.mutedText,
-                      ),
-                      onPressed: () => setState(() => _searchQuery = ''),
-                    ),
-                ],
-              ),
-            ),
-          ),
-
           const SizedBox(height: 8),
-
           if (_isLoading)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 48),
-              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: ListShimmerSkeleton(itemCount: 4),
             )
-          else if (filtered.isEmpty)
+          else if (_hasError)
+            ErrorView(
+              scrollable: false,
+              title: l10n.messagesErrorTitle,
+              message: l10n.commonConnectionError,
+              retryText: l10n.commonRetry,
+              onRetry: _loadConversations,
+            )
+          else if (_conversations.isEmpty)
             const ChatEmptyState(shrinkWrap: true)
+          else if (filtered.isEmpty)
+            EmptyDataView(
+              scrollable: false,
+              isFiltered: true,
+              title: l10n.messagesFilteredEmptyTitle,
+              message: l10n.messagesFilteredEmptyMessage,
+              actionText: l10n.commonClearFilters,
+              onAction: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+            )
           else
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               itemCount: filtered.length,
               separatorBuilder: (_, _) => Divider(
                 height: 1,
@@ -212,26 +182,13 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
 
     if (widget.isTab) {
-      return Container(color: tokens.sheetBg, child: content);
+      return Container(color: theme.scaffoldBackgroundColor, child: content);
     }
 
     return Scaffold(
-      backgroundColor: tokens.sheetBg,
-      appBar: const AppAppBar(title: 'Messages'),
-      body: SafeArea(
-        child: Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(top: 8),
-          decoration: BoxDecoration(
-            color: tokens.sheetBg,
-            borderRadius: AppDimensions.roundedSheet,
-          ),
-          child: ClipRRect(
-            borderRadius: AppDimensions.roundedSheet,
-            child: content,
-          ),
-        ),
-      ),
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppAppBar(title: l10n.messagesTitle),
+      body: SafeArea(child: content),
     );
   }
 }

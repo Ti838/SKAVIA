@@ -186,10 +186,23 @@ class ProfileController extends ChangeNotifier {
       AppLanguageService.setLanguage(preferredLanguage);
     }
 
-    final success = await _dataSource.updateProfile(updated);
+    // Recalculate real completion percentage BEFORE persisting to Supabase
+    final evaluated = ProfileCompletionEngine.evaluate(updated);
+    final toPersist = updated.copyWith(
+      profileCompletionPercentage: evaluated.percentage,
+    );
+
+    final success = await _dataSource.updateProfile(toPersist);
     if (success) {
-      _profile = updated;
-      _recalculateCompletion();
+      _profile = toPersist;
+      _completionResult = evaluated;
+      if (fullName != null && fullName.trim().isNotEmpty) {
+        try {
+          await fb.FirebaseAuth.instance.currentUser?.updateDisplayName(
+            fullName.trim(),
+          );
+        } catch (_) {}
+      }
     }
 
     _isLoading = false;

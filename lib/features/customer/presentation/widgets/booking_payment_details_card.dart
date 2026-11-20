@@ -24,6 +24,7 @@ class BookingPaymentDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
     final hasBreakdown =
         baseAmount != null && platformFee != null && totalAmount != null;
 
@@ -31,7 +32,7 @@ class BookingPaymentDetailsCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Payment Details',
+          isBn ? 'পেমেন্টের বিবরণ' : 'Payment Details',
           style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -54,7 +55,7 @@ class BookingPaymentDetailsCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Service',
+                    isBn ? 'সেবা' : 'Service',
                     style: TextStyle(
                       fontSize: 13,
                       color: colorScheme.onSurfaceVariant,
@@ -81,14 +82,16 @@ class BookingPaymentDetailsCard extends StatelessWidget {
               if (hasBreakdown) ...[
                 _buildBreakdownRow(
                   context,
-                  'Base Service Rate',
-                  Formatters.formatCurrency(baseAmount!),
+                  isBn ? 'মূল সেবা মূল্য' : 'Base Service Rate',
+                  Formatters.formatCurrency(baseAmount!, useBnDigits: isBn),
                 ),
                 const SizedBox(height: 8),
                 _buildBreakdownRow(
                   context,
-                  'SKAVIA Management Fee (15%)',
-                  Formatters.formatCurrency(platformFee!),
+                  isBn
+                      ? 'SKAVIA ম্যানেজমেন্ট ফি (১৫%)'
+                      : 'SKAVIA Management Fee (15%)',
+                  Formatters.formatCurrency(platformFee!, useBnDigits: isBn),
                 ),
                 Divider(height: 22, color: tokens.border),
               ],
@@ -97,7 +100,9 @@ class BookingPaymentDetailsCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      hasBreakdown ? 'Total Payable' : 'Amount',
+                      hasBreakdown
+                          ? (isBn ? 'সর্বমোট প্রদেয়' : 'Total Payable')
+                          : (isBn ? 'মূল্য' : 'Amount'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -110,7 +115,7 @@ class BookingPaymentDetailsCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     hasBreakdown
-                        ? Formatters.formatCurrency(totalAmount!)
+                        ? Formatters.formatCurrency(totalAmount!, useBnDigits: isBn)
                         : displayAmount,
                     style: TextStyle(
                       fontSize: 16,

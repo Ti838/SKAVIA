@@ -200,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final skavia = context.skavia;
+    final l10n = context.l10n;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -221,9 +222,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Header Logo & Greeting
-                    const AuthHeaderWidget(
-                      title: 'Welcome Back',
-                      subtitle: 'Sign in to continue your journey with SKAVIA.',
+                    AuthHeaderWidget(
+                      title: l10n.authWelcomeBack,
+                      subtitle: l10n.authSignInSubtitle,
                     ),
                     const SizedBox(height: 24),
 
@@ -315,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       runSpacing: 4,
                       children: [
                         Text(
-                          "Don't have an account?",
+                          l10n.authNoAccount,
                           style: TextStyle(
                             fontSize: 13,
                             color: colorScheme.onSurfaceVariant,
@@ -329,7 +330,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            'Create Account',
+                            l10n.authSignUp,
                             style: TextStyle(
                               fontSize: 13,
                               color: skavia.brandAccent,

@@ -40,7 +40,9 @@ class AppUpdateDialog extends StatelessWidget {
         evaluation: evaluation,
         onUpdateNow: () {
           Navigator.of(dialogCtx).pop();
-          Navigator.of(context).pushNamed(AppRoutes.appUpdate);
+          if (context.mounted) {
+            Navigator.of(context).pushNamed(AppRoutes.appUpdate);
+          }
         },
         onLater: evaluation.requiresImmediateBlockingUpdate
             ? null
@@ -56,6 +58,7 @@ class AppUpdateDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
     final release = evaluation.latestRelease;
     final isMandatory = evaluation.requiresImmediateBlockingUpdate;
 
@@ -91,7 +94,9 @@ class AppUpdateDialog extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    isMandatory ? 'Required App Update' : 'SKAVIA Update Ready',
+                    isMandatory
+                        ? (isBn ? 'বাধ্যতামূলক অ্যাপ আপডেট' : 'Required App Update')
+                        : (isBn ? 'SKAVIA আপডেট প্রস্তুত' : 'SKAVIA Update Ready'),
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -130,10 +135,12 @@ class AppUpdateDialog extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    evaluation.status ==
-                            AppUpdateAvailability.unsupportedInstalledBuild
-                        ? 'Your installed build (#${evaluation.installedBuild}) is below the minimum supported version. Update now to preserve booking, payment, and security compatibility.'
-                        : 'This release includes critical compatibility and security fixes required to continue using SKAVIA safely.',
+                    isBn
+                        ? 'আপনার অ্যাপ সংস্করণে গুরুত্বপূর্ণ নিরাপত্তা ও সামঞ্জস্য আপডেট আবশ্যক। সেবা এবং পেমেন্ট সঠিকভাবে ব্যবহার করতে এখনই আপডেট করুন।'
+                        : (evaluation.status ==
+                                AppUpdateAvailability.unsupportedInstalledBuild
+                            ? 'Your installed build (#${evaluation.installedBuild}) is below the minimum supported version. Update now to preserve booking, payment, and security compatibility.'
+                            : 'This release includes critical compatibility and security fixes required to continue using SKAVIA safely.'),
                     style: TextStyle(
                       fontSize: 12,
                       color: colorScheme.onSurface,
@@ -144,7 +151,7 @@ class AppUpdateDialog extends StatelessWidget {
               ],
               if (release != null && release.releaseNotes.isNotEmpty) ...[
                 Text(
-                  'What\'s New',
+                  isBn ? 'নতুন কী আছে' : 'What\'s New',
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w800,
@@ -172,7 +179,9 @@ class AppUpdateDialog extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
-                      'Verified official APK · SHA-256 integrity checked before install',
+                      isBn
+                          ? 'যাচাইকৃত অফিসিয়াল APK · ইনস্টলের পূর্বে SHA-256 ইন্টিগ্রিটি চেক করা হয়'
+                          : 'Verified official APK · SHA-256 integrity checked before install',
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onSurfaceVariant,
@@ -188,7 +197,7 @@ class AppUpdateDialog extends StatelessWidget {
           if (!isMandatory && onLater != null)
             TextButton(
               onPressed: onLater,
-              child: const Text('Later'),
+              child: Text(isBn ? 'পরে' : 'Later'),
             ),
           ElevatedButton.icon(
             onPressed: onUpdateNow,
@@ -201,7 +210,7 @@ class AppUpdateDialog extends StatelessWidget {
               ),
             ),
             icon: const Icon(Icons.download_rounded, size: 18),
-            label: const Text('Update Now'),
+            label: Text(isBn ? 'এখনই আপডেট করুন' : 'Update Now'),
           ),
         ],
       ),

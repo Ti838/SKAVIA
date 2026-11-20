@@ -92,54 +92,20 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
   Future<void> _advanceStep() async {
     if (_currentStep >= 3 || _isUpdating) return;
 
-    // For live Supabase requests, final completion requires worker 4-digit OTP
-    // verification; customers refresh live state instead of self-completing.
+    // For live Supabase requests, lifecycle transitions (Accepted, In Progress,
+    // Completed with 4-digit OTP) are controlled by the assigned specialist and
+    // server state. Customers refresh live status rather than mutating worker states.
     if (UuidUtil.isValidUuid(widget.requestId)) {
-      if (_currentStep >= 2) {
-        setState(() => _isUpdating = true);
-        await _loadInitialRequestState();
-        if (mounted) {
-          setState(() => _isUpdating = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Share the 4-digit OTP with your specialist to complete this job.',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-
-      final nextStep = _currentStep + 1;
-      final client = tryGetSupabaseClient();
-      if (client != null) {
-        setState(() => _isUpdating = true);
-        final statusLabel = switch (nextStep) {
-          0 => 'Requested',
-          1 => 'Accepted',
-          _ => 'In Progress',
-        };
-        try {
-          await client
-              .from(DatabaseTables.serviceRequests)
-              .update({'status': statusLabel})
-              .eq('service_request_id', widget.requestId);
-        } catch (e) {
-          if (mounted) {
-            setState(() => _isUpdating = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Could not update booking status: $e')),
-            );
-          }
-          return;
-        }
-      }
+      setState(() => _isUpdating = true);
+      await _loadInitialRequestState();
       if (mounted) {
-        setState(() {
-          _currentStep = nextStep;
-          _isUpdating = false;
-        });
+        setState(() => _isUpdating = false);
+        final message = _currentStep >= 2
+            ? 'Share the 4-digit OTP with your specialist when the work is finished.'
+            : 'Live status synced. Your specialist will update progress upon arrival.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
       }
       return;
     }

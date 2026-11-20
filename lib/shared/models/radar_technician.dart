@@ -14,6 +14,7 @@ class RadarTechnician {
   final double latitude;
   final double longitude;
   final String zone;
+  final bool isVerified;
 
   const RadarTechnician({
     required this.id,
@@ -28,6 +29,7 @@ class RadarTechnician {
     required this.latitude,
     required this.longitude,
     required this.zone,
+    this.isVerified = false,
   });
 
   /// Verified technicians registry (Zero Hardcoded / Fake Data Enforcement).

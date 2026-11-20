@@ -55,6 +55,16 @@ abstract class AppBootstrap {
         () => Supabase.initialize(
           url: AppConfig.supabaseUrl,
           publishableKey: AppConfig.supabaseAnonKey,
+          accessToken: AppConfig.enableFirebaseSupabaseJwtBridge
+              ? () async {
+                  try {
+                    return await FirebaseAuth.instance.currentUser
+                        ?.getIdToken();
+                  } catch (_) {
+                    return null;
+                  }
+                }
+              : null,
         ),
       ),
     ]);

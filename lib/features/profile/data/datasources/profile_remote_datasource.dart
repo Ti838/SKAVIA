@@ -196,7 +196,9 @@ class ProfileRemoteDataSource {
         try {
           final wp = await client
               .from(DatabaseTables.workerProfiles)
-              .select('worker_profile_id, rating_average, completed_jobs')
+              .select(
+                'worker_profile_id, rating_average, total_reviews, completed_jobs',
+              )
               .eq('user_id', userId)
               .maybeSingle();
           if (wp == null) return null;
@@ -209,9 +211,11 @@ class ProfileRemoteDataSource {
                 .eq('worker_profile_id', wpId);
             workerServices = (workerReqs as List).length;
           }
+          final totalReviews = (wp['total_reviews'] as num?)?.toInt() ?? 0;
+          final rawRating = (wp['rating_average'] as num?)?.toDouble() ?? 0.0;
           return (
-            ratingAverage:
-                (wp['rating_average'] as num?)?.toDouble() ?? 5.0,
+            ratingAverage: totalReviews > 0 ? rawRating : 0.0,
+            reviewCount: totalReviews,
             completedJobs: (wp['completed_jobs'] as num?)?.toInt() ?? 0,
             workerServices: workerServices,
           );
@@ -228,18 +232,21 @@ class ProfileRemoteDataSource {
 
       int servicesCount = results[0] as int;
       final projectsCount = results[1] as int;
-      double ratingAverage = 5.0;
+      double ratingAverage = 0.0;
+      int reviewCount = 0;
       int completedJobs = 0;
 
       final workerMetrics =
           results[2]
               as ({
                 double ratingAverage,
+                int reviewCount,
                 int completedJobs,
                 int workerServices,
               })?;
       if (workerMetrics != null) {
         ratingAverage = workerMetrics.ratingAverage;
+        reviewCount = workerMetrics.reviewCount;
         completedJobs = workerMetrics.completedJobs;
         if (workerMetrics.workerServices > servicesCount) {
           servicesCount = workerMetrics.workerServices;
@@ -250,6 +257,7 @@ class ProfileRemoteDataSource {
         servicesCount: servicesCount,
         projectsCount: projectsCount,
         ratingAverage: ratingAverage,
+        reviewCount: reviewCount,
         completedJobs: completedJobs,
       );
       LocalCacheService.instance.put(

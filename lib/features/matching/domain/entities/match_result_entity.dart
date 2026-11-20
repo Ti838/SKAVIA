@@ -32,42 +32,46 @@ class MatchResultEntity {
     required this.workerProfileId,
     required this.matchScore,
     required this.rankPosition,
-    this.skillScore = 95.0,
-    this.distanceScore = 90.0,
-    this.ratingScore = 98.0,
-    this.rateScore = 85.0,
+    this.skillScore = 0.0,
+    this.distanceScore = 0.0,
+    this.ratingScore = 0.0,
+    this.rateScore = 0.0,
     required this.workerName,
     this.avatarUrl,
     required this.tradeTitle,
     required this.location,
     required this.hourlyRate,
-    this.rating = 4.9,
-    this.completedJobs = 15,
-    this.isVerified = true,
+    this.rating = 0.0,
+    this.completedJobs = 0,
+    this.isVerified = false,
     this.skills = const [],
   });
 
   factory MatchResultEntity.fromMap(Map<String, dynamic> map) {
+    final totalReviews = (map['total_reviews'] as num?)?.toInt();
+    final rawRating = (map['rating_average'] as num?)?.toDouble() ?? 0.0;
+    final safeRating =
+        (totalReviews != null && totalReviews == 0) ? 0.0 : rawRating;
     return MatchResultEntity(
       matchId: map['match_id']?.toString() ?? '',
       requirementId: map['requirement_id']?.toString() ?? '',
       workerProfileId: map['worker_profile_id']?.toString() ?? '',
       matchScore: (map['match_score'] as num?)?.toDouble() ?? 0.0,
       rankPosition: (map['rank_position'] as num?)?.toInt() ?? 1,
-      skillScore: (map['skill_score'] as num?)?.toDouble() ?? 90.0,
-      distanceScore: (map['distance_score'] as num?)?.toDouble() ?? 85.0,
-      ratingScore: (map['rating_score'] as num?)?.toDouble() ?? 95.0,
-      rateScore: (map['rate_score'] as num?)?.toDouble() ?? 80.0,
+      skillScore: (map['skill_score'] as num?)?.toDouble() ?? 0.0,
+      distanceScore: (map['distance_score'] as num?)?.toDouble() ?? 0.0,
+      ratingScore: (map['rating_score'] as num?)?.toDouble() ?? 0.0,
+      rateScore: (map['rate_score'] as num?)?.toDouble() ?? 0.0,
       workerName: map['worker_name']?.toString() ?? 'Specialist',
       avatarUrl: map['avatar_url']?.toString(),
-      tradeTitle: map['trade_title']?.toString() ?? 'Certified Specialist',
+      tradeTitle: map['trade_title']?.toString() ?? 'Specialist',
       location: map['location']?.toString() ?? 'Dhaka',
-      hourlyRate: (map['hourly_rate'] as num?)?.toDouble() ?? 500.0,
-      rating: (map['rating_average'] as num?)?.toDouble() ?? 5.0,
+      hourlyRate: (map['hourly_rate'] as num?)?.toDouble() ?? 0.0,
+      rating: safeRating,
       completedJobs: (map['completed_jobs'] as num?)?.toInt() ?? 0,
       isVerified:
           map['is_verified'] == true ||
-          map['verification_status'] == 'Verified',
+          map['verification_status']?.toString().toLowerCase() == 'verified',
       skills:
           (map['skills'] as List<dynamic>?)
               ?.map((e) => e.toString())

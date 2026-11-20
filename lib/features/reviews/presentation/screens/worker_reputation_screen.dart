@@ -262,8 +262,8 @@ class _WorkerReputationScreenState extends State<WorkerReputationScreen> {
                               ),
                               Expanded(
                                 child: _buildStatColumn(
-                                  '100%',
-                                  'Verified',
+                                  _totalRatings > 0 ? 'Verified' : 'New',
+                                  'Status',
                                 ),
                               ),
                             ],

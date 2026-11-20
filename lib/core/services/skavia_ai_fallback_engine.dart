@@ -139,6 +139,25 @@ abstract class SkaviaAiFallbackEngine {
    - ফার্নিচার মেরামত ও পলিশ: ৳ ১,২০০ – ৩,০০০
 
 🛡️ **১০০% এসক্রো সুরক্ষা:** কাজ সম্পূর্ণ হওয়ার আগে নগদ টাকা দেওয়ার কোনো ঝামেলা নেই। ওটিপি দিয়ে কাজ ভেরিফাই করার পরেই টাকা রিলিজ হয়।''';
+      } else {
+        return '''📊 **SKAVIA Reference Rate Guide (Dhaka Metro):**
+
+1. **Electrical Services:**
+   - Basic inspection & fault diagnosis: ৳300 – ৳500
+   - Switchboard / socket fitting: ৳200 – ৳350
+   - Circuit breaker / DB board repair: ৳800 – ৳1,500
+
+2. **AC & HVAC Servicing:**
+   - Master indoor & outdoor jet wash: ৳800 – ৳1,200
+   - Refrigerant gas refill (R32 / R410A): ৳2,000 – ৳3,200
+   - Compressor / capacitor service: ৳1,200 – ৳1,800
+
+3. **Plumbing & Sanitary:**
+   - Pipe leakage repair: ৳500 – ৳800
+   - Tap, shower, or fixture fitting: ৳400 – ৳700
+   - Water pump / motor installation: ৳1,000 – ৳1,800
+
+Check the **Services** tab for live catalogue pricing, or post a requirement for exact quotes.''';
       }
     }
 

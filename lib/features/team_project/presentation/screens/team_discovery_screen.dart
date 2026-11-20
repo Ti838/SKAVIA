@@ -49,7 +49,7 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
     try {
       final res = await client
           .from(DatabaseTables.teams)
-          .select('team_id, name')
+          .select('team_id, name, project_id')
           .limit(20);
       if (mounted) {
         setState(() {
@@ -57,6 +57,7 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
             final id = t['team_id']?.toString() ?? '';
             return {
               'id': id,
+              'projectId': t['project_id']?.toString() ?? '',
               'name': t['name']?.toString() ?? 'Project Crew',
               'membersCount': 0,
               'projectsCount': 0,
@@ -449,14 +450,26 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.projectDashboard,
-                  arguments: {
-                    'projectId': team['id'],
-                    'projectTitle': '${team['name']} Workspace',
-                  },
-                );
+                final projectId = (team['projectId'] as String?)?.trim() ?? '';
+                if (projectId.isNotEmpty) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.projectDashboard,
+                    arguments: {
+                      'projectId': projectId,
+                      'projectTitle': '${team['name']} Workspace',
+                    },
+                  );
+                } else {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.teamRoster,
+                    arguments: {
+                      'teamId': team['id'],
+                      'teamName': team['name'],
+                    },
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: tokens.brandAccent,

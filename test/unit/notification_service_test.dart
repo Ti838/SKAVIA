@@ -16,8 +16,13 @@ void main() {
     test('Urgent and General Channel IDs adhere to on-demand specifications', () {
       expect(NotificationService.urgentChannelId, equals('skavia_urgent_channel'));
       expect(NotificationService.generalChannelId, equals('skavia_general_channel'));
+      expect(NotificationService.messageChannelId, equals('skavia_message_channel'));
       expect(NotificationService.customSoundResource, equals('notification_sound'));
+      expect(NotificationService.customSoundUrgent, equals('urgent_dispatch'));
+      expect(NotificationService.customSoundMessage, equals('message_chime'));
+      expect(NotificationService.customSoundCompleted, equals('job_completed'));
       expect(NotificationService.urgentChannelName, contains('Urgent'));
+      expect(NotificationSoundType.values.length, equals(4));
     });
 
     test('Notification payload tap stream is accessible and non-null', () {

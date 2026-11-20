@@ -8,13 +8,22 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'sound_haptic_preferences.dart';
 
+/// Notification sound categories supported across the SKAVIA ecosystem.
+enum NotificationSoundType {
+  general,
+  urgent,
+  message,
+  completed,
+}
+
 /// Production-Grade Notification & Audio Chime Service for SKAVIA.
 ///
-/// Implements dual-channel high-priority alert architecture modeled after
-/// leading on-demand service platforms (e.g., Uber, Swiggy, TaskRabbit):
+/// Implements multi-channel alert architecture modeled after high-scale on-demand platforms:
 /// 1. Heads-up priority banner & custom audio chime for urgent jobs/bids.
-/// 2. Polite runtime permission management with rationale flow (Android 13+ & iOS).
-/// 3. In-app audio feedback + haptic vibration for real-time foreground updates.
+/// 2. Dedicated message chime for in-app chat conversations.
+/// 3. Success chime for completed jobs and escrow disbursements.
+/// 4. Polite runtime permission management with rationale flow (Android 13+ & iOS).
+/// 5. In-app audio feedback + haptic vibration for real-time foreground updates.
 class NotificationService {
   NotificationService._internal();
   static final NotificationService instance = NotificationService._internal();
@@ -38,13 +47,21 @@ class NotificationService {
   static const String urgentChannelDescription =
       'High-priority sound alerts and heads-up banners for incoming jobs, bids, and OTPs.';
 
+  static const String messageChannelId = 'skavia_message_channel';
+  static const String messageChannelName = 'Chat & Messages';
+  static const String messageChannelDescription =
+      'Audio chimes and alerts for incoming messages and customer inquiries.';
+
   static const String generalChannelId = 'skavia_general_channel';
   static const String generalChannelName = 'General Updates';
   static const String generalChannelDescription =
       'Notifications for status updates, chat messages, and account notices.';
 
-  /// Custom notification sound asset in res/raw (Android)
+  /// Custom notification sound assets in res/raw (Android)
   static const String customSoundResource = 'notification_sound';
+  static const String customSoundUrgent = 'urgent_dispatch';
+  static const String customSoundMessage = 'message_chime';
+  static const String customSoundCompleted = 'job_completed';
 
   /// Initializes the notification channels, plugin drivers, and audio pool.
   Future<void> initialize() async {
@@ -88,11 +105,23 @@ class NotificationService {
             description: urgentChannelDescription,
             importance: Importance.max,
             playSound: true,
-            sound: const RawResourceAndroidNotificationSound(customSoundResource),
+            sound: const RawResourceAndroidNotificationSound(customSoundUrgent),
             enableVibration: true,
             vibrationPattern: Int64List.fromList([0, 500, 200, 500]),
             enableLights: true,
             ledColor: const Color(0xFF0D9488),
+          );
+
+          // Message Channel: High importance for in-app chat conversations
+          const messageChannel = AndroidNotificationChannel(
+            messageChannelId,
+            messageChannelName,
+            description: messageChannelDescription,
+            importance: Importance.high,
+            playSound: true,
+            sound: RawResourceAndroidNotificationSound(customSoundMessage),
+            enableVibration: true,
+            vibrationPattern: null,
           );
 
           // General Channel: Standard notifications
@@ -102,10 +131,12 @@ class NotificationService {
             description: generalChannelDescription,
             importance: Importance.defaultImportance,
             playSound: true,
+            sound: RawResourceAndroidNotificationSound(customSoundResource),
             enableVibration: true,
           );
 
           await androidImpl.createNotificationChannel(urgentChannel);
+          await androidImpl.createNotificationChannel(messageChannel);
           await androidImpl.createNotificationChannel(generalChannel);
         }
       }
@@ -199,32 +230,55 @@ class NotificationService {
     return await openAppSettings();
   }
 
-  /// Plays in-app bell chime and triggers haptic vibration for foreground events,
+  /// Plays in-app chime and triggers haptic vibration for foreground events,
   /// respecting persisted user sound and haptic preferences.
   Future<void> playInAppNotificationSound({
     bool? withHaptic,
     bool isMessage = false,
     bool forcePreview = false,
+    NotificationSoundType soundType = NotificationSoundType.general,
   }) async {
+    final effectiveType = isMessage ? NotificationSoundType.message : soundType;
     final prefs = SoundHapticPreferences.instance;
     final allowSound = forcePreview
         ? true
-        : (isMessage
-              ? prefs.messageSoundEnabled
-              : prefs.notificationSoundEnabled);
+        : (effectiveType == NotificationSoundType.message
+            ? prefs.messageSoundEnabled
+            : prefs.notificationSoundEnabled);
     final allowHaptic = forcePreview
         ? true
         : (withHaptic ?? prefs.hapticFeedbackEnabled);
 
     try {
       if (allowHaptic) {
-        await HapticFeedback.heavyImpact();
+        if (effectiveType == NotificationSoundType.urgent) {
+          await HapticFeedback.heavyImpact();
+        } else {
+          await HapticFeedback.mediumImpact();
+        }
       }
       if (!allowSound) return;
       final player = await _ensureAudioPlayer();
       await player.stop();
+
+      final String assetName;
+      switch (effectiveType) {
+        case NotificationSoundType.urgent:
+          assetName = 'sounds/urgent_dispatch.wav';
+          break;
+        case NotificationSoundType.message:
+          assetName = 'sounds/message_chime.wav';
+          break;
+        case NotificationSoundType.completed:
+          assetName = 'sounds/job_completed.wav';
+          break;
+        case NotificationSoundType.general:
+          assetName = 'sounds/notification_sound.wav';
+          break;
+      }
+
       await player.play(
-        AssetSource('sounds/notification_sound.wav'),
+        AssetSource(assetName),
         volume: 1.0,
       );
     } catch (e) {
@@ -236,9 +290,15 @@ class NotificationService {
     }
   }
 
-  /// Explicit live chime preview for the Sound & Haptics settings screen.
-  Future<void> previewNotificationSound() async {
-    await playInAppNotificationSound(withHaptic: true, forcePreview: true);
+  /// Explicit live chime preview for any sound type in Sound & Haptics settings.
+  Future<void> previewNotificationSound({
+    NotificationSoundType soundType = NotificationSoundType.urgent,
+  }) async {
+    await playInAppNotificationSound(
+      withHaptic: true,
+      forcePreview: true,
+      soundType: soundType,
+    );
   }
 
   /// Displays a heads-up system tray notification with sound, vibration, and optional action buttons.
@@ -249,6 +309,7 @@ class NotificationService {
     String? payload,
     bool isUrgent = true,
     bool triggerInAppChime = true,
+    NotificationSoundType? soundType,
     List<AndroidNotificationAction>? actions,
     NotificationVisibility visibility = NotificationVisibility.public,
   }) async {
@@ -257,22 +318,59 @@ class NotificationService {
     }
 
     try {
+      final effectiveType = soundType ??
+          (isUrgent ? NotificationSoundType.urgent : NotificationSoundType.general);
       final prefs = SoundHapticPreferences.instance;
+
       // Play in-app chime if enabled
       if (triggerInAppChime && prefs.notificationSoundEnabled) {
-        unawaited(playInAppNotificationSound());
+        unawaited(playInAppNotificationSound(soundType: effectiveType));
+      }
+
+      final String channelId;
+      final String channelName;
+      final String channelDesc;
+      final String soundResource;
+      final Importance importance;
+      final Priority priority;
+
+      switch (effectiveType) {
+        case NotificationSoundType.urgent:
+          channelId = urgentChannelId;
+          channelName = urgentChannelName;
+          channelDesc = urgentChannelDescription;
+          soundResource = customSoundUrgent;
+          importance = Importance.max;
+          priority = Priority.high;
+          break;
+        case NotificationSoundType.message:
+          channelId = messageChannelId;
+          channelName = messageChannelName;
+          channelDesc = messageChannelDescription;
+          soundResource = customSoundMessage;
+          importance = Importance.high;
+          priority = Priority.high;
+          break;
+        case NotificationSoundType.completed:
+        case NotificationSoundType.general:
+          channelId = generalChannelId;
+          channelName = generalChannelName;
+          channelDesc = generalChannelDescription;
+          soundResource = customSoundResource;
+          importance = Importance.defaultImportance;
+          priority = Priority.defaultPriority;
+          break;
       }
 
       final androidDetails = AndroidNotificationDetails(
-        isUrgent ? urgentChannelId : generalChannelId,
-        isUrgent ? urgentChannelName : generalChannelName,
-        channelDescription:
-            isUrgent ? urgentChannelDescription : generalChannelDescription,
-        importance: isUrgent ? Importance.max : Importance.defaultImportance,
-        priority: isUrgent ? Priority.high : Priority.defaultPriority,
+        channelId,
+        channelName,
+        channelDescription: channelDesc,
+        importance: importance,
+        priority: priority,
         playSound: prefs.notificationSoundEnabled,
-        sound: isUrgent && prefs.notificationSoundEnabled
-            ? const RawResourceAndroidNotificationSound(customSoundResource)
+        sound: prefs.notificationSoundEnabled
+            ? RawResourceAndroidNotificationSound(soundResource)
             : null,
         enableVibration: prefs.vibrationEnabled,
         vibrationPattern: (isUrgent && prefs.vibrationEnabled)
@@ -288,11 +386,11 @@ class NotificationService {
         ),
       );
 
-      const darwinDetails = DarwinNotificationDetails(
+      final darwinDetails = DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-        sound: '$customSoundResource.wav',
+        sound: '$soundResource.wav',
       );
 
       final platformDetails = NotificationDetails(

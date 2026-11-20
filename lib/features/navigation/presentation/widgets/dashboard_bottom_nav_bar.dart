@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/services/app_language_service.dart';
+import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/motion/sakuga_physics.dart';
 import '../../../../shared/motion/sakuga_pressable.dart';
 import '../screens/main_scaffold_screen.dart';
 
-/// 5-Tab Bottom Navigation Bar matching the SKAVIA Reference Design
-/// Features pixel-perfect selected/unselected icon pairs, touch targets, and accessibility semantics.
+/// 5-Tab Bottom Navigation Bar for SKAVIA.
+/// Uses Material 3 pill active indicator, WCAG-verified colors, single-tap
+/// responsive press physics, and concise non-truncating labels at 320dp.
 class DashboardBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final AppRoleMode currentMode;
@@ -26,10 +28,10 @@ class DashboardBottomNavBar extends StatelessWidget {
     required IconData inactiveIcon,
     required String label,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tokens = context.skavia;
     final isSelected = currentIndex == index;
-    final activeColor = colorScheme.primary;
-    final inactiveColor = colorScheme.onSurfaceVariant.withValues(alpha: 0.7);
 
     return Expanded(
       child: Semantics(
@@ -41,26 +43,31 @@ class DashboardBottomNavBar extends StatelessWidget {
           emitVfx: false,
           child: InkWell(
             onTap: () => onTabSelected(index),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    transitionBuilder: (child, anim) => ScaleTransition(
-                      scale: CurvedAnimation(
-                        parent: anim,
-                        curve: Curves.easeOutBack,
-                      ),
-                      child: child,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.primaryContainer
+                          : Colors.transparent,
+                      borderRadius: AppDimensions.roundedPill,
                     ),
                     child: Icon(
                       isSelected ? activeIcon : inactiveIcon,
-                      key: ValueKey<bool>(isSelected),
                       size: 22,
-                      color: isSelected ? activeColor : inactiveColor,
+                      color: isSelected
+                          ? colorScheme.onPrimaryContainer
+                          : tokens.secondaryText,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -69,12 +76,14 @@ class DashboardBottomNavBar extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: theme.textTheme.labelSmall?.copyWith(
                       fontSize: 11,
                       fontWeight: isSelected
-                          ? FontWeight.w800
+                          ? FontWeight.w700
                           : FontWeight.w500,
-                      color: isSelected ? activeColor : inactiveColor,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : tokens.secondaryText,
                     ),
                   ),
                 ],
@@ -89,21 +98,17 @@ class DashboardBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.skavia;
+    final l10n = context.l10n;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        border: Border(
-          top: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-            width: 1,
-          ),
+    return Material(
+      color: colorScheme.surface,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: tokens.border, width: 1)),
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+        child: SafeArea(
+          top: false,
           child: Row(
             children: [
               _buildNavItem(
@@ -111,23 +116,27 @@ class DashboardBottomNavBar extends StatelessWidget {
                 index: 0,
                 activeIcon: Icons.home_rounded,
                 inactiveIcon: Icons.home_outlined,
-                label: AppLanguageService.tr('home'),
+                label: l10n.navHome,
               ),
               _buildNavItem(
                 context,
                 index: 1,
-                activeIcon: Icons.grid_view_rounded,
-                inactiveIcon: Icons.grid_view_outlined,
+                activeIcon: currentMode == AppRoleMode.worker
+                    ? Icons.work_rounded
+                    : Icons.grid_view_rounded,
+                inactiveIcon: currentMode == AppRoleMode.worker
+                    ? Icons.work_outline_rounded
+                    : Icons.grid_view_outlined,
                 label: currentMode == AppRoleMode.worker
-                    ? AppLanguageService.tr('incoming_requests')
-                    : AppLanguageService.tr('services'),
+                    ? l10n.navRequests
+                    : l10n.navServices,
               ),
               _buildNavItem(
                 context,
                 index: 2,
                 activeIcon: Icons.chat_bubble_rounded,
                 inactiveIcon: Icons.chat_bubble_outline_rounded,
-                label: AppLanguageService.tr('messages'),
+                label: l10n.navMessages,
               ),
               _buildNavItem(
                 context,
@@ -139,15 +148,15 @@ class DashboardBottomNavBar extends StatelessWidget {
                     ? Icons.dynamic_feed_outlined
                     : Icons.folder_outlined,
                 label: currentMode == AppRoleMode.customer
-                    ? (AppLanguageService.isBengali ? 'ফিড' : 'Feed')
-                    : AppLanguageService.tr('projects'),
+                    ? l10n.navFeed
+                    : l10n.navProjects,
               ),
               _buildNavItem(
                 context,
                 index: 4,
                 activeIcon: Icons.person_rounded,
                 inactiveIcon: Icons.person_outline_rounded,
-                label: AppLanguageService.tr('profile'),
+                label: l10n.navProfile,
               ),
             ],
           ),

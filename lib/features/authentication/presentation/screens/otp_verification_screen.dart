@@ -11,6 +11,7 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
@@ -241,9 +242,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final skavia = context.skavia;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
     final displayPhone = (widget.phoneNumber?.trim().isNotEmpty ?? false)
         ? widget.phoneNumber!.trim()
-        : 'your registered number';
+        : (isBn ? 'আপনার নিবন্ধিত নম্বর' : 'your registered number');
 
     return Scaffold(
       backgroundColor: skavia.canvasBg,
@@ -301,8 +304,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Verify Phone',
+                        Text(
+                          l10n.authOtpTitle,
                           style: TextStyle(
                             fontFamily: AppTypography.headingFont,
                             fontSize: 28,
@@ -312,7 +315,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'We sent a 6-digit verification code to $displayPhone',
+                          isBn
+                              ? '$displayPhone নম্বরে ৬-সংখ্যার যাচাইকরণ কোড পাঠানো হয়েছে'
+                              : 'We sent a 6-digit verification code to $displayPhone',
                           style: TextStyle(
                             fontFamily: AppTypography.bodyFont,
                             fontSize: 14,
@@ -355,7 +360,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     const SizedBox(height: 24),
 
                     Text(
-                      'Enter 6-Digit Code',
+                      l10n.authOtpTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: AppTypography.headingFont,
@@ -366,7 +371,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Check your SMS inbox for the one-time code',
+                      l10n.authOtpSubtitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: AppTypography.bodyFont,
@@ -443,7 +448,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       listenable: _authController,
                       builder: (context, _) {
                         return AppButton(
-                          text: 'Verify & Continue',
+                          text: isBn ? 'যাচাই করুন ও এগিয়ে যান' : 'Verify & Continue',
                           isLoading: _authController.isLoading,
                           onPressed: _currentOtp.length == _pinLength
                               ? _handleVerify
@@ -462,7 +467,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       runSpacing: 4,
                       children: [
                         Text(
-                          "Didn't receive the code?",
+                          isBn ? 'কোড পাননি?' : "Didn't receive the code?",
                           style: TextStyle(
                             fontFamily: AppTypography.bodyFont,
                             fontSize: 13,
@@ -473,7 +478,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             ? GestureDetector(
                                 onTap: _handleResend,
                                 child: Text(
-                                  'Resend Code',
+                                  l10n.authResendCode,
                                   style: TextStyle(
                                     fontFamily: AppTypography.bodyFont,
                                     fontSize: 13,
@@ -484,12 +489,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 ),
                               )
                             : Text(
-                                'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
-                                style: const TextStyle(
+                                isBn
+                                    ? 'পুনরায় পাঠাতে ০:${Formatters.toBengaliDigits(_resendCountdown.toString().padLeft(2, '0'))}'
+                                    : 'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
+                                style: TextStyle(
                                   fontFamily: AppTypography.bodyFont,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.accentCoral,
+                                  color: skavia.warning,
                                 ),
                               ),
                       ],

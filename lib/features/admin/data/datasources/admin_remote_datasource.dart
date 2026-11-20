@@ -100,7 +100,7 @@ class AdminRemoteDataSource {
       final res = await client
           .from(DatabaseTables.disputes)
           .select('*')
-          .eq('status', 'Open')
+          .eq('status', 'Investigating')
           .order('created_at', ascending: false);
 
       return List<Map<String, dynamic>>.from(res as List);

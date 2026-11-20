@@ -13,6 +13,7 @@ abstract class AppRoutes {
   static const String candidateMatches = '/matches';
   static const String workerProfile = '/worker-profile';
   static const String incomingRequests = '/incoming-requests';
+  static const String activeJob = '/active-job';
   static const String workerEarnings = '/worker-earnings';
   static const String availabilityCalendar = '/availability-calendar';
   static const String portfolioManagement = '/portfolio-management';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/constants/app_assets.dart';
+import '../../../../core/extensions/context_extensions.dart';
 
 /// Reusable social authentication button (Google One-Tap / OAuth)
 class SocialAuthButtonsRow extends StatelessWidget {
@@ -14,6 +15,7 @@ class SocialAuthButtonsRow extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -26,7 +28,7 @@ class SocialAuthButtonsRow extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Text(
-                  'or continue with',
+                  l10n.authOrContinueWith,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   style: TextStyle(
@@ -80,7 +82,7 @@ class SocialAuthButtonsRow extends StatelessWidget {
                   const SizedBox(width: 10),
                   Flexible(
                     child: Text(
-                      'Continue with Google',
+                      l10n.authContinueWithGoogle,
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       style: TextStyle(

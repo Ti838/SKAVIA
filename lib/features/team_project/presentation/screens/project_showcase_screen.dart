@@ -31,27 +31,35 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
 
   Future<void> _loadProjects() async {
     final client = tryGetSupabaseClient();
-    final uid = FirebaseAuth.instance.currentUser?.uid;
     if (client == null) {
       if (mounted) setState(() => _isLoading = false);
       return;
     }
 
+    String? uid;
+    try {
+      uid = FirebaseAuth.instance.currentUser?.uid;
+    } catch (_) {
+      uid = null;
+    }
+
     try {
       final res = await client
           .from(DatabaseTables.projects)
-          .select('project_id, title, status, budget, created_at, client_id')
+          .select('project_id, title, status, total_budget, created_at, client_id')
+          .order('created_at', ascending: false)
           .limit(20);
 
       if (mounted) {
         final all = (res as List).map((p) {
+          final status = p['status']?.toString().toLowerCase() ?? '';
           return {
             'id': p['project_id']?.toString() ?? '',
             'title': p['title']?.toString() ?? 'Project',
-            'category': 'Turnkey Solution',
+            'category': status == 'completed' ? 'Completed' : 'Active Project',
             'thumbnail': '',
-            'tagColor': const Color(0xFF10B981),
-            'progress': (p['status'] == 'completed') ? 1.0 : 0.4,
+            'tagColor': const Color(0xFF0F766E),
+            'progress': status == 'completed' ? 1.0 : 0.0,
             'client_id': p['client_id']?.toString(),
           };
         }).toList();
@@ -233,40 +241,41 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
     final progress = (proj['progress'] as double?) ?? 0.0;
     final tagColor = (proj['tagColor'] as Color?) ?? const Color(0xFF10B981);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: tokens.cardBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: tokens.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    final projectId = (proj['id'] as String?)?.trim() ?? '';
+    final projectTitle = (proj['title'] as String?)?.trim() ?? 'Project';
+
+    return Material(
+      color: tokens.cardBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: tokens.border),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Project Thumbnail / Category Header
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? colorScheme.surfaceContainerHighest
-                    : tagColor.withValues(alpha: 0.12),
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(19),
-                ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: projectId.isEmpty
+            ? null
+            : () => Navigator.pushNamed(
+                context,
+                AppRoutes.projectDashboard,
+                arguments: {
+                  'projectId': projectId,
+                  'projectTitle': projectTitle,
+                },
               ),
-              child: thumbUrl.isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(19),
-                      ),
-                      child: Image.network(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Project Thumbnail / Category Header
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? colorScheme.surfaceContainerHighest
+                      : tagColor.withValues(alpha: 0.12),
+                ),
+                child: thumbUrl.isNotEmpty
+                    ? Image.network(
                         thumbUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (_, _, _) => Center(
@@ -276,73 +285,73 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
                             color: tagColor,
                           ),
                         ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.work_outline_rounded,
+                          size: 32,
+                          color: tagColor,
+                        ),
                       ),
-                    )
-                  : Center(
-                      child: Icon(
-                        Icons.work_outline_rounded,
-                        size: 32,
-                        color: tagColor,
-                      ),
-                    ),
+              ),
             ),
-          ),
 
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  proj['title'] as String,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: AppTypography.headingFont,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  proj['category'] as String,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: tokens.mutedText,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Linear Progress Indicator
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 5,
-                    backgroundColor: tokens.border,
-                    valueColor: AlwaysStoppedAnimation<Color>(tagColor),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    '${(progress * 100).toInt()}%',
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    projectTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 10,
+                      fontFamily: AppTypography.headingFont,
                       fontWeight: FontWeight.w700,
-                      color: tokens.mutedText,
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    proj['category'] as String,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: tokens.mutedText,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Linear Progress Indicator
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 5,
+                      backgroundColor: tokens.border,
+                      valueColor: AlwaysStoppedAnimation<Color>(tagColor),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '${(progress * 100).toInt()}%',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: tokens.mutedText,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

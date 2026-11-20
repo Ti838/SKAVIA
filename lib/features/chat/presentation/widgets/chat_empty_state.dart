@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_typography.dart';
+import '../../../../app/router/app_routes.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
 
-/// Empty state illustration and message for chat list when no direct messages exist yet.
+/// Actionable empty state for Messages when no direct conversations exist yet.
 class ChatEmptyState extends StatelessWidget {
   final bool shrinkWrap;
 
@@ -11,55 +12,18 @@ class ChatEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
+    final l10n = context.l10n;
 
-    return ListView(
-      shrinkWrap: shrinkWrap,
-      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      children: [
-        Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: tokens.softBlueBg,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.forum_outlined,
-                  size: 48,
-                  color: tokens.brandAccent,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'No Conversations Yet',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'When you book a specialist, post a requirement, or accept a job assignment, your direct real-time communication will be listed here.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: tokens.mutedText,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return EmptyDataView(
+      scrollable: !shrinkWrap,
+      icon: Icons.forum_outlined,
+      title: l10n.messagesEmptyTitle,
+      message: l10n.messagesEmptyMessage,
+      actionText: l10n.messagesBrowseServices,
+      onAction: () => Navigator.pushNamed(context, AppRoutes.categoryCatalog),
+      secondaryActionText: l10n.messagesPostRequirement,
+      onSecondaryAction: () =>
+          Navigator.pushNamed(context, AppRoutes.postRequirement),
     );
   }
 }

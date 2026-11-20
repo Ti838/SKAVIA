@@ -82,9 +82,7 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
         workerProfileId: widget.workerProfileId,
         clientId: user.uid,
         rating: _rating,
-        comment: finalComment.isNotEmpty
-            ? finalComment
-            : 'Verified $_rating-Star Service Completed',
+        comment: finalComment,
         serviceRequestId: widget.serviceRequestId,
         projectId: widget.projectId,
       );
@@ -133,12 +131,12 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
           ],
         ),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to submit review: $e'),
+        const SnackBar(
+          content: Text('Could not submit review. Please try again.'),
           backgroundColor: AppColors.errorRed,
         ),
       );

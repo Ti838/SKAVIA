@@ -81,10 +81,10 @@ class ReputationModel {
     return ReputationModel(
       reputationId: json['reputation_id'] as String? ?? '',
       workerProfileId: json['worker_profile_id'] as String? ?? '',
-      overallScore: (json['overall_score'] as num?)?.toDouble() ?? 5.0,
+      overallScore: (json['overall_score'] as num?)?.toDouble() ?? 0.0,
       completedJobs: (json['completed_jobs'] as num?)?.toInt() ?? 0,
       totalRatings: (json['total_ratings'] as num?)?.toInt() ?? 0,
-      badgeLevel: json['badge_level'] as String? ?? 'Verified Specialist',
+      badgeLevel: json['badge_level'] as String? ?? 'New Specialist',
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'].toString()) ?? DateTime.now()
           : DateTime.now(),

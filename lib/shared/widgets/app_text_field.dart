@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme/app_dimensions.dart';
-import '../motion/sakuga_physics.dart';
+import '../../core/extensions/context_extensions.dart';
 
 class AppTextField extends StatefulWidget {
   final TextEditingController? controller;
@@ -35,85 +35,43 @@ class AppTextField extends StatefulWidget {
 
 class _AppTextFieldState extends State<AppTextField> {
   late bool _obscureText;
-  late final FocusNode _focusNode;
-  bool _isFocused = false;
 
   @override
   void initState() {
     super.initState();
     _obscureText = widget.isPassword;
-    _focusNode = FocusNode()..addListener(_handleFocusChange);
-  }
-
-  void _handleFocusChange() {
-    if (!mounted) return;
-    if (_isFocused != _focusNode.hasFocus) {
-      setState(() => _isFocused = _focusNode.hasFocus);
-    }
-  }
-
-  @override
-  void dispose() {
-    _focusNode.removeListener(_handleFocusChange);
-    _focusNode.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final reduced = SakugaMotion.isReduced(context);
+    final tokens = context.skavia;
 
-    return AnimatedScale(
-      scale: (_isFocused && !reduced) ? 1.008 : 1.0,
-      duration: reduced ? Duration.zero : const Duration(milliseconds: 180),
-      curve: Curves.easeOutBack,
-      child: AnimatedContainer(
-        duration: reduced ? Duration.zero : const Duration(milliseconds: 180),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          boxShadow: _isFocused
-              ? [
-                  BoxShadow(
-                    color: colorScheme.primary.withValues(
-                      alpha: isDark ? 0.24 : 0.14,
-                    ),
-                    blurRadius: 10,
-                    spreadRadius: 1,
-                  ),
-                ]
-              : const [],
-        ),
-        child: TextFormField(
-          focusNode: _focusNode,
-          controller: widget.controller,
+    return TextFormField(
+      controller: widget.controller,
       obscureText: _obscureText,
       maxLines: widget.isPassword ? 1 : widget.maxLines,
       keyboardType: widget.keyboardType,
       validator: widget.validator,
       onChanged: widget.onChanged,
       enabled: widget.enabled,
-      style: TextStyle(
-        fontSize: 15,
+      style: theme.textTheme.bodyLarge?.copyWith(
         fontWeight: FontWeight.w500,
         color: colorScheme.onSurface,
       ),
       decoration: InputDecoration(
         labelText: widget.label,
-        labelStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-          fontSize: 14,
+        labelStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: tokens.secondaryText,
         ),
         hintText: widget.hint,
-        hintStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
-          fontSize: 14,
+        hintStyle: theme.textTheme.bodyMedium?.copyWith(
+          color: tokens.mutedText,
         ),
         prefixIcon: widget.prefixIcon != null
             ? Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: widget.prefixIcon,
               )
             : null,
@@ -123,11 +81,12 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
         suffixIcon: widget.isPassword
             ? IconButton(
+                tooltip: _obscureText ? 'Show password' : 'Hide password',
                 icon: Icon(
                   _obscureText
                       ? Icons.visibility_outlined
                       : Icons.visibility_off_outlined,
-                  color: colorScheme.onSurfaceVariant,
+                  color: tokens.secondaryText,
                   size: 20,
                 ),
                 onPressed: () {
@@ -138,32 +97,30 @@ class _AppTextFieldState extends State<AppTextField> {
               )
             : null,
         filled: true,
-        fillColor: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
+        fillColor: tokens.inputBg,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          borderSide: BorderSide(color: tokens.interactiveBorder, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(color: colorScheme.outlineVariant, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          borderSide: BorderSide(color: tokens.interactiveBorder, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(color: colorScheme.error, width: 1),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          borderSide: BorderSide(color: colorScheme.error, width: 1.2),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radius14),
-          borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-        ),
-      ),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+          borderSide: BorderSide(color: colorScheme.error, width: 2),
         ),
       ),
     );

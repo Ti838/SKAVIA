@@ -7,7 +7,8 @@ import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/utils/job_otp_util.dart';
 import '../../../../core/utils/supabase_guard.dart';
-import '../../../../shared/widgets/app_button.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
+import '../../../../shared/error_states/error_view.dart';
 import '../../../customer/presentation/screens/live_job_feed_screen.dart';
 import '../widgets/incoming_request_card.dart';
 import 'active_job_screen.dart';
@@ -25,6 +26,7 @@ class IncomingRequestsScreen extends StatefulWidget {
 
 class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   bool _isLoading = false;
+  bool _hasError = false;
   int _selectedSegment = 0; // 0: Direct Requests, 1: Open Jobs Feed
   List<Map<String, dynamic>> _requests = [];
 
@@ -35,7 +37,10 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   }
 
   Future<void> _fetchIncomingRequests() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
 
     try {
       final user = FirebaseAuth.instance.currentUser;
@@ -50,37 +55,43 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
         return;
       }
 
-      try {
-        final wpRow = await client
-            .from('worker_profiles')
-            .select('worker_profile_id')
-            .eq('user_id', user.uid)
-            .maybeSingle();
-        final workerProfileId = wpRow?['worker_profile_id']?.toString();
-        if (workerProfileId == null || workerProfileId.isEmpty) {
-          _requests = [];
-          return;
-        }
-
-        final res = await client
-            .from('service_requests')
-            .select(
-              'service_request_id, client_id, status, scheduled_at, agreed_price, service_notes, created_at',
-            )
-            .eq('status', 'Requested')
-            .eq('worker_profile_id', workerProfileId)
-            .order('created_at', ascending: false)
-            .limit(10);
-        _requests = res.isNotEmpty
-            ? List<Map<String, dynamic>>.from(res)
-            : [];
-      } catch (e) {
-        debugPrint('Supabase live fetch error: $e');
+      final wpRow = await client
+          .from('worker_profiles')
+          .select('worker_profile_id')
+          .eq('user_id', user.uid)
+          .maybeSingle();
+      final workerProfileId = wpRow?['worker_profile_id']?.toString();
+      if (workerProfileId == null || workerProfileId.isEmpty) {
         _requests = [];
+        return;
       }
+
+      final res = await client
+          .from('service_requests')
+          .select(
+            'service_request_id, client_id, status, scheduled_at, agreed_price, '
+            'service_notes, created_at, '
+            'requirements(title, location), '
+            'users(full_name)',
+          )
+          .eq('status', 'Requested')
+          .eq('worker_profile_id', workerProfileId)
+          .order('created_at', ascending: false)
+          .limit(20);
+
+      _requests = res.map<Map<String, dynamic>>((row) {
+        final map = Map<String, dynamic>.from(row);
+        final req = map['requirements'] as Map<String, dynamic>?;
+        final clientUser = map['users'] as Map<String, dynamic>?;
+        map['job_title'] = req?['title']?.toString() ?? 'Service Request';
+        map['location'] = req?['location']?.toString() ?? 'Dhaka';
+        map['client_name'] = clientUser?['full_name']?.toString() ?? 'Client';
+        return map;
+      }).toList();
     } catch (e) {
       debugPrint('Error fetching requests: $e');
       _requests = [];
+      _hasError = true;
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -95,7 +106,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     });
 
     final client = tryGetSupabaseClient();
-    if (client != null && reqId != null && !reqId.startsWith('sr_sample')) {
+    if (client != null && reqId != null && reqId.isNotEmpty) {
       try {
         await client
             .from('service_requests')
@@ -113,7 +124,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Accepted job: ${request['job_title'] ?? 'Service Request'}! Opening active job navigation.',
+          'Accepted job: ${request['job_title'] ?? 'Service Request'}',
         ),
         backgroundColor: AppColors.success,
       ),
@@ -122,18 +133,18 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => ActiveJobScreen(
-          requestId: request['service_request_id']?.toString() ?? 'req_001',
+          requestId: reqId ?? '',
           clientName: request['client_name']?.toString() ?? 'Client',
           jobTitle: request['job_title']?.toString() ?? 'Service Job',
           location: request['location']?.toString() ?? 'Dhaka',
-          agreedPrice: (request['agreed_price'] as num?)?.toDouble() ?? 1000.0,
+          agreedPrice: (request['agreed_price'] as num?)?.toDouble() ?? 0.0,
           expectedOtp:
               request['job_otp']?.toString() ??
               JobOtpUtil.extractOtp(
                 request['service_notes']?.toString(),
-                fallbackRequestId: request['service_request_id']?.toString(),
+                fallbackRequestId: reqId,
               ),
-          scheduledTime: request['scheduled_at']?.toString() ?? 'Today',
+          scheduledTime: request['scheduled_at']?.toString() ?? '',
           serviceNotes: request['service_notes']?.toString() ?? '',
         ),
       ),
@@ -149,12 +160,12 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
     });
 
     final client = tryGetSupabaseClient();
-    if (client != null && reqId != null && !reqId.startsWith('sr_sample')) {
+    if (client != null && reqId != null && reqId.isNotEmpty) {
       try {
         await client
             .from('service_requests')
             .update({
-              'status': 'Cancelled',
+              'status': 'Canceled',
               'updated_at': DateTime.now().toIso8601String(),
             })
             .eq('service_request_id', reqId);
@@ -176,7 +187,6 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
 
     return Scaffold(
       backgroundColor: tokens.canvasBg,
@@ -366,57 +376,39 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                           color: tokens.brandAccent,
                         ),
                       )
-                    : _requests.isEmpty
-                    ? Center(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.inbox_rounded,
-                                size: 56,
-                                color: tokens.mutedText,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No pending requests right now',
-                                textAlign: TextAlign.center,
-                                style: AppTypography.headingSmall.copyWith(
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Keep your status Active to receive instant dispatches.',
-                                textAlign: TextAlign.center,
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              AppButton(
-                                text: 'Refresh Queue',
-                                onPressed: _fetchIncomingRequests,
-                                width: 180,
-                              ),
-                            ],
-                          ),
-                        ),
+                    : _hasError
+                    ? ErrorView(
+                        title: 'Could Not Load Requests',
+                        message:
+                            'We had trouble fetching incoming requests. Please try again.',
+                        onRetry: _fetchIncomingRequests,
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(
-                          AppDimensions.paddingLarge,
+                    : _requests.isEmpty
+                    ? EmptyDataView(
+                        icon: Icons.inbox_rounded,
+                        title: 'No pending requests right now',
+                        message:
+                            'Keep your availability active to receive direct dispatches from clients.',
+                        actionText: 'Refresh Queue',
+                        onAction: _fetchIncomingRequests,
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _fetchIncomingRequests,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(
+                            AppDimensions.paddingLarge,
+                          ),
+                          itemCount: _requests.length,
+                          itemBuilder: (context, index) {
+                            final req = _requests[index];
+                            return IncomingRequestCard(
+                              request: req,
+                              onAccept: () => _acceptRequest(req),
+                              onDecline: () => _declineRequest(req),
+                            );
+                          },
                         ),
-                        itemCount: _requests.length,
-                        itemBuilder: (context, index) {
-                          final req = _requests[index];
-                          return IncomingRequestCard(
-                            request: req,
-                            onAccept: () => _acceptRequest(req),
-                            onDecline: () => _declineRequest(req),
-                          );
-                        },
                       ),
               ),
       ),

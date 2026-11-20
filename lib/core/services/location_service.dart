@@ -204,24 +204,24 @@ class LocationService {
     return {'zone': 'Dhaka', 'formatted': 'Dhaka, Bangladesh'};
   }
 
-  /// Fallback using network IP location if GPS is disabled or denied
+  /// Fallback using HTTPS IP geolocation if GPS is disabled or denied.
   static Future<LocationResult> _fallbackIpLocation() async {
     try {
       final res = await http
-          .get(Uri.parse('http://ip-api.com/json'))
+          .get(Uri.parse('https://ipwho.is/'))
           .timeout(const Duration(seconds: 3));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        final city = data['city'] ?? 'Dhaka';
-        final lat = (data['lat'] as num?)?.toDouble() ?? 23.8103;
-        final lon = (data['lon'] as num?)?.toDouble() ?? 90.4125;
+        final city = data['city']?.toString() ?? 'Dhaka';
+        final lat = (data['latitude'] as num?)?.toDouble() ?? 23.8103;
+        final lon = (data['longitude'] as num?)?.toDouble() ?? 90.4125;
 
-        final matchedZone = _matchDhakaZone(city.toString());
+        final matchedZone = _matchDhakaZone(city);
 
         return LocationResult(
           formattedAddress: '$city, Bangladesh',
-          zone: matchedZone.isNotEmpty ? matchedZone : 'Dhanmondi',
+          zone: matchedZone.isNotEmpty ? matchedZone : city,
           latitude: lat,
           longitude: lon,
           isFromGps: false,
@@ -230,10 +230,10 @@ class LocationService {
     } catch (_) {}
 
     return const LocationResult(
-      formattedAddress: 'Dhanmondi, Dhaka',
-      zone: 'Dhanmondi',
-      latitude: 23.7465,
-      longitude: 90.3760,
+      formattedAddress: 'Dhaka, Bangladesh',
+      zone: 'Dhaka',
+      latitude: 23.8103,
+      longitude: 90.4125,
       isFromGps: false,
     );
   }

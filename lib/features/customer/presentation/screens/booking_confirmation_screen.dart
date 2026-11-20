@@ -249,10 +249,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
     final tokens = context.skavia;
+    final isBn = context.isBengali;
     final displayServiceTitle = widget.jobTitle.isNotEmpty
         ? widget.jobTitle
-        : 'Certified Trade Service';
-    final displayAmount = Formatters.formatCurrency(_totalPrice);
+        : (isBn ? 'যাচাইকৃত কারিগরি সেবা' : 'Certified Trade Service');
+    final displayAmount =
+        Formatters.formatCurrency(_totalPrice, useBnDigits: isBn);
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,
@@ -270,7 +272,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Booking & Payment',
+          isBn ? 'বুকিং ও পেমেন্ট' : 'Booking & Payment',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
@@ -326,7 +328,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       child: TextField(
                         controller: _addressController,
                         decoration: InputDecoration(
-                          hintText: 'Service Address (e.g. Dhaka, Bangladesh)',
+                          hintText: isBn
+                              ? 'কাজের ঠিকানা (যেমন: ধানমন্ডি, ঢাকা)'
+                              : 'Service Address (e.g. Dhaka, Bangladesh)',
                           border: InputBorder.none,
                           isDense: true,
                           hintStyle: TextStyle(
@@ -366,7 +370,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       child: TextField(
                         controller: _notesController,
                         decoration: InputDecoration(
-                          hintText: 'Special instructions or gate code (optional)',
+                          hintText: isBn
+                              ? 'বিশেষ নির্দেশনা বা গেট কোড (ঐচ্ছিক)'
+                              : 'Special instructions or gate code (optional)',
                           border: InputBorder.none,
                           isDense: true,
                           hintStyle: TextStyle(
@@ -416,8 +422,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           )
                         : Text(
                             _selectedPaymentMethod == 'Cash'
-                                ? 'Confirm Cash Booking ($displayAmount)'
-                                : 'Confirm & Pay ($displayAmount)',
+                                ? (isBn
+                                    ? 'ক্যাশ বুকিং নিশ্চিত করুন ($displayAmount)'
+                                    : 'Confirm Cash Booking ($displayAmount)')
+                                : (isBn
+                                    ? 'নিশ্চিত করুন ও পেমেন্ট করুন ($displayAmount)'
+                                    : 'Confirm & Pay ($displayAmount)'),
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 15,

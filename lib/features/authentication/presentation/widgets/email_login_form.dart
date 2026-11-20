@@ -31,6 +31,8 @@ class EmailLoginForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final skavia = context.skavia;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,8 +40,8 @@ class EmailLoginForm extends StatelessWidget {
         // Email Field
         AppTextField(
           controller: emailController,
-          label: 'Email Address',
-          hint: 'name@example.com',
+          label: l10n.authEmail,
+          hint: l10n.authEmailHint,
           keyboardType: TextInputType.emailAddress,
           prefixIcon: Icon(
             Icons.mail_outline_rounded,
@@ -53,7 +55,7 @@ class EmailLoginForm extends StatelessWidget {
         // Password Field
         AppTextField(
           controller: passwordController,
-          label: 'Password',
+          label: l10n.authPassword,
           hint: '••••••••',
           isPassword: true,
           prefixIcon: Icon(
@@ -63,10 +65,12 @@ class EmailLoginForm extends StatelessWidget {
           ),
           validator: (val) {
             if (val == null || val.isEmpty) {
-              return 'Password is required';
+              return isBn ? 'পাসওয়ার্ড প্রদান করুন' : 'Password is required';
             }
             if (val.length < 6) {
-              return 'Password must be at least 6 characters';
+              return isBn
+                  ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে'
+                  : 'Password must be at least 6 characters';
             }
             return null;
           },
@@ -105,7 +109,7 @@ class EmailLoginForm extends StatelessWidget {
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          'Remember me',
+                          isBn ? 'মনে রাখুন' : 'Remember me',
                           maxLines: 2,
                           softWrap: true,
                           style: TextStyle(
@@ -130,7 +134,7 @@ class EmailLoginForm extends StatelessWidget {
                 ),
                 onPressed: onForgotPassword,
                 child: Text(
-                  'Forgot Password?',
+                  l10n.authForgotPassword,
                   maxLines: 2,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -178,10 +182,10 @@ class EmailLoginForm extends StatelessWidget {
                             ),
                           ),
                         )
-                      : const Text(
-                          'Sign In',
+                      : Text(
+                          l10n.authSignIn,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,

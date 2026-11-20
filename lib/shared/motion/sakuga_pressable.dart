@@ -163,13 +163,16 @@ class _SakugaPressableState extends State<SakugaPressable>
         animation: _springController,
         builder: (_, childWidget) {
           final y = _springController.value.clamp(0.75, 1.15);
-          if ((y - 1.0).abs() < 0.001) {
-            return childWidget!;
-          }
-          final x = (1.0 + (1.0 - y) * _wideFactor).clamp(0.88, 1.12);
+          final isRest = (y - 1.0).abs() < 0.001;
+          final x = isRest
+              ? 1.0
+              : (1.0 + (1.0 - y) * _wideFactor).clamp(0.88, 1.12);
           return Transform(
             alignment: Alignment.center,
-            transform: Matrix4.diagonal3Values(x, y, 1.0),
+            transformHitTests: false,
+            transform: isRest
+                ? Matrix4.identity()
+                : Matrix4.diagonal3Values(x, y, 1.0),
             child: childWidget,
           );
         },

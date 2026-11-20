@@ -5,7 +5,7 @@ import '../../data/models/category_model.dart';
 import '../../data/models/service_model.dart';
 
 class CatalogController extends ChangeNotifier {
-  final CatalogRemoteDataSource _dataSource = CatalogRemoteDataSource();
+  final CatalogRemoteDataSource _dataSource;
 
   List<CategoryModel> _categories = [];
   List<ServiceModel> _services = [];
@@ -14,6 +14,21 @@ class CatalogController extends ChangeNotifier {
   String _searchQuery = '';
   bool _isDisposed = false;
   String? _errorMessage;
+  int _requestSequence = 0;
+
+  CatalogController({
+    CatalogRemoteDataSource? dataSource,
+    String? initialCategoryId,
+    String? initialSearchQuery,
+  }) : _dataSource = dataSource ?? CatalogRemoteDataSource() {
+    if (initialCategoryId != null && initialCategoryId.isNotEmpty) {
+      _selectedCategoryId = initialCategoryId;
+    }
+    if (initialSearchQuery != null && initialSearchQuery.trim().isNotEmpty) {
+      _searchQuery = initialSearchQuery.trim();
+    }
+    initCatalog();
+  }
 
   @override
   void dispose() {
@@ -34,89 +49,102 @@ class CatalogController extends ChangeNotifier {
   String? get selectedCategoryId => _selectedCategoryId;
   String get searchQuery => _searchQuery;
   String? get errorMessage => _errorMessage;
-
-  CatalogController() {
-    initCatalog();
-  }
+  bool get hasActiveFilter =>
+      (_selectedCategoryId != null && _selectedCategoryId != 'all') ||
+      _searchQuery.isNotEmpty;
 
   Future<void> initCatalog() async {
+    final seq = ++_requestSequence;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
       final fetchedCategories = await _dataSource.getCategories();
-      final fetchedServices = await _dataSource.getServices();
+      final fetchedServices = await _fetchServicesForCurrentFilters();
+      if (seq != _requestSequence) return;
       _categories = fetchedCategories;
       _services = fetchedServices;
     } catch (e) {
-      _errorMessage = e.toString();
-      _categories = CategoryModel.defaultCategories;
-      _services = ServiceModel.defaultServices;
+      if (seq != _requestSequence) return;
+      _errorMessage = 'Could not load the service catalogue. Please try again.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (seq == _requestSequence) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
+  Future<List<ServiceModel>> _fetchServicesForCurrentFilters() async {
+    if (_searchQuery.isNotEmpty) {
+      final results = await _dataSource.searchServices(_searchQuery);
+      if (_selectedCategoryId != null && _selectedCategoryId != 'all') {
+        return results
+            .where((s) => s.categoryId == _selectedCategoryId)
+            .toList();
+      }
+      return results;
+    }
+    return _dataSource.getServices(
+      categoryId: _selectedCategoryId == 'all' ? null : _selectedCategoryId,
+    );
+  }
+
   Future<void> filterByCategory(String? categoryId) async {
-    _selectedCategoryId = categoryId ?? 'all';
+    final seq = ++_requestSequence;
+    _selectedCategoryId = (categoryId == null || categoryId.isEmpty)
+        ? 'all'
+        : categoryId;
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      if (_searchQuery.isNotEmpty) {
-        final results = await _dataSource.searchServices(_searchQuery);
-        if (_selectedCategoryId != 'all') {
-          _services = results
-              .where((s) => s.categoryId == _selectedCategoryId)
-              .toList();
-        } else {
-          _services = results;
-        }
-      } else {
-        _services = await _dataSource.getServices(
-          categoryId: _selectedCategoryId == 'all' ? null : _selectedCategoryId,
-        );
-      }
-    } catch (e) {
-      _errorMessage = e.toString();
+      final fetched = await _fetchServicesForCurrentFilters();
+      if (seq != _requestSequence) return;
+      _services = fetched;
+    } catch (_) {
+      if (seq != _requestSequence) return;
+      _errorMessage = 'Could not filter services. Please try again.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (seq == _requestSequence) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   Future<void> search(String query) async {
+    final seq = ++_requestSequence;
     _searchQuery = query.trim();
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
-      if (_searchQuery.isEmpty) {
-        _services = await _dataSource.getServices(
-          categoryId: _selectedCategoryId == 'all' ? null : _selectedCategoryId,
-        );
-      } else {
-        final results = await _dataSource.searchServices(_searchQuery);
-        if (_selectedCategoryId != null && _selectedCategoryId != 'all') {
-          _services = results
-              .where((s) => s.categoryId == _selectedCategoryId)
-              .toList();
-        } else {
-          _services = results;
-        }
-      }
-    } catch (e) {
-      _errorMessage = e.toString();
+      final fetched = await _fetchServicesForCurrentFilters();
+      if (seq != _requestSequence) return;
+      _services = fetched;
+    } catch (_) {
+      if (seq != _requestSequence) return;
+      _errorMessage = 'Search failed. Please check your connection.';
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (seq == _requestSequence) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
   void clearSearch() {
     _searchQuery = '';
     filterByCategory(_selectedCategoryId);
+  }
+
+  void resetFilters() {
+    _searchQuery = '';
+    _selectedCategoryId = 'all';
+    initCatalog();
   }
 }

@@ -21,6 +21,7 @@ class WorkerProfileDetailScreen extends StatefulWidget {
   final String hourlyRate;
   final List<String> skills;
   final String avatarUrl;
+  final bool isVerified;
 
   const WorkerProfileDetailScreen({
     super.key,
@@ -34,6 +35,7 @@ class WorkerProfileDetailScreen extends StatefulWidget {
     this.hourlyRate = '৳ 0/hr',
     this.skills = const [],
     this.avatarUrl = '',
+    this.isVerified = false,
   });
 
   @override
@@ -45,7 +47,7 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
   double _parseHourlyRate() {
     final numeric = widget.hourlyRate.replaceAll(RegExp(r'[^0-9.]'), '');
     final parsed = double.tryParse(numeric);
-    return (parsed != null && parsed > 0) ? parsed : 1500.0;
+    return (parsed != null && parsed > 0) ? parsed : 0.0;
   }
 
   String _safeCurrentUid() {
@@ -81,12 +83,12 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
                   imageUrl: widget.avatarUrl,
                   name: widget.name,
                   radius: 42,
-                  isVerified: true,
+                  isVerified: widget.isVerified,
                 ),
               ),
               const SizedBox(height: 14),
 
-              // Name with Verified checkmark
+              // Name with optional Verified checkmark (only if genuinely verified)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -104,12 +106,14 @@ class _WorkerProfileDetailScreenState extends State<WorkerProfileDetailScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    Icons.verified_rounded,
-                    color: tokens.brandAccent,
-                    size: 18,
-                  ),
+                  if (widget.isVerified) ...[
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.verified_rounded,
+                      color: tokens.tealAccent,
+                      size: 18,
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 4),

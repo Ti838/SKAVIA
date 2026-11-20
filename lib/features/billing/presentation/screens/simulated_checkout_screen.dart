@@ -210,10 +210,11 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
   Widget build(BuildContext context) {
     final tokens = context.skavia;
     final colorScheme = context.colorScheme;
+    final isBn = context.isBengali;
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,
-      appBar: const AppAppBar(title: 'Checkout & Escrow'),
+      appBar: AppAppBar(title: isBn ? 'চেকআউট ও এসক্রো' : 'Checkout & Escrow'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppDimensions.paddingLarge),
         child: Column(
@@ -247,7 +248,9 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      '100% Escrow Protected: Funds are held securely and released only after your Job OTP is verified.',
+                      isBn
+                          ? '১০০% এসক্রো সুরক্ষিত: অর্থ নিরাপদে সংরক্ষিত থাকে এবং কাজ যাচাই শেষে ওটিপি নিশ্চিত করলেই কেবল অবমুক্ত হয়।'
+                          : '100% Escrow Protected: Funds are held securely and released only after your Job OTP is verified.',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -262,7 +265,7 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             const SizedBox(height: AppDimensions.paddingLarge),
 
             Text(
-              'Select Payment Rail',
+              isBn ? 'পেমেন্ট মাধ্যম বেছে নিন' : 'Select Payment Rail',
               style: TextStyle(
                 fontFamily: AppTypography.headingFont,
                 fontWeight: FontWeight.w800,
@@ -284,11 +287,15 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             AppButton(
               text: _isProcessing
                   ? (_selectedMethod == 'Cash'
-                        ? 'Confirming Booking...'
-                        : 'Processing Sandbox Transaction...')
+                        ? (isBn ? 'বুকিং নিশ্চিত করা হচ্ছে...' : 'Confirming Booking...')
+                        : (isBn ? 'পেমেন্ট সম্পন্ন করা হচ্ছে...' : 'Processing Sandbox Transaction...'))
                   : (_selectedMethod == 'Cash'
-                        ? 'Confirm Cash on Delivery (${Formatters.formatCurrency(_totalPayable)})'
-                        : 'Test Sandbox Payment (${Formatters.formatCurrency(_totalPayable)})'),
+                        ? (isBn
+                            ? 'নগদ পরিশোধে নিশ্চিত করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
+                            : 'Confirm Cash on Delivery (${Formatters.formatCurrency(_totalPayable)})')
+                        : (isBn
+                            ? 'পেমেন্ট সম্পন্ন করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
+                            : 'Test Sandbox Payment (${Formatters.formatCurrency(_totalPayable)})')),
               isLoading: _isProcessing,
               onPressed: _isProcessing ? null : _processPayment,
             ),

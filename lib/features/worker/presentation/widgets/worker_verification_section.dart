@@ -12,49 +12,74 @@ class WorkerVerificationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.skavia;
-    final isVerified = verificationStatus == 'Verified';
+    final norm = verificationStatus.trim().toLowerCase();
+    final isVerified = norm == 'verified';
+    final isPending = norm == 'pending';
+    final isRejected = norm == 'rejected';
+
+    final Color bg = isVerified
+        ? tokens.softMintBg
+        : (isRejected
+              ? tokens.errorBg
+              : (isPending ? tokens.warningBg : tokens.softBlueBg));
+    final Color fg = isVerified
+        ? tokens.tealAccent
+        : (isRejected
+              ? tokens.error
+              : (isPending ? tokens.warning : tokens.brandAccent));
+    final IconData icon = isVerified
+        ? Icons.verified_rounded
+        : (isRejected
+              ? Icons.error_outline_rounded
+              : (isPending
+                    ? Icons.hourglass_top_rounded
+                    : Icons.badge_outlined));
+    final String heading = isVerified
+        ? 'Verified Specialist'
+        : (isRejected
+              ? 'Verification Resubmission Needed'
+              : (isPending
+                    ? 'Verification Under Review'
+                    : 'Identity Not Verified Yet'));
+    final String subtitle = isVerified
+        ? 'Your identity and trade credentials are verified by SKAVIA.'
+        : (isRejected
+              ? 'Please review and resubmit valid NID or trade documentation.'
+              : (isPending
+                    ? 'Your submitted documents are being reviewed by SKAVIA.'
+                    : 'Submit your NID and trade documents to unlock verified status.'));
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isVerified ? tokens.softMintBg : tokens.softPeachBg,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isVerified ? AppColors.statusActive : AppColors.accentPeach,
-        ),
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: fg.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: [
-          Icon(
-            isVerified ? Icons.verified_rounded : Icons.hourglass_top_rounded,
-            color: isVerified ? AppColors.statusActive : AppColors.accentCoral,
-            size: 28,
-          ),
+          Icon(icon, color: fg, size: 26),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isVerified ? 'Verified Specialist' : 'Verification in Review',
+                  heading,
                   style: TextStyle(
                     fontFamily: AppTypography.headingFont,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: isVerified
-                        ? AppColors.statusActive
-                        : AppColors.accentCoral,
+                    fontWeight: FontWeight.w700,
+                    color: fg,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  isVerified
-                      ? 'Your NID and certifications are authenticated by SKAVIA Operations.'
-                      : 'NID documents submitted. Verified workers get priority matching & instant payouts.',
+                  subtitle,
                   style: TextStyle(
-                    fontSize: 11.5,
+                    fontSize: 12,
                     color: tokens.secondaryText,
-                    height: 1.3,
+                    height: 1.35,
                   ),
                 ),
               ],

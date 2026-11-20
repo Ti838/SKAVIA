@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
+import '../../../../shared/widgets/skavia_badge.dart';
 import '../../data/models/service_model.dart';
 
-/// Card representing a service offering in the category catalog
+/// Clean catalog card representing a real database-driven SKAVIA service.
+/// Never displays fabricated 0.0 ratings or placeholder durations.
 class CatalogServiceCard extends StatelessWidget {
   final ServiceModel service;
   final VoidCallback onBook;
@@ -22,188 +23,166 @@ class CatalogServiceCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tokens = context.skavia;
-    final isDark = theme.brightness == Brightness.dark;
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
     final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final hasVerifiedRating =
+        service.ratingAverage > 0 && service.totalBookings > 0;
+    final hasDuration = service.estimatedDuration.trim().isNotEmpty;
 
-    final bookPill = Material(
-      color: AppColors.primarySky,
-      borderRadius: AppDimensions.roundedPill,
+    final bookButton = Material(
+      color: colorScheme.primary,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
       child: InkWell(
         onTap: onBook,
-        borderRadius: AppDimensions.roundedPill,
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
           child: Text(
-            'Book Now',
-            style: TextStyle(
-              fontSize: 12,
+            l10n.servicesBookNow,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colorScheme.onPrimary,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
             ),
           ),
         ),
       ),
     );
 
-    final metricsWrap = Wrap(
-      spacing: 8,
-      runSpacing: 4,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
+    final metaItems = <Widget>[
+      if (hasVerifiedRating)
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.star_rounded, size: 15, color: Color(0xFFF59E0B)),
+            Icon(Icons.star_rounded, size: 15, color: tokens.warning),
             const SizedBox(width: 3),
             Text(
-              service.ratingAverage.toStringAsFixed(1),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+              '${service.ratingAverage.toStringAsFixed(1)} (${service.totalBookings})',
+              style: theme.textTheme.labelMedium?.copyWith(
                 color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              '(${service.totalBookings})',
-              style: TextStyle(
-                fontSize: 11,
-                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
+        )
+      else
+        SkaviaBadge(
+          label: isBn ? 'ক্যাটালগ সার্ভিস' : 'Standard Rate',
+          icon: Icons.verified_outlined,
+          tone: SkaviaBadgeTone.verified,
+          compact: true,
         ),
+      if (hasDuration)
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.access_time_rounded,
-              size: 13,
-              color: colorScheme.onSurfaceVariant,
+              Icons.schedule_rounded,
+              size: 14,
+              color: tokens.secondaryText,
             ),
-            const SizedBox(width: 3),
+            const SizedBox(width: 4),
             Text(
               service.estimatedDuration,
-              style: TextStyle(
-                fontSize: 11,
-                color: colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: tokens.secondaryText,
               ),
             ),
           ],
         ),
-      ],
-    );
+    ];
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        color: tokens.cardBg,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
         border: Border.all(color: tokens.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onBook,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (service.popularBadge != null) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 6),
-                        decoration: BoxDecoration(
-                          color: tokens.softPeachBg,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          service.popularBadge!,
-                          style: TextStyle(
-                            fontFamily: AppTypography.headingFont,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: isDark
-                                ? AppColors.accentPeach
-                                : AppColors.accentCoral,
-                            letterSpacing: 0.3,
-                          ),
+                    Expanded(
+                      child: Text(
+                        service.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
                         ),
                       ),
-                    ],
+                    ),
+                    const SizedBox(width: 12),
                     Text(
-                      service.name,
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+                      service.basePrice > 0
+                          ? '৳ ${service.basePrice.toStringAsFixed(0)}'
+                          : (isBn ? 'আলোচনা সাপেক্ষে' : 'Custom Quote'),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: AppTypography.tabularFigures,
+                        color: colorScheme.primary,
                       ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 8),
-              // Base Price
-              Text(
-                '৳ ${service.basePrice.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: tokens.brandAccent,
+                if (service.description.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    service.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: tokens.secondaryText,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final stackFooter =
+                        constraints.maxWidth < 290 || textScale > 1.35;
+                    final metaWrap = Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: metaItems,
+                    );
+                    if (stackFooter) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          metaWrap,
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: bookButton,
+                          ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        Expanded(child: metaWrap),
+                        const SizedBox(width: 10),
+                        bookButton,
+                      ],
+                    );
+                  },
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            service.description,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 12.5,
-              color: colorScheme.onSurfaceVariant,
-              height: 1.35,
+              ],
             ),
           ),
-          const SizedBox(height: 14),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final stackFooter = constraints.maxWidth < 300 || textScale > 1.35;
-              if (stackFooter) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    metricsWrap,
-                    const SizedBox(height: 10),
-                    Align(alignment: Alignment.centerRight, child: bookPill),
-                  ],
-                );
-              }
-              return Row(
-                children: [
-                  Expanded(child: metricsWrap),
-                  const SizedBox(width: 8),
-                  bookPill,
-                ],
-              );
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

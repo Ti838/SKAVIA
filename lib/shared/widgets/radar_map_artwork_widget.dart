@@ -323,36 +323,37 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                   ),
                 ),
 
-              // 5. Bottom-Left Title & Bottom-Right "Open Full Map" CTA
+              // 5. Bottom-Left Title & Bottom-Right "Explore Map" CTA (Responsive, zero overflow)
               Positioned(
-                left: 14,
+                left: 12,
                 right: 12,
                 bottom: 12,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            isBn ? 'লাইভ সার্ভিস ম্যাপ' : 'Live Service Map',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 6,
-                                ),
-                              ],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final textScale =
+                        MediaQuery.textScalerOf(context).scale(1.0);
+                    final compact =
+                        constraints.maxWidth < 290 || textScale > 1.3;
+                    final colorScheme = Theme.of(context).colorScheme;
+
+                    final titleColumn = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isBn ? 'লাইভ সার্ভিস ম্যাপ' : 'Live Service Map',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            shadows: [
+                              Shadow(color: Colors.black54, blurRadius: 6),
+                            ],
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (!compact) ...[
                           const SizedBox(height: 1),
                           Text(
                             isBn
@@ -363,56 +364,72 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
                               shadows: const [
-                                Shadow(
-                                  color: Colors.black45,
-                                  blurRadius: 4,
-                                ),
+                                Shadow(color: Colors.black54, blurRadius: 4),
                               ],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
+                      ],
+                    );
+
+                    final explorePill = Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 7,
+                        horizontal: 10,
+                        vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryRoyal,
-                        borderRadius: BorderRadius.circular(18),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.22),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: colorScheme.primary,
+                        borderRadius: BorderRadius.circular(14),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            isBn ? 'ম্যাপ দেখুন' : 'Explore Map',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w700,
+                          Flexible(
+                            child: Text(
+                              isBn ? 'ম্যাপ' : 'Explore Map',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(
+                          Icon(
                             Icons.open_in_full_rounded,
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                             size: 13,
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                    );
+
+                    if (compact) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          titleColumn,
+                          const SizedBox(height: 6),
+                          explorePill,
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(child: titleColumn),
+                        const SizedBox(width: 8),
+                        Flexible(flex: 0, child: explorePill),
+                      ],
+                    );
+                  },
                 ),
               ),
             ],

@@ -332,7 +332,7 @@ void main() {
         );
         await tester.pump(const Duration(milliseconds: 200));
         expect(
-          find.text('No matched specialists found in this zone'),
+          find.text('No Matched Specialists Yet'),
           findsOneWidget,
         );
         expect(find.text('Re-evaluate Matches'), findsOneWidget);
@@ -544,7 +544,7 @@ void main() {
           wrapScreen(const Scaffold(body: PostComposerSheet()), mode),
         );
         await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Create Opportunity or Post'), findsOneWidget);
+        expect(find.text('Create Post'), findsOneWidget);
         expect(tester.takeException(), isNull);
 
         await tester.pumpWidget(

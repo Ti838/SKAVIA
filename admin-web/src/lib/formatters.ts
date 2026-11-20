@@ -1,3 +1,10 @@
+const BENGALI_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+
+export function toBengaliDigits(input: number | string | null | undefined): string {
+  if (input === null || input === undefined) return '';
+  return String(input).replace(/[0-9]/g, (digit) => BENGALI_DIGITS[parseInt(digit, 10)] ?? digit);
+}
+
 export function formatBdt(amount: number | string | null | undefined): string {
   const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
   const safe = Number.isFinite(num) ? num : 0;
@@ -9,6 +16,24 @@ export function formatBdt(amount: number | string | null | undefined): string {
   }).format(safe);
 }
 
+export function formatBdtLocale(
+  amount: number | string | null | undefined,
+  lang: 'en' | 'bn' = 'en'
+): string {
+  const num = typeof amount === 'string' ? parseFloat(amount) : (amount ?? 0);
+  const safe = Number.isFinite(num) ? num : 0;
+
+  if (lang === 'bn') {
+    const formatted = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(safe);
+    return `৳ ${toBengaliDigits(formatted)}`;
+  }
+
+  return formatBdt(safe);
+}
+
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—';
   const d = new Date(iso);
@@ -17,6 +42,25 @@ export function formatDateTime(iso: string | null | undefined): string {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(d);
+}
+
+export function formatDateTimeLocale(
+  iso: string | null | undefined,
+  lang: 'en' | 'bn' = 'en'
+): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+
+  if (lang === 'bn') {
+    const enFormatted = new Intl.DateTimeFormat('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(d);
+    return toBengaliDigits(enFormatted);
+  }
+
+  return formatDateTime(iso);
 }
 
 export function maskIdentifier(value: string | null | undefined, visibleTail = 4): string {
@@ -47,4 +91,3 @@ export function shortFingerprint(hex: string | null | undefined, head = 12, tail
   if (clean.length <= head + tail + 3) return clean;
   return `${clean.slice(0, head)}…${clean.slice(-tail)}`;
 }
-

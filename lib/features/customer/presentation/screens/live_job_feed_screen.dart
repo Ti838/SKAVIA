@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
+import '../../../../shared/error_states/error_view.dart';
+import '../../../../shared/widgets/app_app_bar.dart';
+import '../../../../shared/widgets/app_button.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
+import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../data/datasources/live_job_feed_datasource.dart';
 import '../../data/models/requirement_model.dart';
 import '../widgets/feed_category_chips.dart';
@@ -18,10 +22,10 @@ import '../widgets/post_composer_sheet.dart';
 
 export '../../data/models/requirement_model.dart';
 
-/// Live Jobs & Social Feed Screen
-/// Aligned with SKAVIA SRS Section 3.1.E, 3.1.G & 3.1.H.
-/// Features a social post composer, reactive feed filters, real-time Supabase loading,
-/// skeleton loaders, bid submissions, and cross-account data isolation.
+/// Live Jobs & Community Feed Screen.
+/// Features a single clean composer (zero overlapping FABs), clear post-type &
+/// trade filter hierarchy, pagination, pull-to-refresh, and distinct empty /
+/// filtered-empty / error states.
 class LiveJobFeedScreen extends StatefulWidget {
   final bool isTab;
 
@@ -32,14 +36,19 @@ class LiveJobFeedScreen extends StatefulWidget {
 }
 
 class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
+  static const int _pageSize = 20;
+
   final AuthController _authController = AuthController();
   final LiveJobFeedDataSource _dataSource = LiveJobFeedDataSource();
   final TextEditingController _searchController = TextEditingController();
 
-  String _selectedPostType = 'All'; // All, Job, Service Request, Update
+  String _selectedPostType = 'All';
   String _selectedCategory = 'All';
   bool _onlyEmergency = false;
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasMore = false;
+  bool _hasError = false;
 
   List<JobRequirementItem> _jobs = [];
 
@@ -64,21 +73,72 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
     }
   }
 
+  bool get _hasActiveFilter =>
+      _selectedPostType != 'All' ||
+      _selectedCategory != 'All' ||
+      _onlyEmergency ||
+      _searchController.text.trim().isNotEmpty;
+
+  void _clearFilters() {
+    _searchController.clear();
+    setState(() {
+      _selectedPostType = 'All';
+      _selectedCategory = 'All';
+      _onlyEmergency = false;
+    });
+  }
+
   Future<void> _fetchLiveRequirements() async {
-    setState(() => _isLoading = true);
-    final fetched = await _dataSource.fetchOpenRequirements();
-    if (mounted) {
-      setState(() {
-        _jobs = fetched;
-        _isLoading = false;
-      });
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
+    try {
+      final fetched = await _dataSource.fetchOpenRequirements(
+        limit: _pageSize,
+        offset: 0,
+      );
+      if (mounted) {
+        setState(() {
+          _jobs = fetched;
+          _hasMore = fetched.length == _pageSize;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_isLoadingMore || !_hasMore) return;
+    setState(() => _isLoadingMore = true);
+    try {
+      final more = await _dataSource.fetchOpenRequirements(
+        limit: _pageSize,
+        offset: _jobs.length,
+      );
+      if (mounted) {
+        setState(() {
+          final existingIds = _jobs.map((j) => j.id).toSet();
+          _jobs.addAll(more.where((item) => !existingIds.contains(item.id)));
+          _hasMore = more.length == _pageSize;
+          _isLoadingMore = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoadingMore = false);
     }
   }
 
   List<JobRequirementItem> get _filteredJobs {
     final query = _searchController.text.trim().toLowerCase();
     return _jobs.where((job) {
-      // 1. Post type filter
       if (_selectedPostType != 'All') {
         if (_selectedPostType == 'Jobs' && job.postType != 'Job') {
           return false;
@@ -94,7 +154,6 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
         }
       }
 
-      // 2. Category filter
       if (_selectedCategory != 'All' &&
           !job.category.toLowerCase().contains(
             _selectedCategory.toLowerCase(),
@@ -102,12 +161,13 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
         return false;
       }
 
-      // 3. Emergency only
-      if (_onlyEmergency && !job.urgency.toLowerCase().contains('emergency')) {
-        return false;
+      if (_onlyEmergency) {
+        final urg = job.urgency.toLowerCase();
+        if (!urg.contains('emergency') && !urg.contains('high')) {
+          return false;
+        }
       }
 
-      // 4. Search query
       if (query.isNotEmpty) {
         final matchesTitle = job.title.toLowerCase().contains(query);
         final matchesDesc = job.description.toLowerCase().contains(query);
@@ -122,12 +182,14 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
     LiveJobBidSheet.show(context, job);
   }
 
-  void _openPostComposer() {
+  void _openPostComposer({String initialPostType = 'Job'}) {
     PostComposerSheet.show(
       context,
+      initialPostType: initialPostType,
       onPostCreated: (newItem) {
         setState(() {
           _jobs.insert(0, newItem);
+          _hasError = false;
         });
         _fetchLiveRequirements();
       },
@@ -136,70 +198,65 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isBn = AppLanguageService.isBengali;
-    final colorScheme = context.colorScheme;
+    final theme = Theme.of(context);
+    final l10n = context.l10n;
+    final isBn = context.isBengali;
+    final colorScheme = theme.colorScheme;
     final tokens = context.skavia;
     final user = _safeCurrentUser();
-    final userInitial = (user?.displayName?.isNotEmpty ?? false)
-        ? user!.displayName![0].toUpperCase()
-        : (user?.email?.isNotEmpty ?? false)
-            ? user!.email![0].toUpperCase()
-            : 'U';
+    final profile = ProfileController.shared.profile;
+    final effectiveAvatar =
+        (profile?.avatarUrl != null && profile!.avatarUrl!.trim().isNotEmpty)
+        ? profile.avatarUrl
+        : user?.photoURL;
+    final effectiveName =
+        (profile != null &&
+            profile.fullName.trim().isNotEmpty &&
+            profile.fullName.trim() != 'SKAVIA Member')
+        ? profile.fullName.trim()
+        : (user?.displayName?.trim().isNotEmpty == true
+              ? user!.displayName!.trim()
+              : (user?.email ?? ''));
+    final userInitial = effectiveName.isNotEmpty
+        ? effectiveName[0].toUpperCase()
+        : 'U';
+
+    final filtered = _filteredJobs;
 
     return Scaffold(
-      backgroundColor: widget.isTab ? colorScheme.surface : tokens.canvasBg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: widget.isTab
           ? null
-          : AppBar(
-              backgroundColor: tokens.canvasBg,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              title: Text(
-                isBn ? 'লাইভ সোশ্যাল ও জব ফিড' : 'Live Marketplace & Feed',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
-              ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.post_add_rounded, color: Colors.white),
-                  tooltip: 'Create Post',
-                  onPressed: _openPostComposer,
-                ),
-              ],
+          : AppAppBar(
+              title: l10n.feedTitle,
             ),
       body: SafeArea(
         top: !widget.isTab,
         child: RefreshIndicator(
-          color: tokens.brandAccent,
+          color: colorScheme.primary,
           onRefresh: _fetchLiveRequirements,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(
               parent: ClampingScrollPhysics(),
             ),
             slivers: [
-              // 1. Post Composer Card
+              // 1. Single Clean Post Composer Card
               SliverToBoxAdapter(
                 child: FeedComposerPromptCard(
                   userInitial: userInitial,
-                  onOpenComposer: _openPostComposer,
+                  userName: effectiveName,
+                  userAvatarUrl: effectiveAvatar,
+                  onOpenComposer: () => _openPostComposer(),
+                  onOpenComposerWithType: (type) =>
+                      _openPostComposer(initialPostType: type),
                   isBn: isBn,
                 ),
               ),
 
-              // 2. Post Type Filter Chips (All, Jobs, Requests, Updates)
+              // 2. Primary Post Type Filter Row
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: FeedFilterTabs(
                     selectedPostType: _selectedPostType,
                     onSelected: (key) =>
@@ -209,10 +266,10 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                 ),
               ),
 
-              // 2b. Trade Category Filter Chips
+              // 3. Secondary Trade Filter Chips
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: FeedCategoryChips(
                     selectedCategory: _selectedCategory,
                     onSelected: (key) =>
@@ -222,7 +279,7 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                 ),
               ),
 
-              // 3. Search & Category Sub-bar
+              // 4. Search & Urgent Filter Bar
               SliverToBoxAdapter(
                 child: FeedSearchUrgentBar(
                   searchController: _searchController,
@@ -234,147 +291,100 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                 ),
               ),
 
-              // 4. Live Counter & Refresh Strip
+              // 5. Status & Active Filter Strip
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
+                    horizontal: 16,
                     vertical: 6,
                   ),
                   child: Row(
                     children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: filtered.isNotEmpty
+                              ? tokens.tealAccent
+                              : tokens.mutedText,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Expanded(
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: AppColors.successGreen,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                '${_filteredJobs.length} ${isBn ? "টি পোস্ট সক্রিয়" : "Active Feed Posts"}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w800,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      InkWell(
-                        onTap: _fetchLiveRequirements,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 4,
-                            vertical: 2,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.refresh_rounded,
-                                size: 14,
-                                color: tokens.brandAccent,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                isBn ? 'রিফ্রেশ' : 'Refresh',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: tokens.brandAccent,
-                                ),
-                              ),
-                            ],
+                        child: Text(
+                          l10n.feedActivePostsCount(filtered.length),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: colorScheme.onSurface,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
+                      if (_hasActiveFilter)
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: _clearFilters,
+                          child: Text(l10n.commonClearFilters),
+                        ),
                     ],
                   ),
                 ),
               ),
 
-              // 5. Feed List or Loading / Empty States
+              // 6. Distinct Loading / Error / Empty / Filtered-Empty / Feed States
               if (_isLoading)
                 const SliverToBoxAdapter(child: FeedSkeletonLoader())
-              else if (_filteredJobs.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.dynamic_feed_rounded,
-                            size: 48,
-                            color: tokens.mutedText,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            isBn
-                                ? 'কোনো পোস্ট পাওয়া যায়নি'
-                                : 'No posts matching your filter',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onSurface,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            isBn
-                                ? 'নতুন কাজ পোস্ট করতে উপরের বোতাম ব্যবহার করুন'
-                                : 'Use the composer above to share an opportunity',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: tokens.brandAccent,
-                              foregroundColor: tokens.onBrandAccent,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 18,
-                                vertical: 10,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            icon: const Icon(Icons.add_rounded, size: 16),
-                            label: Text(
-                              isBn ? 'পোস্ট তৈরি করুন' : 'Create Post',
-                            ),
-                            onPressed: _openPostComposer,
-                          ),
-                        ],
-                      ),
+              else if (_hasError)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: ErrorView(
+                      scrollable: false,
+                      title: l10n.feedErrorTitle,
+                      message: l10n.commonConnectionError,
+                      retryText: l10n.commonRetry,
+                      onRetry: _fetchLiveRequirements,
                     ),
                   ),
                 )
-              else
+              else if (filtered.isEmpty)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: EmptyDataView(
+                      scrollable: false,
+                      isFiltered: _hasActiveFilter,
+                      icon: Icons.dynamic_feed_outlined,
+                      title: _hasActiveFilter
+                          ? l10n.feedFilteredEmptyTitle
+                          : l10n.feedEmptyTitle,
+                      message: _hasActiveFilter
+                          ? l10n.feedFilteredEmptyMessage
+                          : l10n.feedEmptyMessage,
+                      actionText: _hasActiveFilter
+                          ? l10n.commonClearFilters
+                          : l10n.feedCreatePost,
+                      onAction: _hasActiveFilter
+                          ? _clearFilters
+                          : _openPostComposer,
+                    ),
+                  ),
+                )
+              else ...[
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 32),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final job = _filteredJobs[index];
+                      final job = filtered[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
                         child: JobRequirementFeedCard(
@@ -390,26 +400,30 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
                           },
                         ),
                       );
-                    }, childCount: _filteredJobs.length),
+                    }, childCount: filtered.length),
                   ),
                 ),
+                if (_hasMore)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+                      child: AppButton(
+                        text: isBn ? 'আরো পোস্ট দেখুন' : 'Load More Posts',
+                        variant: AppButtonVariant.outline,
+                        isLoading: _isLoadingMore,
+                        onPressed: _isLoadingMore ? null : _loadMore,
+                        height: 44,
+                      ),
+                    ),
+                  )
+                else
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: AppDimensions.space24),
+                  ),
+              ],
             ],
           ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: AppColors.primaryRoyal,
-        elevation: 3,
-        icon: const Icon(Icons.post_add_rounded, color: Colors.white, size: 18),
-        label: Text(
-          isBn ? 'পোস্ট তৈরি করুন' : 'Create Post',
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-            fontSize: 12,
-          ),
-        ),
-        onPressed: _openPostComposer,
       ),
     );
   }

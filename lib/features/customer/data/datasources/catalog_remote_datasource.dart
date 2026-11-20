@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/utils/category_resolver.dart';
@@ -14,107 +13,91 @@ class CatalogRemoteDataSource {
 
   SupabaseClient? get _supabase => _client ?? tryGetSupabaseClient();
 
-  /// Fetch all active categories from Supabase with graceful default fallback
+  /// Fetch all active categories strictly from Supabase when connected.
+  /// Throws on network/DB failure so the UI displays a genuine error state.
   Future<List<CategoryModel>> getCategories() async {
     final client = _supabase;
-    if (client != null) {
-      try {
-        final response = await client
-            .from(DatabaseTables.categories)
-            .select()
-            .eq('is_active', true)
-            .order('name');
-
-        final List<dynamic> data = response as List<dynamic>;
-        if (data.isNotEmpty) {
-          return data
-              .map(
-                (json) => CategoryModel.fromJson(json as Map<String, dynamic>),
-              )
-              .toList();
-        }
-      } catch (e) {
-        debugPrint('[CatalogRemoteDataSource] Using default categories: $e');
-      }
+    if (client == null) {
+      return CategoryModel.defaultCategories;
     }
-    return CategoryModel.defaultCategories;
+
+    final response = await client
+        .from(DatabaseTables.categories)
+        .select()
+        .eq('is_active', true)
+        .order('name');
+
+    final List<dynamic> data = response as List<dynamic>;
+    return data
+        .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
-  /// Fetch services for a specific category or all services
+  /// Fetch services for a specific category or all services strictly from Supabase.
+  /// Never fabricates fallback services when an authentic DB category has 0 rows.
   Future<List<ServiceModel>> getServices({String? categoryId}) async {
     final client = _supabase;
-    if (client != null) {
-      try {
-        String? dbCategoryUuid;
-        if (categoryId != null &&
-            categoryId.isNotEmpty &&
-            categoryId != 'all') {
-          dbCategoryUuid = await CategoryResolver.resolveCategoryUuid(
-            client,
-            categoryId,
-          );
-        }
-        var query = client.from(DatabaseTables.services).select();
-        if (dbCategoryUuid != null) {
-          query = query.eq('category_id', dbCategoryUuid);
-        }
-        final response = await query.order('name');
-        final List<dynamic> data = response as List<dynamic>;
-        if (data.isNotEmpty) {
-          return data
-              .map(
-                (json) => ServiceModel.fromJson(json as Map<String, dynamic>),
-              )
-              .toList();
-        }
-      } catch (e) {
-        debugPrint('[CatalogRemoteDataSource] Using default services: $e');
+    if (client == null) {
+      if (categoryId != null && categoryId.isNotEmpty && categoryId != 'all') {
+        return ServiceModel.defaultServices
+            .where((s) => s.categoryId == categoryId)
+            .toList();
+      }
+      return ServiceModel.defaultServices;
+    }
+
+    String? dbCategoryUuid;
+    if (categoryId != null && categoryId.isNotEmpty && categoryId != 'all') {
+      dbCategoryUuid = await CategoryResolver.resolveCategoryUuid(
+        client,
+        categoryId,
+      );
+      if (dbCategoryUuid == null) {
+        return const [];
       }
     }
 
-    if (categoryId != null && categoryId.isNotEmpty && categoryId != 'all') {
-      final filtered = ServiceModel.defaultServices
-          .where((s) => s.categoryId == categoryId)
-          .toList();
-      return filtered.isNotEmpty ? filtered : ServiceModel.defaultServices;
+    var query = client.from(DatabaseTables.services).select();
+    if (dbCategoryUuid != null) {
+      query = query.eq('category_id', dbCategoryUuid);
     }
-    return ServiceModel.defaultServices;
+    final response = await query.order('name');
+    final List<dynamic> data = response as List<dynamic>;
+    return data
+        .map((json) => ServiceModel.fromJson(json as Map<String, dynamic>))
+        .toList();
   }
 
-  /// Search services by name or description
+  /// Search services by name or description strictly against Supabase when connected.
   Future<List<ServiceModel>> searchServices(String queryText) async {
-    final query = queryText.trim().toLowerCase();
+    final query = queryText.trim();
     if (query.isEmpty) {
       return getServices();
     }
-    final client = _supabase;
-    if (client != null) {
-      try {
-        final response = await client
-            .from(DatabaseTables.services)
-            .select()
-            .ilike('name', '%$query%')
-            .limit(20);
 
-        final List<dynamic> data = response as List<dynamic>;
-        if (data.isNotEmpty) {
-          return data
-              .map(
-                (json) => ServiceModel.fromJson(json as Map<String, dynamic>),
-              )
-              .toList();
-        }
-      } catch (e) {
-        debugPrint('[CatalogRemoteDataSource Search]: $e');
-      }
+    final client = _supabase;
+    if (client == null) {
+      final lower = query.toLowerCase();
+      return ServiceModel.defaultServices
+          .where(
+            (s) =>
+                s.name.toLowerCase().contains(lower) ||
+                s.description.toLowerCase().contains(lower),
+          )
+          .toList();
     }
 
-    return ServiceModel.defaultServices
-        .where(
-          (s) =>
-              s.name.toLowerCase().contains(query) ||
-              s.description.toLowerCase().contains(query),
-        )
+    final safeQuery = query.replaceAll(',', ' ');
+    final response = await client
+        .from(DatabaseTables.services)
+        .select()
+        .or('name.ilike.%$safeQuery%,description.ilike.%$safeQuery%')
+        .order('name')
+        .limit(30);
+
+    final List<dynamic> data = response as List<dynamic>;
+    return data
+        .map((json) => ServiceModel.fromJson(json as Map<String, dynamic>))
         .toList();
   }
 }

@@ -71,12 +71,14 @@ class RadarTechnicianCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.verified_rounded,
-              size: 15,
-              color: AppColors.primarySky,
-            ),
+            if (tech.isVerified) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.verified_rounded,
+                size: 15,
+                color: tokens.tealAccent,
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 2),
@@ -95,28 +97,29 @@ class RadarTechnicianCard extends StatelessWidget {
           runSpacing: 4,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.star_rounded,
-                  size: 14,
-                  color: AppColors.accentPeach,
-                ),
-                const SizedBox(width: 3),
-                Flexible(
-                  child: Text(
-                    tech.rating.toStringAsFixed(1),
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
+            if (tech.rating > 0)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star_rounded,
+                    size: 14,
+                    color: tokens.warning,
+                  ),
+                  const SizedBox(width: 3),
+                  Flexible(
+                    child: Text(
+                      tech.rating.toStringAsFixed(1),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
             Text(
               '${tech.jobs} ${isBn ? "কাজ সম্পন্ন" : "Jobs"}',
               style: TextStyle(

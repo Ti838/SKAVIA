@@ -89,9 +89,12 @@ void main() {
         ),
       );
 
-      expect(lightTokens.cardBg, const Color(0xFFFFFFFF));
-      expect(darkTokens.cardBg, const Color(0xFF1E293B));
-      expect(darkTokens.brandAccent, const Color(0xFF60A5FA));
+      expect(lightTokens.cardBg, SkaviaSurfaceTokens.light.cardBg);
+      expect(darkTokens.cardBg, SkaviaSurfaceTokens.dark.cardBg);
+      expect(darkTokens.brandAccent, SkaviaSurfaceTokens.dark.brandAccent);
+      expect(lightTokens.brandAccent, SkaviaSurfaceTokens.light.brandAccent);
+      expect(lightTokens.violetAccent, SkaviaSurfaceTokens.light.violetAccent);
+      expect(lightTokens.tealAccent, SkaviaSurfaceTokens.light.tealAccent);
     });
   });
 
@@ -205,7 +208,20 @@ void main() {
                   isReverseGeocoding: false,
                 ),
                 RadarTechnicianCard(
-                  technician: RadarTechnician.seedTechnicians.first,
+                  technician: const RadarTechnician(
+                    id: 'test-tech-1',
+                    name: 'Test Specialist',
+                    trade: 'Electrical',
+                    icon: Icons.bolt_rounded,
+                    color: AppColors.primaryBlue,
+                    rating: 0.0,
+                    jobs: 0,
+                    distanceKm: 1.2,
+                    startingRate: 800,
+                    latitude: 23.7461,
+                    longitude: 90.3742,
+                    zone: 'Dhanmondi',
+                  ),
                   onBook: () {},
                 ),
               ],

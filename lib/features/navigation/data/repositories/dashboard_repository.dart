@@ -4,38 +4,80 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/category_resolver.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../customer/data/models/requirement_model.dart';
 
-/// Aggregated dashboard data container for worker profile stats
+/// Aggregated dashboard data container for worker profile stats.
 class DashboardWorkerStats {
   final int completedJobs;
+  final int totalReviews;
   final double ratingAverage;
   final bool isAvailable;
+  final String verificationStatus;
   final double totalEarnings;
   final List<Map<String, dynamic>> incomingRequests;
+  final Map<String, dynamic>? activeJob;
 
   const DashboardWorkerStats({
     required this.completedJobs,
+    this.totalReviews = 0,
     required this.ratingAverage,
     required this.isAvailable,
+    this.verificationStatus = 'Unverified',
     required this.totalEarnings,
     required this.incomingRequests,
+    this.activeJob,
   });
 
   factory DashboardWorkerStats.empty() {
     return const DashboardWorkerStats(
       completedJobs: 0,
+      totalReviews: 0,
       ratingAverage: 0.0,
-      isAvailable: true,
+      isAvailable: false,
+      verificationStatus: 'Unverified',
       totalEarnings: 0.0,
       incomingRequests: [],
+      activeJob: null,
     );
   }
 }
 
+/// Aggregated dashboard data container for Business Client / Organization mode.
+class DashboardBusinessStats {
+  final String customerType;
+  final String? companyName;
+  final int activeProjectsCount;
+  final int openRequirementsCount;
+  final List<Map<String, dynamic>> projects;
+
+  const DashboardBusinessStats({
+    this.customerType = 'Business Client',
+    this.companyName,
+    this.activeProjectsCount = 0,
+    this.openRequirementsCount = 0,
+    this.projects = const [],
+  });
+}
+
+/// Authorized workspace role summary for a user.
+class AuthorizedRoleSummary {
+  final bool hasCustomer;
+  final bool hasEnterprise;
+  final bool hasWorker;
+  final String? customerType;
+
+  const AuthorizedRoleSummary({
+    this.hasCustomer = true,
+    this.hasEnterprise = false,
+    this.hasWorker = false,
+    this.customerType,
+  });
+}
+
 /// Repository responsible for dashboard data aggregation across roles, active bookings,
-/// worker metrics, live requirement feeds, and notification badges.
+/// worker metrics, business operations, live requirement feeds, and notification badges.
 class DashboardRepository {
   final SupabaseClient? _injectedClient;
 
@@ -43,7 +85,7 @@ class DashboardRepository {
 
   SupabaseClient? get _client => _injectedClient ?? tryGetSupabaseClient();
 
-  /// Loads the most recent active service request for the client (Requested, Accepted, In Progress)
+  /// Loads the most recent active service request for the client (Requested, Accepted, In Progress).
   Future<Map<String, dynamic>?> getActiveClientBooking(String userId) async {
     final client = _client;
     if (client == null) return null;
@@ -52,7 +94,7 @@ class DashboardRepository {
           .from('service_requests')
           .select(
             'service_request_id, agreed_price, service_notes, scheduled_at, status, '
-            'worker_profiles ( title, rating_average, users ( full_name, phone, avatar_url ) )',
+            'worker_profiles ( title, rating_average, total_reviews, users ( full_name, phone, avatar_url ) )',
           )
           .eq('client_id', userId)
           .inFilter('status', ['Requested', 'Accepted', 'In Progress'])
@@ -66,20 +108,23 @@ class DashboardRepository {
     }
   }
 
-  /// Fetches basic user profile record (avatar, active role mode, location)
+  /// Fetches basic user profile record (full_name, avatar, cover, active role mode, location).
   Future<Map<String, dynamic>?> getUserProfileRecord(String userId) async {
     final client = _client;
     if (client == null) return null;
     try {
       final res = await client
           .from('users')
-          .select('avatar_url, cover_url, active_mode, location')
+          .select('full_name, avatar_url, cover_url, active_mode, location')
           .eq('user_id', userId)
           .maybeSingle();
 
       if (res != null && res['active_mode'] != null) {
         final mode = res['active_mode'].toString();
-        LocalCacheService.instance.put('${AppConstants.userModeStorageKey}_$userId', mode);
+        LocalCacheService.instance.put(
+          '${AppConstants.userModeStorageKey}_$userId',
+          mode,
+        );
         LocalCacheService.instance.put(AppConstants.userModeStorageKey, mode);
       }
       return res;
@@ -89,7 +134,130 @@ class DashboardRepository {
     }
   }
 
-  /// Fetches worker metrics including completed jobs, rating, earnings, and live incoming requests
+  /// Resolves which customer-facing workspaces this user has legitimately enrolled in.
+  Future<AuthorizedRoleSummary> getAuthorizedRoles(String userId) async {
+    final client = _client;
+    if (client == null) {
+      return const AuthorizedRoleSummary();
+    }
+
+    bool hasCustomer = true;
+    bool hasEnterprise = false;
+    bool hasWorker = false;
+    String? customerType;
+
+    try {
+      final rolesRes = await client
+          .from('user_roles')
+          .select('roles(role_name)')
+          .eq('user_id', userId);
+      for (final row in (rolesRes as List)) {
+        final name = (row['roles'] as Map?)?['role_name']?.toString() ?? '';
+        if (name == 'Worker') hasWorker = true;
+        if (name == 'Business Client' || name == 'Organization') {
+          hasEnterprise = true;
+          customerType ??= name;
+        }
+        if (name == 'Individual Customer') hasCustomer = true;
+      }
+    } catch (_) {}
+
+    try {
+      final cust = await client
+          .from('customer_profiles')
+          .select('customer_type, company_name')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (cust != null) {
+        final cType = cust['customer_type']?.toString();
+        if (cType != null && cType.isNotEmpty) {
+          customerType = cType;
+          if (cType == 'Business Client' || cType == 'Organization') {
+            hasEnterprise = true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    try {
+      final wp = await client
+          .from('worker_profiles')
+          .select('worker_profile_id, title, verification_status')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (wp != null) {
+        // Count as enrolled worker if explicitly configured (custom title or verified/submitted)
+        final title = wp['title']?.toString().trim() ?? '';
+        final status = wp['verification_status']?.toString() ?? '';
+        if (status == 'Verified' ||
+            (title.isNotEmpty && title != 'Skilled Technician')) {
+          hasWorker = true;
+        }
+      }
+    } catch (_) {}
+
+    return AuthorizedRoleSummary(
+      hasCustomer: hasCustomer,
+      hasEnterprise: hasEnterprise,
+      hasWorker: hasWorker,
+      customerType: customerType,
+    );
+  }
+
+  /// Fetches real Business Client / Organization operational stats.
+  Future<DashboardBusinessStats> getBusinessStats(String userId) async {
+    final client = _client;
+    if (client == null) return const DashboardBusinessStats();
+
+    String customerType = 'Business Client';
+    String? companyName;
+    List<Map<String, dynamic>> projects = [];
+    int openReqCount = 0;
+
+    try {
+      final cust = await client
+          .from('customer_profiles')
+          .select('customer_type, company_name')
+          .eq('user_id', userId)
+          .maybeSingle();
+      if (cust != null) {
+        customerType = cust['customer_type']?.toString() ?? customerType;
+        companyName = cust['company_name']?.toString();
+      }
+    } catch (_) {}
+
+    try {
+      final projRes = await client
+          .from('projects')
+          .select('project_id, title, status, total_budget, created_at')
+          .eq('client_id', userId)
+          .order('created_at', ascending: false)
+          .limit(5);
+      projects = List<Map<String, dynamic>>.from(projRes);
+    } catch (_) {}
+
+    try {
+      final reqRes = await client
+          .from('requirements')
+          .select('requirement_id')
+          .eq('submitted_by', userId)
+          .eq('status', 'Open');
+      openReqCount = (reqRes as List).length;
+    } catch (_) {}
+
+    return DashboardBusinessStats(
+      customerType: customerType,
+      companyName: companyName,
+      activeProjectsCount: projects
+          .where((p) => (p['status']?.toString() ?? '') != 'Completed')
+          .length,
+      openRequirementsCount: openReqCount,
+      projects: projects,
+    );
+  }
+
+  /// Fetches worker metrics including completed jobs, verified reviews, earnings,
+  /// active job, and live incoming requests.
   Future<DashboardWorkerStats> getWorkerStats(String userId) async {
     final client = _client;
     if (client == null) return DashboardWorkerStats.empty();
@@ -97,7 +265,8 @@ class DashboardRepository {
       final workerProfile = await client
           .from('worker_profiles')
           .select(
-            'worker_profile_id, completed_jobs, rating_average, is_available',
+            'worker_profile_id, completed_jobs, rating_average, total_reviews, '
+            'is_available, verification_status',
           )
           .eq('user_id', userId)
           .maybeSingle();
@@ -108,11 +277,16 @@ class DashboardRepository {
 
       final wpId = workerProfile['worker_profile_id'];
       final jobs = (workerProfile['completed_jobs'] as num?)?.toInt() ?? 0;
-      final rating =
+      final totalReviews =
+          (workerProfile['total_reviews'] as num?)?.toInt() ?? 0;
+      final rawRating =
           (workerProfile['rating_average'] as num?)?.toDouble() ?? 0.0;
-      final available = workerProfile['is_available'] as bool? ?? true;
+      // Strict Real Data Policy: never expose a rating when 0 verified reviews exist
+      final rating = totalReviews > 0 ? rawRating : 0.0;
+      final available = workerProfile['is_available'] as bool? ?? false;
+      final verificationStatus =
+          workerProfile['verification_status']?.toString() ?? 'Unverified';
 
-      // Earnings calculation (column is `amount`, status 'Available' / 'Withdrawn')
       double earningsSum = 0.0;
       try {
         final earningsRes = await client
@@ -121,24 +295,22 @@ class DashboardRepository {
             .eq('worker_profile_id', wpId)
             .inFilter('status', ['Available', 'Withdrawn']);
 
-        if (earningsRes.isNotEmpty) {
-          for (final row in earningsRes) {
-            earningsSum += (row['amount'] as num?)?.toDouble() ?? 0.0;
-          }
+        for (final row in earningsRes) {
+          earningsSum += (row['amount'] as num?)?.toDouble() ?? 0.0;
         }
       } catch (_) {}
 
-      // Incoming requests (note: location lives on requirements / client user record)
       List<Map<String, dynamic>> requests = [];
       try {
         final requestsRes = await client
             .from('service_requests')
             .select(
               'service_request_id, agreed_price, service_notes, scheduled_at, status, '
-              'requirements(location, title), users!client_id(location, full_name)',
+              'requirements(location, title), users!client_id(location, full_name, phone)',
             )
             .eq('worker_profile_id', wpId)
             .eq('status', 'Requested')
+            .order('scheduled_at', ascending: false)
             .limit(5);
         requests = List<Map<String, dynamic>>.from(requestsRes).map((row) {
           final normalized = Map<String, dynamic>.from(row);
@@ -147,23 +319,56 @@ class DashboardRepository {
           normalized['location'] =
               reqMap?['location']?.toString() ??
               userMap?['location']?.toString() ??
-              'Dhaka';
+              '';
           normalized['title'] =
               reqMap?['title']?.toString() ?? 'Service Request';
           normalized['client_name'] =
               userMap?['full_name']?.toString() ?? 'Client';
+          normalized['client_phone'] = userMap?['phone']?.toString();
           return normalized;
         }).toList();
       } catch (e) {
         debugPrint('[DashboardRepository] incoming requests notice: $e');
       }
 
+      Map<String, dynamic>? activeJob;
+      try {
+        final activeRes = await client
+            .from('service_requests')
+            .select(
+              'service_request_id, agreed_price, service_notes, scheduled_at, status, '
+              'requirements(location, title), users!client_id(location, full_name, phone)',
+            )
+            .eq('worker_profile_id', wpId)
+            .inFilter('status', ['Accepted', 'In Progress'])
+            .order('scheduled_at', ascending: false)
+            .limit(1)
+            .maybeSingle();
+        if (activeRes != null) {
+          final reqMap = activeRes['requirements'] as Map<String, dynamic>?;
+          final userMap = activeRes['users'] as Map<String, dynamic>?;
+          activeJob = {
+            ...activeRes,
+            'location':
+                reqMap?['location']?.toString() ??
+                userMap?['location']?.toString() ??
+                '',
+            'title': reqMap?['title']?.toString() ?? 'Active Job',
+            'client_name': userMap?['full_name']?.toString() ?? 'Client',
+            'client_phone': userMap?['phone']?.toString(),
+          };
+        }
+      } catch (_) {}
+
       return DashboardWorkerStats(
         completedJobs: jobs,
+        totalReviews: totalReviews,
         ratingAverage: rating,
         isAvailable: available,
+        verificationStatus: verificationStatus,
         totalEarnings: earningsSum,
         incomingRequests: requests,
+        activeJob: activeJob,
       );
     } catch (e) {
       debugPrint('[DashboardRepository] getWorkerStats error: $e');
@@ -171,7 +376,7 @@ class DashboardRepository {
     }
   }
 
-  /// Fetches open job requirements for customer dashboard preview
+  /// Fetches open job requirements for customer dashboard preview.
   Future<List<JobRequirementItem>> getOpenRequirements({int limit = 5}) async {
     final client = _client;
     if (client == null) return [];
@@ -191,13 +396,21 @@ class DashboardRepository {
       for (final row in reqRes) {
         final catMap = row['categories'] as Map<String, dynamic>?;
         final userMap = row['users'] as Map<String, dynamic>?;
-        final rawCatId = row['category_id']?.toString() ?? 'cat_electrical';
+        final rawCatId = row['category_id']?.toString() ?? '';
         final catName =
             catMap?['name']?.toString() ??
-            CategoryResolver.displayName(rawCatId);
+            (rawCatId.isNotEmpty
+                ? CategoryResolver.displayName(rawCatId)
+                : 'General');
         final rawUrgency = row['urgency']?.toString() ?? 'Medium';
         final urgency = rawUrgency == 'Medium' ? 'Standard' : rawUrgency;
-        final reqType = row['requirement_type']?.toString() ?? 'Simple';
+        final reqType = (row['requirement_type']?.toString() ?? 'Simple')
+            .toLowerCase();
+        final budget = (row['budget'] as num?)?.toDouble() ?? 0.0;
+        final createdAt = DateTime.tryParse(
+          row['created_at']?.toString() ?? '',
+        );
+
         items.add(
           JobRequirementItem(
             id: row['requirement_id']?.toString() ?? '',
@@ -205,13 +418,15 @@ class DashboardRepository {
             category: catName,
             categoryId: rawCatId,
             description: row['description']?.toString() ?? '',
-            location: row['location']?.toString() ?? 'Dhaka, Bangladesh',
-            budgetMin: (row['budget'] as num?)?.toDouble() ?? 1200.0,
-            budgetMax: ((row['budget'] as num?)?.toDouble() ?? 1200.0) * 1.25,
+            location: row['location']?.toString() ?? '',
+            budgetMin: budget,
+            budgetMax: budget,
             urgency: urgency,
-            postType: reqType == 'Complex' ? 'Job' : 'Service Request',
-            timeAgo: 'Recent',
-            clientName: userMap?['full_name']?.toString() ?? 'Verified Member',
+            postType: reqType == 'update'
+                ? 'Professional Update'
+                : (reqType == 'complex' ? 'Service Request' : 'Job'),
+            timeAgo: createdAt != null ? Formatters.timeAgo(createdAt) : '',
+            clientName: userMap?['full_name']?.toString() ?? 'SKAVIA Member',
           ),
         );
       }
@@ -222,7 +437,7 @@ class DashboardRepository {
     }
   }
 
-  /// Checks if current user has any unread notifications
+  /// Checks if current user has any unread notifications.
   Future<bool> hasUnreadNotifications(String userId) async {
     final client = _client;
     if (client == null) return false;
@@ -247,7 +462,7 @@ class DashboardRepository {
     }
   }
 
-  /// Updates active user mode ('client' / 'customer' / 'enterprise' / 'worker') in database
+  /// Updates active user mode ('customer' / 'enterprise' / 'worker') in database.
   Future<void> updateActiveMode(String userId, String mode) async {
     await LocalCacheService.instance.putPersisted(
       '${AppConstants.userModeStorageKey}_$userId',
@@ -269,17 +484,19 @@ class DashboardRepository {
     }
   }
 
-  /// Toggles worker online availability
-  Future<void> updateWorkerAvailability(String userId, bool isAvailable) async {
+  /// Toggles worker online availability. Returns `true` if persisted cleanly.
+  Future<bool> updateWorkerAvailability(String userId, bool isAvailable) async {
     final client = _client;
-    if (client == null) return;
+    if (client == null) return false;
     try {
       await client
           .from('worker_profiles')
           .update({'is_available': isAvailable})
           .eq('user_id', userId);
+      return true;
     } catch (e) {
       debugPrint('[DashboardRepository] updateWorkerAvailability error: $e');
+      return false;
     }
   }
 }

@@ -24,7 +24,7 @@ class ProjectDashboardScreen extends StatefulWidget {
   const ProjectDashboardScreen({
     super.key,
     this.projectId,
-    this.projectTitle = 'Project Alpha',
+    this.projectTitle = 'Projects',
     this.isTab = false,
   });
 
@@ -37,9 +37,8 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
   int _selectedTaskFilter = 0; // 0: Tasks, 1: Files, 2: Milestones
 
   bool _isLoading = true;
-  String _title = 'Project Alpha';
-  double _budget = 15000.0;
-  String? _liveTeamId;
+  String _title = 'Projects';
+  double _budget = 0.0;
   List<Map<String, dynamic>> _teamMembers = [];
   List<Map<String, dynamic>> _tasks = [];
 
@@ -107,7 +106,6 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
 
         if (teamRes != null) {
           final teamId = teamRes['team_id']?.toString();
-          _liveTeamId = teamId;
           if (teamId != null) {
             final membersRes = await client
                 .from('team_members')
@@ -201,15 +199,16 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
         _saveLocalState();
 
         final client = tryGetSupabaseClient();
+        final targetProjectId = widget.projectId;
         if (client != null &&
-            _liveTeamId != null &&
-            UuidUtil.isValidUuid(_liveTeamId)) {
+            targetProjectId != null &&
+            UuidUtil.isValidUuid(targetProjectId)) {
           try {
             await client.from('tasks').insert({
               'task_id': newId,
-              'team_id': _liveTeamId,
+              'project_id': targetProjectId,
               'title': text,
-              'status': 'Pending',
+              'status': 'Assigned',
             });
           } catch (e) {
             debugPrint('[ProjectDashboard] Task insert sync notice: $e');

@@ -39,13 +39,12 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
   void initState() {
     super.initState();
     _bidPriceController = TextEditingController(
-      text: widget.job.budgetMin.toStringAsFixed(0),
+      text: widget.job.budgetMin > 0
+          ? widget.job.budgetMin.toStringAsFixed(0)
+          : '',
     );
     _arrivalController = TextEditingController(text: '30 mins');
-    _proposalNoteController = TextEditingController(
-      text:
-          'Verified specialist with proper inspection equipment ready to dispatch immediately.',
-    );
+    _proposalNoteController = TextEditingController();
   }
 
   @override
@@ -127,7 +126,7 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
             context,
             clientId == user.uid
                 ? 'You cannot submit a service proposal on your own requirement.'
-                : 'This sample post cannot accept live bids. Please open a live requirement.',
+                : 'This post is not linked to an open requirement yet.',
           );
         }
         return;
@@ -136,7 +135,27 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
       final proposedPrice =
           double.tryParse(_bidPriceController.text.trim()) ??
           widget.job.budgetMin;
+      if (proposedPrice <= 0) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          UiFeedbackHelper.showError(
+            context,
+            'Please enter a valid bid amount greater than ৳ 0.',
+          );
+        }
+        return;
+      }
       final note = _proposalNoteController.text.trim();
+      if (note.isEmpty) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          UiFeedbackHelper.showError(
+            context,
+            'Please write a short message describing your availability and approach.',
+          );
+        }
+        return;
+      }
 
       await client.from(DatabaseTables.serviceRequests).insert({
         'requirement_id': widget.job.id,
@@ -338,6 +357,9 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                 maxLines: 2,
                 style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
+                  hintText: isBn
+                      ? 'আপনার অভিজ্ঞতা, যন্ত্রপাতি ও কাজের সময়সূচী লিখুন...'
+                      : 'Describe your relevant experience, tools, and availability...',
                   filled: true,
                   fillColor: tokens.subtleCardBg,
                   border: OutlineInputBorder(

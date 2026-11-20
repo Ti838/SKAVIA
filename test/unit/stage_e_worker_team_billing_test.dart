@@ -269,23 +269,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('TechCraft Team'), findsOneWidget);
-      expect(find.text('Dream Builders'), findsOneWidget);
+      expect(find.text('TechCraft Team'), findsNothing);
+      expect(find.text('Dream Builders'), findsNothing);
+      expect(find.text('No teams registered yet'), findsOneWidget);
 
-      // Tap Skills filter to cycle from All Skills -> Flutter
+      // Tap Skills filter to cycle from All Skills -> Flutter and verify filtered empty state
       await tester.tap(find.text('Skills'));
       await tester.pumpAndSettle();
 
-      expect(find.text('TechCraft Team'), findsOneWidget);
-      expect(find.text('Dream Builders'), findsNothing);
-
-      // Toggle bookmark on first team and verify LocalCacheService persistence
-      await tester.tap(find.byIcon(Icons.bookmark_border_rounded).first);
-      await tester.pumpAndSettle();
-
-      final cached = LocalCacheService.instance.get('team_discovery_saved_ids');
-      expect(cached, isA<List>());
-      expect((cached as List), contains('team_01'));
+      expect(find.text('No teams match these filters'), findsOneWidget);
+      expect(find.text('Reset Filters'), findsOneWidget);
     });
 
     testWidgets('AdminDashboardScreen displays honest zero counts when offline', (

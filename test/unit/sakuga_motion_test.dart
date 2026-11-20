@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skavia/features/navigation/presentation/screens/main_scaffold_screen.dart';
+import 'package:skavia/features/navigation/presentation/widgets/dashboard_bottom_nav_bar.dart';
 import 'package:skavia/shared/motion/sakuga_motion.dart';
 import 'package:skavia/shared/widgets/app_button.dart';
 import 'package:skavia/shared/widgets/app_text_field.dart';
@@ -168,5 +170,54 @@ void main() {
       await tester.tap(find.text('Reduced Motion Safe'));
       await tester.pumpAndSettle();
     });
+
+    testWidgets(
+      'DashboardBottomNavBar and AppButton fire on first realistic tap (held across animation frames)',
+      (tester) async {
+        int selectedTab = 0;
+        int buttonTaps = 0;
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: StatefulBuilder(
+              builder: (context, setState) => Scaffold(
+                body: Center(
+                  child: AppButton(
+                    text: 'Continue',
+                    onPressed: () => buttonTaps++,
+                  ),
+                ),
+                bottomNavigationBar: DashboardBottomNavBar(
+                  currentIndex: selectedTab,
+                  currentMode: AppRoleMode.customer,
+                  onTabSelected: (index) => setState(() => selectedTab = index),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        // Simulate a realistic human tap (~80ms press duration across multiple frames)
+        // on the Services bottom nav tab.
+        final servicesCenter = tester.getCenter(find.text('Services'));
+        final navGesture = await tester.startGesture(servicesCenter);
+        await tester.pump(const Duration(milliseconds: 20));
+        await tester.pump(const Duration(milliseconds: 60));
+        await navGesture.up();
+        await tester.pumpAndSettle();
+
+        expect(selectedTab, 1);
+
+        // Simulate a realistic human tap on AppButton as well.
+        final buttonCenter = tester.getCenter(find.text('Continue'));
+        final btnGesture = await tester.startGesture(buttonCenter);
+        await tester.pump(const Duration(milliseconds: 20));
+        await tester.pump(const Duration(milliseconds: 60));
+        await btnGesture.up();
+        await tester.pumpAndSettle();
+
+        expect(buttonTaps, 1);
+      },
+    );
   });
 }

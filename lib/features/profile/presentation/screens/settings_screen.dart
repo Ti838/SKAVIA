@@ -9,6 +9,7 @@ import '../../../../core/network/offline_sync_queue_manager.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/app_theme_service.dart';
 import '../../../../core/storage/local_cache_service.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../shared/dialogs/account_deletion_dialog.dart';
 import '../../../../shared/dialogs/confirmation_dialog.dart';
@@ -217,48 +218,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ],
                       ),
-                      Divider(color: tokens.subtleBorder, height: 22),
-                      Text(
-                        isBn ? 'অ্যাপের থিম' : 'App Theme',
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ValueListenableBuilder<ThemeMode>(
-                        valueListenable: AppThemeService.themeModeNotifier,
-                        builder: (context, activeMode, _) {
-                          return Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [
-                              _buildOptionPill(
-                                context,
-                                label: isBn ? 'সিস্টেম অটো' : 'System Auto',
-                                selected: activeMode == ThemeMode.system,
-                                onTap: () =>
-                                    AppThemeService.setThemeMode(ThemeMode.system),
-                              ),
-                              _buildOptionPill(
-                                context,
-                                label: isBn ? 'লাইট মোড' : 'Light Mode',
-                                selected: activeMode == ThemeMode.light,
-                                onTap: () =>
-                                    AppThemeService.setThemeMode(ThemeMode.light),
-                              ),
-                              _buildOptionPill(
-                                context,
-                                label: isBn ? 'ডার্ক মোড' : 'Dark Mode',
-                                selected: activeMode == ThemeMode.dark,
-                                onTap: () =>
-                                    AppThemeService.setThemeMode(ThemeMode.dark),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
                     ],
                   ),
                 ),
@@ -357,7 +316,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '$pending pending offline item(s) • $cachedItems cached record(s)',
+                            isBn
+                                ? '${Formatters.toBengaliDigits(pending.toString())}টি অফলাইন কার্যক্রম • ${Formatters.toBengaliDigits(cachedItems.toString())}টি ক্যাশ রেকর্ড'
+                                : '$pending pending offline item(s) • $cachedItems cached record(s)',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
@@ -389,7 +350,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     const SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
-                                        _isSyncing ? 'Syncing...' : 'Sync Now',
+                                        _isSyncing
+                                            ? (isBn ? 'সিঙ্ক হচ্ছে...' : 'Syncing...')
+                                            : (isBn ? 'এখনই সিঙ্ক করুন' : 'Sync Now'),
                                       ),
                                     ),
                                   ],
@@ -397,15 +360,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                               OutlinedButton(
                                 onPressed: _clearCache,
-                                child: const Row(
+                                child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.cleaning_services_outlined,
                                       size: 16,
                                     ),
-                                    SizedBox(width: 8),
-                                    Flexible(child: Text('Clear Cache')),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        isBn ? 'ক্যাশ মুছুন' : 'Clear Cache',
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_typography.dart';
+import '../../../../app/theme/app_dimensions.dart';
+import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../shared/empty_states/empty_data_view.dart';
+import '../../../../shared/error_states/error_view.dart';
+import '../../../../shared/loaders/list_shimmer_skeleton.dart';
+import '../../../../shared/widgets/skavia_search_field.dart';
 import '../../data/models/service_model.dart';
 import '../controllers/catalog_controller.dart';
 import '../widgets/catalog_filter_pill.dart';
-import '../widgets/catalog_search_bar.dart';
 import '../widgets/catalog_service_card.dart';
 import '../widgets/catalog_service_detail_sheet.dart';
 import '../widgets/category_list_tile.dart';
@@ -30,23 +33,24 @@ class CategoryCatalogScreen extends StatefulWidget {
 class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
   late final CatalogController _controller;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _controller = CatalogController();
-    if (widget.initialSearchQuery != null &&
-        widget.initialSearchQuery!.trim().isNotEmpty) {
-      final query = widget.initialSearchQuery!.trim();
-      _searchController.text = query;
-      _controller.search(query);
-    } else if (widget.initialCategoryId != null) {
-      _controller.filterByCategory(widget.initialCategoryId);
+    final initialQuery = widget.initialSearchQuery?.trim();
+    if (initialQuery != null && initialQuery.isNotEmpty) {
+      _searchController.text = initialQuery;
     }
+    _controller = CatalogController(
+      initialCategoryId: widget.initialCategoryId,
+      initialSearchQuery: initialQuery,
+    );
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _searchController.dispose();
     _controller.dispose();
     super.dispose();
@@ -56,98 +60,121 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
     CatalogServiceDetailSheet.show(context, service);
   }
 
+  void _selectCategory(String categoryId, {bool scrollToTop = false}) {
+    _controller.filterByCategory(categoryId);
+    if (scrollToTop && _scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final tokens = context.skavia;
+    final l10n = context.l10n;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         top: !widget.isTab,
         bottom: false,
         child: Column(
           children: [
-            // Top App Bar matching Screen 5 (Services & Categories)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
+            // Header
+            Container(
+              color: colorScheme.surface,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (!widget.isTab) ...[
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        color: colorScheme.onSurface,
-                        size: 20,
+                  Row(
+                    children: [
+                      if (!widget.isTab) ...[
+                        IconButton(
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: colorScheme.onSurface,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Expanded(
+                        child: Text(
+                          l10n.servicesAndCategories,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                  ] else
-                    const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      AppLanguageService.tr('services_and_categories'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SkaviaSearchField(
+                    controller: _searchController,
+                    hintText: l10n.servicesSearchHint,
+                    debounceDuration: const Duration(milliseconds: 250),
+                    onChanged: _controller.search,
+                    onClear: _controller.clearSearch,
                   ),
                 ],
               ),
             ),
 
-            // Search Bar Area matching Screen 5
-            CatalogSearchBar(
-              controller: _searchController,
-              onChanged: (val) => _controller.search(val),
-              onClear: () {
-                _searchController.clear();
-                _controller.clearSearch();
-              },
-            ),
-
             // Content Area
             Expanded(
-              child: Container(
-                width: double.infinity,
-                color: colorScheme.surface,
-                child: ListenableBuilder(
-                  listenable: _controller,
-                  builder: (context, _) {
-                    if (_controller.isLoading &&
-                        _controller.categories.isEmpty) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primarySky,
-                        ),
-                      );
-                    }
+              child: ListenableBuilder(
+                listenable: _controller,
+                builder: (context, _) {
+                  if (_controller.isLoading && _controller.categories.isEmpty) {
+                    return const ListShimmerSkeleton(itemCount: 4);
+                  }
 
-                    return CustomScrollView(
+                  if (_controller.errorMessage != null &&
+                      _controller.services.isEmpty &&
+                      _controller.categories.isEmpty) {
+                    return ErrorView(
+                      title: l10n.servicesErrorTitle,
+                      message: _controller.errorMessage!,
+                      retryText: l10n.commonRetry,
+                      onRetry: _controller.initCatalog,
+                    );
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _controller.initCatalog,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
                       slivers: [
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: AppDimensions.space16),
+                        ),
 
-                        // Horizontal Category Filter Pills
+                        // Horizontal Category Filter Chips
                         SliverToBoxAdapter(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
                                 CatalogFilterPill(
                                   id: 'all',
-                                  label: AppLanguageService.tr('all_services'),
+                                  label: l10n.servicesAll,
                                   isSelected:
                                       _controller.selectedCategoryId == 'all',
-                                  onSelected: (id) =>
-                                      _controller.filterByCategory(id),
+                                  onSelected: _selectCategory,
                                 ),
                                 ..._controller.categories.map((cat) {
                                   return CatalogFilterPill(
@@ -159,8 +186,7 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                                     isSelected:
                                         _controller.selectedCategoryId ==
                                         cat.categoryId,
-                                    onSelected: (id) =>
-                                        _controller.filterByCategory(id),
+                                    onSelected: _selectCategory,
                                   );
                                 }),
                               ],
@@ -168,42 +194,43 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                           ),
                         ),
 
-                        const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                        const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
-                        // Services List Header
+                        // Section Header
                         SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Text(
-                                    '${AppLanguageService.tr('available_services')} (${_controller.services.length})',
+                                    l10n.servicesAvailableCount(_controller.services.length),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.headingFont,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: colorScheme.onSurface,
-                                    ),
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: colorScheme.onSurface,
+                                        ),
                                   ),
                                 ),
-                                if (_controller.selectedCategoryId != 'all') ...[
+                                if (_controller.hasActiveFilter) ...[
                                   const SizedBox(width: 8),
-                                  GestureDetector(
-                                    onTap: () =>
-                                        _controller.filterByCategory('all'),
-                                    child: Text(
-                                      AppLanguageService.tr('reset_filter'),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: isDark
-                                            ? colorScheme.primary
-                                            : AppColors.primarySky,
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
                                       ),
+                                      minimumSize: Size.zero,
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
                                     ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _controller.resetFilters();
+                                    },
+                                    child: Text(l10n.commonReset),
                                   ),
                                 ],
                               ],
@@ -211,50 +238,56 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                           ),
                         ),
 
-                        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                        const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-                        // Services List or Empty State
-                        if (_controller.services.isEmpty)
-                          SliverToBoxAdapter(
+                        // Loading indicator for filter/search refresh
+                        if (_controller.isLoading)
+                          const SliverToBoxAdapter(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 40,
-                                horizontal: 20,
+                              padding: EdgeInsets.symmetric(vertical: 28),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                ),
                               ),
-                              child: Column(
-                                children: [
-                                  Icon(
-                                    Icons.search_off_rounded,
-                                    size: 64,
-                                    color: colorScheme.onSurfaceVariant
-                                        .withValues(alpha: 0.5),
-                                  ),
-                                  const SizedBox(height: 14),
-                                  Text(
-                                    'No services found',
-                                    style: TextStyle(
-                                      fontFamily: AppTypography.headingFont,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w700,
-                                      color: colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Try searching for different keywords like AC, electric, plumbing...',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            ),
+                          )
+                        else if (_controller.errorMessage != null)
+                          SliverToBoxAdapter(
+                            child: ErrorView(
+                              scrollable: false,
+                              title: l10n.servicesErrorTitle,
+                              message: _controller.errorMessage!,
+                              retryText: l10n.commonRetry,
+                              onRetry: _controller.initCatalog,
+                            ),
+                          )
+                        else if (_controller.services.isEmpty)
+                          SliverToBoxAdapter(
+                            child: EmptyDataView(
+                              scrollable: false,
+                              isFiltered: _controller.hasActiveFilter,
+                              icon: Icons.grid_view_outlined,
+                              title: _controller.hasActiveFilter
+                                  ? l10n.servicesFilteredEmptyTitle
+                                  : l10n.servicesEmptyTitle,
+                              message: _controller.hasActiveFilter
+                                  ? l10n.servicesFilteredEmptyMessage
+                                  : l10n.servicesEmptyMessage,
+                              actionText: _controller.hasActiveFilter
+                                  ? l10n.commonClearFilters
+                                  : null,
+                              onAction: _controller.hasActiveFilter
+                                  ? () {
+                                      _searchController.clear();
+                                      _controller.resetFilters();
+                                    }
+                                  : null,
                             ),
                           )
                         else
                           SliverPadding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             sliver: SliverList(
                               delegate: SliverChildBuilderDelegate((
                                 context,
@@ -269,52 +302,60 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                             ),
                           ),
 
-                        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                        if (_controller.categories.isNotEmpty) ...[
+                          const SliverToBoxAdapter(child: SizedBox(height: 20)),
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                AppLanguageService.tr('browse_by_trade'),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            sliver: SliverList(
+                              delegate: SliverChildBuilderDelegate((
+                                context,
+                                index,
+                              ) {
+                                final cat = _controller.categories[index];
+                                return CategoryListTile(
+                                  category: cat,
+                                  isSelected:
+                                      _controller.selectedCategoryId ==
+                                      cat.categoryId,
+                                  onTap: () => _selectCategory(
+                                    cat.categoryId,
+                                    scrollToTop: true,
+                                  ),
+                                );
+                              }, childCount: _controller.categories.length),
+                            ),
+                          ),
+                        ],
 
-                        // Categories Showcase Header
                         SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              AppLanguageService.tr('browse_by_trade'),
-                              style: TextStyle(
-                                fontFamily: AppTypography.headingFont,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: colorScheme.onSurface,
+                          child: SizedBox(
+                            height: 32,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: tokens.subtleCardBg.withValues(alpha: 0),
                               ),
                             ),
                           ),
                         ),
-
-                        const SliverToBoxAdapter(child: SizedBox(height: 14)),
-
-                        SliverPadding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          sliver: SliverList(
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final cat = _controller.categories[index];
-                              return CategoryListTile(
-                                category: cat,
-                                isSelected:
-                                    _controller.selectedCategoryId ==
-                                    cat.categoryId,
-                                onTap: () => _controller.filterByCategory(
-                                  cat.categoryId,
-                                ),
-                              );
-                            }, childCount: _controller.categories.length),
-                          ),
-                        ),
-
-                        const SliverToBoxAdapter(child: SizedBox(height: 36)),
                       ],
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
           ],

@@ -45,35 +45,71 @@ class MatchingController extends ChangeNotifier {
 
       final client = _supabase;
       if (client != null) {
-        var query = client
-            .from('worker_profiles')
-            .select(
-              'worker_profile_id, user_id, title, bio, location, working_area, expected_rate, verification_status, rating_average, total_reviews, completed_jobs, is_available, users ( full_name, avatar_url )',
-            )
-            .eq('is_available', true);
-
-        if (categoryId != null && categoryId.isNotEmpty) {
-          query = query.eq('category_id', categoryId);
+        List<dynamic> response;
+        if (categoryId == null || categoryId.isEmpty) {
+          try {
+            response = await client
+                .from('marketplace_public_profiles')
+                .select(
+                  'worker_profile_id, user_id, display_name, avatar_url, title, '
+                  'bio, location, expected_rate, verification_status, '
+                  'rating_average, completed_jobs, is_available',
+                )
+                .eq('is_available', true)
+                .limit(50);
+          } catch (_) {
+            response = await client
+                .from('worker_profiles')
+                .select(
+                  'worker_profile_id, user_id, title, bio, location, working_area, '
+                  'expected_rate, verification_status, rating_average, total_reviews, '
+                  'completed_jobs, is_available, users ( full_name, avatar_url )',
+                )
+                .eq('is_available', true)
+                .limit(50);
+          }
+        } else {
+          response = await client
+              .from('worker_profiles')
+              .select(
+                'worker_profile_id, user_id, title, bio, location, working_area, '
+                'expected_rate, verification_status, rating_average, total_reviews, '
+                'completed_jobs, is_available, users ( full_name, avatar_url )',
+              )
+              .eq('is_available', true)
+              .eq('category_id', categoryId)
+              .limit(50);
         }
 
-        final response = await query.limit(50);
         if (response.isNotEmpty) {
           for (final row in response) {
             final usersData = row['users'] as Map<String, dynamic>?;
+            final totalReviews = (row['total_reviews'] as num?)?.toInt() ?? 0;
+            final rawRating = (row['rating_average'] as num?)?.toDouble() ?? 0.0;
+            final verificationStatus =
+                row['verification_status']?.toString() ?? 'Unverified';
+            final fullName =
+                (row['display_name'] as String?)?.trim().isNotEmpty == true
+                    ? (row['display_name'] as String).trim()
+                    : (usersData?['full_name']?.toString() ?? 'Worker');
+            final avatarUrl =
+                (row['avatar_url'] as String?)?.trim().isNotEmpty == true
+                    ? (row['avatar_url'] as String).trim()
+                    : usersData?['avatar_url'];
             rawWorkers.add({
               'worker_profile_id': row['worker_profile_id'],
               'user_id': row['user_id'],
-              'full_name': usersData?['full_name'] ?? 'Worker',
-              'avatar_url': usersData?['avatar_url'],
+              'full_name': fullName,
+              'avatar_url': avatarUrl,
               'title': row['title'] ?? 'Worker',
               'location': row['location'] ?? row['working_area'] ?? 'Dhaka',
               'expected_rate':
                   (row['expected_rate'] as num?)?.toDouble() ?? 0.0,
-              'verification_status': row['verification_status'] ?? 'Pending',
-              'rating_average':
-                  (row['rating_average'] as num?)?.toDouble() ?? 5.0,
+              'verification_status': verificationStatus,
+              'rating_average': totalReviews > 0 ? rawRating : 0.0,
+              'total_reviews': totalReviews,
               'completed_jobs': (row['completed_jobs'] as num?)?.toInt() ?? 0,
-              'is_verified': row['verification_status'] == 'Verified',
+              'is_verified': verificationStatus.toLowerCase() == 'verified',
             });
           }
         }
