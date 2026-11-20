@@ -46,9 +46,9 @@ export function PublicHeader({
     { label: 'Services', href: '/services-catalog', hasDropdown: true },
     { label: 'How It Works', href: '/how-it-works' },
     { label: 'Trust & Safety', href: '/experience' },
-    { label: 'For Specialists', href: '/specialists' },
+    { label: 'Specialists', href: '/specialists' },
     { label: 'Enterprise', href: '/business' },
-    { label: 'FAQ', href: '/faq' },
+    { label: 'FAQ', href: '/faq', hideOnLg: true },
     { label: 'Contact', href: '/contact' },
   ];
 
@@ -63,54 +63,56 @@ export function PublicHeader({
   return (
     <>
       <header className="sticky top-0 z-40 border-b backdrop-blur-xl bg-white/80 dark:bg-black/80 border-neutral-200/80 dark:border-white/10 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Brand Logo & Wordmark */}
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0 min-w-0">
             <Link
               href="/"
               className="group flex items-center gap-2.5 shrink-0 transition-opacity hover:opacity-90"
               aria-label="SKAVIA Home"
             >
-              <SkaviaBrandMark variant="emblem" size={30} priority />
+              <SkaviaBrandMark variant="emblem" size={28} priority />
               <div className="flex flex-col">
                 <span className="font-heading font-extrabold text-base tracking-tight leading-none text-neutral-950 dark:text-white">
                   SKAVIA
                 </span>
-                <span className="text-[10px] font-mono tracking-wider text-neutral-500 dark:text-neutral-400 hidden sm:inline uppercase">
+                <span className="text-[10px] font-mono tracking-wider text-neutral-500 dark:text-neutral-400 hidden xl:inline uppercase">
                   Workforce &amp; Services
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Desktop Navigation Links (>= 1024px) */}
+          {/* Desktop Navigation Links (>= 1024px) - Pro-Level Single-Line Non-Wrapping */}
           <nav
             aria-label="Public Site Navigation"
-            className="hidden lg:flex items-center gap-1 text-xs font-medium"
+            className="hidden lg:flex items-center gap-0.5 xl:gap-1 text-[13px] font-medium shrink-0"
           >
             {navLinks.map((link) => {
               const isActive =
                 pathname === link.href ||
                 (link.href !== '/' && pathname.startsWith(`${link.href}/`));
 
+              const visibilityClass = link.hideOnLg ? 'hidden xl:inline-flex' : 'inline-flex';
+
               if (link.hasDropdown) {
                 return (
                   <div
                     key={link.href}
-                    className="relative"
+                    className={`relative ${visibilityClass}`}
                     onMouseEnter={() => setServicesMenuOpen(true)}
                     onMouseLeave={() => setServicesMenuOpen(false)}
                   >
                     <Link
                       href={link.href}
-                      className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full transition-all ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full whitespace-nowrap shrink-0 transition-all leading-none ${
                         isActive
                           ? 'bg-neutral-100 text-neutral-950 dark:bg-white/10 dark:text-white font-semibold'
                           : 'text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60'
                       }`}
                     >
-                      <span>{link.label}</span>
-                      <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover:rotate-180" />
+                      <span className="whitespace-nowrap">{link.label}</span>
+                      <ChevronDown className="h-3 w-3 opacity-60 transition-transform group-hover:rotate-180 shrink-0" />
                     </Link>
 
                     {/* Services Dropdown Flyout */}
@@ -160,13 +162,13 @@ export function PublicHeader({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3 py-1.5 rounded-full transition-all ${
+                  className={`${visibilityClass} items-center px-2.5 py-1.5 rounded-full whitespace-nowrap shrink-0 transition-all leading-none ${
                     isActive
                       ? 'bg-neutral-100 text-neutral-950 dark:bg-white/10 dark:text-white font-semibold'
                       : 'text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100/80 dark:hover:bg-neutral-800/60'
                   }`}
                 >
-                  {link.label}
+                  <span className="whitespace-nowrap">{link.label}</span>
                 </Link>
               );
             })}
@@ -174,16 +176,17 @@ export function PublicHeader({
 
           {/* Right Action Controls */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Segmented Vercel Theme Switcher */}
+            {/* Segmented Vercel Theme Switcher - Sleek Compact in Header */}
             <VercelThemeToggle
               themeMode={themeMode}
               onSelectTheme={handleSelectTheme}
+              compact
             />
 
             {/* Admin Portal Sign In Link */}
             <Link
               href="/login"
-              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition whitespace-nowrap shrink-0"
               title="SKAVIA Enterprise Admin Portal"
             >
               <Shield className="h-3.5 w-3.5 opacity-70" />
@@ -194,7 +197,7 @@ export function PublicHeader({
             <Link
               href="/download"
               onClick={onDownloadClick}
-              className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xs whitespace-nowrap shrink-0"
             >
               <Smartphone className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Get Mobile App</span>
@@ -207,7 +210,7 @@ export function PublicHeader({
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open navigation menu"
               aria-expanded={mobileMenuOpen}
-              className="lg:hidden inline-flex items-center justify-center h-8 w-8 rounded-full border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition"
+              className="lg:hidden inline-flex items-center justify-center h-8 w-8 rounded-full border border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition shrink-0"
             >
               <Menu className="h-4 w-4" />
             </button>
