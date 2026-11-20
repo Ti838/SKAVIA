@@ -129,20 +129,12 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
   const ActiveIcon = activeScoping.icon;
 
   return (
-    <section className="relative overflow-hidden pt-12 pb-20 sm:pt-20 sm:pb-28 transition-colors">
+    <section className="relative overflow-hidden pt-4 pb-16 sm:pt-6 sm:pb-24 transition-colors">
       {/* Seamless Multi-Layered Hero Atmosphere (Zero-Banding Full-Bleed Lighting & Precision Dot Grid) */}
       <HeroAtmosphere dark={theme.dark} variant="hero" />
       <CinematicAtmosphereCanvas dark={theme.dark} />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        {/* Trust Pill */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-xs font-semibold backdrop-blur-md mb-6 shadow-sm">
-          <span className="h-2 w-2 rounded-full bg-[#15E7CA] animate-pulse" />
-          <span className="text-slate-800 dark:text-cyan-200">
-            Live in Bangladesh &middot; 8 Internal Specialization Branches &middot; Single Corporate Accountability
-          </span>
-        </div>
-
         {/* Hero Headline */}
         <h1 className="font-heading font-extrabold text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.08] max-w-5xl mx-auto text-slate-900 dark:text-white">
           Every Skilled Service.
