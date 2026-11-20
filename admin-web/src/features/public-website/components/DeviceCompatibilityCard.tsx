@@ -20,13 +20,11 @@ import type { PublicThemeTokens } from '../public-site-data';
 
 interface DeviceCompatibilityCardProps {
   telemetry: DeviceTelemetry;
-  isBengali: boolean;
   t: PublicThemeTokens;
 }
 
 export function DeviceCompatibilityCard({
   telemetry,
-  isBengali,
   t,
 }: DeviceCompatibilityCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -103,13 +101,11 @@ export function DeviceCompatibilityCard({
               <span
                 className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
               >
-                {isBengali ? '5G ও 4G সমর্থিত' : '5G & 4G Ready'}
+                5G & 4G Ready
               </span>
             </div>
             <p className={`text-xs ${t.textSecondary} mt-0.5`}>
-              {isBengali
-                ? `শনাক্ত ডিভাইস: ${deviceCategory === 'Mobile' ? 'মোবাইল' : deviceCategory === 'Tablet' ? 'ট্যাবলেট' : 'কম্পিউটার'} · নেটওয়ার্ক: ${networkLabel}`
-                : `Detected Device: ${deviceCategory} · Network: ${networkLabel}`}
+              Detected Device: {deviceCategory} · Network: {networkLabel}
             </p>
           </div>
         </div>
@@ -119,25 +115,25 @@ export function DeviceCompatibilityCard({
           {compatibilityStatus === 'fully_compatible' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              <span>{isBengali ? 'শতভাগ সামঞ্জস্যপূর্ণ' : 'Fully Compatible'}</span>
+              <span>Fully Compatible</span>
             </span>
           )}
           {compatibilityStatus === 'legacy_compatible' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30">
               <Zap className="h-3.5 w-3.5" />
-              <span>{isBengali ? 'ARMv7 সামঞ্জস্যপূর্ণ' : '32-Bit Compatible'}</span>
+              <span>32-Bit Compatible</span>
             </span>
           )}
           {compatibilityStatus === 'incompatible_ios' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
               <AlertTriangle className="h-3.5 w-3.5" />
-              <span>{isBengali ? 'আইওএস ডিভাইস' : 'iOS Device'}</span>
+              <span>iOS Device</span>
             </span>
           )}
           {compatibilityStatus === 'desktop_transfer' && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
               <Laptop className="h-3.5 w-3.5" />
-              <span>{isBengali ? 'ডেস্কটপ মোড' : 'Desktop Mode'}</span>
+              <span>Desktop Mode</span>
             </span>
           )}
         </div>
@@ -161,71 +157,35 @@ export function DeviceCompatibilityCard({
       >
         {compatibilityStatus === 'fully_compatible' && (
           <p>
-            {isBengali ? (
-              <>
-                <strong>আপনার ডিভাইসের জন্য প্রস্তাবিত:</strong>{' '}
-                <span className="underline font-bold">ARM64 APK (২২.৬ MB)</span>।
-                আপনার ফোনটি আধুনিক ৬৪-বিট অ্যান্ড্রয়েড আর্কিটেকচার সমর্থন করে।
-                Android 7.0+ (Nougat) প্রয়োজন।
-              </>
-            ) : (
-              <>
-                <strong>Recommended for your device:</strong>{' '}
-                <span className="underline font-bold">ARM64 APK (22.6 MB)</span>.
-                Your device supports modern 64-bit Android architecture with
-                instant Haversine dispatch and OTP verification.
-              </>
-            )}
+            <strong>Recommended for your device:</strong>{' '}
+            <span className="underline font-bold">ARM64 APK (22.6 MB)</span>.
+            Your device supports modern 64-bit Android architecture with
+            instant Haversine dispatch and OTP verification.
           </p>
         )}
 
         {compatibilityStatus === 'legacy_compatible' && (
           <p>
-            {isBengali ? (
-              <>
-                <strong>আপনার ডিভাইসের জন্য প্রস্তাবিত:</strong>{' '}
-                <span className="underline font-bold">ARMv7 APK (২০.৩ MB)</span>।
-                আপনার ডিভাইসে ৩২-বিট আর্কিটেকচার ডিটেক্ট হয়েছে। মসৃণভাবে চলার
-                জন্য ARMv7 বিল্ডটি নির্বাচন করুন।
-              </>
-            ) : (
-              <>
-                <strong>Recommended for your device:</strong>{' '}
-                <span className="underline font-bold">ARMv7 APK (20.3 MB)</span>.
-                Legacy 32-bit architecture detected. The ARMv7 build ensures
-                stable, crash-free execution.
-              </>
-            )}
+            <strong>Recommended for your device:</strong>{' '}
+            <span className="underline font-bold">ARMv7 APK (20.3 MB)</span>.
+            Legacy 32-bit architecture detected. The ARMv7 build ensures
+            stable, crash-free execution.
           </p>
         )}
 
         {compatibilityStatus === 'incompatible_ios' && (
           <div className="space-y-1.5">
             <p>
-              {isBengali ? (
-                <>
-                  <strong>অ্যাপল আইওএস ডিটেক্টেড:</strong> অ্যান্ড্রয়েড APK
-                  প্যাকেজসমূহ আইফোন বা আইপ্যাডে ইনস্টল করা যায় না। SKAVIA-এর
-                  অফিসিয়াল অ্যাপল অ্যাপ স্টোর ভার্সন প্রস্তুত হচ্ছে।
-                </>
-              ) : (
-                <>
-                  <strong>Apple iOS Detected:</strong> Android APK packages
-                  cannot be directly installed on iPhone or iPad. An official
-                  Apple App Store release is currently in progress.
-                </>
-              )}
+              <strong>Apple iOS Detected:</strong> Android APK packages
+              cannot be directly installed on iPhone or iPad. An official
+              Apple App Store release is currently in progress.
             </p>
             <div className="pt-1">
               <Link
                 href="/customer-portal"
                 className="inline-flex items-center gap-1 font-semibold underline hover:opacity-80"
               >
-                <span>
-                  {isBengali
-                    ? 'সরাসরি ওয়েব পোর্টাল চালান'
-                    : 'Launch SKAVIA Web Portal'}
-                </span>
+                <span>Launch SKAVIA Web Portal</span>
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
@@ -234,35 +194,17 @@ export function DeviceCompatibilityCard({
 
         {compatibilityStatus === 'desktop_transfer' && (
           <p>
-            {isBengali ? (
-              <>
-                <strong>কম্পিউটার ব্রাউজার ডিটেক্টেড:</strong> আপনি চাইলে এখনই
-                ARM64 APK ডাউনলোড করে USB বা ব্লুটুথ দিয়ে ফোনে ট্রান্সফার করতে
-                পারেন, অথবা সরাসরি{' '}
-                <Link href="/customer-portal" className="underline font-semibold">
-                  ক্লায়েন্ট পোর্টাল
-                </Link>{' '}
-                বা{' '}
-                <Link href="/login" className="underline font-semibold">
-                  অ্যাডমিন ড্যাশবোর্ড
-                </Link>{' '}
-                চালান।
-              </>
-            ) : (
-              <>
-                <strong>Desktop Computer Detected:</strong> You can download the
-                ARM64 APK to transfer to your Android device via USB/Drive, or
-                access our full{' '}
-                <Link href="/customer-portal" className="underline font-semibold">
-                  Client Portal
-                </Link>{' '}
-                or{' '}
-                <Link href="/login" className="underline font-semibold">
-                  Admin Console
-                </Link>
-                .
-              </>
-            )}
+            <strong>Desktop Computer Detected:</strong> You can download the
+            ARM64 APK to transfer to your Android device via USB/Drive, or
+            access our full{' '}
+            <Link href="/customer-portal" className="underline font-semibold">
+              Client Portal
+            </Link>{' '}
+            or{' '}
+            <Link href="/login" className="underline font-semibold">
+              Admin Console
+            </Link>
+            .
           </p>
         )}
       </div>
@@ -276,11 +218,7 @@ export function DeviceCompatibilityCard({
         >
           <div className="flex items-center gap-1.5">
             <Info className="h-3.5 w-3.5 text-blue-500" />
-            <span>
-              {isBengali
-                ? 'ব্রাউজার-রিপোর্টেড হার্ডওয়্যার ও নেটওয়ার্ক টেলিমেট্রি'
-                : 'Browser-Reported Hardware & Network Telemetry'}
-            </span>
+            <span>Browser-Reported Hardware & Network Telemetry</span>
           </div>
           <ChevronDown
             className={`h-3.5 w-3.5 transition-transform ${
@@ -370,9 +308,7 @@ export function DeviceCompatibilityCard({
       <div className="flex items-start gap-2 pt-1 text-[11px] leading-relaxed text-slate-500">
         <ShieldAlert className="h-3.5 w-3.5 shrink-0 mt-0.5 text-slate-400" />
         <p>
-          {isBengali
-            ? 'ব্রাউজার ডিটেকশন ক্লায়েন্ট টেলিমেট্রির ওপর ভিত্তি করে আনুমানিক তথ্য প্রদান করে। ডিভাইসে ইনস্টল করার চূড়ান্ত অনুমোদন অ্যান্ড্রয়েড ওএস প্যাকেজ ম্যানেজার (PackageManager) দ্বারা যাচাইকৃত হয়।'
-            : 'Browser device detection provides estimated guidance based on client telemetry. Final package compatibility and installation authorization are strictly enforced by the Android OS Package Manager.'}
+          Browser device detection provides estimated guidance based on client telemetry. Final package compatibility and installation authorization are strictly enforced by the Android OS Package Manager.
         </p>
       </div>
     </div>

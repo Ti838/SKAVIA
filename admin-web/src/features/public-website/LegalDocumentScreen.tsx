@@ -1,11 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
-import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
-import { PublicFooter } from '@/components/navigation/PublicFooter';
-import { useTranslation } from '@/lib/l10n/LanguageContext';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { HeroAtmosphere } from './components/HeroAtmosphere';
+import { PublicPageShell } from './components/PublicPageShell';
 
 export interface LegalSection {
   heading: string;
@@ -16,9 +14,7 @@ export interface LegalSection {
 
 export function LegalDocumentScreen({
   title,
-  titleBn,
   subtitle,
-  subtitleBn,
   sections,
 }: {
   title: string;
@@ -27,68 +23,72 @@ export function LegalDocumentScreen({
   subtitleBn?: string;
   sections: LegalSection[];
 }) {
-  const { isBengali } = useTranslation();
-
   return (
-    <div
-      className="min-h-screen flex flex-col justify-between transition-colors"
-      style={{ backgroundColor: 'var(--bg-canvas)', color: 'var(--text-primary)' }}
-    >
-      <div className="py-8 sm:py-12 px-4 sm:px-6 flex-1">
-        <div
-          className="max-w-3xl mx-auto rounded-3xl border p-6 sm:p-8 shadow-sm space-y-6"
-          style={{
-            backgroundColor: 'var(--bg-surface)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <div
-            className="flex flex-wrap items-center justify-between gap-4 border-b pb-5"
-            style={{ borderColor: 'var(--border-subtle)' }}
-          >
-            <div className="flex items-center gap-3">
-              <SkaviaBrandMark variant="emblem" size={32} />
-              <div>
-                <h1 className="font-heading text-lg sm:text-xl font-bold">
-                  {isBengali && titleBn ? titleBn : title}
-                </h1>
-                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  {isBengali && subtitleBn ? subtitleBn : subtitle} &middot;{' '}
-                  {isBengali ? 'সর্বশেষ হালনাগাদ নভেম্বর ২০২৬' : 'Last updated November 2026'}
-                </p>
+    <PublicPageShell>
+      {(t) => (
+        <div className="space-y-12 py-12 md:py-16">
+          {/* Header */}
+          <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
+            <HeroAtmosphere dark={t.dark} variant="subpage" />
+            <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
+              <div
+                className={`inline-flex items-center gap-2 px-3.5 py-1 rounded-full border text-xs font-mono-code ${
+                  t.dark
+                    ? 'border-cyan-400/30 bg-cyan-500/10 text-cyan-300'
+                    : 'border-blue-300 bg-blue-50 text-blue-700'
+                }`}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>LEGAL &amp; COMPLIANCE GOVERNANCE</span>
+              </div>
+
+              <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight ${t.textPrimary}`}>
+                {title}
+              </h1>
+
+              <p className={`text-base sm:text-lg max-w-2xl mx-auto leading-relaxed ${t.textSecondary}`}>
+                {subtitle} &middot; Last updated November 2026 &middot; Headquartered in Dhaka, Bangladesh
+              </p>
+            </div>
+          </section>
+
+          {/* Document Content */}
+          <section className="px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto space-y-8">
+              <div className="flex items-center justify-between pb-2 border-b border-neutral-200 dark:border-neutral-800">
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <span>Return to Home</span>
+                </Link>
+                <span className="text-xs font-mono text-neutral-400">
+                  Document ID: SKV-LEGAL-{title.slice(0, 4).toUpperCase()}
+                </span>
+              </div>
+
+              <div className={`rounded-3xl border p-6 sm:p-10 space-y-8 ${t.railBorder} ${t.cardBg} shadow-sm backdrop-blur-md`}>
+                {sections.map((sec, idx) => (
+                  <div key={idx} className="space-y-3">
+                    <h2 className={`font-heading text-lg sm:text-xl font-bold tracking-tight ${t.textPrimary}`}>
+                      {sec.heading}
+                    </h2>
+                    <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                      {sec.body}
+                    </p>
+                    {sec.bodyBn && (
+                      <p className={`text-xs sm:text-sm leading-relaxed font-bengali text-neutral-500 dark:text-neutral-400 pt-1`}>
+                        {sec.bodyBn}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="flex items-center gap-3">
-              <LanguageSwitcher />
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                <span>{isBengali ? 'হোমপেজ' : 'Home'}</span>
-              </Link>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {sections.map((section) => (
-              <section
-                key={section.heading}
-                className="space-y-2 text-xs sm:text-sm leading-relaxed"
-                style={{ color: 'var(--text-secondary)' }}
-              >
-                <h2 className="font-heading text-sm sm:text-base font-semibold" style={{ color: 'var(--text-primary)' }}>
-                  {isBengali && section.headingBn ? section.headingBn : section.heading}
-                </h2>
-                <p>{isBengali && section.bodyBn ? section.bodyBn : section.body}</p>
-              </section>
-            ))}
-          </div>
+          </section>
         </div>
-      </div>
-
-      <PublicFooter />
-    </div>
+      )}
+    </PublicPageShell>
   );
 }

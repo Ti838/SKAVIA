@@ -35,7 +35,7 @@ interface NavItemDef {
   permission?: PermissionKey;
   primarySuperAdminOnly?: boolean;
   icon: ReactNode;
-  section: 'Operations' | 'Platform' | 'Governance' | 'Portals';
+  section: 'Operations' | 'Platform' | 'Governance';
 }
 
 const NAV_ITEM_DEFS: NavItemDef[] = [
@@ -73,24 +73,6 @@ const NAV_ITEM_DEFS: NavItemDef[] = [
     permission: 'dispute.view',
     icon: <Scale className="h-4 w-4" />,
     section: 'Operations',
-  },
-  {
-    key: 'navWorkerConsole',
-    href: '/worker-console',
-    icon: <Wrench className="h-4 w-4" />,
-    section: 'Portals',
-  },
-  {
-    key: 'navCustomerPortal',
-    href: '/customer-portal',
-    icon: <Users className="h-4 w-4" />,
-    section: 'Portals',
-  },
-  {
-    key: 'navBusinessPortal',
-    href: '/business-portal',
-    icon: <Building2 className="h-4 w-4" />,
-    section: 'Portals',
   },
   {
     key: 'navCustomers',
@@ -179,9 +161,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return !item.permission || session.effectivePermissions.includes(item.permission);
   });
 
-  const sections: Array<NavItemDef['section']> = ['Portals', 'Operations', 'Platform', 'Governance'];
+  const sections: Array<NavItemDef['section']> = ['Operations', 'Platform', 'Governance'];
   const sectionLabelKeys: Record<NavItemDef['section'], keyof TranslationDictionary> = {
-    Portals: 'sectionPortals',
     Operations: 'sectionOperations',
     Platform: 'sectionPlatform',
     Governance: 'sectionGovernance',
@@ -228,11 +209,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
                       <Link
                         href={item.href}
                         onClick={() => setMobileNavOpen(false)}
-                        className={`sakuga-spring-tap flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                          active
+                        className={`sakuga-spring-tap flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition ${active
                             ? 'bg-blue-600 text-white shadow-sm'
                             : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                        }`}
+                          }`}
                       >
                         {item.icon}
                         <span>{t[item.key]}</span>

@@ -5,21 +5,34 @@ const ADMIN_ROUTES_PREFIXES = [
   '/dashboard',
   '/admins',
   '/bookings',
-  '/branches',
   '/customers',
   '/disputes',
   '/finance',
   '/releases',
   '/reports',
   '/security',
-  '/services',
   '/settings',
   '/teams',
   '/verifications',
   '/workers',
   '/activate',
   '/access-denied',
+  '/customer-portal',
+  '/business-portal',
+  '/worker-console',
 ];
+
+// Admin routes that match exactly or with admin sub-paths, without colliding with public branch pages
+function isAdminPath(pathname: string): boolean {
+  if (ADMIN_ROUTES_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    return true;
+  }
+  // Admin /branches list and /services catalog management
+  if (pathname === '/branches' || pathname === '/services') {
+    return true;
+  }
+  return false;
+}
 
 function extractHost(req: NextRequest): string {
   const raw = req.headers.get('x-forwarded-host') || req.headers.get('host') || '';
@@ -68,7 +81,7 @@ export function middleware(req: NextRequest) {
       );
     }
 
-    if (ADMIN_ROUTES_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`))) {
+    if (isAdminPath(pathname)) {
       return new NextResponse('Not Found', { status: 404 });
     }
 

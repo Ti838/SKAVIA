@@ -4,111 +4,172 @@
 
 This document defines the formal visual, architectural, and user-experience specification reverse-engineered from world-class industry benchmark platforms and design systems, mapped directly onto the **SKAVIA Service & Workforce Platform** digital ecosystem.
 
-SKAVIA is a unified, single-enterprise accountable service and workforce platform operating across 8 internal specialization branches in Bangladesh. This specification establishes strict visual fidelity, responsive ergonomics, and complete separation across three distinct product surfaces:
-1. **Public Website (`www.skavia.com`)**: Exclusively customer-facing; zero internal admin exposure.
-2. **Company Admin Portal (`admin.skavia.com`)**: Internal operations, branch management, and field workforce supervision.
+SKAVIA is a unified, single-enterprise accountable service and workforce platform operating across 8 internal specialization branches in Bangladesh. This specification establishes strict visual fidelity, responsive ergonomics, and complete separation across distinct product surfaces:
+1. **Public Website (`www.skavia.com`)**: Exclusively customer-facing and visitor-facing; introduces SKAVIA's actual services, branches, accountability model, and verified operations, and guides visitors to the official Android mobile app; zero internal admin exposure.
+2. **Company Admin Portal (`admin.skavia.com`)**: Internal operations, branch coordination, and field workforce supervision across all operational branches.
 3. **Super Admin Portal (`superadmin.skavia.com`)**: Platform governance, administrator RBAC, cryptographic security, and APK release distribution.
+4. **Branch Manager Scoped View**: Strictly isolated view within the Admin Portal restricted to the manager's assigned branch only.
 
 ---
 
-## 2. Reverse-Engineered Reference Analysis
+## 2. Public Website Reference Reverse Engineering Analysis
 
-### Reference 1: Urban Company & Taskrabbit (Public Marketplace & Service Discovery)
-- **Reference URLs**: `https://www.urbancompany.com/`, `https://www.taskrabbit.com/`
-- **Inspected Surfaces**: Homepage hero, service category grids, dynamic requirement scoping, upfront transparent pricing, worker trust guarantees.
+### Reference 1: Taskrabbit (`https://www.taskrabbit.com/`)
+- **Inspected Surfaces**: Homepage hero with search query bar, popular trade tiles, 4-step "How it Works" flow, category showcase.
 - **Visual Characteristics**:
-  - **Grid & Layout**: Centered content containers (`max-w-7xl`, `1280px`), responsive 12-column bento grids.
-  - **Typography**: Bold, high-contrast headings with compact, readable body text.
-  - **Trust Architecture**: Prominent badges highlighting background verification, fixed pricing, insurance coverage, and damage protection.
-  - **Card Proportions**: Rounded cards (`rounded-2xl` to `rounded-3xl`) with 1px subtle borders (`border-slate-200` light, `border-slate-800` dark), micro-hover elevations (`scale-[1.01]`, `shadow-md`).
-- **SKAVIA Architectural Application**:
-  - Direct inspiration for the **Public Website Hero & Live Scoping Engine** (`PublicWorkflowSections.tsx`) and **8 Specialization Branches Grid**.
-  - Replaced Urban Company's multi-vendor open listings with SKAVIA's **single-enterprise accountability** model: client requests are assigned to SKAVIA-verified internal specialists with guaranteed **4-digit arrival handshake OTP** verification.
+  - High-intent search input right in hero ("Need help with..."), visual category cards with real task examples (e.g. "AC Repair", "Furniture Assembly", "Plumbing Help"), trust badges (vetted background checks), upfront hourly/fixed pricing guidelines.
+- **Why It Works**: Instantly bridges the gap between what the visitor needs and how quickly they can get someone to help. Eliminates ambiguity about what tasks can be done.
+- **What SKAVIA Can Learn**: Add an interactive search/query bar in the hero that immediately filters or directs visitors to the 8 specialization branches and specific trade SOPs, along with quick-select popular trade pills.
+- **SKAVIA Application**: Deployed in the **Public Hero & Trade Discovery**: interactive trade search input, quick-filter category pills (AC Service, Electrical, Plumbing, Cleaning, Renovation), and clear 4-step dispatch cards.
+- **What Must NOT Be Copied**: Do NOT copy Taskrabbit's unmonitored freelance contractor model where clients directly message unvetted individuals. SKAVIA operates as a single accountable company with NID-verified specialists and mandatory arrival OTP handshakes.
 
-### Reference 2: Stripe & Vercel (Visual Hierarchy, Gradients & Engineering Polish)
-- **Reference URLs**: `https://stripe.com/`, `https://vercel.com/`
-- **Inspected Surfaces**: Product landing pages, technical interactive demos, design systems (Geist).
+### Reference 2: Thumbtack (`https://www.thumbtack.com/`)
+- **Inspected Surfaces**: Service directory, local cost estimate guides, specialist profile cards, project planning tools.
 - **Visual Characteristics**:
-  - **Atmospheric Lighting**: Radiant mesh radial gradients with high-blur diffusion (`blur-3xl`, 10–25% opacity), dark slate foundations (`#05080F`).
-  - **Typography Scale**: Strict geometric sans typography, high-contrast monochrome bases with deliberate color accents.
-  - **Status Indicators**: Pulsing live dots, monospace metadata tags (`font-mono-code text-[11px] uppercase tracking-wider`).
-  - **Interactive Demos**: Embedded live calculating widgets that demonstrate real product utility without requiring sign-in.
-- **SKAVIA Architectural Application**:
-  - **Atmospheric Canvas & Ambient Mesh Lights**: Deployed in `HeroSection` and `DownloadSection`.
-  - **Real-time Telemetry & Download Hub**: Replaced generic store links with an interactive Android hardware detection engine (`ARM64-v8a` vs `ARMv7`) and cryptographic SHA-256 verification.
+  - Clean cost estimate blocks ("Average price for electrical work: ৳1,500 - ৳3,000"), upfront checklist of what's included in the service, high-contrast typography, clear CTA to book verified pros.
+- **Why It Works**: Customers love knowing the price range before making a call. It removes hesitation and builds immediate pricing confidence.
+- **What SKAVIA Can Learn**: Provide clear, upfront BDT price guidelines and turnaround SLAs across every trade in `/services-catalog` and `/services-catalog/[slug]`.
+- **SKAVIA Application**: Embedded in the **Services Directory (`/services-catalog`)**: transparent price ranges, estimated duration, included tools, and diagnostic checklists.
+- **What Must NOT Be Copied**: Do NOT copy Thumbtack's lead-generation bidding model where contractors pay for leads. On SKAVIA, specialists receive direct dispatches with 90% revenue retention.
 
-### Reference 3: Stripe Dashboard & Shopify Polaris (Financial & Order Management)
-- **Reference URLs**: `https://dashboard.stripe.com/`, `https://polaris.shopify.com/`
-- **Inspected Surfaces**: Balance summary cards, transaction ledgers, dispute arbitration timelines, order management workflows.
+### Reference 3: Urban Company (`https://www.urbancompany.com/`)
+- **Inspected Surfaces**: Standardized service packages, multi-step booking drawer, safety and hygiene charters, warranty badges.
 - **Visual Characteristics**:
-  - **Information Density**: Compact, high-utility table rows (40–48px height), clear column alignments (numbers right-aligned, text left-aligned).
-  - **Financial Clarity**: Distinct visual separation between gross revenue, escrow holds, and net payout balances.
-  - **Dispute Workflows**: Evidence submission checklists, chronological audit trails, and status-driven action banners.
-- **SKAVIA Architectural Application**:
-  - **Finance Management (`/finance`)**: Modeled after Stripe Dashboard to manage SKAVIA's **90/10 Escrow Split** (90% direct specialist payout, 10% platform operations/insurance) with weekly MFS/bank settlement batches.
-  - **Disputes Screen (`/disputes`)**: Clear arbitration interfaces connecting customer complaint photos, technician GPS timestamps, and handshake OTP verification logs.
+  - Standardized service cards with explicit itemized inclusions/exclusions, 30-day service warranty badge, safety-equipped technician photography, clean card borders.
+- **Why It Works**: Sets high service quality standards so customers feel they are booking a certified institutional service rather than a random handyman.
+- **What SKAVIA Can Learn**: Showcase detailed Trade SOPs, safety equipment kits, property damage guarantees, and revisit protection on `/experience` and service detail pages.
+- **SKAVIA Application**: Reflected in **SKAVIA Home & Technical SOPs** and **Customer Experience (`/experience`)**: mandatory 4-digit arrival OTP, property protection guarantee, and automated digital invoices.
+- **What Must NOT Be Copied**: Do NOT use low-contrast gray text on white backgrounds or cluttered multi-tier upsell modals.
 
-### Reference 4: Linear & Supabase Studio (Speed, Navigation & Clean Architecture)
-- **Reference URLs**: `https://linear.app/`, `https://supabase.com/dashboard`
-- **Inspected Surfaces**: Collapsible administrative sidebars, keyboard shortcuts, fast status filter chips, dark-mode elevated surfaces.
+### Reference 4: Stripe (`https://stripe.com/`)
+- **Inspected Surfaces**: Homepage hero, product interactive showcases, developer doc layouts.
 - **Visual Characteristics**:
-  - **Sidebar Ergonomics**: 240–260px fixed width on desktop, collapsible to 64px or slide-over drawer on mobile (`< 1024px`).
-  - **Elevated Surfaces**: Dark mode foundation (`#090D16` / `#05080F`), secondary surface (`#0F172A`), tertiary cards (`#1E293B`), subtle border contrast (`rgba(255,255,255,0.08)`).
-  - **Interactive Filter Chips**: Pill-shaped status toggles with subtle background highlights and instantaneous client-side filtering.
-- **SKAVIA Architectural Application**:
-  - **Admin Shell & Navigation (`AdminShell.tsx`, `TopBar.tsx`)**: Re-architected with Linear-style sleek iconography, branch scope selectors, and active state indicators.
-  - **Bookings & Verifications Queues (`/bookings`, `/verifications`)**: Instant status switching across Active, Pending, Dispatched, In-Progress, and Completed states.
+  - Continuous atmospheric mesh gradients, 64px micro-typography scale, interactive live calculation widgets, 1px subtle glass borders (`rgba(255,255,255,0.08)`).
+- **Why It Works**: Communicates immense technical reliability, precision, and financial trust. Interactive widgets demonstrate real platform utility upfront before signing up.
+- **What SKAVIA Can Learn**: Use live scoping and pricing transparency widgets to let users explore trade service costs and turnaround times upfront without creating an account.
+- **SKAVIA Application**: Applied in the **Public Hero & Scoping Engine**: users see upfront price ranges (e.g. ৳ 1,200 – ৳ 2,500) and SLA turnaround times for HVAC, Plumbing, Electrical, and Security.
+- **What Must NOT Be Copied**: Do NOT copy Stripe's complex multi-product developer SaaS jargon or abstract isometric illustrations. SKAVIA is an accountable physical service platform in Bangladesh.
 
-### Reference 5: Atlassian Jira & Retool (Enterprise Governance & RBAC)
-- **Reference URLs**: `https://www.atlassian.com/software/jira`, `https://retool.com/`
-- **Inspected Surfaces**: Role & permission matrices, audit logging consoles, team formation drawers, and operational oversight screens.
+### Reference 2: Linear (`https://linear.app/`)
+- **Inspected Surfaces**: Product storytelling, feature grids, dark-mode foundational contrast.
 - **Visual Characteristics**:
-  - **Permission-Aware Interfaces**: Conditional action triggers, step-up MFA badges, fail-closed access indicators.
-  - **Inspection Panels**: Slide-over detail drawers that allow operators to review deep records without losing table context.
-- **SKAVIA Architectural Application**:
-  - **Admins Management (`/admins`)**: Super Admin interface for managing administrative invitations, role assignments (Super Admin, Company Admin, Branch Manager), and explicit permission overrides (`ALLOW` / `DENY`).
-  - **Security & Session Controls (`/security`)**: Live audit log explorer, WebAuthn passkey management, and active session termination.
+  - High-contrast dark surfaces (`#05080F`), ultra-crisp typography, sub-pixel borders, keyboard-first aesthetic, glowing accent halos (`#15E7CA` / `#3898EC`).
+- **Why It Works**: Feels exceptionally fast, intentional, and high-craft. Eliminates visual clutter so every line of text and component carries high semantic density.
+- **What SKAVIA Can Learn**: Maintain clean geometric typography, tight vertical rhythm, and subtle border highlights that elevate cards without muddy drop shadows.
+- **SKAVIA Application**: Deployed across the **8 Specialization Branches Grid** and **Lifecycle Cards**, providing clear contrast between active and inactive states.
+- **What Must NOT Be Copied**: Do NOT create an overly dark, developer-only aesthetic that alienates non-technical consumers or corporate facility managers.
 
-### Reference 6: Google Material Design 3 (M3) (Mobile Ergonomics & Touch Targets)
-- **Reference URL**: `https://m3.material.io/`
-- **Inspected Surfaces**: Adaptive mobile layouts, responsive bottom sheets, segmented buttons, touch-target standards (min 44x44px).
+### Reference 3: Vercel (`https://vercel.com/`)
+- **Inspected Surfaces**: Navigation bar, design system (Geist), dark/light theme execution.
 - **Visual Characteristics**:
-  - **Zero Horizontal Overflow**: Fluid container widths with flexible min-width constraints.
-  - **Thumb-Zone Navigation**: Primary action buttons positioned in the bottom third of mobile viewports.
-  - **Card Stacking**: Mobile table transformations into responsive data cards at `< 768px`.
-- **SKAVIA Architectural Application**:
-  - Mobile responsiveness across all 11 required viewports (320px, 360px, 375px, 390px, 414px, 430px, 768px, 1024px, 1280px, 1440px, 1920px).
-  - Mobile Nav Drawer with full bilingual support, zone selector, and mode previews.
+  - Dual-theme perfection without color inversion, monochrome base with electric accent highlights, sticky backdrop-blurred navbar, tabular metadata tags.
+- **Why It Works**: Flawless legibility in both light and dark modes. Avoids high-saturation background colors that cause eye fatigue during extended viewing.
+- **What SKAVIA Can Learn**: Establish explicit CSS variable tokens for surfaces, text, and borders in both themes to prevent color flickering or muddy grays.
+- **SKAVIA Application**: Built into **PublicThemeTokens** and **CSS custom properties**: `#05080F` (Dark Surface) / `#F8FAFC` (Light Surface) with calibrated contrast ratios.
+- **What Must NOT Be Copied**: Do NOT copy Vercel's heavy cloud-infrastructure abstractions. SKAVIA communicates real field technicians, safety handshakes, and physical services.
+
+### Reference 4: Apple (`https://www.apple.com/`)
+- **Inspected Surfaces**: Product showcase pages, hardware feature callouts, rhythmic scrolling.
+- **Visual Characteristics**:
+  - Generous white/black space, huge high-contrast headline typography, realistic hardware device mockups, content rhythm with clear progressive disclosure.
+- **Why It Works**: Commands premium brand perception. Users instinctively trust high-resolution product photography and realistic device mockups over generic stock images.
+- **What SKAVIA Can Learn**: Present the official SKAVIA Android application inside realistic, pixel-accurate smartphone mockups showcasing actual app screens (OTP entry, live tracking).
+- **SKAVIA Application**: Applied in the **App Download Hub** and **Hero Mockup**: displays the actual dual Client/Worker mode interfaces and 4-digit arrival OTP handoff screen.
+- **What Must NOT Be Copied**: Do NOT use massive multi-megabyte scroll animations that degrade performance on budget Android devices or slower mobile networks.
+
+### Reference 5: Wise (`https://wise.com/`)
+- **Inspected Surfaces**: Trust guarantees, fee transparency calculators, currency/service switchers.
+- **Visual Characteristics**:
+  - Upfront fee breakdowns, honest comparative cost tables, high-contrast trust badges, clear CTA buttons with immediate action verbs.
+- **Why It Works**: Builds unshakeable financial trust by removing hidden fees and clarifying exactly where money goes before any commitment is made.
+- **What SKAVIA Can Learn**: Explain the **90/10 Escrow Split** and transparent pricing model openly on public pages, highlighting that 90% goes directly to the specialist.
+- **SKAVIA Application**: Codified into **Pricing & Escrow Explanations** on `/how-it-works`, `/experience`, and `/services`: zero hidden booking fees, funds locked until digital sign-off.
+- **What Must NOT Be Copied**: Do NOT mimic Wise's international foreign-exchange rate tickers or banking-only UI. SKAVIA deals in local BDT on-demand workforce dispatches.
+
+### Reference 6: ServiceTitan (`https://www.servicetitan.com/`)
+- **Inspected Surfaces**: Trade service categories, commercial contractor positioning, field workflows.
+- **Visual Characteristics**:
+  - Structured trade taxonomy (HVAC, Electrical, Plumbing), commercial vs. residential segmenting, field technician dignity and tooling focus.
+- **Why It Works**: Establishes credibility with both large commercial facility managers and skilled tradespeople. Focuses on field efficiency and accountability.
+- **What SKAVIA Can Learn**: Structure services into clear specialization branches: residential maintenance (SKAVIA Home), heavy systems (SKAVIA Technical), and corporate contracts (SKAVIA Business).
+- **SKAVIA Application**: Directly adopted in the **8 Specialization Branches architecture**: HOME, TECH, AGRI, LOGI, DIGI, BIZ, CONS, EVNT with explicit trade examples.
+- **What Must NOT Be Copied**: Do NOT copy ServiceTitan's US-centric multi-tenant software licensing model. SKAVIA is the single accountable operating company executing the work in Bangladesh.
+
+### Reference 7: Uber (`https://www.uber.com/`)
+- **Inspected Surfaces**: Service request flow, map-based arrival concept, mobile-first CTAs.
+- **Visual Characteristics**:
+  - Two-pillar audience segmentation (Consumers vs. Earners), clear mobile app download CTAs, instant safety guarantee callouts.
+- **Why It Works**: Visitors immediately understand whether they are hiring a service or signing up to work. Eliminates navigation confusion with simple two-way entry points.
+- **What SKAVIA Can Learn**: Provide clear dual-audience pathways on the public site: one for individuals/businesses requesting services, and one for skilled specialists seeking jobs.
+- **SKAVIA Application**: Reflected in navigation and public sections: "Book Services (Get App)" vs. "Become a Verified Specialist (90% Direct Pay)".
+- **What Must NOT Be Copied**: Do NOT implement an unmonitored gig-marketplace where anyone can sign up without background check. SKAVIA enforces mandatory NID and trade vetting.
 
 ---
 
-## 3. Reference-to-Route Mapping Architecture
+## 3. Admin Portal Reference Reverse Engineering Analysis
 
-| SKAVIA Route | Environment | Primary Reference | Secondary Reference | Key Architectural Features |
-| :--- | :--- | :--- | :--- | :--- |
-| `/` | Public Website | Urban Company / Stripe | Vercel / Airbnb | Full-bleed hero, live scoping engine, 8-branch bento, delivery lifecycle, APK download telemetry, operations desk |
-| `/privacy`, `/terms` | Public Website | Vercel / Stripe | Atlassian | Dual-script bilingual legal governance, clear typography, structured sections |
-| `/login` | Auth Gateway | Stripe / Linear | Vercel Geist | WebAuthn FIDO2 passkeys, Google Workspace SSO, TOTP MFA challenge, role routing |
-| `/activate` | Auth Gateway | Linear | Supabase | Cryptographic invitation token preview, branch scope assignment, credential setup |
-| `/access-denied` | Auth Gateway | Atlassian | Linear | Fail-closed 403 RBAC alert, clear escalation cues, switch account trigger |
-| `/dashboard` | Company Admin | Linear / Vercel | Stripe Dashboard | Real-time operational dispatch counters, branch throughput metrics, urgent alert feed |
-| `/bookings` | Company Admin | Shopify Polaris | Linear | Multi-branch booking queue, technician dispatch assignment, 4-digit OTP status, lifecycle timeline |
-| `/workers` | Company Admin | Shopify / Taskrabbit | Retool | Verified field specialist directory, trade skill badges, availability toggle, rating scores |
-| `/customers` | Company Admin | Shopify Polaris | Retool | Customer directory categorized by Individual, Business Client, and Organization |
-| `/branches` | Company Admin | Linear | Supabase Studio | 8 internal branch oversight, assigned Branch Managers, active capacity metrics |
-| `/services` | Company Admin | Shopify Polaris | Urban Company | 8-branch service catalog, rate card configuration, SLA parameters |
-| `/teams` | Company Admin | Atlassian Jira | Retool | Multi-trade team coordination, assigned Team Leaders, commercial milestone tracking |
-| `/finance` | Company Admin | Stripe Dashboard | Shopify Polaris | 90/10 Escrow split tracking, weekly MFS/bank settlement batches, revenue reconciliation |
-| `/disputes` | Company Admin | Stripe Dashboard | Atlassian | Customer-technician dispute cases, escrow hold arbitration, photo evidence viewer |
-| `/verifications` | Company Admin | Retool | Taskrabbit | Worker NID verification queue, document inspection, trade assessment approval |
-| `/reports` | Company Admin | Stripe / Vercel | Shopify | Branch performance analytics, financial export reports, worker satisfaction scores |
-| `/admins` | Super Admin | Atlassian Jira | Linear | Platform administrator directory, role assignments, granular permission overrides |
-| `/security` | Super Admin | Vercel / Supabase | Atlassian | Audit log stream, active session management, security incidents, WebAuthn passkey credentials |
-| `/releases` | Super Admin | Vercel | GitHub Releases | APK binary release distribution, SHA-256 verification, ARM64 vs ARMv7 staging, changelog management |
-| `/settings` | Super Admin / Admin | Linear | Vercel | Personal profile, security credentials, notification preferences, system defaults |
-| `/customer-portal` | Customer Web | Airbnb / Taskrabbit | Urban Company | Customer active service bookings, 4-digit arrival OTP view, receipt downloads |
-| `/worker-console` | Worker Web | Taskrabbit | Stripe Dashboard | Worker active assignments, arrival OTP verification, weekly earnings balance |
-| `/business-portal` | Business Web | Stripe / Atlassian | Shopify | Corporate multi-branch service requests, facility contracts, formal business invoicing |
+### Reference 1: Linear (`https://linear.app/`)
+- **Inspected Surfaces**: Issue tracking boards, collapsible navigation sidebar, fast filter chips.
+- **Visual Characteristics**:
+  - Compact 240px sidebar, keyboard shortcuts (`Cmd+K`), instant client-side status filtering, elevated dark cards with clear status icons.
+- **Why It Works**: Maximizes screen real estate for data tables. Operators can triage hundreds of tasks without repetitive page reloads or clunky dropdown menus.
+- **What SKAVIA Can Learn**: Implement the sleek collapsible sidebar, quick status filters, and instant search across bookings, workers, and branch queues.
+- **SKAVIA Application**: Deployed in `AdminShell.tsx`, `TopBar.tsx`, and `DataTable.tsx`: instant filtering across Active, Dispatched, In-Progress, and Completed queues.
+- **What Must NOT Be Copied**: Do NOT copy Linear's agile software sprint concepts (story points, cycles) for field trade dispatch operations.
+
+### Reference 2: Stripe Dashboard (`https://dashboard.stripe.com/`)
+- **Inspected Surfaces**: Balance summary cards, transaction ledger, dispute arbitration timeline.
+- **Visual Characteristics**:
+  - Clear numerical ledger alignment (numbers right-aligned), escrow hold balances, dispute evidence submission checklists, chronological audit trails.
+- **Why It Works**: Provides total financial clarity and auditability. Every debit, credit, and escrow hold is verifiable with immutable transaction IDs.
+- **What SKAVIA Can Learn**: Model the `/finance` and `/disputes` screens after Stripe: clear separation of gross booking value, platform operations fee (10%), and specialist net payout (90%).
+- **SKAVIA Application**: Applied in `/finance` (escrow holds, weekly MFS settlement batches) and `/disputes` (photo evidence viewer, technician GPS timestamp, OTP logs).
+- **What Must NOT Be Copied**: Do NOT implement multi-currency international merchant payment routing. SKAVIA operations settle in Bangladeshi Taka (BDT) via SSLCommerz, bKash, and Nagad.
+
+### Reference 3: Vercel Dashboard (`https://vercel.com/dashboard`)
+- **Inspected Surfaces**: Deployment logs, project status cards, team environment switchers.
+- **Visual Characteristics**:
+  - Clean scope switcher in header, real-time status dots (green pulsing for active, amber for building, rose for failed), monospace commit/release hashes.
+- **Why It Works**: Gives instant operational situational awareness. Users can immediately identify anomalies or failing builds with zero cognitive overhead.
+- **What SKAVIA Can Learn**: Use branch-scoping selectors in the `TopBar` and monospace cryptographic hashes for APK releases, audit logs, and transaction references.
+- **SKAVIA Application**: Implemented in `/releases` (SHA-256 binary validation, ARM64 vs ARMv7 staging) and `TopBar` (global branch selector for Company Admin, locked for Branch Manager).
+- **What Must NOT Be Copied**: Do NOT incorporate git push/deploy workflows into service workforce management.
+
+### Reference 4: Supabase Studio (`https://supabase.com/dashboard`)
+- **Inspected Surfaces**: Table editor, SQL runner, role-based access control policies.
+- **Visual Characteristics**:
+  - Dense tabular data grid, quick search across all columns, pagination controls, slide-over detail drawers for editing individual rows.
+- **Why It Works**: Allows administrators to inspect complex relational data without navigating away from the main list view. Prevents loss of pagination context.
+- **What SKAVIA Can Learn**: Use slide-over detail drawers (`SideDrawer.tsx`) for inspecting worker NID documents, booking details, and administrator invitation profiles.
+- **SKAVIA Application**: Implemented in `AdminDetailDrawer`, `ReleaseDetailDrawer`, and worker verification inspection panels.
+- **What Must NOT Be Copied**: Do NOT expose raw database schemas, SQL consoles, or table altering controls to internal operational staff or branch managers.
+
+### Reference 5: Ramp (`https://ramp.com/`)
+- **Inspected Surfaces**: Corporate card spend management, maker-checker approval workflows.
+- **Visual Characteristics**:
+  - High-impact metric KPI cards with percentage trends, dual-signature approval banners, clear status badges (`Verified`, `Pending`, `Flagged`).
+- **Why It Works**: Prevents fraudulent payouts and unauthorized administrative actions by enforcing explicit maker-checker workflows for financial changes.
+- **What SKAVIA Can Learn**: Enforce maker-checker approval workflows on high-value refunds, technician payout batches, and administrator permission overrides.
+- **SKAVIA Application**: Built into `/finance` and `/verifications`: two-step verification for technician document approval and payout reconciliation runs.
+- **What Must NOT Be Copied**: Do NOT build corporate expense credit-card issuing features. SKAVIA finances focus on specialist escrow and client payments.
+
+### Reference 6: WorkOS (`https://workos.com/`)
+- **Inspected Surfaces**: Enterprise directory sync, SSO configuration, audit log streams.
+- **Visual Characteristics**:
+  - Clean audit log streams with timestamps, IP addresses, actor identities, and affected resource IDs; fail-closed permission matrices.
+- **Why It Works**: Enterprise compliance and security teams demand transparent, tamper-proof activity logs for every administrative action taken.
+- **What SKAVIA Can Learn**: Implement immutable audit logging for all admin mutations (role changes, dispute resolutions, rate modifications) in `/security`.
+- **SKAVIA Application**: Captured in `SupabaseGovernanceStore` and visualized in `/security`: searchable audit log stream with actor UID, IP, user-agent, and before/after payloads.
+- **What Must NOT Be Copied**: Do NOT implement complex SAML SSO enterprise federations for standard branch managers. Simple Google Workspace SSO + WebAuthn is appropriate.
+
+### Reference 7: Clerk (`https://clerk.com/`)
+- **Inspected Surfaces**: User authentication settings, active session termination, passkey credentials.
+- **Visual Characteristics**:
+  - Seamless WebAuthn / FIDO2 passkey registration, active session cards showing device type, browser, location, and instant revoke buttons.
+- **Why It Works**: Simplifies complex cryptographic security into intuitive user controls, drastically reducing unauthorized account takeovers.
+- **What SKAVIA Can Learn**: Provide administrators with self-service WebAuthn passkey management and the ability to view and terminate active administrative sessions in `/settings` & `/security`.
+- **SKAVIA Application**: Directly codified in `/api/admin/auth/passkey/*` and `/security`: administrators can register biometric/hardware keys and terminate suspicious sessions.
+- **What Must NOT Be Copied**: Do NOT use third-party hosted auth modals that break brand immersion. All auth forms are natively styled within the SKAVIA design system.
 
 ---
 
@@ -147,33 +208,3 @@ SKAVIA is a unified, single-enterprise accountable service and workforce platfor
   - Subtle: `shadow-sm`
   - Elevated: `shadow-lg shadow-blue-900/10 dark:shadow-blue-950/30`
   - Radiant Glow: `shadow-[0_0_50px_-12px_rgba(21,231,202,0.25)]`
-
----
-
-## 5. Absolute Surface Separation Architecture
-
-### Public Website Boundary (`www.skavia.com`)
-- **Customer & Visitor Exclusive**: All pages and components serve public visitors, households, and business clients exploring services.
-- **Strict Isolation**: No administrative sidebars, no admin links in header or footer, no internal reports, no branch management buttons.
-- **Direct App Link**: Prominent CTA directing visitors to download the official Android application for live booking and technician tracking.
-
-### Company Admin Boundary (`admin.skavia.com`)
-- **Staff Exclusive**: Accessible only via verified administrative credentials or invitation token.
-- **Role-Aware RBAC**: Company Admin oversees all operational branches; Branch Manager is automatically scoped to their assigned branch.
-- **Branch Selector**: Global branch filter in `TopBar` for multi-branch administrators; locked for Branch Managers.
-
-### Super Admin Boundary (`superadmin.skavia.com`)
-- **Platform Governance**: Restricted strictly to users with `isPrimarySuperAdmin: true`.
-- **Exclusive Modules**:
-  - `/admins`: Create invitations, configure fine-grained permissions, revoke administrative access.
-  - `/security`: Review real-time audit logs, terminate suspicious sessions, enforce hardware passkeys.
-  - `/releases`: Stage production APK binaries, compute SHA-256 hashes, configure mandatory vs optional update policies.
-
----
-
-## 6. Zero-Flicker Localization Architecture
-
-1. **Preloaded In-Memory Dictionaries**: English (`en`) and Bengali (`bn`) dictionaries loaded in `translations.ts` without client-side network roundtrips.
-2. **Instant Non-Blocking React Context**: `useTranslation()` updates text nodes without remounting page trees, resetting form states, or refreshing the browser.
-3. **Typography Elasticity**: Dynamic min-heights and flexible flexbox containers prevent layout shifts when switching between compact English and longer Bengali text.
-4. **Persistent Preference**: Synced instantaneously to `localStorage('skavia-lang')`, cookie, and `document.documentElement.lang`.

@@ -2,33 +2,41 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Briefcase,
   Building2,
   CalendarClock,
   HelpCircle,
   Home,
+  Laptop,
   Layers,
   Mail,
+  Moon,
+  ShieldCheck,
   Smartphone,
-  UserCheck,
-  Users,
+  Sun,
   Wrench,
   X,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
-import { useTranslation } from '@/lib/l10n/LanguageContext';
-import { LanguageSwitcher } from './LanguageSwitcher';
-import { LocationPill } from './LocationPill';
 
 interface MobileNavDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onDownloadClick?: () => void;
+  themeMode?: 'system' | 'light' | 'dark';
+  onCycleTheme?: () => void;
 }
 
-export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavDrawerProps) {
-  const { t } = useTranslation();
+export function MobileNavDrawer({
+  isOpen,
+  onClose,
+  onDownloadClick,
+  themeMode = 'system',
+  onCycleTheme,
+}: MobileNavDrawerProps) {
+  const pathname = usePathname();
 
   // Escape key listener & body scroll lock
   useEffect(() => {
@@ -49,11 +57,23 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
 
   if (!isOpen) return null;
 
+  const navLinks = [
+    { label: 'Home', href: '/', icon: Home },
+    { label: 'About SKAVIA', href: '/about', icon: Briefcase },
+    { label: 'Services Directory', href: '/services-catalog', icon: Layers },
+    { label: 'How It Works', href: '/how-it-works', icon: CalendarClock },
+    { label: 'Trust & Safety', href: '/experience', icon: ShieldCheck },
+    { label: 'For Specialists', href: '/specialists', icon: Wrench },
+    { label: 'Enterprise Solutions', href: '/business', icon: Building2 },
+    { label: 'FAQ', href: '/faq', icon: HelpCircle },
+    { label: 'Contact & Support', href: '/contact', icon: Mail },
+  ];
+
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={t.menuTitle}
+      aria-label="Navigation Menu"
       className="fixed inset-0 z-50 flex lg:hidden bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
       {/* Backdrop tap to dismiss */}
@@ -61,190 +81,102 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
 
       {/* Slide-over Drawer */}
       <div
-        className="relative ml-auto w-full max-w-xs sm:max-w-sm h-full flex flex-col shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-250"
-        style={{
-          backgroundColor: 'var(--bg-surface)',
-          borderLeft: '1px solid var(--border-subtle)',
-          color: 'var(--text-primary)',
-        }}
+        className="relative ml-auto w-full max-w-xs sm:max-w-sm h-full flex flex-col shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-250 bg-white dark:bg-[#0B1120] text-slate-900 dark:text-slate-100 border-l border-slate-200 dark:border-slate-800"
       >
         {/* Drawer Header */}
-        <div
-          className="sticky top-0 z-10 flex items-center justify-between px-4 py-3.5 border-b"
-          style={{
-            backgroundColor: 'var(--bg-surface)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
+        <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-md">
           <div className="flex items-center gap-2.5">
             <SkaviaBrandMark variant="emblem" size={26} />
-            <span className="font-heading font-bold text-sm tracking-tight">{t.brandName}</span>
+            <div className="flex flex-col">
+              <span className="font-heading font-extrabold text-sm tracking-tight leading-none text-slate-900 dark:text-white">
+                SKAVIA
+              </span>
+              <span className="text-[9px] font-mono-code text-slate-500 tracking-wider uppercase">
+                Workforce &amp; Services
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <LanguageSwitcher />
+            {onCycleTheme && (
+              <button
+                type="button"
+                onClick={onCycleTheme}
+                aria-label={`Toggle theme (currently ${themeMode})`}
+                className="rounded-lg p-1.5 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                title={`Theme: ${themeMode}`}
+              >
+                {themeMode === 'system' ? (
+                  <Laptop className="h-4 w-4 text-[#3898EC]" />
+                ) : themeMode === 'light' ? (
+                  <Sun className="h-4 w-4 text-amber-500" />
+                ) : (
+                  <Moon className="h-4 w-4 text-indigo-400" />
+                )}
+              </button>
+            )}
+
             <button
               type="button"
               onClick={onClose}
-              aria-label={t.menuClose}
-              className="rounded-lg p-1.5 border hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              style={{ borderColor: 'var(--border-subtle)' }}
+              aria-label="Close menu"
+              className="rounded-lg p-1.5 border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Location Row */}
-        <div
-          className="px-4 py-2.5 border-b flex items-center justify-between"
-          style={{
-            backgroundColor: 'var(--bg-surface-subtle)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <span className="text-xs text-slate-500 font-medium">{t.activeLocation}:</span>
-          <LocationPill compact />
-        </div>
-
         {/* Navigation Content */}
-        <div className="flex-1 px-4 py-4 space-y-6">
-          {/* Section Links */}
-          <div className="space-y-1">
-            <p className="text-[11px] font-mono-code uppercase tracking-wider text-slate-400 px-2 mb-2">
-              Navigation
-            </p>
+        <div className="flex-1 px-3 py-4 space-y-1">
+          <p className="text-[10px] font-mono-code uppercase tracking-wider text-slate-400 px-3 mb-2 font-bold">
+            Navigation Menu
+          </p>
 
-            <a
-              href="#about"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <Home className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navAbout}</span>
-            </a>
-
-            <a
-              href="#how-it-works"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <CalendarClock className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navHowItWorks}</span>
-            </a>
-
-            <a
-              href="#branches"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <Layers className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navBranches}</span>
-            </a>
-
-            <a
-              href="#solutions"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <Briefcase className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navSolutions}</span>
-            </a>
-
-            <a
-              href="#workers"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <Wrench className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navBecomeWorker}</span>
-            </a>
-
-            <a
-              href="#faq"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <HelpCircle className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navFaq}</span>
-            </a>
-
-            <a
-              href="#contact"
-              onClick={onClose}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <Mail className="h-4 w-4 text-[#003399] dark:text-[#3898EC]" />
-              <span>{t.navContact}</span>
-            </a>
-          </div>
-
-          {/* Unified Role Portal Links */}
-          <div className="space-y-1 pt-2 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-            <p className="text-[11px] font-mono-code uppercase tracking-wider text-slate-400 px-2 mb-2">
-              {t.roleSwitcherTitle}
-            </p>
-
-            <Link
-              href="/customer-portal"
-              onClick={onClose}
-              className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#003399]"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Users className="h-4 w-4 text-blue-600" />
-                <span className="font-medium">{t.roleIndividualCustomer}</span>
-              </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Portal</span>
-            </Link>
-
-            <Link
-              href="/business-portal"
-              onClick={onClose}
-              className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#7C3AED]"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Building2 className="h-4 w-4 text-purple-600" />
-                <span className="font-medium">{t.roleBusinessClient}</span>
-              </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Corporate</span>
-            </Link>
-
-            <a
-              href="#workers"
-              onClick={onClose}
-              className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#0284C7]"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <UserCheck className="h-4 w-4 text-sky-600" />
-                <span className="font-medium">{t.roleWorker}</span>
-              </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Join</span>
-            </a>
-          </div>
+          {navLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive =
+              pathname === link.href ||
+              (link.href !== '/' && pathname.startsWith(`${link.href}/`));
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onClose}
+                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-[#003399]/10 text-[#003399] dark:bg-cyan-500/15 dark:text-cyan-300 font-bold'
+                    : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-950 dark:hover:text-white'
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0 text-[#003399] dark:text-[#3898EC]" />
+                <span>{link.label}</span>
+              </Link>
+            );
+          })}
         </div>
 
         {/* Drawer Footer CTA */}
-        <div
-          className="sticky bottom-0 p-4 border-t space-y-2"
-          style={{
-            backgroundColor: 'var(--bg-surface)',
-            borderColor: 'var(--border-subtle)',
-          }}
-        >
-          <a
-            href="#download"
+        <div className="sticky bottom-0 p-4 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0B1120]/95 backdrop-blur-md space-y-2">
+          <Link
+            href="/download"
             onClick={() => {
               onClose();
               if (onDownloadClick) onDownloadClick();
             }}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#003399] px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-[#00287a] transition"
+            className="w-full flex items-center justify-center gap-2 rounded-full bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 px-4 py-2.5 text-xs font-semibold shadow-md transition-all"
           >
             <Smartphone className="h-4 w-4" />
-            <span>{t.downloadApkTitle}</span>
-          </a>
+            <span>Download Mobile App</span>
+          </Link>
+
+          <Link
+            href="/login"
+            onClick={onClose}
+            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
+          >
+            <span>Enterprise Admin Portal Sign In →</span>
+          </Link>
         </div>
       </div>
     </div>

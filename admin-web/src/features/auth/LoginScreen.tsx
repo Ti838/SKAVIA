@@ -329,8 +329,16 @@ function LoginPortalContent() {
           : 'bg-[#F8FAFC] text-slate-900 skavia-subtle-mesh-light'
       }`}
     >
-      {/* Ambient Radial Highlights */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-gradient-to-b from-[#003399]/20 via-[#15E7CA]/10 to-transparent blur-3xl pointer-events-none" />
+      {/* Seamless Ambient Lighting with Zero-Banding Falloff */}
+      <div 
+        className="absolute inset-0 pointer-events-none select-none overflow-hidden" 
+        style={{
+          background: effectiveDark
+            ? 'radial-gradient(ellipse 85% 55% at 50% 0%, rgba(0, 51, 153, 0.25) 0%, rgba(21, 231, 202, 0.08) 45%, transparent 100%)'
+            : 'radial-gradient(ellipse 85% 55% at 50% 0%, rgba(0, 51, 153, 0.08) 0%, rgba(56, 152, 236, 0.05) 45%, transparent 100%)'
+        }}
+        aria-hidden="true"
+      />
 
       {/* Top Header / Bar */}
       <header className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between py-2 sm:py-4">

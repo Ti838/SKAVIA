@@ -23,6 +23,11 @@ export interface TranslationDictionary {
   navContact: string;
   navPortalSignIn: string;
   navGetApp: string;
+  navServicesCatalog: string;
+  navCustomerExperience: string;
+  navBusinessSolutions: string;
+  navSpecialists: string;
+  navDownload: string;
   navDashboard: string;
   navWorkerConsole: string;
   navCustomerPortal: string;
@@ -148,6 +153,11 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     navContact: 'Contact & Support',
     navPortalSignIn: 'Sign In / Portal',
     navGetApp: 'Get Mobile App',
+    navServicesCatalog: 'Services Directory',
+    navCustomerExperience: 'Trust & Safety',
+    navBusinessSolutions: 'Enterprise Solutions',
+    navSpecialists: 'For Specialists',
+    navDownload: 'Download App',
     navDashboard: 'Overview & Metrics',
     navWorkerConsole: 'Worker Console',
     navCustomerPortal: 'Customer Portal',
@@ -263,6 +273,11 @@ export const translations: Record<LanguageCode, TranslationDictionary> = {
     navContact: 'যোগাযোগ ও সহায়তা',
     navPortalSignIn: 'সাইন ইন / পোর্টাল',
     navGetApp: 'অ্যাপ ডাউনলোড',
+    navServicesCatalog: 'সার্ভিস তালিকা',
+    navCustomerExperience: 'নিরাপত্তা ও বিশ্বাস',
+    navBusinessSolutions: 'প্রাতিষ্ঠানিক সমাধান',
+    navSpecialists: 'দক্ষ কর্মীদের জন্য',
+    navDownload: 'অ্যাপ ডাউনলোড',
     navDashboard: 'সারসংক্ষেপ ও মেট্রিক্স',
     navWorkerConsole: 'ওয়ার্কার কনসোল',
     navCustomerPortal: 'কাস্টমার পোর্টাল',

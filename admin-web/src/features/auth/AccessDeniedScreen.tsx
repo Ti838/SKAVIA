@@ -9,8 +9,14 @@ export function AccessDeniedScreen() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 bg-[#05080F] text-slate-100 skavia-subtle-mesh-dark">
-      {/* Ambient Red/Blue Accent */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-tr from-rose-500/15 via-[#003399]/15 to-transparent rounded-full blur-3xl pointer-events-none" />
+      {/* Seamless Ambient Security Atmosphere */}
+      <div 
+        className="absolute inset-0 pointer-events-none select-none overflow-hidden" 
+        style={{
+          background: 'radial-gradient(ellipse 75% 55% at 50% 20%, rgba(244, 63, 94, 0.14) 0%, rgba(0, 51, 153, 0.12) 40%, transparent 80%)'
+        }}
+        aria-hidden="true"
+      />
 
       <div className="relative z-10 max-w-lg w-full rounded-3xl border border-rose-500/30 bg-[#0A0F1C]/90 backdrop-blur-xl p-6 sm:p-8 text-center space-y-6 shadow-2xl">
         <div className="flex justify-center">
