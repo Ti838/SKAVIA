@@ -10,7 +10,6 @@ import {
   ShieldCheck,
   Smartphone,
 } from 'lucide-react';
-import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
 import { HeroAtmosphere } from '../components/HeroAtmosphere';
 import { PublicPageShell } from '../components/PublicPageShell';
 import { SPECIALIZATION_BRANCHES } from '../public-site-data';
@@ -19,28 +18,17 @@ export function AboutScreen() {
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-20 py-12 md:py-16">
+        <div className="space-y-20 pt-4 pb-16 sm:pt-6 sm:pb-24">
           {/* Hero Section */}
           <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
-            <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
-              <div
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono-code ${
-                  t.dark
-                    ? 'border-cyan-400/30 bg-cyan-500/10 text-cyan-300'
-                    : 'border-blue-300 bg-blue-50 text-blue-700'
-                }`}
-              >
-                <SkaviaBrandMark variant="emblem" size={16} />
-                <span>ONE ACCOUNTABLE WORKFORCE &amp; SERVICES ENTERPRISE</span>
-              </div>
-
-              <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight ${t.textPrimary}`}>
+            <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
+              <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
                 Explain Your Requirement. SKAVIA Delivers the Solution.
               </h1>
 
-              <p className={`text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto ${t.textSecondary}`}>
+              <p className="mt-4 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
                 SKAVIA is not an unvetted gig marketplace or broker directory. We are Bangladesh&apos;s single accountable service enterprise, executing complex trade solutions through 8 internal specialization branches.
               </p>
 

@@ -118,7 +118,7 @@ export function PublicHeader({
                     {/* Services Dropdown Flyout */}
                     {servicesMenuOpen && (
                       <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 w-80 sm:w-96 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-2xl p-3 shadow-2xl space-y-1">
+                        <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 p-3 shadow-2xl space-y-1">
                           <div className="px-2 py-1.5 border-b border-neutral-100 dark:border-neutral-800/80 flex items-center justify-between">
                             <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-semibold">
                               8 Specialization Branches
