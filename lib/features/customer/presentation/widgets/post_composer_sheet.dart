@@ -88,10 +88,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
 
     final user = _authController.user;
     if (user == null) {
-      UiFeedbackHelper.showError(
-        context,
-        'Please sign in to publish a post.',
-      );
+      UiFeedbackHelper.showError(context, 'Please sign in to publish a post.');
       return;
     }
 

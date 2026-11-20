@@ -38,7 +38,9 @@ class PostRequirementStepper extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
-                color: isActive ? tokens.onBrandAccent : colorScheme.onSurfaceVariant,
+                color: isActive
+                    ? tokens.onBrandAccent
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -51,7 +53,9 @@ class PostRequirementStepper extends StatelessWidget {
             style: TextStyle(
               fontSize: 10,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              color: isActive ? tokens.brandAccent : colorScheme.onSurfaceVariant,
+              color: isActive
+                  ? tokens.brandAccent
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ],

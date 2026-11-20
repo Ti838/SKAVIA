@@ -102,33 +102,33 @@ class SettingsAppearanceSection extends StatelessWidget {
                   return Wrap(
                     spacing: 8,
                     runSpacing: 6,
-                    children: [
-                      (
-                        ThemeMode.system,
-                        isBn ? 'অটো (সিস্টেম)' : 'Auto',
-                        Icons.brightness_auto_rounded,
-                      ),
-                      (
-                        ThemeMode.light,
-                        isBn ? 'লাইট' : 'Light',
-                        Icons.light_mode_rounded,
-                      ),
-                      (
-                        ThemeMode.dark,
-                        isBn ? 'ডার্ক' : 'Dark',
-                        Icons.dark_mode_rounded,
-                      ),
-                    ].map((item) {
-                      final selected = mode == item.$1;
-                      return _buildOptionPill(
-                        context,
-                        icon: item.$3,
-                        label: item.$2,
-                        selected: selected,
-                        onTap: () =>
-                            AppThemeService.setThemeMode(item.$1),
-                      );
-                    }).toList(),
+                    children:
+                        [
+                          (
+                            ThemeMode.system,
+                            isBn ? 'অটো (সিস্টেম)' : 'Auto',
+                            Icons.brightness_auto_rounded,
+                          ),
+                          (
+                            ThemeMode.light,
+                            isBn ? 'লাইট' : 'Light',
+                            Icons.light_mode_rounded,
+                          ),
+                          (
+                            ThemeMode.dark,
+                            isBn ? 'ডার্ক' : 'Dark',
+                            Icons.dark_mode_rounded,
+                          ),
+                        ].map((item) {
+                          final selected = mode == item.$1;
+                          return _buildOptionPill(
+                            context,
+                            icon: item.$3,
+                            label: item.$2,
+                            selected: selected,
+                            onTap: () => AppThemeService.setThemeMode(item.$1),
+                          );
+                        }).toList(),
                   );
                 },
               ),

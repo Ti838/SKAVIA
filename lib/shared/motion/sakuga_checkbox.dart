@@ -44,10 +44,7 @@ class _SakugaCheckboxState extends State<SakugaCheckbox>
       duration: const Duration(milliseconds: 220),
       value: widget.value ? 1.0 : 0.0,
     );
-    _scaleController = AnimationController.unbounded(
-      vsync: this,
-      value: 1.0,
-    );
+    _scaleController = AnimationController.unbounded(vsync: this, value: 1.0);
   }
 
   @override
@@ -132,9 +129,7 @@ class _SakugaCheckboxState extends State<SakugaCheckbox>
                     ),
                   ),
                   child: t > 0.02
-                      ? CustomPaint(
-                          painter: _CheckmarkPainter(progress: t),
-                        )
+                      ? CustomPaint(painter: _CheckmarkPainter(progress: t))
                       : null,
                 ),
               );
@@ -167,17 +162,11 @@ class _CheckmarkPainter extends CustomPainter {
     final path = Path()..moveTo(p1.dx, p1.dy);
     if (progress <= 0.45) {
       final seg = progress / 0.45;
-      path.lineTo(
-        p1.dx + (p2.dx - p1.dx) * seg,
-        p1.dy + (p2.dy - p1.dy) * seg,
-      );
+      path.lineTo(p1.dx + (p2.dx - p1.dx) * seg, p1.dy + (p2.dy - p1.dy) * seg);
     } else {
       path.lineTo(p2.dx, p2.dy);
       final seg = ((progress - 0.45) / 0.55).clamp(0.0, 1.0);
-      path.lineTo(
-        p2.dx + (p3.dx - p2.dx) * seg,
-        p2.dy + (p3.dy - p2.dy) * seg,
-      );
+      path.lineTo(p2.dx + (p3.dx - p2.dx) * seg, p2.dy + (p3.dy - p2.dy) * seg);
     }
     canvas.drawPath(path, paint);
   }

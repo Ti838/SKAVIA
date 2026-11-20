@@ -60,7 +60,9 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please sign in to submit a verified specialist review.'),
+          content: Text(
+            'Please sign in to submit a verified specialist review.',
+          ),
           backgroundColor: AppColors.errorRed,
         ),
       );
@@ -212,17 +214,10 @@ class _SubmitReviewScreenState extends State<SubmitReviewScreen> {
                 child: TextField(
                   controller: _commentController,
                   maxLines: 4,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colorScheme.onSurface,
-                  ),
+                  style: TextStyle(fontSize: 14, color: colorScheme.onSurface),
                   decoration: InputDecoration(
-                    hintText:
-                        'Share feedback regarding quality, punctuality, and tools...',
-                    hintStyle: TextStyle(
-                      fontSize: 13,
-                      color: tokens.mutedText,
-                    ),
+                    hintText: 'Share feedback regarding quality, punctuality, and tools...',
+                    hintStyle: TextStyle(fontSize: 13, color: tokens.mutedText),
                     border: InputBorder.none,
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,

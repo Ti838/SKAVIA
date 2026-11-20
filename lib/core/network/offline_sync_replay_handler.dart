@@ -23,8 +23,7 @@ abstract class OfflineSyncReplayHandler {
           if (payload['phone'] != null) 'phone': payload['phone'],
           if (payload['avatar_url'] != null)
             'avatar_url': payload['avatar_url'],
-          if (payload['cover_url'] != null)
-            'cover_url': payload['cover_url'],
+          if (payload['cover_url'] != null) 'cover_url': payload['cover_url'],
           if (payload['date_of_birth'] != null)
             'date_of_birth': payload['date_of_birth'],
           if (payload['birthday_notifications_enabled'] != null)
@@ -93,4 +92,3 @@ abstract class OfflineSyncReplayHandler {
     }
   }
 }
-

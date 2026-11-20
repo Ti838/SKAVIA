@@ -194,10 +194,7 @@ class InvoiceScreen extends StatelessWidget {
                   children: [
                     Text(
                       'Transaction Reference:',
-                      style: TextStyle(
-                        fontSize: 11.5,
-                        color: tokens.mutedText,
-                      ),
+                      style: TextStyle(fontSize: 11.5, color: tokens.mutedText),
                     ),
                     Text(
                       transactionId,

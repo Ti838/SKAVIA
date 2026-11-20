@@ -94,9 +94,8 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           decoration: BoxDecoration(
                             color: selected
                                 ? tokens.brandAccent.withValues(alpha: 0.14)
-                                : colorScheme.surfaceContainerHighest.withValues(
-                                    alpha: 0.45,
-                                  ),
+                                : colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.45),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
                               color: selected
@@ -142,13 +141,14 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ? EmptyDataView(
                         icon: Icons.receipt_long_outlined,
                         title: 'No Transactions Found',
-                        message:
-                            'Your completed service payments, escrow settlements, and itemized VAT invoices will appear here.',
+                        message: 'Your completed service payments, escrow settlements, and itemized VAT invoices will appear here.',
                         actionText: 'Refresh',
                         onAction: _loadHistory,
                       )
                     : ListView.separated(
-                        padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+                        padding: const EdgeInsets.all(
+                          AppDimensions.paddingLarge,
+                        ),
                         itemCount: filtered.length,
                         separatorBuilder: (_, _) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
@@ -204,7 +204,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                                         vertical: 3,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: badgeColor.withValues(alpha: 0.14),
+                                        color: badgeColor.withValues(
+                                          alpha: 0.14,
+                                        ),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: Text(

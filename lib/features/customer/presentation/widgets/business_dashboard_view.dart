@@ -35,10 +35,10 @@ class BusinessDashboardView extends StatelessWidget {
     final isOrg = stats.customerType.toLowerCase().contains('org');
     final displayTitle =
         (stats.companyName != null && stats.companyName!.trim().isNotEmpty)
-            ? stats.companyName!.trim()
-            : (isOrg
-                ? l10n.organizationWorkspaceTitle
-                : l10n.businessWorkspaceTitle);
+        ? stats.companyName!.trim()
+        : (isOrg
+              ? l10n.organizationWorkspaceTitle
+              : l10n.businessWorkspaceTitle);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,9 +56,7 @@ class BusinessDashboardView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SkaviaBadge(
-                label: isOrg
-                    ? l10n.roleOrganization
-                    : l10n.roleBusinessClient,
+                label: isOrg ? l10n.roleOrganization : l10n.roleBusinessClient,
                 icon: isOrg
                     ? Icons.apartment_rounded
                     : Icons.business_center_outlined,
@@ -87,7 +85,9 @@ class BusinessDashboardView extends StatelessWidget {
                     child: _buildMetricTile(
                       context,
                       label: l10n.businessActiveProjects,
-                      value: Formatters.toBengaliDigits(stats.activeProjectsCount),
+                      value: Formatters.toBengaliDigits(
+                        stats.activeProjectsCount,
+                      ),
                       icon: Icons.folder_open_rounded,
                       bg: colorScheme.secondaryContainer,
                       fg: colorScheme.onSecondaryContainer,
@@ -98,7 +98,9 @@ class BusinessDashboardView extends StatelessWidget {
                     child: _buildMetricTile(
                       context,
                       label: l10n.businessOpenRequirements,
-                      value: Formatters.toBengaliDigits(stats.openRequirementsCount),
+                      value: Formatters.toBengaliDigits(
+                        stats.openRequirementsCount,
+                      ),
                       icon: Icons.assignment_outlined,
                       bg: colorScheme.primaryContainer,
                       fg: colorScheme.onPrimaryContainer,

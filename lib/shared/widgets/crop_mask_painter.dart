@@ -37,10 +37,7 @@ class CropMaskPainter extends CustomPainter {
       fullPath,
       cutoutPath,
     );
-    canvas.drawPath(
-      maskPath,
-      Paint()..color = const Color(0xAA000000),
-    );
+    canvas.drawPath(maskPath, Paint()..color = const Color(0xAA000000));
 
     final borderPaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.9)

@@ -76,11 +76,7 @@ class WorkerIncomingRequestsList extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.radar_rounded,
-                  color: tokens.brandAccent,
-                  size: 24,
-                ),
+                Icon(Icons.radar_rounded, color: tokens.brandAccent, size: 24),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

@@ -67,9 +67,7 @@ class SecurityAuthRecoveryCard extends StatelessWidget {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.chevron_right_rounded),
                 onTap: isSendingReset ? null : onSendPasswordReset,

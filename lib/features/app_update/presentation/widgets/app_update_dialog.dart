@@ -25,10 +25,8 @@ class AppUpdateDialog extends StatelessWidget {
   }) async {
     final updateProvider = provider ?? AppUpdateProvider.instance;
     if (evaluation.requiresImmediateBlockingUpdate) {
-      Navigator.of(context).pushNamed(
-        AppRoutes.appUpdate,
-        arguments: {'blocking': true},
-      );
+      Navigator.of(context)
+          .pushNamed(AppRoutes.appUpdate, arguments: {'blocking': true});
       return;
     }
 
@@ -75,9 +73,7 @@ class AppUpdateDialog extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (isMandatory
-                        ? AppColors.errorRed
-                        : tokens.brandAccent)
+                color: (isMandatory ? AppColors.errorRed : tokens.brandAccent)
                     .withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -95,8 +91,12 @@ class AppUpdateDialog extends StatelessWidget {
                 children: [
                   Text(
                     isMandatory
-                        ? (isBn ? 'বাধ্যতামূলক অ্যাপ আপডেট' : 'Required App Update')
-                        : (isBn ? 'SKAVIA আপডেট প্রস্তুত' : 'SKAVIA Update Ready'),
+                        ? (isBn
+                              ? 'বাধ্যতামূলক অ্যাপ আপডেট'
+                              : 'Required App Update')
+                        : (isBn
+                              ? 'SKAVIA আপডেট প্রস্তুত'
+                              : 'SKAVIA Update Ready'),
                     style: TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w800,
@@ -138,9 +138,10 @@ class AppUpdateDialog extends StatelessWidget {
                     isBn
                         ? 'আপনার অ্যাপ সংস্করণে গুরুত্বপূর্ণ নিরাপত্তা ও সামঞ্জস্য আপডেট আবশ্যক। সেবা এবং পেমেন্ট সঠিকভাবে ব্যবহার করতে এখনই আপডেট করুন।'
                         : (evaluation.status ==
-                                AppUpdateAvailability.unsupportedInstalledBuild
-                            ? 'Your installed build (#${evaluation.installedBuild}) is below the minimum supported version. Update now to preserve booking, payment, and security compatibility.'
-                            : 'This release includes critical compatibility and security fixes required to continue using SKAVIA safely.'),
+                                  AppUpdateAvailability
+                                      .unsupportedInstalledBuild
+                              ? 'Your installed build (#${evaluation.installedBuild}) is below the minimum supported version. Update now to preserve booking, payment, and security compatibility.'
+                              : 'This release includes critical compatibility and security fixes required to continue using SKAVIA safely.'),
                     style: TextStyle(
                       fontSize: 12,
                       color: colorScheme.onSurface,
@@ -195,15 +196,13 @@ class AppUpdateDialog extends StatelessWidget {
         ),
         actions: [
           if (!isMandatory && onLater != null)
-            TextButton(
-              onPressed: onLater,
-              child: Text(isBn ? 'পরে' : 'Later'),
-            ),
+            TextButton(onPressed: onLater, child: Text(isBn ? 'পরে' : 'Later')),
           ElevatedButton.icon(
             onPressed: onUpdateNow,
             style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  isMandatory ? AppColors.errorRed : AppColors.primaryRoyal,
+              backgroundColor: isMandatory
+                  ? AppColors.errorRed
+                  : AppColors.primaryRoyal,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -217,4 +216,3 @@ class AppUpdateDialog extends StatelessWidget {
     );
   }
 }
-

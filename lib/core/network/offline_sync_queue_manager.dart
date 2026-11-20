@@ -30,29 +30,29 @@ class SyncQueueItem {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'idempotencyKey': idempotencyKey,
-        'operationType': operationType,
-        'payload': payload,
-        'createdAt': createdAt.toIso8601String(),
-        'retryCount': retryCount,
-        'status': status.name,
-        'lastError': lastError,
-      };
+    'id': id,
+    'idempotencyKey': idempotencyKey,
+    'operationType': operationType,
+    'payload': payload,
+    'createdAt': createdAt.toIso8601String(),
+    'retryCount': retryCount,
+    'status': status.name,
+    'lastError': lastError,
+  };
 
   factory SyncQueueItem.fromJson(Map<String, dynamic> json) => SyncQueueItem(
-        id: json['id'] as String,
-        idempotencyKey: json['idempotencyKey'] as String,
-        operationType: json['operationType'] as String,
-        payload: Map<String, dynamic>.from(json['payload'] as Map),
-        createdAt: DateTime.parse(json['createdAt'] as String),
-        retryCount: json['retryCount'] as int? ?? 0,
-        status: SyncItemStatus.values.firstWhere(
-          (e) => e.name == json['status'],
-          orElse: () => SyncItemStatus.pending,
-        ),
-        lastError: json['lastError'] as String?,
-      );
+    id: json['id'] as String,
+    idempotencyKey: json['idempotencyKey'] as String,
+    operationType: json['operationType'] as String,
+    payload: Map<String, dynamic>.from(json['payload'] as Map),
+    createdAt: DateTime.parse(json['createdAt'] as String),
+    retryCount: json['retryCount'] as int? ?? 0,
+    status: SyncItemStatus.values.firstWhere(
+      (e) => e.name == json['status'],
+      orElse: () => SyncItemStatus.pending,
+    ),
+    lastError: json['lastError'] as String?,
+  );
 }
 
 /// Production-Grade Offline Sync Queue Manager.
@@ -126,14 +126,16 @@ class OfflineSyncQueueManager {
     Future<bool> Function(SyncQueueItem item)? customHandler,
   }) async {
     if (_isProcessing) return 0;
-    final pendingItems =
-        _queue.where((e) => e.status == SyncItemStatus.pending).toList();
+    final pendingItems = _queue
+        .where((e) => e.status == SyncItemStatus.pending)
+        .toList();
 
     if (pendingItems.isEmpty) return 0;
 
     _isProcessing = true;
-    NetworkConnectivityService.instance
-        .setManualState(NetworkQualityState.syncing);
+    NetworkConnectivityService.instance.setManualState(
+      NetworkQualityState.syncing,
+    );
 
     int processedSuccess = 0;
 
@@ -208,9 +210,7 @@ class OfflineSyncQueueManager {
       _queue.clear();
       for (final json in list) {
         if (json is Map) {
-          _queue.add(
-            SyncQueueItem.fromJson(Map<String, dynamic>.from(json)),
-          );
+          _queue.add(SyncQueueItem.fromJson(Map<String, dynamic>.from(json)));
         }
       }
       _emitPendingCount();
@@ -244,4 +244,3 @@ class OfflineSyncQueueManager {
 
   List<SyncQueueItem> get allItems => List.unmodifiable(_queue);
 }
-

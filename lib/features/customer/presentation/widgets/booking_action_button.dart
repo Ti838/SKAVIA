@@ -32,10 +32,7 @@ class BookingActionButton extends StatelessWidget {
             backgroundColor: tokens.brandAccent,
             foregroundColor: tokens.onBrandAccent,
             elevation: 0,
-            padding: const EdgeInsets.symmetric(
-              vertical: 14,
-              horizontal: 16,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -52,11 +49,11 @@ class BookingActionButton extends StatelessWidget {
               : Text(
                   selectedPaymentMethod == 'Cash'
                       ? (isBn
-                          ? 'ক্যাশ বুকিং নিশ্চিত করুন ($displayAmount)'
-                          : 'Confirm Cash Booking ($displayAmount)')
+                            ? 'ক্যাশ বুকিং নিশ্চিত করুন ($displayAmount)'
+                            : 'Confirm Cash Booking ($displayAmount)')
                       : (isBn
-                          ? 'নিশ্চিত করুন ও পেমেন্ট করুন ($displayAmount)'
-                          : 'Confirm & Pay ($displayAmount)'),
+                            ? 'নিশ্চিত করুন ও পেমেন্ট করুন ($displayAmount)'
+                            : 'Confirm & Pay ($displayAmount)'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 15,

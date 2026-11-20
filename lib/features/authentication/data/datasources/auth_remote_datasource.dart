@@ -23,9 +23,9 @@ class AuthRemoteDataSource {
 
   GoogleSignIn? _googleSignInInstance;
   GoogleSignIn get _googleSignIn => _googleSignInInstance ??= GoogleSignIn(
-        scopes: ['email', 'profile'],
-        serverClientId: kIsWeb ? null : _googleWebClientId,
-      );
+    scopes: ['email', 'profile'],
+    serverClientId: kIsWeb ? null : _googleWebClientId,
+  );
 
   fb.User? get currentFirebaseUser => _firebaseAuth?.currentUser;
   Session? get currentSupabaseSession => _supabase?.auth.currentSession;
@@ -166,9 +166,8 @@ class AuthRemoteDataSource {
             .from(DatabaseTables.users)
             .update(updateMap)
             .eq('user_id', userId);
-        await ProfileRemoteDataSource(
-          supabase: supabase,
-        ).registerCurrentSession(userId);
+        await ProfileRemoteDataSource(supabase: supabase)
+            .registerCurrentSession(userId);
         return;
       }
 
@@ -225,9 +224,8 @@ class AuthRemoteDataSource {
       }
 
       // 4. Register current device session
-      await ProfileRemoteDataSource(
-        supabase: supabase,
-      ).registerCurrentSession(userId);
+      await ProfileRemoteDataSource(supabase: supabase)
+          .registerCurrentSession(userId);
     } catch (e) {
       debugPrint('[Supabase Sync Warning]: $e');
     }

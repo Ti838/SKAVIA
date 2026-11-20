@@ -40,8 +40,9 @@ class FeedComposerPromptCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final tokens = context.skavia;
     final l10n = context.l10n;
-    final effectiveName =
-        (userName != null && userName!.trim().isNotEmpty) ? userName! : userInitial;
+    final effectiveName = (userName != null && userName!.trim().isNotEmpty)
+        ? userName!
+        : userInitial;
 
     return Container(
       margin: margin,

@@ -94,25 +94,29 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
         final profile = _profileController.profile;
         final stats = _profileController.stats;
 
-        final displayName = (profile?.fullName.isNotEmpty == true &&
+        final displayName =
+            (profile?.fullName.isNotEmpty == true &&
                 profile!.fullName != 'SKAVIA Member')
             ? profile.fullName
             : (user?.displayName?.isNotEmpty == true
                   ? user!.displayName!
                   : 'SKAVIA Member');
 
-        final contactLabel = (profile?.email.isNotEmpty == true &&
+        final contactLabel =
+            (profile?.email.isNotEmpty == true &&
                 profile!.email != 'user@skavia.com')
             ? profile.email
             : (user?.email?.isNotEmpty == true
                   ? user!.email!
                   : (user?.phoneNumber ?? 'contact@skavia.com'));
 
-        final rawAvatarUrl = widget.customAvatarUrl ??
+        final rawAvatarUrl =
+            widget.customAvatarUrl ??
             (profile?.avatarUrl?.isNotEmpty == true
                 ? profile!.avatarUrl
                 : user?.photoURL);
-        final effectiveAvatarUrl = (rawAvatarUrl != null &&
+        final effectiveAvatarUrl =
+            (rawAvatarUrl != null &&
                 rawAvatarUrl.trim().isNotEmpty &&
                 (rawAvatarUrl.startsWith('http://') ||
                     rawAvatarUrl.startsWith('https://')))
@@ -120,14 +124,16 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
             : null;
 
         final rawCoverUrl = widget.customCoverUrl ?? profile?.coverUrl;
-        final effectiveCoverUrl = (rawCoverUrl != null &&
+        final effectiveCoverUrl =
+            (rawCoverUrl != null &&
                 rawCoverUrl.trim().isNotEmpty &&
                 (rawCoverUrl.startsWith('http://') ||
                     rawCoverUrl.startsWith('https://')))
             ? rawCoverUrl.trim()
             : null;
 
-        final effectiveProfile = profile ??
+        final effectiveProfile =
+            profile ??
             UserProfileModel(
               id: user?.uid ?? 'guest',
               email: user?.email ?? '',
@@ -137,8 +143,9 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
               phone: user?.phoneNumber,
             );
 
-        final completionResult =
-            ProfileCompletionEngine.evaluate(effectiveProfile);
+        final completionResult = ProfileCompletionEngine.evaluate(
+          effectiveProfile,
+        );
 
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),

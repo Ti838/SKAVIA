@@ -44,11 +44,7 @@ class PostRequirementAiButton extends StatelessWidget {
                   ),
                 )
               else
-                Icon(
-                  Icons.auto_awesome,
-                  color: tokens.brandAccent,
-                  size: 14,
-                ),
+                Icon(Icons.auto_awesome, color: tokens.brandAccent, size: 14),
               const SizedBox(width: 6),
               Flexible(
                 child: Text(
@@ -69,4 +65,3 @@ class PostRequirementAiButton extends StatelessWidget {
     );
   }
 }
-

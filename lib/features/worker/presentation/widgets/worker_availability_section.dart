@@ -20,10 +20,7 @@ class WorkerAvailabilitySection extends StatelessWidget {
     final tokens = context.skavia;
 
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 12,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: tokens.subtleCardBg,
         borderRadius: BorderRadius.circular(16),
@@ -48,10 +45,7 @@ class WorkerAvailabilitySection extends StatelessWidget {
                   isAvailable
                       ? 'Ready for immediate job alerts'
                       : 'Currently off-duty',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: tokens.secondaryText,
-                  ),
+                  style: TextStyle(fontSize: 12, color: tokens.secondaryText),
                 ),
               ],
             ),

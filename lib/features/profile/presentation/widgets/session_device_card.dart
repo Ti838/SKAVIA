@@ -9,11 +9,7 @@ class SessionDeviceCard extends StatelessWidget {
   final UserSessionModel session;
   final VoidCallback? onRevoke;
 
-  const SessionDeviceCard({
-    super.key,
-    required this.session,
-    this.onRevoke,
-  });
+  const SessionDeviceCard({super.key, required this.session, this.onRevoke});
 
   @override
   Widget build(BuildContext context) {
@@ -128,4 +124,3 @@ class SessionDeviceCard extends StatelessWidget {
     );
   }
 }
-

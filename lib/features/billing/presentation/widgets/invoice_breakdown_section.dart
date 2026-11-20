@@ -143,11 +143,7 @@ class InvoiceBreakdownSection extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.shield_outlined,
-                color: tokens.brandAccent,
-                size: 18,
-              ),
+              Icon(Icons.shield_outlined, color: tokens.brandAccent, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

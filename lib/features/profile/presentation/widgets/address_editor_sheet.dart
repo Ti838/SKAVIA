@@ -30,10 +30,8 @@ class AddressEditorSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AddressEditorSheet(
-        controller: controller,
-        editAddress: editAddress,
-      ),
+      builder: (_) =>
+          AddressEditorSheet(controller: controller, editAddress: editAddress),
     );
   }
 
@@ -62,7 +60,8 @@ class _AddressEditorSheetState extends State<AddressEditorSheet> {
     final edit = widget.editAddress;
     final profile = widget.controller.profile;
     _recipientNameController = TextEditingController(
-      text: edit?.recipientName ??
+      text:
+          edit?.recipientName ??
           (profile?.fullName != null && profile!.fullName != 'SKAVIA Member'
               ? profile.fullName
               : ''),
@@ -70,14 +69,14 @@ class _AddressEditorSheetState extends State<AddressEditorSheet> {
     _recipientPhoneController = TextEditingController(
       text: edit?.recipientPhone ?? profile?.phone ?? '',
     );
-    _addressLineController =
-        TextEditingController(text: edit?.addressLine ?? '');
-    _zoneController =
-        TextEditingController(text: edit?.zone ?? 'Dhanmondi');
-    _postalCodeController =
-        TextEditingController(text: edit?.postalCode ?? '');
+    _addressLineController = TextEditingController(
+      text: edit?.addressLine ?? '',
+    );
+    _zoneController = TextEditingController(text: edit?.zone ?? 'Dhanmondi');
+    _postalCodeController = TextEditingController(text: edit?.postalCode ?? '');
     _selectedLabel = edit?.label ?? 'Home';
-    _isDefault = edit?.isDefault ??
+    _isDefault =
+        edit?.isDefault ??
         (widget.controller.profile?.savedAddresses.isEmpty ?? true);
     _latitude = edit?.latitude;
     _longitude = edit?.longitude;
@@ -315,8 +314,7 @@ class _AddressEditorSheetState extends State<AddressEditorSheet> {
                   ),
                   value: _isDefault,
                   activeColor: tokens.brandAccent,
-                  onChanged: (val) =>
-                      setState(() => _isDefault = val ?? false),
+                  onChanged: (val) => setState(() => _isDefault = val ?? false),
                 ),
                 const SizedBox(height: 14),
                 AppButton(

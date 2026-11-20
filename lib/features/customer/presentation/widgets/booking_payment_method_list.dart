@@ -118,4 +118,3 @@ class BookingPaymentMethodList extends StatelessWidget {
     );
   }
 }
-

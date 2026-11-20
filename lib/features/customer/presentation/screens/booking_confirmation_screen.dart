@@ -147,9 +147,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final extraNotes = _notesController.text.trim();
 
     try {
-      String? effectiveWorkerProfileId = UuidUtil.isValidUuid(
-        widget.workerProfileId,
-      )
+      String? effectiveWorkerProfileId =
+          UuidUtil.isValidUuid(widget.workerProfileId)
           ? widget.workerProfileId.trim()
           : null;
 
@@ -255,8 +254,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final displayServiceTitle = widget.jobTitle.isNotEmpty
         ? widget.jobTitle
         : (isBn ? 'যাচাইকৃত কারিগরি সেবা' : 'Certified Trade Service');
-    final displayAmount =
-        Formatters.formatCurrency(_totalPrice, useBnDigits: isBn);
+    final displayAmount = Formatters.formatCurrency(
+      _totalPrice,
+      useBnDigits: isBn,
+    );
 
     return Scaffold(
       backgroundColor: tokens.sheetBg,

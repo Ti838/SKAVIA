@@ -29,8 +29,9 @@ class LocalCacheService {
             if (entryRaw is Map<String, dynamic>) {
               final value = entryRaw['value']?.toString();
               final expiryIso = entryRaw['expiry']?.toString();
-              final expiry =
-                  expiryIso != null ? DateTime.tryParse(expiryIso) : null;
+              final expiry = expiryIso != null
+                  ? DateTime.tryParse(expiryIso)
+                  : null;
               if (value != null && (expiry == null || !now.isAfter(expiry))) {
                 _memoryStore[key] = _CacheEntry(value: value, expiry: expiry);
               }
@@ -49,10 +50,7 @@ class LocalCacheService {
   void put(String key, dynamic value, {Duration? ttl}) {
     final expiry = ttl != null ? DateTime.now().add(ttl) : null;
     final valStr = value is String ? value : jsonEncode(value);
-    _memoryStore[key] = _CacheEntry(
-      value: valStr,
-      expiry: expiry,
-    );
+    _memoryStore[key] = _CacheEntry(value: valStr, expiry: expiry);
     _prefs?.setString(key, valStr);
     _persistAsync();
   }
@@ -61,10 +59,7 @@ class LocalCacheService {
   Future<void> putPersisted(String key, dynamic value, {Duration? ttl}) async {
     final expiry = ttl != null ? DateTime.now().add(ttl) : null;
     final valStr = value is String ? value : jsonEncode(value);
-    _memoryStore[key] = _CacheEntry(
-      value: valStr,
-      expiry: expiry,
-    );
+    _memoryStore[key] = _CacheEntry(value: valStr, expiry: expiry);
     try {
       _prefs ??= await SharedPreferences.getInstance();
       await _prefs?.setString(key, valStr);
@@ -149,8 +144,7 @@ class LocalCacheService {
         if (!entry.isExpired) {
           serialized[key] = {
             'value': entry.value,
-            if (entry.expiry != null)
-              'expiry': entry.expiry!.toIso8601String(),
+            if (entry.expiry != null) 'expiry': entry.expiry!.toIso8601String(),
           };
         }
       });

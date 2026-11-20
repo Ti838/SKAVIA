@@ -27,16 +27,16 @@ class UserSessionModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_id': userId,
-        'device_id': deviceId,
-        'device_name': deviceName,
-        'device_os': deviceOs,
-        'app_version': appVersion,
-        'ip_address': ipAddress,
-        'last_active_at': lastActiveAt.toIso8601String(),
-        'is_revoked': isRevoked,
-      };
+    'id': id,
+    'user_id': userId,
+    'device_id': deviceId,
+    'device_name': deviceName,
+    'device_os': deviceOs,
+    'app_version': appVersion,
+    'ip_address': ipAddress,
+    'last_active_at': lastActiveAt.toIso8601String(),
+    'is_revoked': isRevoked,
+  };
 
   factory UserSessionModel.fromJson(
     Map<String, dynamic> json, {
@@ -78,4 +78,3 @@ class UserSessionModel {
     );
   }
 }
-

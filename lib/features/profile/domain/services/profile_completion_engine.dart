@@ -43,78 +43,91 @@ class ProfileCompletionEngine {
         profile.fullName != 'SKAVIA Member') {
       score += 15;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'full_name',
-        label: 'Full Name',
-        weight: 15,
-        reason: 'Required for technician identification and invoices',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'full_name',
+          label: 'Full Name',
+          weight: 15,
+          reason: 'Required for technician identification and invoices',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     // 2. Email Address (15%)
     if (profile.email.contains('@') && profile.email.contains('.')) {
       score += 15;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'email',
-        label: 'Email Address',
-        weight: 15,
-        reason: 'Needed for digital VAT receipts and booking confirmations',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'email',
+          label: 'Email Address',
+          weight: 15,
+          reason: 'Needed for digital VAT receipts and booking confirmations',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     // 3. Phone Number (10%)
     if (profile.phone != null && profile.phone!.trim().length >= 8) {
       score += 10;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'phone',
-        label: 'Verified Phone',
-        weight: 10,
-        reason: 'Needed for SMS OTP and on-site technician coordination',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'phone',
+          label: 'Verified Phone',
+          weight: 10,
+          reason: 'Needed for SMS OTP and on-site technician coordination',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     // 4. Profile Picture / Avatar (10%)
     if (profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty) {
       score += 10;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'avatar_url',
-        label: 'Profile Photo',
-        weight: 10,
-        reason: 'Helps specialists recognize you upon arrival',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'avatar_url',
+          label: 'Profile Photo',
+          weight: 10,
+          reason: 'Helps specialists recognize you upon arrival',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     // 5. Saved Service Address (20%) - Critical for instant dispatch
     if (profile.savedAddresses.isNotEmpty) {
       score += 20;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'saved_address',
-        label: 'Saved Address',
-        weight: 20,
-        reason: 'Enables 1-tap booking without entering your location each time',
-        actionRoute: AppRoutes.savedAddresses,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'saved_address',
+          label: 'Saved Address',
+          weight: 20,
+          reason:
+              'Enables 1-tap booking without entering your location each time',
+          actionRoute: AppRoutes.savedAddresses,
+        ),
+      );
     }
 
     // 6. Date of Birth & Birthday Preferences (15%)
     if (profile.dateOfBirth != null) {
       score += 15;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'date_of_birth',
-        label: 'Date of Birth',
-        weight: 15,
-        reason: 'Receive annual birthday discounts and membership gifts',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'date_of_birth',
+          label: 'Date of Birth',
+          weight: 15,
+          reason: 'Receive annual birthday discounts and membership gifts',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     // 7. Emergency Contact (15%)
@@ -122,13 +135,15 @@ class ProfileCompletionEngine {
         profile.emergencyContactPhone!.trim().length >= 8) {
       score += 15;
     } else {
-      missing.add(const MissingProfileField(
-        key: 'emergency_contact',
-        label: 'Emergency Contact',
-        weight: 15,
-        reason: 'Essential for trust, security, and on-site support',
-        actionRoute: AppRoutes.editDetailedProfile,
-      ));
+      missing.add(
+        const MissingProfileField(
+          key: 'emergency_contact',
+          label: 'Emergency Contact',
+          weight: 15,
+          reason: 'Essential for trust, security, and on-site support',
+          actionRoute: AppRoutes.editDetailedProfile,
+        ),
+      );
     }
 
     final cappedScore = score > 100 ? 100 : score;
@@ -142,4 +157,3 @@ class ProfileCompletionEngine {
     );
   }
 }
-

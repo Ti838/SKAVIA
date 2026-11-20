@@ -21,8 +21,12 @@ class SkaviaBrandImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dpr = MediaQuery.maybeDevicePixelRatioOf(context) ?? 2.0;
-    final int? cacheW = width != null ? (width! * dpr).round().clamp(16, 1200) : null;
-    final int? cacheH = height != null ? (height! * dpr).round().clamp(16, 1200) : null;
+    final int? cacheW = width != null
+        ? (width! * dpr).round().clamp(16, 1200)
+        : null;
+    final int? cacheH = height != null
+        ? (height! * dpr).round().clamp(16, 1200)
+        : null;
 
     return Image.asset(
       assetPath,
@@ -35,4 +39,3 @@ class SkaviaBrandImage extends StatelessWidget {
     );
   }
 }
-

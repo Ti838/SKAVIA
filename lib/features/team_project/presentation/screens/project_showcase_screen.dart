@@ -46,7 +46,9 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
     try {
       final res = await client
           .from(DatabaseTables.projects)
-          .select('project_id, title, status, total_budget, created_at, client_id')
+          .select(
+            'project_id, title, status, total_budget, created_at, client_id',
+          )
           .order('created_at', ascending: false)
           .limit(20);
 
@@ -117,85 +119,82 @@ class _ProjectShowcaseScreenState extends State<ProjectShowcaseScreen> {
                       ),
                     )
                   : activeList.isEmpty
-                      ? Center(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.folder_open_rounded,
-                                  size: 56,
-                                  color: tokens.mutedText,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  _selectedTab == 0
-                                      ? 'No Projects Yet'
-                                      : 'No Public Showcases',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: context.colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  _selectedTab == 0
-                                      ? 'Your ongoing and completed turnkey projects will appear here.'
-                                      : 'Showcase projects created by verified team leaders will appear here.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: tokens.mutedText,
-                                  ),
-                                ),
-                                if (_selectedTab == 0) ...[
-                                  const SizedBox(height: 16),
-                                  ElevatedButton.icon(
-                                    onPressed: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.postRequirement,
-                                    ),
-                                    icon: const Icon(
-                                      Icons.add_rounded,
-                                      size: 18,
-                                    ),
-                                    label: const Text('Start New Project'),
-                                    style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                  ? Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.folder_open_rounded,
+                              size: 56,
+                              color: tokens.mutedText,
                             ),
-                          ),
-                        )
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            final textScale =
-                                MediaQuery.textScalerOf(context).scale(1);
-                            final isSingleCol =
-                                constraints.maxWidth < 360 || textScale > 1.3;
-                            return GridView.builder(
-                              padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
+                            const SizedBox(height: 16),
+                            Text(
+                              _selectedTab == 0
+                                  ? 'No Projects Yet'
+                                  : 'No Public Showcases',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: context.colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _selectedTab == 0
+                                  ? 'Your ongoing and completed turnkey projects will appear here.'
+                                  : 'Showcase projects created by verified team leaders will appear here.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: tokens.mutedText,
+                              ),
+                            ),
+                            if (_selectedTab == 0) ...[
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: () => Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.postRequirement,
+                                ),
+                                icon: const Icon(Icons.add_rounded, size: 18),
+                                label: const Text('Start New Project'),
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    )
+                  : LayoutBuilder(
+                      builder: (context, constraints) {
+                        final textScale = MediaQuery.textScalerOf(context)
+                            .scale(1);
+                        final isSingleCol =
+                            constraints.maxWidth < 360 || textScale > 1.3;
+                        return GridView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 6, 20, 24),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: isSingleCol ? 1 : 2,
                                 crossAxisSpacing: 14,
                                 mainAxisSpacing: 14,
                                 childAspectRatio: isSingleCol ? 1.65 : 0.82,
                               ),
-                              itemCount: activeList.length,
-                              itemBuilder: (context, index) {
-                                return _buildProjectCard(activeList[index]);
-                              },
-                            );
+                          itemCount: activeList.length,
+                          itemBuilder: (context, index) {
+                            return _buildProjectCard(activeList[index]);
                           },
-                        ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

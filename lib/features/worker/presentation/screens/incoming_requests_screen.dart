@@ -221,8 +221,7 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
             child: IncomingRequestsSegmentHeader(
               selectedSegment: _selectedSegment,
               directCount: _requests.length,
-              onSegmentChanged: (seg) =>
-                  setState(() => _selectedSegment = seg),
+              onSegmentChanged: (seg) => setState(() => _selectedSegment = seg),
             ),
           ),
         ],
@@ -246,16 +245,14 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
                     : _hasError
                     ? ErrorView(
                         title: 'Could Not Load Requests',
-                        message:
-                            'We had trouble fetching incoming requests. Please try again.',
+                        message: 'We had trouble fetching incoming requests. Please try again.',
                         onRetry: _fetchIncomingRequests,
                       )
                     : _requests.isEmpty
                     ? EmptyDataView(
                         icon: Icons.inbox_rounded,
                         title: 'No pending requests right now',
-                        message:
-                            'Keep your availability active to receive direct dispatches from clients.',
+                        message: 'Keep your availability active to receive direct dispatches from clients.',
                         actionText: 'Refresh Queue',
                         onAction: _fetchIncomingRequests,
                       )

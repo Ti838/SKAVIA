@@ -11,11 +11,7 @@ class ProfileStatsGrid extends StatelessWidget {
 
   const ProfileStatsGrid({super.key, required this.stats});
 
-  Widget _buildStatColumn(
-    BuildContext context,
-    String value,
-    String label,
-  ) {
+  Widget _buildStatColumn(BuildContext context, String value, String label) {
     final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -61,15 +57,10 @@ class ProfileStatsGrid extends StatelessWidget {
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            vertical: 16,
-            horizontal: 12,
-          ),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
           decoration: BoxDecoration(
             color: tokens.cardBg,
-            borderRadius: BorderRadius.circular(
-              AppDimensions.radiusLg,
-            ),
+            borderRadius: BorderRadius.circular(AppDimensions.radiusLg),
             border: Border.all(color: tokens.border),
           ),
           child: compact
@@ -106,11 +97,7 @@ class ProfileStatsGrid extends StatelessWidget {
                         l10n.profileServicesStat,
                       ),
                     ),
-                    Container(
-                      height: 32,
-                      width: 1,
-                      color: tokens.border,
-                    ),
+                    Container(height: 32, width: 1, color: tokens.border),
                     Expanded(
                       child: _buildStatColumn(
                         context,
@@ -118,11 +105,7 @@ class ProfileStatsGrid extends StatelessWidget {
                         l10n.profileProjectsStat,
                       ),
                     ),
-                    Container(
-                      height: 32,
-                      width: 1,
-                      color: tokens.border,
-                    ),
+                    Container(height: 32, width: 1, color: tokens.border),
                     Expanded(
                       child: _buildStatColumn(
                         context,

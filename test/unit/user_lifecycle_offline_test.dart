@@ -28,46 +28,52 @@ void main() {
       expect(result.missingFields.any((f) => f.key == 'saved_address'), isTrue);
     });
 
-    test('PR-02: Profile completion reaches 100% when all attributes are filled', () {
-      final completeProfile = UserProfileModel(
-        id: 'user_02',
-        email: 'rahim.ahmed@gmail.com',
-        fullName: 'Rahim Ahmed',
-        phone: '+8801711223344',
-        avatarUrl: 'https://skavia.com/avatars/rahim.png',
-        dateOfBirth: DateTime(1992, 5, 14),
-        emergencyContactName: 'Karim Ahmed',
-        emergencyContactPhone: '+8801811998877',
-        savedAddresses: [
-          UserAddressModel(
-            id: 'addr_1',
-            userId: 'user_02',
-            addressLine: 'House 14, Road 5, Sector 4, Uttara',
-            isDefault: true,
-          ),
-        ],
-      );
+    test(
+      'PR-02: Profile completion reaches 100% when all attributes are filled',
+      () {
+        final completeProfile = UserProfileModel(
+          id: 'user_02',
+          email: 'rahim.ahmed@gmail.com',
+          fullName: 'Rahim Ahmed',
+          phone: '+8801711223344',
+          avatarUrl: 'https://skavia.com/avatars/rahim.png',
+          dateOfBirth: DateTime(1992, 5, 14),
+          emergencyContactName: 'Karim Ahmed',
+          emergencyContactPhone: '+8801811998877',
+          savedAddresses: [
+            UserAddressModel(
+              id: 'addr_1',
+              userId: 'user_02',
+              addressLine: 'House 14, Road 5, Sector 4, Uttara',
+              isDefault: true,
+            ),
+          ],
+        );
 
-      final result = ProfileCompletionEngine.evaluate(completeProfile);
-      expect(result.percentage, 100);
-      expect(result.isComplete, isTrue);
-      expect(result.missingFields, isEmpty);
-      expect(result.nextRecommendedAction, isNull);
-    });
+        final result = ProfileCompletionEngine.evaluate(completeProfile);
+        expect(result.percentage, 100);
+        expect(result.isComplete, isTrue);
+        expect(result.missingFields, isEmpty);
+        expect(result.nextRecommendedAction, isNull);
+      },
+    );
 
-    test('PR-03: Next recommended action prioritizes highest-weight missing field', () {
-      final profile = UserProfileModel(
-        id: 'user_03',
-        email: 'fatima@gmail.com',
-        fullName: 'Fatima Begum',
-        phone: '+8801999888777',
-      );
+    test(
+      'PR-03: Next recommended action prioritizes highest-weight missing field',
+      () {
+        final profile = UserProfileModel(
+          id: 'user_03',
+          email: 'fatima@gmail.com',
+          fullName: 'Fatima Begum',
+          phone: '+8801999888777',
+        );
 
-      final result = ProfileCompletionEngine.evaluate(profile);
-      // Saved Address carries 20% weight (highest missing)
-      expect(result.nextRecommendedAction?.key, 'saved_address');
-      expect(result.nextRecommendedAction?.weight, 20);
-    });
+        final result = ProfileCompletionEngine.evaluate(profile);
+        // Saved Address carries 20% weight (highest missing)
+        expect(result.nextRecommendedAction?.key, 'saved_address');
+        expect(result.nextRecommendedAction?.weight, 20);
+      },
+    );
   });
 
   group('SKAVIA Progressive Feature Eligibility Tests', () {
@@ -86,33 +92,38 @@ void main() {
       );
 
       expect(result.isEligible, isFalse);
-      expect(result.missingRequirements.first,
-          contains('A delivery address is required'));
+      expect(
+        result.missingRequirements.first,
+        contains('A delivery address is required'),
+      );
     });
 
-    test('EL-02: Customer is eligible to book once address and phone exist', () {
-      final eligibleProfile = UserProfileModel(
-        id: 'cust_02',
-        email: 'client@skavia.com',
-        fullName: 'Client Two',
-        phone: '+8801700000000',
-        savedAddresses: [
-          UserAddressModel(
-            id: 'addr_1',
-            userId: 'cust_02',
-            addressLine: 'Gulshan 2',
-          ),
-        ],
-      );
+    test(
+      'EL-02: Customer is eligible to book once address and phone exist',
+      () {
+        final eligibleProfile = UserProfileModel(
+          id: 'cust_02',
+          email: 'client@skavia.com',
+          fullName: 'Client Two',
+          phone: '+8801700000000',
+          savedAddresses: [
+            UserAddressModel(
+              id: 'addr_1',
+              userId: 'cust_02',
+              addressLine: 'Gulshan 2',
+            ),
+          ],
+        );
 
-      final result = FeatureEligibilityService.checkEligibility(
-        feature: AppFeature.bookService,
-        profile: eligibleProfile,
-      );
+        final result = FeatureEligibilityService.checkEligibility(
+          feature: AppFeature.bookService,
+          profile: eligibleProfile,
+        );
 
-      expect(result.isEligible, isTrue);
-      expect(result.missingRequirements, isEmpty);
-    });
+        expect(result.isEligible, isTrue);
+        expect(result.missingRequirements, isEmpty);
+      },
+    );
 
     test('EL-03: Suspended accounts are barred from all operations', () {
       final suspendedProfile = UserProfileModel(
@@ -160,27 +171,30 @@ void main() {
       expect(syncManager.pendingCount, 1);
     });
 
-    test('OFF-03: Sync queue processes items and calculates exponential backoff', () async {
-      final syncManager = OfflineSyncQueueManager.instance;
-      syncManager.clearQueue();
+    test(
+      'OFF-03: Sync queue processes items and calculates exponential backoff',
+      () async {
+        final syncManager = OfflineSyncQueueManager.instance;
+        syncManager.clearQueue();
 
-      syncManager.enqueue(
-        operationType: 'update_address',
-        payload: {'zone': 'Dhanmondi'},
-        autoSync: false,
-      );
-      expect(syncManager.pendingCount, 1);
+        syncManager.enqueue(
+          operationType: 'update_address',
+          payload: {'zone': 'Dhanmondi'},
+          autoSync: false,
+        );
+        expect(syncManager.pendingCount, 1);
 
-      final successCount = await syncManager.processQueue();
-      expect(successCount, 1);
-      expect(syncManager.pendingCount, 0);
+        final successCount = await syncManager.processQueue();
+        expect(successCount, 1);
+        expect(syncManager.pendingCount, 0);
 
-      // Verify backoff formula: 2^retry * 1000
-      expect(syncManager.calculateBackoffDelayMs(0), 1000);
-      expect(syncManager.calculateBackoffDelayMs(1), 2000);
-      expect(syncManager.calculateBackoffDelayMs(2), 4000);
-      expect(syncManager.calculateBackoffDelayMs(3), 8000);
-    });
+        // Verify backoff formula: 2^retry * 1000
+        expect(syncManager.calculateBackoffDelayMs(0), 1000);
+        expect(syncManager.calculateBackoffDelayMs(1), 2000);
+        expect(syncManager.calculateBackoffDelayMs(2), 4000);
+        expect(syncManager.calculateBackoffDelayMs(3), 8000);
+      },
+    );
 
     test('OFF-04: NetworkQualityState transitions correctly', () {
       final net = NetworkConnectivityService.instance;
@@ -247,4 +261,3 @@ void main() {
     });
   });
 }
-

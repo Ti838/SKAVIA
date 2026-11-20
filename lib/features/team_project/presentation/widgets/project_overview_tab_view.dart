@@ -51,7 +51,10 @@ class ProjectOverviewTabView extends StatelessWidget {
                 onTap: onAddMember,
                 borderRadius: BorderRadius.circular(8),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   child: Text(
                     '+ Add',
                     style: TextStyle(

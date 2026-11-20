@@ -269,8 +269,7 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                         AppTextField(
                           controller: _bioController,
                           label: 'Professional Summary & Experience',
-                          hint:
-                              'Describe your certifications, experience, and past commercial/home repairs...',
+                          hint: 'Describe your certifications, experience, and past commercial/home repairs...',
                           maxLines: 3,
                         ),
                         const SizedBox(height: 24),

@@ -85,17 +85,18 @@ class MatchingController extends ChangeNotifier {
           for (final row in response) {
             final usersData = row['users'] as Map<String, dynamic>?;
             final totalReviews = (row['total_reviews'] as num?)?.toInt() ?? 0;
-            final rawRating = (row['rating_average'] as num?)?.toDouble() ?? 0.0;
+            final rawRating =
+                (row['rating_average'] as num?)?.toDouble() ?? 0.0;
             final verificationStatus =
                 row['verification_status']?.toString() ?? 'Unverified';
             final fullName =
                 (row['display_name'] as String?)?.trim().isNotEmpty == true
-                    ? (row['display_name'] as String).trim()
-                    : (usersData?['full_name']?.toString() ?? 'Worker');
+                ? (row['display_name'] as String).trim()
+                : (usersData?['full_name']?.toString() ?? 'Worker');
             final avatarUrl =
                 (row['avatar_url'] as String?)?.trim().isNotEmpty == true
-                    ? (row['avatar_url'] as String).trim()
-                    : usersData?['avatar_url'];
+                ? (row['avatar_url'] as String).trim()
+                : usersData?['avatar_url'];
             rawWorkers.add({
               'worker_profile_id': row['worker_profile_id'],
               'user_id': row['user_id'],

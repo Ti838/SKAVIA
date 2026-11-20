@@ -36,8 +36,7 @@ class HeroBannerCard extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final compactArtwork =
-              constraints.maxWidth < 310 || textScale > 1.35;
+          final compactArtwork = constraints.maxWidth < 310 || textScale > 1.35;
 
           final artwork = Container(
             width: compactArtwork ? 56 : 95,
@@ -48,10 +47,10 @@ class HeroBannerCard extends StatelessWidget {
             ),
             padding: EdgeInsets.all(compactArtwork ? 8 : 12),
             child: Image.asset(
-              AppAssets.techniciansConsole,
+              AppAssets.emblem,
               fit: BoxFit.contain,
               errorBuilder: (_, error, stack) => Icon(
-                Icons.computer_rounded,
+                Icons.handyman_rounded,
                 size: compactArtwork ? 28 : 48,
                 color: Colors.white,
               ),
@@ -61,18 +60,12 @@ class HeroBannerCard extends StatelessWidget {
           final ctaButton = ElevatedButton(
             onPressed:
                 onRequestService ??
-                () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.postRequirement,
-                ),
+                () => Navigator.pushNamed(context, AppRoutes.postRequirement),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.primaryRoyal,
               elevation: 0,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 10,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -81,10 +74,7 @@ class HeroBannerCard extends StatelessWidget {
               isBn ? 'সার্ভিস রিকোয়েস্ট' : 'Request Service',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
             ),
           );
 

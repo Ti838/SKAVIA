@@ -98,7 +98,9 @@ class _SakugaRatingState extends State<SakugaRating> {
           button: widget.onChanged != null,
           child: GestureDetector(
             key: _starKeys[index],
-            onTap: widget.onChanged == null ? null : () => _handleStarTap(index),
+            onTap: widget.onChanged == null
+                ? null
+                : () => _handleStarTap(index),
             behavior: HitTestBehavior.opaque,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),

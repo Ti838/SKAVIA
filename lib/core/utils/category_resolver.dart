@@ -9,7 +9,11 @@ import 'uuid_util.dart';
 /// `supabase_schema.sql`.
 abstract class CategoryResolver {
   static const Map<String, List<String>> _slugAliases = {
-    'cat_electrical': ['electrical', 'electrical-solutions', 'electrical_power'],
+    'cat_electrical': [
+      'electrical',
+      'electrical-solutions',
+      'electrical_power',
+    ],
     'cat_ac_hvac': ['ac-cooling', 'ac_hvac', 'hvac', 'hvac-cooling'],
     'cat_plumbing': ['plumbing', 'plumbing-waterline', 'sanitary'],
     'cat_it_creative': [
@@ -201,4 +205,3 @@ abstract class CategoryResolver {
     return null;
   }
 }
-

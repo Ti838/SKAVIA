@@ -60,7 +60,8 @@ class PostComposerFields extends StatelessWidget {
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
-              value: LocationService.dhakaZones.contains(
+              value:
+                  LocationService.dhakaZones.contains(
                     selectedLocation.split(',').first.trim(),
                   )
                   ? selectedLocation.split(',').first.trim()
@@ -128,10 +129,12 @@ class PostComposerFields extends StatelessWidget {
       final activeBg = isEmergency
           ? AppColors.accentCoral.withValues(alpha: 0.16)
           : tokens.softBlueBg;
-      final activeBorder =
-          isEmergency ? AppColors.accentCoral : tokens.brandAccent;
-      final activeText =
-          isEmergency ? AppColors.accentCoral : tokens.brandAccent;
+      final activeBorder = isEmergency
+          ? AppColors.accentCoral
+          : tokens.brandAccent;
+      final activeText = isEmergency
+          ? AppColors.accentCoral
+          : tokens.brandAccent;
 
       return Material(
         color: isSelected ? activeBg : tokens.subtleCardBg,
@@ -326,4 +329,3 @@ class PostComposerFields extends StatelessWidget {
     );
   }
 }
-

@@ -331,9 +331,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
               padding: EdgeInsets.fromLTRB(16, 10, 16, 12 + bottomInset),
               decoration: BoxDecoration(
                 color: tokens.sheetBg,
-                border: Border(
-                  top: BorderSide(color: tokens.border),
-                ),
+                border: Border(top: BorderSide(color: tokens.border)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
@@ -380,10 +378,7 @@ class _PostCommentsSheetState extends State<PostCommentsSheet> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : Icon(
-                            Icons.send_rounded,
-                            color: tokens.brandAccent,
-                          ),
+                        : Icon(Icons.send_rounded, color: tokens.brandAccent),
                     onPressed: _sendComment,
                   ),
                 ],

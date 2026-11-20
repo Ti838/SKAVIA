@@ -50,68 +50,68 @@ class _FakeProfileRemoteDataSource extends ProfileRemoteDataSource {
     UserProfileModel? initialProfile,
     ProfileStatsModel? initialStats,
     List<UserSessionModel>? initialSessions,
-  })  : storedProfile =
-            initialProfile ??
-            UserProfileModel(
-              id: 'user_stage_c_01',
-              email: 'nadia.corporate@skavia.com',
-              fullName: 'Nadia Rahman',
-              phone: '+8801712345678',
-              role: 'Business Client',
-              customerType: 'Business Client',
-              companyName: 'Rahman Cold Storage Ltd',
-              tradeLicense: 'TRAD/DSCC/004412',
-              billingAddress: 'Plot 12, Tejgaon Industrial Area, Dhaka',
-              savedAddresses: [
-                UserAddressModel(
-                  id: 'addr_home',
-                  userId: 'user_stage_c_01',
-                  label: 'Headquarters',
-                  addressLine: 'House 22, Road 11, Banani, Dhaka',
-                  isDefault: true,
-                ),
-                UserAddressModel(
-                  id: 'addr_depot',
-                  userId: 'user_stage_c_01',
-                  label: 'Depot',
-                  addressLine: 'Section 4, Chattogram Port Access Rd',
-                  isDefault: false,
-                ),
-              ],
-            ),
-        storedStats =
-            initialStats ??
-            const ProfileStatsModel(
-              servicesCount: 9,
-              projectsCount: 3,
-              ratingAverage: 4.9,
-              completedJobs: 12,
-            ),
-        storedSessions =
-            initialSessions ??
-            [
-              UserSessionModel(
-                id: 'sess_current',
-                userId: 'user_stage_c_01',
-                deviceId: 'device_current_001',
-                deviceName: 'Pixel 8 Pro',
-                deviceOs: 'android',
-                appVersion: '1.0.0+1',
-                lastActiveAt: DateTime.now(),
-                isCurrentDevice: true,
-              ),
-              UserSessionModel(
-                id: 'sess_other',
-                userId: 'user_stage_c_01',
-                deviceId: 'device_other_002',
-                deviceName: 'Galaxy Tab S9',
-                deviceOs: 'android',
-                appVersion: '1.0.0+1',
-                lastActiveAt: DateTime.now().subtract(const Duration(hours: 4)),
-                isCurrentDevice: false,
-              ),
-            ],
-        super(supabase: null);
+  }) : storedProfile =
+           initialProfile ??
+           UserProfileModel(
+             id: 'user_stage_c_01',
+             email: 'nadia.corporate@skavia.com',
+             fullName: 'Nadia Rahman',
+             phone: '+8801712345678',
+             role: 'Business Client',
+             customerType: 'Business Client',
+             companyName: 'Rahman Cold Storage Ltd',
+             tradeLicense: 'TRAD/DSCC/004412',
+             billingAddress: 'Plot 12, Tejgaon Industrial Area, Dhaka',
+             savedAddresses: [
+               UserAddressModel(
+                 id: 'addr_home',
+                 userId: 'user_stage_c_01',
+                 label: 'Headquarters',
+                 addressLine: 'House 22, Road 11, Banani, Dhaka',
+                 isDefault: true,
+               ),
+               UserAddressModel(
+                 id: 'addr_depot',
+                 userId: 'user_stage_c_01',
+                 label: 'Depot',
+                 addressLine: 'Section 4, Chattogram Port Access Rd',
+                 isDefault: false,
+               ),
+             ],
+           ),
+       storedStats =
+           initialStats ??
+           const ProfileStatsModel(
+             servicesCount: 9,
+             projectsCount: 3,
+             ratingAverage: 4.9,
+             completedJobs: 12,
+           ),
+       storedSessions =
+           initialSessions ??
+           [
+             UserSessionModel(
+               id: 'sess_current',
+               userId: 'user_stage_c_01',
+               deviceId: 'device_current_001',
+               deviceName: 'Pixel 8 Pro',
+               deviceOs: 'android',
+               appVersion: '1.0.0+1',
+               lastActiveAt: DateTime.now(),
+               isCurrentDevice: true,
+             ),
+             UserSessionModel(
+               id: 'sess_other',
+               userId: 'user_stage_c_01',
+               deviceId: 'device_other_002',
+               deviceName: 'Galaxy Tab S9',
+               deviceOs: 'android',
+               appVersion: '1.0.0+1',
+               lastActiveAt: DateTime.now().subtract(const Duration(hours: 4)),
+               isCurrentDevice: false,
+             ),
+           ],
+       super(supabase: null);
 
   @override
   Future<UserProfileModel> getProfile(
@@ -164,7 +164,8 @@ class _FakeProfileRemoteDataSource extends ProfileRemoteDataSource {
     if (failRevoke) return false;
     storedSessions = storedSessions
         .map(
-          (s) => s.deviceId == currentDeviceId ? s : s.copyWith(isRevoked: true),
+          (s) =>
+              s.deviceId == currentDeviceId ? s : s.copyWith(isRevoked: true),
         )
         .toList();
     return true;
@@ -221,48 +222,48 @@ void main() {
       expect(Validators.positiveNumber('-10'), isNotNull);
     });
 
-    test('UserProfileModel normalizes customer types & serializes corporate data', () {
-      final legacyBusiness = UserProfileModel.fromJson({
-        'user_id': 'u_biz',
-        'email': 'biz@skavia.com',
-        'full_name': 'Karim Enterprise',
-        'customer_type': 'Business',
-        'company_name': 'Karim Logistics',
-        'trade_license': 'TL-908',
-        'billing_address': 'Motijheel C/A, Dhaka',
-      });
-      expect(legacyBusiness.customerType, 'Business Client');
-      expect(legacyBusiness.isCorporateClient, isTrue);
+    test(
+      'UserProfileModel normalizes customer types & serializes corporate data',
+      () {
+        final legacyBusiness = UserProfileModel.fromJson({
+          'user_id': 'u_biz',
+          'email': 'biz@skavia.com',
+          'full_name': 'Karim Enterprise',
+          'customer_type': 'Business',
+          'company_name': 'Karim Logistics',
+          'trade_license': 'TL-908',
+          'billing_address': 'Motijheel C/A, Dhaka',
+        });
+        expect(legacyBusiness.customerType, 'Business Client');
+        expect(legacyBusiness.isCorporateClient, isTrue);
 
-      final org = UserProfileModel.fromJson({
-        'id': 'u_org',
-        'email': 'org@skavia.com',
-        'full_name': 'BRAC Facilities',
-        'customer_type': 'Organization',
-      });
-      expect(org.isCorporateClient, isTrue);
+        final org = UserProfileModel.fromJson({
+          'id': 'u_org',
+          'email': 'org@skavia.com',
+          'full_name': 'BRAC Facilities',
+          'customer_type': 'Organization',
+        });
+        expect(org.isCorporateClient, isTrue);
 
-      final roundtrip = UserProfileModel.fromJson(legacyBusiness.toJson());
-      expect(roundtrip.companyName, 'Karim Logistics');
-      expect(roundtrip.tradeLicense, 'TL-908');
-      expect(roundtrip.billingAddress, 'Motijheel C/A, Dhaka');
-    });
+        final roundtrip = UserProfileModel.fromJson(legacyBusiness.toJson());
+        expect(roundtrip.companyName, 'Karim Logistics');
+        expect(roundtrip.tradeLicense, 'TL-908');
+        expect(roundtrip.billingAddress, 'Motijheel C/A, Dhaka');
+      },
+    );
 
     test('UserSessionModel & ProfileStatsModel roundtrip cleanly', () {
       final now = DateTime.now();
-      final session = UserSessionModel.fromJson(
-        {
-          'id': 's1',
-          'user_id': 'u1',
-          'device_id': 'dev_abc',
-          'device_name': 'Pixel 9',
-          'device_os': 'android',
-          'app_version': '1.0.0+1',
-          'last_active_at': now.toIso8601String(),
-          'is_revoked': false,
-        },
-        currentDeviceId: 'dev_abc',
-      );
+      final session = UserSessionModel.fromJson({
+        'id': 's1',
+        'user_id': 'u1',
+        'device_id': 'dev_abc',
+        'device_name': 'Pixel 9',
+        'device_os': 'android',
+        'app_version': '1.0.0+1',
+        'last_active_at': now.toIso8601String(),
+        'is_revoked': false,
+      }, currentDeviceId: 'dev_abc');
       expect(session.isCurrentDevice, isTrue);
       expect(session.copyWith(isRevoked: true).isRevoked, isTrue);
       expect(UserSessionModel.fromJson(session.toJson()).deviceName, 'Pixel 9');
@@ -318,7 +319,10 @@ void main() {
       );
 
       await controller.toggleNotificationPreference('promotional', true);
-      expect(controller.profile!.notificationPreferences['promotional'], isTrue);
+      expect(
+        controller.profile!.notificationPreferences['promotional'],
+        isTrue,
+      );
 
       await controller.updatePrivacySettings({
         'profile_visibility': 'contacts_only',
@@ -401,241 +405,247 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('RoleSelectionScreen reveals Business Client/Organization subtype ($mode)', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+      testWidgets(
+        'RoleSelectionScreen reveals Business Client/Organization subtype ($mode)',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
 
-        await tester.pumpWidget(wrapScreen(const RoleSelectionScreen(), mode));
-        await tester.pump(const Duration(milliseconds: 100));
-        expect(tester.takeException(), isNull);
+          await tester.pumpWidget(
+            wrapScreen(const RoleSelectionScreen(), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(tester.takeException(), isNull);
 
-        final bizFinder = find.text('Business / Organization');
-        await tester.scrollUntilVisible(
-          bizFinder,
-          120,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.ensureVisible(bizFinder);
-        await tester.pump(const Duration(milliseconds: 100));
-        await tester.tap(bizFinder);
-        await tester.pump(const Duration(milliseconds: 250));
+          final bizFinder = find.text('Business / Organization');
+          await tester.scrollUntilVisible(
+            bizFinder,
+            120,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.ensureVisible(bizFinder);
+          await tester.pump(const Duration(milliseconds: 100));
+          await tester.tap(bizFinder);
+          await tester.pump(const Duration(milliseconds: 250));
 
-        final orgFinder = find.text('Organization');
-        await tester.scrollUntilVisible(
-          orgFinder,
-          120,
-          scrollable: find.byType(Scrollable).first,
-        );
-        await tester.ensureVisible(orgFinder);
-        await tester.pump(const Duration(milliseconds: 100));
-        expect(find.text('Business Client'), findsOneWidget);
-        expect(find.text('Organization'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+          final orgFinder = find.text('Organization');
+          await tester.scrollUntilVisible(
+            orgFinder,
+            120,
+            scrollable: find.byType(Scrollable).first,
+          );
+          await tester.ensureVisible(orgFinder);
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(find.text('Business Client'), findsOneWidget);
+          expect(find.text('Organization'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-      testWidgets('Profile & Settings screens render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+      testWidgets(
+        'Profile & Settings screens render cleanly ($mode, 320dp 2.0x)',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
 
-        final fakeDs = _FakeProfileRemoteDataSource();
-        final controller = ProfileController(dataSource: fakeDs);
-        await controller.loadProfile('user_stage_c_01');
-        addTearDown(controller.dispose);
+          final fakeDs = _FakeProfileRemoteDataSource();
+          final controller = ProfileController(dataSource: fakeDs);
+          await controller.loadProfile('user_stage_c_01');
+          addTearDown(controller.dispose);
 
-        await tester.pumpWidget(
-          wrapScreen(EditDetailedProfileScreen(controller: controller), mode),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Nadia Rahman'), findsWidgets);
-        expect(tester.takeException(), isNull);
+          await tester.pumpWidget(
+            wrapScreen(EditDetailedProfileScreen(controller: controller), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Nadia Rahman'), findsWidgets);
+          expect(tester.takeException(), isNull);
 
-        await tester.pumpWidget(
-          wrapScreen(SavedAddressesScreen(controller: controller), mode),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Headquarters'), findsOneWidget);
-        expect(tester.takeException(), isNull);
+          await tester.pumpWidget(
+            wrapScreen(SavedAddressesScreen(controller: controller), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Headquarters'), findsOneWidget);
+          expect(tester.takeException(), isNull);
 
-        await tester.pumpWidget(
-          wrapScreen(
-            NotificationPreferencesScreen(controller: controller),
-            mode,
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Alert Channels'), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('Sound, Chime & Haptic Controls'),
-          160,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text('Sound, Chime & Haptic Controls'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          wrapScreen(PrivacySecurityScreen(controller: controller), mode),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Privacy Controls'), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('Active Devices & Sessions'),
-          160,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text('Active Devices & Sessions'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        final auth = AuthController();
-        addTearDown(auth.dispose);
-        await tester.pumpWidget(
-          wrapScreen(
-            SettingsScreen(
-              authController: auth,
-              profileController: controller,
+          await tester.pumpWidget(
+            wrapScreen(
+              NotificationPreferencesScreen(controller: controller),
+              mode,
             ),
-            mode,
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Settings & Preferences'), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('Sync Now'),
-          160,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text('Sync Now'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Alert Channels'), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text('Sound, Chime & Haptic Controls'),
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(find.text('Sound, Chime & Haptic Controls'), findsOneWidget);
+          expect(tester.takeException(), isNull);
 
-      testWidgets('Support, About, Transactions, Complaints & UnifiedProfileView render cleanly ($mode)', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+          await tester.pumpWidget(
+            wrapScreen(PrivacySecurityScreen(controller: controller), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Privacy Controls'), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text('Active Devices & Sessions'),
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(find.text('Active Devices & Sessions'), findsOneWidget);
+          expect(tester.takeException(), isNull);
 
-        await tester.pumpWidget(wrapScreen(const SupportFaqScreen(), mode));
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Help Center & FAQ'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(wrapScreen(const AboutSkaviaScreen(), mode));
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Every Skill. Every Opportunity.'), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('Unified Solution Platform'),
-          160,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text('Unified Solution Platform'), findsOneWidget);
-        await tester.scrollUntilVisible(
-          find.text('9 Specialization Branches'),
-          160,
-          scrollable: find.byType(Scrollable).first,
-        );
-        expect(find.text('9 Specialization Branches'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          wrapScreen(const TransactionHistoryScreen(), mode),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Transaction History & Invoices'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          wrapScreen(const SubmitComplaintScreen(), mode),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Submit a Complaint'), findsOneWidget);
-        expect(tester.takeException(), isNull);
-
-        final fakeDs = _FakeProfileRemoteDataSource();
-        final profileController = ProfileController(dataSource: fakeDs);
-        await profileController.loadProfile('user_stage_c_01');
-        final auth = AuthController();
-        addTearDown(profileController.dispose);
-        addTearDown(auth.dispose);
-
-        await tester.pumpWidget(
-          wrapScreen(
-            Scaffold(
-              body: UnifiedProfileView(
+          final auth = AuthController();
+          addTearDown(auth.dispose);
+          await tester.pumpWidget(
+            wrapScreen(
+              SettingsScreen(
                 authController: auth,
-                profileController: profileController,
-                currentMode: AppRoleMode.customer,
-                onAvatarPick: () {},
-                onOpenSettings: () {},
-                onOpenServices: () {},
-                onOpenProjects: () {},
-                onCallHelpline: () {},
-                onSwitchRole: () {},
-                onLogout: () {},
+                profileController: controller,
               ),
+              mode,
             ),
-            mode,
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.text('Nadia Rahman'), findsOneWidget);
-        expect(find.text('Timon Biswas'), findsNothing);
-        expect(tester.takeException(), isNull);
-      });
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Settings & Preferences'), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text('Sync Now'),
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(find.text('Sync Now'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-      testWidgets('AvatarPickerSheet & AccountDeletionDialog render without overflow ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+      testWidgets(
+        'Support, About, Transactions, Complaints & UnifiedProfileView render cleanly ($mode)',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
 
-        await tester.pumpWidget(
-          wrapScreen(
-            Scaffold(
-              body: SingleChildScrollView(
-                child: AvatarPickerSheet(
-                  currentAvatarUrl: null,
-                  userId: 'user_stage_c_01',
-                  onAvatarSelected: (_) {},
+          await tester.pumpWidget(wrapScreen(const SupportFaqScreen(), mode));
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Help Center & FAQ'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          await tester.pumpWidget(wrapScreen(const AboutSkaviaScreen(), mode));
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Every Skill. Every Opportunity.'), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text('Unified Solution Platform'),
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(find.text('Unified Solution Platform'), findsOneWidget);
+          await tester.scrollUntilVisible(
+            find.text('9 Specialization Branches'),
+            160,
+            scrollable: find.byType(Scrollable).first,
+          );
+          expect(find.text('9 Specialization Branches'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          await tester.pumpWidget(
+            wrapScreen(const TransactionHistoryScreen(), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Transaction History & Invoices'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          await tester.pumpWidget(
+            wrapScreen(const SubmitComplaintScreen(), mode),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Submit a Complaint'), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          final fakeDs = _FakeProfileRemoteDataSource();
+          final profileController = ProfileController(dataSource: fakeDs);
+          await profileController.loadProfile('user_stage_c_01');
+          final auth = AuthController();
+          addTearDown(profileController.dispose);
+          addTearDown(auth.dispose);
+
+          await tester.pumpWidget(
+            wrapScreen(
+              Scaffold(
+                body: UnifiedProfileView(
+                  authController: auth,
+                  profileController: profileController,
+                  currentMode: AppRoleMode.customer,
+                  onAvatarPick: () {},
+                  onOpenSettings: () {},
+                  onOpenServices: () {},
+                  onOpenProjects: () {},
+                  onCallHelpline: () {},
+                  onSwitchRole: () {},
+                  onLogout: () {},
                 ),
               ),
+              mode,
             ),
-            mode,
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(find.byType(AvatarPickerSheet), findsOneWidget);
-        expect(tester.takeException(), isNull);
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.text('Nadia Rahman'), findsOneWidget);
+          expect(find.text('Timon Biswas'), findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-        final auth = AuthController();
-        addTearDown(auth.dispose);
-        await tester.pumpWidget(
-          wrapScreen(
-            Builder(
-              builder: (ctx) => Scaffold(
-                body: Center(
-                  child: ElevatedButton(
-                    onPressed: () =>
-                        AccountDeletionDialog.show(ctx, authController: auth),
-                    child: const Text('Open Delete'),
+      testWidgets(
+        'AvatarPickerSheet & AccountDeletionDialog render without overflow ($mode, 320dp 2.0x)',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
+
+          await tester.pumpWidget(
+            wrapScreen(
+              Scaffold(
+                body: SingleChildScrollView(
+                  child: AvatarPickerSheet(
+                    currentAvatarUrl: null,
+                    userId: 'user_stage_c_01',
+                    onAvatarSelected: (_) {},
                   ),
                 ),
               ),
+              mode,
             ),
-            mode,
-          ),
-        );
-        await tester.tap(find.text('Open Delete'));
-        await tester.pump(const Duration(milliseconds: 250));
-        expect(find.byType(AccountDeletionDialog), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(find.byType(AvatarPickerSheet), findsOneWidget);
+          expect(tester.takeException(), isNull);
+
+          final auth = AuthController();
+          addTearDown(auth.dispose);
+          await tester.pumpWidget(
+            wrapScreen(
+              Builder(
+                builder: (ctx) => Scaffold(
+                  body: Center(
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          AccountDeletionDialog.show(ctx, authController: auth),
+                      child: const Text('Open Delete'),
+                    ),
+                  ),
+                ),
+              ),
+              mode,
+            ),
+          );
+          await tester.tap(find.text('Open Delete'));
+          await tester.pump(const Duration(milliseconds: 250));
+          expect(find.byType(AccountDeletionDialog), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   });
 
@@ -670,58 +680,62 @@ void main() {
         'user_id': 'u2',
         'email': 'u2@skavia.com',
         'full_name': 'Nadia Rahman',
-        'privacy_settings': {'cover_url': 'https://example.com/fallback-cover.jpg'},
+        'privacy_settings': {
+          'cover_url': 'https://example.com/fallback-cover.jpg',
+        },
       });
       expect(fallback.coverUrl, 'https://example.com/fallback-cover.jpg');
     });
 
-    testWidgets('AvatarPickerSheet cover slot and ImageCropResizeScreen render cleanly without dummy avatars', (
-      tester,
-    ) async {
-      final assetSample = File('assets/images/skavia_logo.png');
+    testWidgets(
+      'AvatarPickerSheet cover slot and ImageCropResizeScreen render cleanly without dummy avatars',
+      (tester) async {
+        final assetSample = File('assets/images/skavia_logo.png');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: AvatarPickerSheet(
-                currentAvatarUrl: 'https://example.com/existing-cover.jpg',
-                userId: 'u_cover_01',
-                slot: ProfileMediaSlot.cover,
-                onAvatarSelected: (_) {},
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: AvatarPickerSheet(
+                  currentAvatarUrl: 'https://example.com/existing-cover.jpg',
+                  userId: 'u_cover_01',
+                  slot: ProfileMediaSlot.cover,
+                  onAvatarSelected: (_) {},
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('Change Cover Banner'), findsOneWidget);
-      expect(find.text('Remove banner'), findsOneWidget);
-      expect(find.text('Verified Pro Avatars'), findsNothing);
-      expect(tester.takeException(), isNull);
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(find.text('Change Cover Banner'), findsOneWidget);
+        expect(find.text('Remove banner'), findsOneWidget);
+        expect(find.text('Verified Pro Avatars'), findsNothing);
+        expect(tester.takeException(), isNull);
 
-      ui.Image? decodedLogo;
-      await tester.runAsync(() async {
-        final bytes = await File('assets/images/skavia_logo.png').readAsBytes();
-        final codec = await ui.instantiateImageCodec(bytes);
-        final frame = await codec.getNextFrame();
-        decodedLogo = frame.image;
-      });
-      expect(decodedLogo, isNotNull);
+        ui.Image? decodedLogo;
+        await tester.runAsync(() async {
+          final bytes = await File('assets/images/skavia_logo.png')
+              .readAsBytes();
+          final codec = await ui.instantiateImageCodec(bytes);
+          final frame = await codec.getNextFrame();
+          decodedLogo = frame.image;
+        });
+        expect(decodedLogo, isNotNull);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ImageCropResizeScreen(
-            imageFile: assetSample,
-            isBanner: true,
-            initialImage: decodedLogo,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: ImageCropResizeScreen(
+              imageFile: assetSample,
+              isBanner: true,
+              initialImage: decodedLogo,
+            ),
           ),
-        ),
-      );
-      await tester.pump();
-      expect(find.text('Crop & Resize Cover Banner'), findsOneWidget);
-      expect(find.byType(Slider), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        );
+        await tester.pump();
+        expect(find.text('Crop & Resize Cover Banner'), findsOneWidget);
+        expect(find.byType(Slider), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 }

@@ -32,12 +32,8 @@ class IncomingRequestsSegmentHeader extends StatelessWidget {
             padding: const EdgeInsets.all(AppDimensions.paddingMedium),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.14),
-              borderRadius: BorderRadius.circular(
-                AppDimensions.radiusLarge,
-              ),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.24),
-              ),
+              borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
             ),
             child: Row(
               children: [
@@ -68,10 +64,7 @@ class IncomingRequestsSegmentHeader extends StatelessWidget {
                       ),
                       Text(
                         'You are visible to customers in your service area',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 12),
                       ),
                     ],
                   ),

@@ -66,234 +66,231 @@ class _SavedAddressesScreenState extends State<SavedAddressesScreen> {
         return Scaffold(
           appBar: const AppAppBar(title: 'Saved Delivery Addresses'),
           body: SafeArea(
-            child: widget.controller.isLoading &&
-                    widget.controller.profile == null
+            child:
+                widget.controller.isLoading && widget.controller.profile == null
                 ? const ListShimmerSkeleton(itemCount: 3, itemHeight: 110)
                 : addresses.isEmpty
-                    ? EmptyDataView(
-                        icon: Icons.location_off_outlined,
-                        title: 'No Addresses Saved Yet',
-                        message:
-                            'Add your home or office address to enable 1-tap service dispatch across Dhaka.',
-                        actionText: '+ Add First Address',
-                        onAction: () => _openAddAddressModal(),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(
-                          AppDimensions.paddingLarge,
-                          AppDimensions.paddingLarge,
-                          AppDimensions.paddingLarge,
-                          96,
-                        ),
-                        itemCount: addresses.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final addr = addresses[index];
-                          IconData icon = Icons.home_rounded;
-                          final lowerLabel = addr.label.toLowerCase();
-                          if (lowerLabel.contains('work') ||
-                              lowerLabel.contains('office')) {
-                            icon = Icons.business_rounded;
-                          } else if (lowerLabel.contains('other')) {
-                            icon = Icons.location_on_rounded;
-                          }
+                ? EmptyDataView(
+                    icon: Icons.location_off_outlined,
+                    title: 'No Addresses Saved Yet',
+                    message: 'Add your home or office address to enable 1-tap service dispatch across Dhaka.',
+                    actionText: '+ Add First Address',
+                    onAction: () => _openAddAddressModal(),
+                  )
+                : ListView.separated(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppDimensions.paddingLarge,
+                      AppDimensions.paddingLarge,
+                      AppDimensions.paddingLarge,
+                      96,
+                    ),
+                    itemCount: addresses.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final addr = addresses[index];
+                      IconData icon = Icons.home_rounded;
+                      final lowerLabel = addr.label.toLowerCase();
+                      if (lowerLabel.contains('work') ||
+                          lowerLabel.contains('office')) {
+                        icon = Icons.business_rounded;
+                      } else if (lowerLabel.contains('other')) {
+                        icon = Icons.location_on_rounded;
+                      }
 
-                          return Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: tokens.cardBg,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: tokens.cardBg,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: addr.isDefault
+                                ? tokens.brandAccent
+                                : tokens.border,
+                            width: addr.isDefault ? 1.5 : 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: addr.isDefault
+                                    ? tokens.brandAccent.withValues(alpha: 0.14)
+                                    : colorScheme.surfaceContainerHighest,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                icon,
                                 color: addr.isDefault
                                     ? tokens.brandAccent
-                                    : tokens.border,
-                                width: addr.isDefault ? 1.5 : 1,
+                                    : colorScheme.onSurfaceVariant,
+                                size: 20,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
                             ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: addr.isDefault
-                                        ? tokens.brandAccent
-                                              .withValues(alpha: 0.14)
-                                        : colorScheme.surfaceContainerHighest,
-                                    shape: BoxShape.circle,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      Text(
+                                        addr.label,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      if (addr.isDefault)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 2,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: tokens.brandAccent
+                                                .withValues(alpha: 0.14),
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            'DEFAULT',
+                                            style: TextStyle(
+                                              color: tokens.brandAccent,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  child: Icon(
-                                    icon,
-                                    color: addr.isDefault
-                                        ? tokens.brandAccent
-                                        : colorScheme.onSurfaceVariant,
-                                    size: 20,
+                                  if ((addr.recipientName ?? '').isNotEmpty ||
+                                      (addr.recipientPhone ?? '')
+                                          .isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      [
+                                        if ((addr.recipientName ?? '')
+                                            .isNotEmpty)
+                                          addr.recipientName!,
+                                        if ((addr.recipientPhone ?? '')
+                                            .isNotEmpty)
+                                          addr.recipientPhone!,
+                                      ].join(' • '),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    addr.addressLine,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${addr.zone}, ${addr.city} ${addr.postalCode ?? ''}'
+                                        .trim(),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: tokens.mutedText,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuButton<String>(
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              onSelected: (val) async {
+                                if (val == 'default') {
+                                  await widget.controller.setDefaultAddress(
+                                    addr,
+                                  );
+                                  if (context.mounted) {
+                                    UiFeedbackHelper.showSuccess(
+                                      context,
+                                      '${addr.label} set as primary address.',
+                                    );
+                                  }
+                                } else if (val == 'edit') {
+                                  _openAddAddressModal(addr);
+                                } else if (val == 'delete') {
+                                  await _confirmDelete(addr);
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                if (!addr.isDefault)
+                                  const PopupMenuItem(
+                                    value: 'default',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.star_outline_rounded,
+                                          size: 16,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Set as Default'),
+                                      ],
+                                    ),
+                                  ),
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_outlined, size: 16),
+                                      SizedBox(width: 8),
+                                      Text('Edit'),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
                                     children: [
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 4,
-                                        crossAxisAlignment:
-                                            WrapCrossAlignment.center,
-                                        children: [
-                                          Text(
-                                            addr.label,
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w800,
-                                              color: colorScheme.onSurface,
-                                            ),
-                                          ),
-                                          if (addr.isDefault)
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 2,
-                                                  ),
-                                              decoration: BoxDecoration(
-                                                color: tokens.brandAccent
-                                                    .withValues(alpha: 0.14),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Text(
-                                                'DEFAULT',
-                                                style: TextStyle(
-                                                  color: tokens.brandAccent,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w800,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
+                                      Icon(
+                                        Icons.delete_outline,
+                                        color: AppColors.errorRed,
+                                        size: 16,
                                       ),
-                                      if ((addr.recipientName ?? '')
-                                              .isNotEmpty ||
-                                          (addr.recipientPhone ?? '')
-                                              .isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          [
-                                            if ((addr.recipientName ?? '')
-                                                .isNotEmpty)
-                                              addr.recipientName!,
-                                            if ((addr.recipientPhone ?? '')
-                                                .isNotEmpty)
-                                              addr.recipientPhone!,
-                                          ].join(' • '),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: colorScheme.onSurface,
-                                          ),
-                                        ),
-                                      ],
-                                      const SizedBox(height: 4),
+                                      SizedBox(width: 8),
                                       Text(
-                                        addr.addressLine,
+                                        'Delete',
                                         style: TextStyle(
-                                          fontSize: 13,
-                                          color: colorScheme.onSurfaceVariant,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        '${addr.zone}, ${addr.city} ${addr.postalCode ?? ''}'
-                                            .trim(),
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: tokens.mutedText,
+                                          color: AppColors.errorRed,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                PopupMenuButton<String>(
-                                  icon: Icon(
-                                    Icons.more_vert,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                  onSelected: (val) async {
-                                    if (val == 'default') {
-                                      await widget.controller
-                                          .setDefaultAddress(addr);
-                                      if (context.mounted) {
-                                        UiFeedbackHelper.showSuccess(
-                                          context,
-                                          '${addr.label} set as primary address.',
-                                        );
-                                      }
-                                    } else if (val == 'edit') {
-                                      _openAddAddressModal(addr);
-                                    } else if (val == 'delete') {
-                                      await _confirmDelete(addr);
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    if (!addr.isDefault)
-                                      const PopupMenuItem(
-                                        value: 'default',
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.star_outline_rounded,
-                                              size: 16,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text('Set as Default'),
-                                          ],
-                                        ),
-                                      ),
-                                    const PopupMenuItem(
-                                      value: 'edit',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.edit_outlined, size: 16),
-                                          SizedBox(width: 8),
-                                          Text('Edit'),
-                                        ],
-                                      ),
-                                    ),
-                                    const PopupMenuItem(
-                                      value: 'delete',
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.delete_outline,
-                                            color: AppColors.errorRed,
-                                            size: 16,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text(
-                                            'Delete',
-                                            style: TextStyle(
-                                              color: AppColors.errorRed,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
                               ],
                             ),
-                          );
-                        },
-                      ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           ),
           floatingActionButton: addresses.isNotEmpty
               ? FloatingActionButton.extended(

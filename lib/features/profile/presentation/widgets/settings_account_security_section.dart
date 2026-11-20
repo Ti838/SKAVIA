@@ -121,10 +121,8 @@ class SettingsAccountSecuritySection extends StatelessWidget {
                     ? 'লেনদেন ও ভ্যাট ইনভয়েস'
                     : 'Transaction History & Invoices',
                 subtitle: 'Payment receipts and escrow settlements',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.transactionHistory,
-                ),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.transactionHistory),
               ),
             ],
           ),

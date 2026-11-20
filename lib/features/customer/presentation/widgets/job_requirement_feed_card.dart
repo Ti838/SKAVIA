@@ -110,7 +110,9 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
     if (client != null) {
       final user = client.auth.currentUser;
       if (user != null) {
-        debugPrint('[FeedCard] Recorded local like toggle for ${widget.job.id}');
+        debugPrint(
+          '[FeedCard] Recorded local like toggle for ${widget.job.id}',
+        );
       }
     }
   }
@@ -132,8 +134,8 @@ class _JobRequirementFeedCardState extends State<JobRequirementFeedCard> {
           _isSaved
               ? (isBn ? 'সংরক্ষিত তালিকায় যোগ করা হয়েছে' : 'Saved to bookmarks')
               : (isBn
-                  ? 'সংরক্ষিত তালিকা থেকে সরানো হয়েছে'
-                  : 'Removed from bookmarks'),
+                    ? 'সংরক্ষিত তালিকা থেকে সরানো হয়েছে'
+                    : 'Removed from bookmarks'),
         ),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,

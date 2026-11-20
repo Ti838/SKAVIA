@@ -160,11 +160,9 @@ class ProfileSessionDataSource {
     }
 
     final fallback = await _buildCurrentDeviceSession(userId, deviceId);
-    LocalCacheService.instance.put(
-      cacheKey,
-      [fallback.toJson()],
-      ttl: const Duration(days: 7),
-    );
+    LocalCacheService.instance.put(cacheKey, [
+      fallback.toJson(),
+    ], ttl: const Duration(days: 7));
     return [fallback];
   }
 
@@ -203,4 +201,3 @@ class ProfileSessionDataSource {
     }
   }
 }
-

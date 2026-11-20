@@ -25,11 +25,7 @@ class PaymentDisclaimerCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              Icons.science_rounded,
-              color: tokens.brandAccent,
-              size: 20,
-            ),
+            Icon(Icons.science_rounded, color: tokens.brandAccent, size: 20),
             const SizedBox(width: 10),
             Expanded(
               child: Text(

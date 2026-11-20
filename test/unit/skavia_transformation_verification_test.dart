@@ -65,7 +65,9 @@ class _EmptyProfileRemoteDataSource extends ProfileRemoteDataSource {
 }
 
 double _channelLuminance(double c) {
-  return c <= 0.03928 ? c / 12.92 : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
+  return c <= 0.03928
+      ? c / 12.92
+      : math.pow((c + 0.055) / 1.055, 2.4).toDouble();
 }
 
 double _relativeLuminance(Color color) {
@@ -107,9 +109,8 @@ Widget _wrap({
     ),
     themeMode: mode,
     builder: (context, widget) => MediaQuery(
-      data: MediaQuery.of(context).copyWith(
-        textScaler: TextScaler.linear(textScale),
-      ),
+      data: MediaQuery.of(context)
+          .copyWith(textScaler: TextScaler.linear(textScale)),
       child: widget!,
     ),
     home: child,
@@ -143,16 +144,40 @@ void main() {
       );
       await tester.pump();
 
-      expect(_contrastRatio(cs.onPrimary, cs.primary), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(cs.onSurface, cs.surface), greaterThanOrEqualTo(7.0));
-      expect(_contrastRatio(t.secondaryText, t.cardBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(cs.onPrimary, cs.primary),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrastRatio(cs.onSurface, cs.surface),
+        greaterThanOrEqualTo(7.0),
+      );
+      expect(
+        _contrastRatio(t.secondaryText, t.cardBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.mutedText, t.cardBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.mutedText, t.subtleCardBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.interactiveBorder, t.cardBg), greaterThanOrEqualTo(3.0));
-      expect(_contrastRatio(t.violetAccent, t.cardBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(t.mutedText, t.subtleCardBg),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrastRatio(t.interactiveBorder, t.cardBg),
+        greaterThanOrEqualTo(3.0),
+      );
+      expect(
+        _contrastRatio(t.violetAccent, t.cardBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.tealAccent, t.cardBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.onSuccessBg, t.successBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.onWarningBg, t.warningBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(t.onSuccessBg, t.successBg),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrastRatio(t.onWarningBg, t.warningBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.onErrorBg, t.errorBg), greaterThanOrEqualTo(4.5));
       expect(_contrastRatio(t.onInfoBg, t.infoBg), greaterThanOrEqualTo(4.5));
     });
@@ -176,426 +201,494 @@ void main() {
       );
       await tester.pump();
 
-      expect(_contrastRatio(cs.onPrimary, cs.primary), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(cs.onSurface, cs.surface), greaterThanOrEqualTo(7.0));
-      expect(_contrastRatio(t.secondaryText, t.cardBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(cs.onPrimary, cs.primary),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrastRatio(cs.onSurface, cs.surface),
+        greaterThanOrEqualTo(7.0),
+      );
+      expect(
+        _contrastRatio(t.secondaryText, t.cardBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.mutedText, t.cardBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.interactiveBorder, t.cardBg), greaterThanOrEqualTo(3.0));
-      expect(_contrastRatio(t.violetAccent, t.cardBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(t.interactiveBorder, t.cardBg),
+        greaterThanOrEqualTo(3.0),
+      );
+      expect(
+        _contrastRatio(t.violetAccent, t.cardBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.tealAccent, t.cardBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.onSuccessBg, t.successBg), greaterThanOrEqualTo(4.5));
-      expect(_contrastRatio(t.onWarningBg, t.warningBg), greaterThanOrEqualTo(4.5));
+      expect(
+        _contrastRatio(t.onSuccessBg, t.successBg),
+        greaterThanOrEqualTo(4.5),
+      );
+      expect(
+        _contrastRatio(t.onWarningBg, t.warningBg),
+        greaterThanOrEqualTo(4.5),
+      );
       expect(_contrastRatio(t.onErrorBg, t.errorBg), greaterThanOrEqualTo(4.5));
       expect(_contrastRatio(t.onInfoBg, t.infoBg), greaterThanOrEqualTo(4.5));
     });
   });
 
   group('Phase 6 — Strict Real-Data Integrity Enforcement', () {
-    test('Domain models never fabricate 5.0 ratings, rates, or verified status', () {
-      const emptyStats = ProfileStatsModel(servicesCount: 0, projectsCount: 0);
-      expect(emptyStats.ratingAverage, 0.0);
-      expect(emptyStats.reviewCount, 0);
-      expect(emptyStats.hasVerifiedRating, isFalse);
+    test(
+      'Domain models never fabricate 5.0 ratings, rates, or verified status',
+      () {
+        const emptyStats = ProfileStatsModel(
+          servicesCount: 0,
+          projectsCount: 0,
+        );
+        expect(emptyStats.ratingAverage, 0.0);
+        expect(emptyStats.reviewCount, 0);
+        expect(emptyStats.hasVerifiedRating, isFalse);
 
-      final emptyRep = ReputationModel.fromJson(const {});
-      expect(emptyRep.overallScore, 0.0);
-      expect(emptyRep.totalRatings, 0);
-      expect(emptyRep.badgeLevel, 'New Specialist');
+        final emptyRep = ReputationModel.fromJson(const {});
+        expect(emptyRep.overallScore, 0.0);
+        expect(emptyRep.totalRatings, 0);
+        expect(emptyRep.badgeLevel, 'New Specialist');
 
-      final emptyMatch = MatchResultEntity.fromMap(const {});
-      expect(emptyMatch.rating, 0.0);
-      expect(emptyMatch.completedJobs, 0);
-      expect(emptyMatch.isVerified, isFalse);
-      expect(emptyMatch.hourlyRate, 0.0);
+        final emptyMatch = MatchResultEntity.fromMap(const {});
+        expect(emptyMatch.rating, 0.0);
+        expect(emptyMatch.completedJobs, 0);
+        expect(emptyMatch.isVerified, isFalse);
+        expect(emptyMatch.hourlyRate, 0.0);
 
-      final emptyWorker = WorkerProfileModel.fromJson(const {});
-      expect(emptyWorker.rating, 0.0);
-      expect(emptyWorker.hourlyRate, 0.0);
-      expect(emptyWorker.isVerified, isFalse);
-      expect(emptyWorker.isAvailable, isFalse);
-    });
+        final emptyWorker = WorkerProfileModel.fromJson(const {});
+        expect(emptyWorker.rating, 0.0);
+        expect(emptyWorker.hourlyRate, 0.0);
+        expect(emptyWorker.isVerified, isFalse);
+        expect(emptyWorker.isAvailable, isFalse);
+      },
+    );
 
-    testWidgets('UnifiedProfileView renders dash instead of 5.0 when 0 reviews exist and hides worker badges for customer', (
-      tester,
-    ) async {
-      final profileController = ProfileController(
-        dataSource: _EmptyProfileRemoteDataSource(),
-      );
-      addTearDown(profileController.dispose);
-      await profileController.loadProfile('u_test_real');
+    testWidgets(
+      'UnifiedProfileView renders dash instead of 5.0 when 0 reviews exist and hides worker badges for customer',
+      (tester) async {
+        final profileController = ProfileController(
+          dataSource: _EmptyProfileRemoteDataSource(),
+        );
+        addTearDown(profileController.dispose);
+        await profileController.loadProfile('u_test_real');
 
-      final authController = AuthController();
-      addTearDown(authController.dispose);
+        final authController = AuthController();
+        addTearDown(authController.dispose);
 
-      await tester.pumpWidget(
-        _wrap(
-          child: Scaffold(
-            body: UnifiedProfileView(
-              authController: authController,
-              profileController: profileController,
-              currentMode: AppRoleMode.customer,
-              onAvatarPick: () {},
-              onOpenSettings: () {},
-              onOpenServices: () {},
-              onOpenProjects: () {},
-              onCallHelpline: () {},
-              onSwitchRole: () {},
-              onLogout: () {},
-            ),
-          ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
-
-      expect(find.text('5.0'), findsNothing);
-      expect(find.text('—'), findsOneWidget);
-      expect(find.text('Worker Reputation & Badges'), findsNothing);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('CatalogServiceCard hides 0.0 (0) rating and fabricated duration', (
-      tester,
-    ) async {
-      const service = ServiceModel(
-        serviceId: 'svc_db_1',
-        categoryId: 'cat_elec',
-        name: 'Residential Main DB Board Setup',
-        description: 'Circuit breaker load balancing and earthing',
-        basePrice: 1800,
-        ratingAverage: 0.0,
-        totalBookings: 0,
-      );
-
-      await tester.pumpWidget(
-        _wrap(
-          child: Scaffold(
-            body: Padding(
-              padding: const EdgeInsets.all(16),
-              child: CatalogServiceCard(
-                service: service,
-                onBook: () {},
+        await tester.pumpWidget(
+          _wrap(
+            child: Scaffold(
+              body: UnifiedProfileView(
+                authController: authController,
+                profileController: profileController,
+                currentMode: AppRoleMode.customer,
+                onAvatarPick: () {},
+                onOpenSettings: () {},
+                onOpenServices: () {},
+                onOpenProjects: () {},
+                onCallHelpline: () {},
+                onSwitchRole: () {},
+                onLogout: () {},
               ),
             ),
           ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
+        );
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.textContaining('0.0 (0)'), findsNothing);
-      expect(find.textContaining('1-2 Hours'), findsNothing);
-      expect(find.text('Residential Main DB Board Setup'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.text('5.0'), findsNothing);
+        expect(find.text('—'), findsOneWidget);
+        expect(find.text('Worker Reputation & Badges'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
 
-    testWidgets('LiveJobFeedScreen shows genuine empty state and has no overlapping FAB', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(child: const LiveJobFeedScreen(isTab: true)),
-      );
-      await tester.pump(const Duration(milliseconds: 250));
+    testWidgets(
+      'CatalogServiceCard hides 0.0 (0) rating and fabricated duration',
+      (tester) async {
+        const service = ServiceModel(
+          serviceId: 'svc_db_1',
+          categoryId: 'cat_elec',
+          name: 'Residential Main DB Board Setup',
+          description: 'Circuit breaker load balancing and earthing',
+          basePrice: 1800,
+          ratingAverage: 0.0,
+          totalBookings: 0,
+        );
 
-      expect(find.byType(FloatingActionButton), findsNothing);
-      expect(find.text('No posts matching your filter'), findsNothing);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('ChatListScreen hides search when empty and provides discovery CTA', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(child: const ChatListScreen(isTab: true)),
-      );
-      await tester.pump(const Duration(milliseconds: 250));
-
-      expect(find.byType(SkaviaSearchField), findsNothing);
-      expect(find.text('No Conversations Yet'), findsOneWidget);
-      expect(find.text('Browse Services'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    testWidgets('AiResultsView shows honest empty state when analysisData is absent', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          child: Scaffold(
-            body: AiResultsView(
-              requiredSkills: const [],
-              recommendedTeam: const [],
-              onEditRequest: () {},
+        await tester.pumpWidget(
+          _wrap(
+            child: Scaffold(
+              body: Padding(
+                padding: const EdgeInsets.all(16),
+                child: CatalogServiceCard(service: service, onBook: () {}),
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
+        );
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(find.text('No Analysis Yet'), findsOneWidget);
-      expect(find.textContaining('Mobile App for E-Commerce'), findsNothing);
-      expect(tester.takeException(), isNull);
-    });
+        expect(find.textContaining('0.0 (0)'), findsNothing);
+        expect(find.textContaining('1-2 Hours'), findsNothing);
+        expect(find.text('Residential Main DB Board Setup'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'LiveJobFeedScreen shows genuine empty state and has no overlapping FAB',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(child: const LiveJobFeedScreen(isTab: true)),
+        );
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(find.byType(FloatingActionButton), findsNothing);
+        expect(find.text('No posts matching your filter'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'ChatListScreen hides search when empty and provides discovery CTA',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(child: const ChatListScreen(isTab: true)),
+        );
+        await tester.pump(const Duration(milliseconds: 250));
+
+        expect(find.byType(SkaviaSearchField), findsNothing);
+        expect(find.text('No Conversations Yet'), findsOneWidget);
+        expect(find.text('Browse Services'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'AiResultsView shows honest empty state when analysisData is absent',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(
+            child: Scaffold(
+              body: AiResultsView(
+                requiredSkills: const [],
+                recommendedTeam: const [],
+                onEditRequest: () {},
+              ),
+            ),
+          ),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(find.text('No Analysis Yet'), findsOneWidget);
+        expect(find.textContaining('Mobile App for E-Commerce'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
   });
 
   group('Phase 7 — Responsive & Localization Matrix (320dp, 390dp, 768dp × Light/Dark × EN/BN)', () {
-    final viewports = <({String label, Size size, double textScale, ThemeMode mode, String lang})>[
-      (label: 'Small 320dp Light 2.0x EN', size: const Size(320, 640), textScale: 2.0, mode: ThemeMode.light, lang: 'en'),
-      (label: 'Small 320dp Dark 1.3x BN', size: const Size(320, 640), textScale: 1.3, mode: ThemeMode.dark, lang: 'bn'),
-      (label: 'Standard 390dp Light 1.0x EN', size: const Size(390, 844), textScale: 1.0, mode: ThemeMode.light, lang: 'en'),
-      (label: 'Tablet 768dp Dark 1.3x EN', size: const Size(768, 1024), textScale: 1.3, mode: ThemeMode.dark, lang: 'en'),
-    ];
+    final viewports =
+        <
+          ({
+            String label,
+            Size size,
+            double textScale,
+            ThemeMode mode,
+            String lang,
+          })
+        >[
+          (
+            label: 'Small 320dp Light 2.0x EN',
+            size: const Size(320, 640),
+            textScale: 2.0,
+            mode: ThemeMode.light,
+            lang: 'en',
+          ),
+          (
+            label: 'Small 320dp Dark 1.3x BN',
+            size: const Size(320, 640),
+            textScale: 1.3,
+            mode: ThemeMode.dark,
+            lang: 'bn',
+          ),
+          (
+            label: 'Standard 390dp Light 1.0x EN',
+            size: const Size(390, 844),
+            textScale: 1.0,
+            mode: ThemeMode.light,
+            lang: 'en',
+          ),
+          (
+            label: 'Tablet 768dp Dark 1.3x EN',
+            size: const Size(768, 1024),
+            textScale: 1.3,
+            mode: ThemeMode.dark,
+            lang: 'en',
+          ),
+        ];
 
     for (final vp in viewports) {
-      testWidgets('Global Shell, Customer, Business & Worker Homes render cleanly (${vp.label})', (
-        tester,
-      ) async {
-        AppLanguageService.setLanguage(vp.lang);
-        tester.view.physicalSize = vp.size;
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+      testWidgets(
+        'Global Shell, Customer, Business & Worker Homes render cleanly (${vp.label})',
+        (tester) async {
+          AppLanguageService.setLanguage(vp.lang);
+          tester.view.physicalSize = vp.size;
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
 
-        final searchController = TextEditingController();
-        addTearDown(searchController.dispose);
+          final searchController = TextEditingController();
+          addTearDown(searchController.dispose);
 
-        // 1. Global Top Bar + Customer Dashboard + Bottom Nav
-        await tester.pumpWidget(
-          _wrap(
-            mode: vp.mode,
-            textScale: vp.textScale,
-            locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
-            child: Scaffold(
-              body: Column(
-                children: [
-                  DashboardTopAppBar(
-                    customAvatarUrl: null,
-                    userName: 'Timon Biswas',
-                    hasUnreadNotifications: true,
-                    unreadNotificationCount: 2,
-                    currentLocationZone: 'Dhaka',
-                    isLocating: false,
-                    isGpsVerified: false,
-                    currentMode: AppRoleMode.customer,
-                    onAvatarTap: () {},
-                    onNotificationsTap: () {},
-                    onLocationTap: () {},
-                    onModeSwitch: (_) {},
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: CustomerDashboardView(
-                        searchController: searchController,
-                        currentLocationZone: 'Dhaka',
-                        userIdentifier: 'Timon Biswas',
-                        isEnterpriseMode: false,
-                        activeClientBooking: null,
-                        onSelectServicesTab: () {},
-                        onOpenChat: () {},
-                        onViewOtp: () {},
-                        onCallHelpline: () {},
-                        onQuickBookService: (_, _, _) {},
-                        liveRequirements: const [],
+          // 1. Global Top Bar + Customer Dashboard + Bottom Nav
+          await tester.pumpWidget(
+            _wrap(
+              mode: vp.mode,
+              textScale: vp.textScale,
+              locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
+              child: Scaffold(
+                body: Column(
+                  children: [
+                    DashboardTopAppBar(
+                      customAvatarUrl: null,
+                      userName: 'Timon Biswas',
+                      hasUnreadNotifications: true,
+                      unreadNotificationCount: 2,
+                      currentLocationZone: 'Dhaka',
+                      isLocating: false,
+                      isGpsVerified: false,
+                      currentMode: AppRoleMode.customer,
+                      onAvatarTap: () {},
+                      onNotificationsTap: () {},
+                      onLocationTap: () {},
+                      onModeSwitch: (_) {},
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: CustomerDashboardView(
+                          searchController: searchController,
+                          currentLocationZone: 'Dhaka',
+                          userIdentifier: 'Timon Biswas',
+                          isEnterpriseMode: false,
+                          activeClientBooking: null,
+                          onSelectServicesTab: () {},
+                          onOpenChat: () {},
+                          onViewOtp: () {},
+                          onCallHelpline: () {},
+                          onQuickBookService: (_, _, _) {},
+                          liveRequirements: const [],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              bottomNavigationBar: DashboardBottomNavBar(
-                currentIndex: 0,
-                currentMode: AppRoleMode.customer,
-                onTabSelected: (_) {},
-              ),
-            ),
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        if (vp.lang == 'en') {
-          expect(find.text('Feed'), findsOneWidget); // Bottom nav only (top bar duplicate removed)
-        }
-        expect(tester.takeException(), isNull);
-
-        // 2. Business Client / Organization Home View
-        await tester.pumpWidget(
-          _wrap(
-            mode: vp.mode,
-            textScale: vp.textScale,
-            locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
-            child: Scaffold(
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: BusinessDashboardView(
-                  stats: const DashboardBusinessStats(
-                    activeProjectsCount: 0,
-                    openRequirementsCount: 0,
-                    customerType: 'Business Client',
-                  ),
-                  currentLocationZone: 'Dhaka',
-                  onSelectServicesTab: () {},
-                  onOpenProjectsTab: () {},
+                  ],
+                ),
+                bottomNavigationBar: DashboardBottomNavBar(
+                  currentIndex: 0,
+                  currentMode: AppRoleMode.customer,
+                  onTabSelected: (_) {},
                 ),
               ),
             ),
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-        expect(tester.takeException(), isNull);
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          if (vp.lang == 'en') {
+            expect(
+              find.text('Feed'),
+              findsOneWidget,
+            ); // Bottom nav only (top bar duplicate removed)
+          }
+          expect(tester.takeException(), isNull);
 
-        // 3. Worker Home View
-        await tester.pumpWidget(
-          _wrap(
-            mode: vp.mode,
-            textScale: vp.textScale,
-            locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
-            child: Scaffold(
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: WorkerDashboardView(
-                  workerEarnings: 0.0,
-                  workerCompletedJobs: 0,
-                  workerRating: 0.0,
-                  isWorkerAvailable: false,
-                  locationZone: 'Dhaka',
-                  liveJobRequests: const [],
-                  verificationStatus: 'Unverified',
-                  onToggleAvailability: (_) {},
+          // 2. Business Client / Organization Home View
+          await tester.pumpWidget(
+            _wrap(
+              mode: vp.mode,
+              textScale: vp.textScale,
+              locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
+              child: Scaffold(
+                body: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: BusinessDashboardView(
+                    stats: const DashboardBusinessStats(
+                      activeProjectsCount: 0,
+                      openRequirementsCount: 0,
+                      customerType: 'Business Client',
+                    ),
+                    currentLocationZone: 'Dhaka',
+                    onSelectServicesTab: () {},
+                    onOpenProjectsTab: () {},
+                  ),
                 ),
               ),
             ),
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-        expect(tester.takeException(), isNull);
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(tester.takeException(), isNull);
 
-        // 4. Services Catalog + Invoice + Shared Badges
-        await tester.pumpWidget(
-          _wrap(
-            mode: vp.mode,
-            textScale: vp.textScale,
-            locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
-            child: const CategoryCatalogScreen(isTab: true),
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 150));
-        expect(tester.takeException(), isNull);
-
-        await tester.pumpWidget(
-          _wrap(
-            mode: vp.mode,
-            textScale: vp.textScale,
-            locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
-            child: InvoiceScreen(
-              invoiceNumber: 'INV-2026-001',
-              serviceTitle: 'Inverter AC Master Jet Wash',
-              clientName: 'Timon Biswas',
-              clientPhone: '01711000000',
-              specialistName: 'Assigned Specialist',
-              baseAmount: 1200,
-              platformFee: 180,
-              totalAmount: 1380,
-              paymentMethod: 'bKash',
-              transactionId: 'TXN-001',
-              paidAt: DateTime(2026, 11, 18),
-              status: 'Pending Escrow',
+          // 3. Worker Home View
+          await tester.pumpWidget(
+            _wrap(
+              mode: vp.mode,
+              textScale: vp.textScale,
+              locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
+              child: Scaffold(
+                body: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: WorkerDashboardView(
+                    workerEarnings: 0.0,
+                    workerCompletedJobs: 0,
+                    workerRating: 0.0,
+                    isWorkerAvailable: false,
+                    locationZone: 'Dhaka',
+                    liveJobRequests: const [],
+                    verificationStatus: 'Unverified',
+                    onToggleAvailability: (_) {},
+                  ),
+                ),
+              ),
             ),
-          ),
-        );
-        await tester.pump(const Duration(milliseconds: 100));
-        expect(find.text('PENDING ESCROW'), findsOneWidget);
-        expect(find.byType(SkaviaBadge), findsOneWidget);
-        expect(tester.takeException(), isNull);
-      });
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(tester.takeException(), isNull);
+
+          // 4. Services Catalog + Invoice + Shared Badges
+          await tester.pumpWidget(
+            _wrap(
+              mode: vp.mode,
+              textScale: vp.textScale,
+              locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
+              child: const CategoryCatalogScreen(isTab: true),
+            ),
+          );
+          await tester.pump(const Duration(milliseconds: 150));
+          expect(tester.takeException(), isNull);
+
+          await tester.pumpWidget(
+            _wrap(
+              mode: vp.mode,
+              textScale: vp.textScale,
+              locale: Locale(vp.lang, vp.lang == 'bn' ? 'BD' : null),
+              child: InvoiceScreen(
+                invoiceNumber: 'INV-2026-001',
+                serviceTitle: 'Inverter AC Master Jet Wash',
+                clientName: 'Timon Biswas',
+                clientPhone: '01711000000',
+                specialistName: 'Assigned Specialist',
+                baseAmount: 1200,
+                platformFee: 180,
+                totalAmount: 1380,
+                paymentMethod: 'bKash',
+                transactionId: 'TXN-001',
+                paidAt: DateTime(2026, 11, 18),
+                status: 'Pending Escrow',
+              ),
+            ),
+          );
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(find.text('PENDING ESCROW'), findsOneWidget);
+          expect(find.byType(SkaviaBadge), findsOneWidget);
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   });
 
   group('SKAVIA Complete Bilingual Localization & Bengali Typography Verification Suite', () {
-    testWidgets('AppLocalizations loads both English and Bengali without missing keys', (
-      tester,
-    ) async {
-      late AppLocalizations en;
-      late AppLocalizations bn;
+    testWidgets(
+      'AppLocalizations loads both English and Bengali without missing keys',
+      (tester) async {
+        late AppLocalizations en;
+        late AppLocalizations bn;
 
-      await tester.pumpWidget(
-        _wrap(
-          locale: const Locale('en'),
-          child: Builder(
-            builder: (ctx) {
-              en = ctx.l10n;
-              return const SizedBox.shrink();
-            },
+        await tester.pumpWidget(
+          _wrap(
+            locale: const Locale('en'),
+            child: Builder(
+              builder: (ctx) {
+                en = ctx.l10n;
+                return const SizedBox.shrink();
+              },
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      await tester.pumpWidget(
-        _wrap(
-          locale: const Locale('bn', 'BD'),
-          child: Builder(
-            builder: (ctx) {
-              bn = ctx.l10n;
-              return const SizedBox.shrink();
-            },
+        await tester.pumpWidget(
+          _wrap(
+            locale: const Locale('bn', 'BD'),
+            child: Builder(
+              builder: (ctx) {
+                bn = ctx.l10n;
+                return const SizedBox.shrink();
+              },
+            ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      // Verify all seven user roles are fully localized
-      expect(en.roleSuperAdmin, 'Super Admin');
-      expect(bn.roleSuperAdmin, 'সুপার অ্যাডমিন');
+        // Verify all seven user roles are fully localized
+        expect(en.roleSuperAdmin, 'Super Admin');
+        expect(bn.roleSuperAdmin, 'সুপার অ্যাডমিন');
 
-      expect(en.roleCompanyAdmin, 'Company Admin');
-      expect(bn.roleCompanyAdmin, 'কোম্পানি অ্যাডমিন');
+        expect(en.roleCompanyAdmin, 'Company Admin');
+        expect(bn.roleCompanyAdmin, 'কোম্পানি অ্যাডমিন');
 
-      expect(en.roleBranchManager, 'Branch Manager');
-      expect(bn.roleBranchManager, 'ব্রাঞ্চ ম্যানেজার');
+        expect(en.roleBranchManager, 'Branch Manager');
+        expect(bn.roleBranchManager, 'ব্রাঞ্চ ম্যানেজার');
 
-      expect(en.roleWorker, 'Worker');
-      expect(bn.roleWorker, 'কর্মী');
+        expect(en.roleWorker, 'Worker');
+        expect(bn.roleWorker, 'কর্মী');
 
-      expect(en.roleIndividualCustomer, 'Individual Customer');
-      expect(bn.roleIndividualCustomer, 'ব্যক্তিগত গ্রাহক');
+        expect(en.roleIndividualCustomer, 'Individual Customer');
+        expect(bn.roleIndividualCustomer, 'ব্যক্তিগত গ্রাহক');
 
-      expect(en.roleBusinessClient, 'Business Client');
-      expect(bn.roleBusinessClient, 'বিজনেস ক্লায়েন্ট');
+        expect(en.roleBusinessClient, 'Business Client');
+        expect(bn.roleBusinessClient, 'বিজনেস ক্লায়েন্ট');
 
-      expect(en.roleOrganization, 'Organization');
-      expect(bn.roleOrganization, 'প্রতিষ্ঠান');
+        expect(en.roleOrganization, 'Organization');
+        expect(bn.roleOrganization, 'প্রতিষ্ঠান');
 
-      // Verify navigation labels
-      expect(en.navHome, 'Home');
-      expect(bn.navHome, 'হোম');
-      expect(en.navServices, 'Services');
-      expect(bn.navServices, 'সার্ভিস');
-      expect(en.navMessages, 'Messages');
-      expect(bn.navMessages, 'মেসেজ');
-      expect(en.navFeed, 'Feed');
-      expect(bn.navFeed, 'ফিড');
-      expect(en.navProfile, 'Profile');
-      expect(bn.navProfile, 'প্রোফাইল');
-    });
+        // Verify navigation labels
+        expect(en.navHome, 'Home');
+        expect(bn.navHome, 'হোম');
+        expect(en.navServices, 'Services');
+        expect(bn.navServices, 'সার্ভিস');
+        expect(en.navMessages, 'Messages');
+        expect(bn.navMessages, 'মেসেজ');
+        expect(en.navFeed, 'Feed');
+        expect(bn.navFeed, 'ফিড');
+        expect(en.navProfile, 'Profile');
+        expect(bn.navProfile, 'প্রোফাইল');
+      },
+    );
 
-    testWidgets('AppTypography adapts font family, letter spacing and line heights for Bengali script', (
-      tester,
-    ) async {
-      final themeEn = AppTypography.buildTextTheme(
-        brightness: Brightness.light,
-        languageCode: 'en',
-      );
-      expect(themeEn.displayLarge, isNotNull);
-      final themeBn = AppTypography.buildTextTheme(
-        brightness: Brightness.light,
-        languageCode: 'bn',
-      );
+    testWidgets(
+      'AppTypography adapts font family, letter spacing and line heights for Bengali script',
+      (tester) async {
+        final themeEn = AppTypography.buildTextTheme(
+          brightness: Brightness.light,
+          languageCode: 'en',
+        );
+        expect(themeEn.displayLarge, isNotNull);
+        final themeBn = AppTypography.buildTextTheme(
+          brightness: Brightness.light,
+          languageCode: 'bn',
+        );
 
-      // In Bengali, letter spacing MUST be zero to prevent conjunct ligature breakage
-      expect(themeBn.displayLarge?.letterSpacing, 0.0);
-      expect(themeBn.headlineMedium?.letterSpacing, 0.0);
-      expect(themeBn.labelSmall?.letterSpacing, 0.0);
+        // In Bengali, letter spacing MUST be zero to prevent conjunct ligature breakage
+        expect(themeBn.displayLarge?.letterSpacing, 0.0);
+        expect(themeBn.headlineMedium?.letterSpacing, 0.0);
+        expect(themeBn.labelSmall?.letterSpacing, 0.0);
 
-      // In Bengali, line height MUST provide safe headroom (>1.35) for top and bottom vowel signs
-      expect(themeBn.bodyMedium?.height, greaterThanOrEqualTo(1.45));
-      expect(themeBn.titleMedium?.height, greaterThanOrEqualTo(1.40));
-    });
+        // In Bengali, line height MUST provide safe headroom (>1.35) for top and bottom vowel signs
+        expect(themeBn.bodyMedium?.height, greaterThanOrEqualTo(1.45));
+        expect(themeBn.titleMedium?.height, greaterThanOrEqualTo(1.40));
+      },
+    );
 
     test('Formatters formats currency, dates, numbers, and relative time in Bengali and English', () {
       // 1. Currency
@@ -616,7 +709,9 @@ void main() {
       expect(Formatters.timeAgo(justNow, useBn: false), 'Just now');
       expect(Formatters.timeAgo(justNow, useBn: true), 'এইমাত্র');
 
-      final fiveMinutesAgo = DateTime.now().subtract(const Duration(minutes: 5));
+      final fiveMinutesAgo = DateTime.now().subtract(
+        const Duration(minutes: 5),
+      );
       expect(Formatters.timeAgo(fiveMinutesAgo, useBn: false), '5m ago');
       expect(Formatters.timeAgo(fiveMinutesAgo, useBn: true), '৫ মিনিট আগে');
 
@@ -624,102 +719,131 @@ void main() {
       expect(Formatters.toBengaliDigits(1234567890), '১২৩৪৫৬৭৮৯০');
     });
 
-    testWidgets('Zero-flicker reactive language switching updates UI instantaneously without crashing', (
-      tester,
-    ) async {
-      AppLanguageService.setLanguage('en');
+    testWidgets(
+      'Zero-flicker reactive language switching updates UI instantaneously without crashing',
+      (tester) async {
+        AppLanguageService.setLanguage('en');
 
-      await tester.pumpWidget(
-        ValueListenableBuilder<String>(
-          valueListenable: AppLanguageService.localeNotifier,
-          builder: (context, langCode, _) {
-            return _wrap(
-              locale: Locale(langCode, langCode == 'bn' ? 'BD' : null),
-              child: Builder(
-                builder: (ctx) {
-                  return Scaffold(
-                    appBar: AppBar(title: Text(ctx.l10n.navServices)),
-                    body: Center(child: Text(ctx.l10n.commonSave)),
-                  );
-                },
+        await tester.pumpWidget(
+          ValueListenableBuilder<String>(
+            valueListenable: AppLanguageService.localeNotifier,
+            builder: (context, langCode, _) {
+              return _wrap(
+                locale: Locale(langCode, langCode == 'bn' ? 'BD' : null),
+                child: Builder(
+                  builder: (ctx) {
+                    return Scaffold(
+                      appBar: AppBar(title: Text(ctx.l10n.navServices)),
+                      body: Center(child: Text(ctx.l10n.commonSave)),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        );
+        await tester.pump();
+
+        expect(find.text('Services'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
+
+        // Instant switch to Bengali
+        AppLanguageService.setLanguage('bn');
+        await tester.pump();
+
+        expect(find.text('সার্ভিস'), findsOneWidget);
+        expect(find.text('সংরক্ষণ করুন'), findsOneWidget);
+
+        // Instant switch back to English
+        AppLanguageService.setLanguage('en');
+        await tester.pump();
+
+        expect(find.text('Services'), findsOneWidget);
+        expect(find.text('Save'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    test(
+      'AppLanguageService provides localized names for all 7 user roles',
+      () {
+        AppLanguageService.setLanguage('en');
+        expect(AppLanguageService.getRoleName('Super Admin'), 'Super Admin');
+        expect(
+          AppLanguageService.getRoleName('Company Admin'),
+          'Company Admin',
+        );
+        expect(
+          AppLanguageService.getRoleName('Branch Manager'),
+          'Branch Manager',
+        );
+        expect(AppLanguageService.getRoleName('Worker'), 'Worker');
+        expect(
+          AppLanguageService.getRoleName('Individual Customer'),
+          'Individual Customer',
+        );
+        expect(
+          AppLanguageService.getRoleName('Business Client'),
+          'Business Client',
+        );
+        expect(AppLanguageService.getRoleName('Organization'), 'Organization');
+
+        AppLanguageService.setLanguage('bn');
+        expect(AppLanguageService.getRoleName('Super Admin'), 'সুপার অ্যাডমিন');
+        expect(
+          AppLanguageService.getRoleName('Company Admin'),
+          'কোম্পানি অ্যাডমিন',
+        );
+        expect(
+          AppLanguageService.getRoleName('Branch Manager'),
+          'ব্রাঞ্চ ম্যানেজার',
+        );
+        expect(AppLanguageService.getRoleName('Worker'), 'কর্মী');
+        expect(
+          AppLanguageService.getRoleName('Individual Customer'),
+          'ব্যক্তিগত গ্রাহক',
+        );
+        expect(
+          AppLanguageService.getRoleName('Business Client'),
+          'বিজনেস ক্লায়েন্ট',
+        );
+        expect(AppLanguageService.getRoleName('Organization'), 'প্রতিষ্ঠান');
+        AppLanguageService.setLanguage('en');
+      },
+    );
+
+    testWidgets(
+      'DashboardBottomNavBar with Bengali labels renders without overflow at 320dp width',
+      (tester) async {
+        tester.view.physicalSize = const Size(320 * 2.0, 568 * 2.0);
+        tester.view.devicePixelRatio = 2.0;
+        addTearDown(() => tester.view.resetPhysicalSize());
+
+        AppLanguageService.setLanguage('bn');
+
+        await tester.pumpWidget(
+          _wrap(
+            locale: const Locale('bn', 'BD'),
+            child: Scaffold(
+              bottomNavigationBar: DashboardBottomNavBar(
+                currentIndex: 0,
+                currentMode: AppRoleMode.customer,
+                onTabSelected: (_) {},
               ),
-            );
-          },
-        ),
-      );
-      await tester.pump();
-
-      expect(find.text('Services'), findsOneWidget);
-      expect(find.text('Save'), findsOneWidget);
-
-      // Instant switch to Bengali
-      AppLanguageService.setLanguage('bn');
-      await tester.pump();
-
-      expect(find.text('সার্ভিস'), findsOneWidget);
-      expect(find.text('সংরক্ষণ করুন'), findsOneWidget);
-
-      // Instant switch back to English
-      AppLanguageService.setLanguage('en');
-      await tester.pump();
-
-      expect(find.text('Services'), findsOneWidget);
-      expect(find.text('Save'), findsOneWidget);
-      expect(tester.takeException(), isNull);
-    });
-
-    test('AppLanguageService provides localized names for all 7 user roles', () {
-      AppLanguageService.setLanguage('en');
-      expect(AppLanguageService.getRoleName('Super Admin'), 'Super Admin');
-      expect(AppLanguageService.getRoleName('Company Admin'), 'Company Admin');
-      expect(AppLanguageService.getRoleName('Branch Manager'), 'Branch Manager');
-      expect(AppLanguageService.getRoleName('Worker'), 'Worker');
-      expect(AppLanguageService.getRoleName('Individual Customer'), 'Individual Customer');
-      expect(AppLanguageService.getRoleName('Business Client'), 'Business Client');
-      expect(AppLanguageService.getRoleName('Organization'), 'Organization');
-
-      AppLanguageService.setLanguage('bn');
-      expect(AppLanguageService.getRoleName('Super Admin'), 'সুপার অ্যাডমিন');
-      expect(AppLanguageService.getRoleName('Company Admin'), 'কোম্পানি অ্যাডমিন');
-      expect(AppLanguageService.getRoleName('Branch Manager'), 'ব্রাঞ্চ ম্যানেজার');
-      expect(AppLanguageService.getRoleName('Worker'), 'কর্মী');
-      expect(AppLanguageService.getRoleName('Individual Customer'), 'ব্যক্তিগত গ্রাহক');
-      expect(AppLanguageService.getRoleName('Business Client'), 'বিজনেস ক্লায়েন্ট');
-      expect(AppLanguageService.getRoleName('Organization'), 'প্রতিষ্ঠান');
-      AppLanguageService.setLanguage('en');
-    });
-
-    testWidgets('DashboardBottomNavBar with Bengali labels renders without overflow at 320dp width', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(320 * 2.0, 568 * 2.0);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(() => tester.view.resetPhysicalSize());
-
-      AppLanguageService.setLanguage('bn');
-
-      await tester.pumpWidget(
-        _wrap(
-          locale: const Locale('bn', 'BD'),
-          child: Scaffold(
-            bottomNavigationBar: DashboardBottomNavBar(
-              currentIndex: 0,
-              currentMode: AppRoleMode.customer,
-              onTabSelected: (_) {},
             ),
           ),
-        ),
-      );
-      await tester.pump();
+        );
+        await tester.pump();
 
-      expect(tester.takeException(), isNull);
-      expect(find.text('হোম'), findsOneWidget);
-      expect(find.text('সার্ভিস'), findsOneWidget);
-      expect(find.text('মেসেজ'), findsOneWidget);
-      expect(find.text('ফিড'), findsOneWidget);
-      expect(find.text('প্রোফাইল'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        expect(find.text('হোম'), findsOneWidget);
+        expect(find.text('সার্ভিস'), findsOneWidget);
+        expect(find.text('মেসেজ'), findsOneWidget);
+        expect(find.text('ফিড'), findsOneWidget);
+        expect(find.text('প্রোফাইল'), findsOneWidget);
 
-      AppLanguageService.setLanguage('en');
-    });
+        AppLanguageService.setLanguage('en');
+      },
+    );
   });
 }

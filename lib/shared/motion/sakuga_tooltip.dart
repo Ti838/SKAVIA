@@ -10,11 +10,7 @@ class SakugaTooltip extends StatelessWidget {
   final String message;
   final Widget child;
 
-  const SakugaTooltip({
-    super.key,
-    required this.message,
-    required this.child,
-  });
+  const SakugaTooltip({super.key, required this.message, required this.child});
 
   @override
   Widget build(BuildContext context) {

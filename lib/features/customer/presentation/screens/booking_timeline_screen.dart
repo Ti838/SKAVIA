@@ -103,9 +103,8 @@ class _BookingTimelineScreenState extends State<BookingTimelineScreen> {
         final message = _currentStep >= 2
             ? 'Share the 4-digit OTP with your specialist when the work is finished.'
             : 'Live status synced. Your specialist will update progress upon arrival.';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(message)));
       }
       return;
     }

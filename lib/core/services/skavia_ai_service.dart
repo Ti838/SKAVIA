@@ -46,7 +46,10 @@ Key Knowledge & Guidelines:
     ];
 
     if (AppConfig.groqApiKey.isNotEmpty) {
-      for (final modelName in ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant']) {
+      for (final modelName in [
+        'llama-3.3-70b-versatile',
+        'llama-3.1-8b-instant',
+      ]) {
         try {
           final response = await _httpClient
               .post(
@@ -182,9 +185,9 @@ Key Knowledge & Guidelines:
             .timeout(const Duration(seconds: 8));
 
         if (edgeRes.statusCode == 200) {
-          final parsed =
-              jsonDecode(utf8.decode(edgeRes.bodyBytes))
-                  as Map<String, dynamic>;
+          final parsed = jsonDecode(
+            utf8.decode(edgeRes.bodyBytes),
+          ) as Map<String, dynamic>;
           final catName = parsed['category_name']?.toString() ?? '';
           String catId = 'cat_electrical';
           if (catName.contains('HVAC') || catName.contains('Cooling')) {

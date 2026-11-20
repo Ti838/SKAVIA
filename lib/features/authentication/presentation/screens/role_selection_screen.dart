@@ -35,10 +35,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       'id': 'customer',
       'titleEn': 'I Need Home Services & Technicians',
       'titleBn': 'ব্যক্তিগত গ্রাহক (সার্ভিস বুকিং)',
-      'subtitleEn':
-          'Hire certified electricians, AC technicians, plumbers with 4-digit OTP verification & secure payouts.',
-      'subtitleBn':
-          'বাসা-বাড়ির ইলেকট্রিশিয়ান, এসি, প্লাম্বার বুকিং এবং ওটিপি ভেরিফিকেশনে নিরাপদ সেবা।',
+      'subtitleEn': 'Hire certified electricians, AC technicians, plumbers with 4-digit OTP verification & secure payouts.',
+      'subtitleBn': 'বাসা-বাড়ির ইলেকট্রিশিয়ান, এসি, প্লাম্বার বুকিং এবং ওটিপি ভেরিফিকেশনে নিরাপদ সেবা।',
       'icon': Icons.person_search_rounded,
       'color': AppColors.primaryRoyal,
       'badgeEn': 'Individual Customer',
@@ -48,10 +46,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       'id': 'enterprise',
       'titleEn': 'I Represent a Business / Organization',
       'titleBn': 'ব্যবসা বা প্রতিষ্ঠান (টার্নকি প্রজেক্ট)',
-      'subtitleEn':
-          'Assemble multidisciplinary specialist teams, manage turnkey commercial fit-outs, milestone escrow & VAT invoices.',
-      'subtitleBn':
-          'অফিস রিনোভেশন, টিম হায়ার, মাইলস্টোন এসক্রো ও ভ্যাট ইনভয়েস ম্যানেজমেন্ট।',
+      'subtitleEn': 'Assemble multidisciplinary specialist teams, manage turnkey commercial fit-outs, milestone escrow & VAT invoices.',
+      'subtitleBn': 'অফিস রিনোভেশন, টিম হায়ার, মাইলস্টোন এসক্রো ও ভ্যাট ইনভয়েস ম্যানেজমেন্ট।',
       'icon': Icons.business_center_rounded,
       'color': AppColors.successGreen,
       'badgeEn': 'Business / Organization',
@@ -61,10 +57,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       'id': 'worker',
       'titleEn': 'I am a Skilled Specialist / Technician',
       'titleBn': 'দক্ষ কারিগর / টেকনিশিয়ান (কাজ ও আয়)',
-      'subtitleEn':
-          'Receive instant nearby job dispatches, complete jobs with client OTP, track ratings and withdraw wallet earnings to bKash.',
-      'subtitleBn':
-          'আশেপাশের কাজের রিকোয়েস্ট গ্রহণ, কাজ শেষে ওটিপিতে পেমেন্ট এবং বিকাশ/ব্যাংকে টাকা উত্তোলন।',
+      'subtitleEn': 'Receive instant nearby job dispatches, complete jobs with client OTP, track ratings and withdraw wallet earnings to bKash.',
+      'subtitleBn': 'আশেপাশের কাজের রিকোয়েস্ট গ্রহণ, কাজ শেষে ওটিপিতে পেমেন্ট এবং বিকাশ/ব্যাংকে টাকা উত্তোলন।',
       'icon': Icons.handyman_rounded,
       'color': AppColors.accentCoral,
       'badgeEn': 'Specialist & Worker',
@@ -111,24 +105,18 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       final client = tryGetSupabaseClient();
       if (client != null && userId != null) {
         if (selectedRole == 'customer' || selectedRole == 'enterprise') {
-          await client.from(DatabaseTables.customerProfiles).upsert(
-            {
-              'customer_id': userId,
-              'customer_type': customerType,
-              'company_name': selectedRole == 'enterprise' ? '' : null,
-              'updated_at': DateTime.now().toIso8601String(),
-            },
-            onConflict: 'customer_id',
-          );
+          await client.from(DatabaseTables.customerProfiles).upsert({
+            'customer_id': userId,
+            'customer_type': customerType,
+            'company_name': selectedRole == 'enterprise' ? '' : null,
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'customer_id');
         } else if (selectedRole == 'worker') {
-          await client.from(DatabaseTables.workerProfiles).upsert(
-            {
-              'worker_profile_id': userId,
-              'title': 'Certified Technician',
-              'updated_at': DateTime.now().toIso8601String(),
-            },
-            onConflict: 'worker_profile_id',
-          );
+          await client.from(DatabaseTables.workerProfiles).upsert({
+            'worker_profile_id': userId,
+            'title': 'Certified Technician',
+            'updated_at': DateTime.now().toIso8601String(),
+          }, onConflict: 'worker_profile_id');
         }
 
         try {
@@ -143,14 +131,11 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
             orElse: () => null,
           );
           if (matched != null && matched['role_id'] != null) {
-            await client.from(DatabaseTables.userRoles).upsert(
-              {
-                'user_id': userId,
-                'role_id': matched['role_id'],
-                'is_active': true,
-              },
-              onConflict: 'user_id,role_id',
-            );
+            await client.from(DatabaseTables.userRoles).upsert({
+              'user_id': userId,
+              'role_id': matched['role_id'],
+              'is_active': true,
+            }, onConflict: 'user_id,role_id');
           }
         } catch (_) {}
 

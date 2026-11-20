@@ -41,7 +41,8 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
         ? Map<String, dynamic>.from(rawCached)
         : null;
     _teamNameController = TextEditingController(
-      text: cached?['name']?.toString() ?? 'Gulshan Commercial MEP Response Unit',
+      text:
+          cached?['name']?.toString() ?? 'Gulshan Commercial MEP Response Unit',
     );
     _projectBudgetController = TextEditingController(
       text: cached?['budget']?.toString() ?? '75000',
@@ -51,11 +52,7 @@ class _TeamAssemblyScreenState extends State<TeamAssemblyScreen> {
         .toList();
     _selectedTrades = savedTrades != null && savedTrades.isNotEmpty
         ? savedTrades
-        : [
-            'Electrical & Lighting',
-            'HVAC & AC',
-            'Plumbing & Water Systems',
-          ];
+        : ['Electrical & Lighting', 'HVAC & AC', 'Plumbing & Water Systems'];
   }
 
   @override

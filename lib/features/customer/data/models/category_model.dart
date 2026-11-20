@@ -67,8 +67,7 @@ class CategoryModel {
       name: 'AC & HVAC Cooling',
       slug: 'ac_hvac',
       iconName: 'ac_unit_rounded',
-      description:
-          'AC servicing, gas refill, compressor maintenance & inverter PCB repair.',
+      description: 'AC servicing, gas refill, compressor maintenance & inverter PCB repair.',
     ),
     CategoryModel(
       categoryId: 'cat_it_creative',

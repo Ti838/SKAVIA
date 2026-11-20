@@ -47,7 +47,9 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
       if (!mounted) return;
       setState(() => _entered = true);
       final badgeCtx = _badgeKey.currentContext;
-      final origin = badgeCtx != null ? SakugaFx.globalCenterOf(badgeCtx) : null;
+      final origin = badgeCtx != null
+          ? SakugaFx.globalCenterOf(badgeCtx)
+          : null;
       if (origin != null) {
         SakugaFx.celebrate(
           context,
@@ -148,7 +150,11 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                     Divider(height: 20, color: tokens.border),
                     _buildRow('Service / Work', widget.jobTitle, context),
                     Divider(height: 20, color: tokens.border),
-                    _buildRow('Assigned Specialist', widget.specialistName, context),
+                    _buildRow(
+                      'Assigned Specialist',
+                      widget.specialistName,
+                      context,
+                    ),
                     Divider(height: 20, color: tokens.border),
                     _buildRow(
                       'Payment Rail',

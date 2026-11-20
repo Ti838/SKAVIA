@@ -301,4 +301,3 @@ SKAVIA enables you to assemble agile teams with certified developers, designers,
     }
   }
 }
-

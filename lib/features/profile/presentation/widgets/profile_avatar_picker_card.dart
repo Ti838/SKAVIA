@@ -25,7 +25,8 @@ class ProfileAvatarPickerCard extends StatelessWidget {
     final isBn = context.isBengali;
 
     final effectiveAvatar = avatarUrl ?? profile?.avatarUrl;
-    final effectiveName = profile?.fullName.isNotEmpty == true &&
+    final effectiveName =
+        profile?.fullName.isNotEmpty == true &&
             profile!.fullName != 'SKAVIA Member'
         ? profile!.fullName
         : 'SKAVIA Member';
@@ -71,8 +72,8 @@ class ProfileAvatarPickerCard extends StatelessWidget {
                       profile?.email.isNotEmpty == true
                           ? profile!.email
                           : (isBn
-                              ? 'ক্যামেরা বা গ্যালারি থেকে ছবি আপলোড করুন'
-                              : 'Tap photo to upload from camera or gallery'),
+                                ? 'ক্যামেরা বা গ্যালারি থেকে ছবি আপলোড করুন'
+                                : 'Tap photo to upload from camera or gallery'),
                       style: TextStyle(
                         fontSize: 12,
                         color: colorScheme.onSurfaceVariant,
@@ -81,13 +82,8 @@ class ProfileAvatarPickerCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     OutlinedButton.icon(
                       onPressed: openAvatarPicker,
-                      icon: const Icon(
-                        Icons.camera_alt_outlined,
-                        size: 16,
-                      ),
-                      label: Text(
-                        isBn ? 'ছবি পরিবর্তন করুন' : 'Change Photo',
-                      ),
+                      icon: const Icon(Icons.camera_alt_outlined, size: 16),
+                      label: Text(isBn ? 'ছবি পরিবর্তন করুন' : 'Change Photo'),
                     ),
                   ],
                 ),

@@ -11,10 +11,7 @@ import '../../../navigation/presentation/widgets/legal_policies_sheet.dart';
 class SettingsSupportLegalSection extends StatelessWidget {
   final VoidCallback onCallHelpline;
 
-  const SettingsSupportLegalSection({
-    super.key,
-    required this.onCallHelpline,
-  });
+  const SettingsSupportLegalSection({super.key, required this.onCallHelpline});
 
   Widget _navTile(
     BuildContext context, {
@@ -73,32 +70,22 @@ class SettingsSupportLegalSection extends StatelessWidget {
                     ? 'সহায়তা ও প্রশ্নোত্তর (FAQ)'
                     : 'Help Center & FAQ',
                 subtitle: 'Escrow rules, OTP guide & quick answers',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.supportFaq,
-                ),
+                onTap: () => Navigator.pushNamed(context, AppRoutes.supportFaq),
               ),
               Divider(color: tokens.subtleBorder, height: 1),
               _navTile(
                 context,
                 icon: Icons.report_problem_outlined,
-                title: isBn
-                    ? 'অভিযোগ জমা দিন'
-                    : 'File a Formal Complaint',
-                subtitle:
-                    'Report quality, delay, billing or conduct issues',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.submitComplaint,
-                ),
+                title: isBn ? 'অভিযোগ জমা দিন' : 'File a Formal Complaint',
+                subtitle: 'Report quality, delay, billing or conduct issues',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.submitComplaint),
               ),
               Divider(color: tokens.subtleBorder, height: 1),
               _navTile(
                 context,
                 icon: Icons.phone_in_talk_outlined,
-                title: isBn
-                    ? '২৪/৭ হেল্পলাইন: ১৬৫২৪'
-                    : '24/7 Helpline: 16524',
+                title: isBn ? '২৪/৭ হেল্পলাইন: ১৬৫২৪' : '24/7 Helpline: 16524',
                 subtitle: 'Immediate dispatch and emergency assistance',
                 onTap: onCallHelpline,
               ),
@@ -120,22 +107,17 @@ class SettingsSupportLegalSection extends StatelessWidget {
                   final subtitle = eval == null
                       ? 'Check for official SKAVIA Android releases'
                       : eval.updateAvailable
-                          ? 'Update ready: v${eval.latestRelease?.versionName} (${eval.latestRelease?.formattedSize ?? 'APK'})'
-                          : eval.status ==
-                                  AppUpdateAvailability.upToDate
-                              ? 'Up to date · v${eval.installedVersion}+${eval.installedBuild}'
-                              : 'Version check & release verification';
+                      ? 'Update ready: v${eval.latestRelease?.versionName} (${eval.latestRelease?.formattedSize ?? 'APK'})'
+                      : eval.status == AppUpdateAvailability.upToDate
+                      ? 'Up to date · v${eval.installedVersion}+${eval.installedBuild}'
+                      : 'Version check & release verification';
                   return _navTile(
                     context,
                     icon: Icons.system_update_rounded,
-                    title: isBn
-                        ? 'অ্যাপ আপডেট'
-                        : 'App Updates & Releases',
+                    title: isBn ? 'অ্যাপ আপডেট' : 'App Updates & Releases',
                     subtitle: subtitle,
-                    onTap: () => Navigator.pushNamed(
-                      context,
-                      AppRoutes.appUpdate,
-                    ),
+                    onTap: () =>
+                        Navigator.pushNamed(context, AppRoutes.appUpdate),
                   );
                 },
               ),
@@ -149,22 +131,17 @@ class SettingsSupportLegalSection extends StatelessWidget {
                 subtitle: isBn
                     ? 'হার্ডওয়্যার, প্রসেসর, নেটওয়ার্ক ও পারমিশন টেস্ট'
                     : 'Hardware, OS, network latency & permission audit',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.deviceDiagnostics,
-                ),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.deviceDiagnostics),
               ),
               Divider(color: tokens.subtleBorder, height: 1),
               _navTile(
                 context,
                 icon: Icons.info_outline_rounded,
                 title: isBn ? 'SKAVIA সম্পর্কে' : 'About SKAVIA',
-                subtitle:
-                    'App version, 9 specialization branches & mission',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.aboutSkavia,
-                ),
+                subtitle: 'App version, 9 specialization branches & mission',
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.aboutSkavia),
               ),
             ],
           ),

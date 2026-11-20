@@ -26,8 +26,11 @@ class HardwareTelemetry {
   bool get isMinSdkSatisfied => sdkInt >= 24;
 
   /// Check if 64-bit ARM architecture is present.
-  bool get is64BitArm =>
-      supportedAbis.any((abi) => abi.toLowerCase().contains('arm64') || abi.toLowerCase().contains('aarch64'));
+  bool get is64BitArm => supportedAbis.any(
+    (abi) =>
+        abi.toLowerCase().contains('arm64') ||
+        abi.toLowerCase().contains('aarch64'),
+  );
 
   DiagnosticStatus get compatibilityStatus {
     if (!isMinSdkSatisfied) {
@@ -41,16 +44,16 @@ class HardwareTelemetry {
   }
 
   Map<String, dynamic> toJson() => {
-        'manufacturer': manufacturer,
-        'model': model,
-        'os_name': osName,
-        'os_version': osVersion,
-        'sdk_int': sdkInt,
-        'supported_abis': supportedAbis,
-        'is_physical_device': isPhysicalDevice,
-        'device_type': deviceType,
-        'is_min_sdk_satisfied': isMinSdkSatisfied,
-        'is_64_bit_arm': is64BitArm,
-        'compatibility_status': compatibilityStatus.name,
-      };
+    'manufacturer': manufacturer,
+    'model': model,
+    'os_name': osName,
+    'os_version': osVersion,
+    'sdk_int': sdkInt,
+    'supported_abis': supportedAbis,
+    'is_physical_device': isPhysicalDevice,
+    'device_type': deviceType,
+    'is_min_sdk_satisfied': isMinSdkSatisfied,
+    'is_64_bit_arm': is64BitArm,
+    'compatibility_status': compatibilityStatus.name,
+  };
 }

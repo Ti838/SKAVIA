@@ -33,7 +33,8 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
   }
 
   Future<void> _resolve(Map<String, dynamic> dispute, String resolution) async {
-    final id = dispute['dispute_id']?.toString() ?? dispute['id']?.toString() ?? '';
+    final id =
+        dispute['dispute_id']?.toString() ?? dispute['id']?.toString() ?? '';
     if (id.isNotEmpty) {
       await _controller.resolveDispute(id, resolution);
     }
@@ -64,7 +65,9 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
         animation: _controller,
         builder: (context, _) {
           if (_controller.isLoading && _controller.disputes.isEmpty) {
-            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+            return const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
           }
 
           final disputes = _controller.disputes;
@@ -122,14 +125,22 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                   d['reason']?.toString() ??
                   d['claim']?.toString() ??
                   'Dispute details pending review.';
-              final client = d['client_name']?.toString() ?? d['client']?.toString() ?? 'Client';
-              final worker = d['worker_name']?.toString() ?? d['worker']?.toString() ?? 'Specialist';
+              final client =
+                  d['client_name']?.toString() ??
+                  d['client']?.toString() ??
+                  'Client';
+              final worker =
+                  d['worker_name']?.toString() ??
+                  d['worker']?.toString() ??
+                  'Specialist';
 
               return Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: tokens.cardBg,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusLarge,
+                  ),
                   border: Border.all(
                     color: AppColors.errorRed.withValues(alpha: 0.35),
                   ),
@@ -178,10 +189,7 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'Client: $client • Specialist: $worker',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: tokens.mutedText,
-                      ),
+                      style: TextStyle(fontSize: 12.5, color: tokens.mutedText),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -195,12 +203,12 @@ class _DisputeResolutionScreenState extends State<DisputeResolutionScreen> {
                     const SizedBox(height: 14),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final textScale = MediaQuery.textScalerOf(context).scale(1);
+                        final textScale = MediaQuery.textScalerOf(context)
+                            .scale(1);
                         final stackBtns =
                             constraints.maxWidth < 310 || textScale > 1.3;
                         final refundBtn = OutlinedButton(
-                          onPressed: () =>
-                              _resolve(d, 'Full Refund to Client'),
+                          onPressed: () => _resolve(d, 'Full Refund to Client'),
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: AppColors.errorRed),
                             shape: RoundedRectangleBorder(

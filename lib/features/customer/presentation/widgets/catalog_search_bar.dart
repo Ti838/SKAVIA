@@ -77,4 +77,3 @@ class CatalogSearchBar extends StatelessWidget {
     );
   }
 }
-

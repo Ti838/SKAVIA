@@ -15,15 +15,15 @@ class PerformanceTelemetry {
   });
 
   const PerformanceTelemetry.initial()
-      : startupDurationMs = 0,
-        responsiveness = DiagnosticStatus.notTested,
-        recentFrameRasterDurationMs = 0.0,
-        estimatedStorageStatus = 'Checking...';
+    : startupDurationMs = 0,
+      responsiveness = DiagnosticStatus.notTested,
+      recentFrameRasterDurationMs = 0.0,
+      estimatedStorageStatus = 'Checking...';
 
   Map<String, dynamic> toJson() => {
-        'startup_duration_ms': startupDurationMs,
-        'responsiveness': responsiveness.name,
-        'recent_frame_raster_duration_ms': recentFrameRasterDurationMs,
-        'estimated_storage_status': estimatedStorageStatus,
-      };
+    'startup_duration_ms': startupDurationMs,
+    'responsiveness': responsiveness.name,
+    'recent_frame_raster_duration_ms': recentFrameRasterDurationMs,
+    'estimated_storage_status': estimatedStorageStatus,
+  };
 }

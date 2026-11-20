@@ -153,9 +153,7 @@ class DashboardSettingsSheet extends StatelessWidget {
                   color: AppColors.primaryRoyal,
                 ),
                 title: Text(
-                  isBn
-                      ? 'সব সেটিংস ও পছন্দসমূহ'
-                      : 'All Settings & Preferences',
+                  isBn ? 'সব সেটিংস ও পছন্দসমূহ' : 'All Settings & Preferences',
                   style: TextStyle(
                     color: colorScheme.onSurface,
                     fontWeight: FontWeight.w600,

@@ -118,8 +118,8 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
     final clientId = user.uid;
     final customerName =
         (user.displayName != null && user.displayName!.isNotEmpty)
-            ? user.displayName!
-            : 'Client';
+        ? user.displayName!
+        : 'Client';
     final customerEmail = user.email ?? '';
     final customerPhone = user.phoneNumber ?? '';
 
@@ -287,15 +287,19 @@ class _SimulatedCheckoutScreenState extends State<SimulatedCheckoutScreen> {
             AppButton(
               text: _isProcessing
                   ? (_selectedMethod == 'Cash'
-                        ? (isBn ? 'বুকিং নিশ্চিত করা হচ্ছে...' : 'Confirming Booking...')
-                        : (isBn ? 'পেমেন্ট সম্পন্ন করা হচ্ছে...' : 'Processing Sandbox Transaction...'))
+                        ? (isBn
+                              ? 'বুকিং নিশ্চিত করা হচ্ছে...'
+                              : 'Confirming Booking...')
+                        : (isBn
+                              ? 'পেমেন্ট সম্পন্ন করা হচ্ছে...'
+                              : 'Processing Sandbox Transaction...'))
                   : (_selectedMethod == 'Cash'
                         ? (isBn
-                            ? 'নগদ পরিশোধে নিশ্চিত করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
-                            : 'Confirm Cash on Delivery (${Formatters.formatCurrency(_totalPayable)})')
+                              ? 'নগদ পরিশোধে নিশ্চিত করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
+                              : 'Confirm Cash on Delivery (${Formatters.formatCurrency(_totalPayable)})')
                         : (isBn
-                            ? 'পেমেন্ট সম্পন্ন করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
-                            : 'Test Sandbox Payment (${Formatters.formatCurrency(_totalPayable)})')),
+                              ? 'পেমেন্ট সম্পন্ন করুন (${Formatters.formatCurrency(_totalPayable, useBnDigits: isBn)})'
+                              : 'Test Sandbox Payment (${Formatters.formatCurrency(_totalPayable)})')),
               isLoading: _isProcessing,
               onPressed: _isProcessing ? null : _processPayment,
             ),

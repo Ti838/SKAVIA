@@ -60,14 +60,10 @@ class _WorkerJobOtpSheetState extends State<WorkerJobOtpSheet> {
     } else {
       setState(() {
         _isVerifyingOtp = false;
-        _errorText =
-            'Invalid OTP! Please ask the customer for the correct 4-digit code.';
+        _errorText = 'Invalid OTP! Please ask the customer for the correct 4-digit code.';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_errorText!),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(_errorText!), backgroundColor: AppColors.error),
       );
     }
   }
@@ -169,7 +165,10 @@ class _WorkerJobOtpSheetState extends State<WorkerJobOtpSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: tokens.brandAccent, width: 1.5),
+                    borderSide: BorderSide(
+                      color: tokens.brandAccent,
+                      width: 1.5,
+                    ),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),

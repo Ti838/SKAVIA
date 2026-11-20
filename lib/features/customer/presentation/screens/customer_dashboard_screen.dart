@@ -48,8 +48,8 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
     _permissionTimer = Timer(const Duration(milliseconds: 1500), () async {
       if (!mounted) return;
       try {
-        final status =
-            await NotificationService.instance.checkPermissionStatus();
+        final status = await NotificationService.instance
+            .checkPermissionStatus();
         if (!status.isGranted && mounted) {
           await NotificationPermissionSheet.show(context);
         }
@@ -131,7 +131,10 @@ class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   Widget build(BuildContext context) {
     final user = _safeCurrentUser();
     final identifier =
-        user?.email ?? user?.phoneNumber ?? user?.displayName ?? 'Valued Client';
+        user?.email ??
+        user?.phoneNumber ??
+        user?.displayName ??
+        'Valued Client';
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,

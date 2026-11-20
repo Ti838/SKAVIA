@@ -57,9 +57,7 @@ class ProjectTaskItemCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isCompleted
-                      ? const Color(0xFF10B981)
-                      : tokens.border,
+                  color: isCompleted ? const Color(0xFF10B981) : tokens.border,
                   width: 2,
                 ),
                 color: isCompleted

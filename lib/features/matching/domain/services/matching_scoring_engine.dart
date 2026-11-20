@@ -83,7 +83,8 @@ class MatchingScoringEngine {
       final workerRate = (worker['expected_rate'] as num?)?.toDouble() ?? 0.0;
       final totalReviews = (worker['total_reviews'] as num?)?.toInt() ?? 0;
       final rawRating = (worker['rating_average'] as num?)?.toDouble() ?? 0.0;
-      final workerRating = (totalReviews > 0 || worker['rating_average'] != null)
+      final workerRating =
+          (totalReviews > 0 || worker['rating_average'] != null)
           ? rawRating
           : 0.0;
       final isVerified =

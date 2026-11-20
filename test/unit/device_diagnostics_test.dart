@@ -117,30 +117,39 @@ void main() {
       expect(legacyAndroid.compatibilityStatus, DiagnosticStatus.limited);
     });
 
-    test('HardwareTelemetry flags obsolete Android (< API 24) as unsupported', () {
-      const obsoleteAndroid = HardwareTelemetry(
-        manufacturer: 'Samsung',
-        model: 'Galaxy S4',
-        osName: 'Android',
-        osVersion: '5.0.1',
-        sdkInt: 21,
-        supportedAbis: ['armeabi-v7a'],
-        isPhysicalDevice: true,
-        deviceType: 'Smartphone',
-      );
+    test(
+      'HardwareTelemetry flags obsolete Android (< API 24) as unsupported',
+      () {
+        const obsoleteAndroid = HardwareTelemetry(
+          manufacturer: 'Samsung',
+          model: 'Galaxy S4',
+          osName: 'Android',
+          osVersion: '5.0.1',
+          sdkInt: 21,
+          supportedAbis: ['armeabi-v7a'],
+          isPhysicalDevice: true,
+          deviceType: 'Smartphone',
+        );
 
-      expect(obsoleteAndroid.isMinSdkSatisfied, isFalse);
-      expect(obsoleteAndroid.compatibilityStatus, DiagnosticStatus.unsupported);
-    });
+        expect(obsoleteAndroid.isMinSdkSatisfied, isFalse);
+        expect(
+          obsoleteAndroid.compatibilityStatus,
+          DiagnosticStatus.unsupported,
+        );
+      },
+    );
 
-    test('DiagnosticStatus enum provides complete dual-script labels and icons', () {
-      for (final status in DiagnosticStatus.values) {
-        expect(status.labelEn.isNotEmpty, isTrue);
-        expect(status.labelBn.isNotEmpty, isTrue);
-        expect(status.color, isNotNull);
-        expect(status.icon, isNotNull);
-      }
-    });
+    test(
+      'DiagnosticStatus enum provides complete dual-script labels and icons',
+      () {
+        for (final status in DiagnosticStatus.values) {
+          expect(status.labelEn.isNotEmpty, isTrue);
+          expect(status.labelBn.isNotEmpty, isTrue);
+          expect(status.color, isNotNull);
+          expect(status.icon, isNotNull);
+        }
+      },
+    );
   });
 
   group('SKAVIA Device Diagnostics UI & 320dp Constraint Tests', () {
@@ -161,9 +170,7 @@ void main() {
                 size: Size(320, 640),
                 textScaler: TextScaler.linear(1.5),
               ),
-              child: DeviceDiagnosticsScreen(
-                diagnosticsService: mockService,
-              ),
+              child: DeviceDiagnosticsScreen(diagnosticsService: mockService),
             ),
           ),
         );
@@ -201,9 +208,7 @@ void main() {
                 size: Size(320, 640),
                 textScaler: TextScaler.linear(1.2),
               ),
-              child: DeviceDiagnosticsScreen(
-                diagnosticsService: mockService,
-              ),
+              child: DeviceDiagnosticsScreen(diagnosticsService: mockService),
             ),
           ),
         );
@@ -234,11 +239,11 @@ void main() {
           );
           expect(find.byType(DiagnosticStatusBadge), findsOneWidget);
           final ex = tester.takeException();
-        if (ex != null) {
-          // ignore: avoid_print
-          print('TEST OVERFLOW EXCEPTION: $ex');
-        }
-        expect(ex, isNull);
+          if (ex != null) {
+            // ignore: avoid_print
+            print('TEST OVERFLOW EXCEPTION: $ex');
+          }
+          expect(ex, isNull);
         }
       },
     );

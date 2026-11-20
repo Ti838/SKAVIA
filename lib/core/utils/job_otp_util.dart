@@ -17,10 +17,7 @@ abstract class JobOtpUtil {
 
   /// Extracts a 4-digit OTP from [serviceNotes] (e.g. `OTP: 4829`), or falls
   /// back cleanly to a deterministic 4-character suffix if legacy rows omitted it.
-  static String extractOtp(
-    String? serviceNotes, {
-    String? fallbackRequestId,
-  }) {
+  static String extractOtp(String? serviceNotes, {String? fallbackRequestId}) {
     final notes = serviceNotes?.trim() ?? '';
     if (notes.isNotEmpty) {
       final match = _otpRegex.firstMatch(notes);
@@ -42,4 +39,3 @@ abstract class JobOtpUtil {
     return '4829';
   }
 }
-

@@ -24,8 +24,7 @@ class ActiveBookingCard extends StatelessWidget {
     final notes = booking['service_notes']?.toString() ?? 'Service in Progress';
     final price = (booking['agreed_price'] as num?)?.toDouble() ?? 0.0;
     final worker = booking['worker_profiles'];
-    final techName =
-        worker?['users']?['full_name']?.toString() ?? 'Specialist';
+    final techName = worker?['users']?['full_name']?.toString() ?? 'Specialist';
     final techPhone =
         worker?['users']?['phone']?.toString() ??
         worker?['users']?['phone_number']?.toString() ??

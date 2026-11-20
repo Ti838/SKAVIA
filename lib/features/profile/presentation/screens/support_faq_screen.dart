@@ -88,7 +88,8 @@ class _SupportFaqScreenState extends State<SupportFaqScreen> {
     final filtered = _faqs.where((item) {
       final matchesCat =
           _selectedCategory == 'All' || item['category'] == _selectedCategory;
-      final matchesQuery = query.isEmpty ||
+      final matchesQuery =
+          query.isEmpty ||
           item['q']!.toLowerCase().contains(query) ||
           item['a']!.toLowerCase().contains(query);
       return matchesCat && matchesQuery;
@@ -230,4 +231,3 @@ class _SupportFaqScreenState extends State<SupportFaqScreen> {
     );
   }
 }
-

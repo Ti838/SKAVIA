@@ -65,8 +65,7 @@ class LiveJobFeedDataSource {
       final catName =
           catObj?['name']?.toString() ??
           (catId.isNotEmpty ? CategoryResolver.displayName(catId) : 'General');
-      final clientName =
-          clientObj?['full_name']?.toString() ?? 'SKAVIA Member';
+      final clientName = clientObj?['full_name']?.toString() ?? 'SKAVIA Member';
       final status = row['status']?.toString() ?? 'Open';
       final urgency = row['urgency']?.toString() ?? 'Medium';
       final reqType = (row['requirement_type']?.toString() ?? 'Simple')

@@ -34,8 +34,8 @@ class TaskItemModel {
       description: json['description']?.toString() ?? '',
       status: json['status']?.toString() ?? 'Assigned',
       priority: json['priority']?.toString() ?? 'Medium',
-      assignedWorkerId:
-          (json['assigned_team_member_id'] ?? json['assigned_to'])?.toString(),
+      assignedWorkerId: (json['assigned_team_member_id'] ?? json['assigned_to'])
+          ?.toString(),
       assignedWorkerName: json['assigned_worker_name']?.toString(),
       deadline: rawDate != null ? DateTime.tryParse(rawDate.toString()) : null,
       budgetWeight: (json['budget_weight'] as num?)?.toDouble() ?? 0.0,

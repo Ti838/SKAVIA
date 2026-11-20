@@ -271,10 +271,8 @@ class ProfileMenuSection extends StatelessWidget {
             subtitle: isBn
                 ? 'আপনার যাচাইকৃত রেটিং, ট্রাস্ট টিয়ার ও রিভিউ দেখুন'
                 : 'View your verified rating, trust tier & reviews',
-            onTap: () => Navigator.pushNamed(
-              context,
-              AppRoutes.workerReputation,
-            ),
+            onTap: () =>
+                Navigator.pushNamed(context, AppRoutes.workerReputation),
           ),
         ],
         const SizedBox(height: 16),
@@ -293,10 +291,7 @@ class ProfileMenuSection extends StatelessWidget {
           child: OutlinedButton(
             onPressed: onLogout,
             style: OutlinedButton.styleFrom(
-              side: const BorderSide(
-                color: AppColors.errorRed,
-                width: 1.2,
-              ),
+              side: const BorderSide(color: AppColors.errorRed, width: 1.2),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(24),
               ),

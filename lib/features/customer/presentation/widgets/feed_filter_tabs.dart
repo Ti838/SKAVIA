@@ -56,8 +56,9 @@ class FeedFilterTabs extends StatelessWidget {
                     tab['label']!,
                     style: TextStyle(
                       fontSize: 11,
-                      fontWeight:
-                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
                       color: isSelected
                           ? tokens.onBrandAccent
                           : colorScheme.onSurface,

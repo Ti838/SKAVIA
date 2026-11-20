@@ -129,7 +129,9 @@ abstract class SakugaFx {
 
     final spikes = List<double>.generate(
       24,
-      (i) => i.isOdd ? 0.38 + _rng.nextDouble() * 0.14 : 0.8 + _rng.nextDouble() * 0.28,
+      (i) => i.isOdd
+          ? 0.38 + _rng.nextDouble() * 0.14
+          : 0.8 + _rng.nextDouble() * 0.28,
     );
     final rot = _rng.nextDouble() * math.pi * 2;
     final shards = List<_ShardParticle>.generate(8, (i) {
@@ -226,9 +228,8 @@ class _SakugaOneShotLayerState extends State<_SakugaOneShotLayer>
         child: RepaintBoundary(
           child: AnimatedBuilder(
             animation: _controller,
-            builder: (_, _) => CustomPaint(
-              painter: widget.painterBuilder(_controller.value),
-            ),
+            builder: (_, _) =>
+                CustomPaint(painter: widget.painterBuilder(_controller.value)),
           ),
         ),
       ),
@@ -260,7 +261,9 @@ class _TicksPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final a = SakugaMotion.easeOutCubic((progress / 0.5).clamp(0.0, 1.0));
-    final b = SakugaMotion.easeInCubic(((progress - 0.4) / 0.6).clamp(0.0, 1.0));
+    final b = SakugaMotion.easeInCubic(
+      ((progress - 0.4) / 0.6).clamp(0.0, 1.0),
+    );
     final opacity = (1.0 - b * 0.85).clamp(0.0, 1.0);
     final paint = Paint()
       ..color = color.withValues(alpha: opacity)
@@ -425,14 +428,20 @@ class _CelebratePainter extends CustomPainter {
     if (progress < 0.72) {
       final bk = (progress / 0.72).clamp(0.0, 1.0);
       final r = radius * SakugaMotion.easeOutCubic((bk / 0.34).clamp(0.0, 1.0));
-      final fade = 1.0 - SakugaMotion.easeInCubic(((bk - 0.38) / 0.62).clamp(0.0, 1.0));
-      final hollow = 1.0 + SakugaMotion.easeInCubic(((bk - 0.35) / 0.65).clamp(0.0, 1.0)) * 0.85;
+      final fade =
+          1.0 - SakugaMotion.easeInCubic(((bk - 0.38) / 0.62).clamp(0.0, 1.0));
+      final hollow =
+          1.0 +
+          SakugaMotion.easeInCubic(((bk - 0.35) / 0.65).clamp(0.0, 1.0)) * 0.85;
 
       final starPath = Path();
       for (var i = 0; i < spikes.length; i++) {
         final a = rotation + (i / spikes.length) * math.pi * 2;
         final rr = r * (i.isOdd ? spikes[i] * hollow : spikes[i]);
-        final pt = Offset(origin.dx + math.cos(a) * rr, origin.dy + math.sin(a) * rr);
+        final pt = Offset(
+          origin.dx + math.cos(a) * rr,
+          origin.dy + math.sin(a) * rr,
+        );
         if (i == 0) {
           starPath.moveTo(pt.dx, pt.dy);
         } else {
@@ -471,12 +480,15 @@ class _CelebratePainter extends CustomPainter {
     // 3. Crystalline shards with light gravity
     final t = progress * 0.52;
     for (final shard in shards) {
-      final shrink = 1.0 - SakugaMotion.easeInCubic(((progress - 0.55) / 0.45).clamp(0.0, 1.0));
+      final shrink =
+          1.0 -
+          SakugaMotion.easeInCubic(((progress - 0.55) / 0.45).clamp(0.0, 1.0));
       final sc = shard.size * shrink;
       if (sc < 0.7) continue;
 
       final px = origin.dx + math.cos(shard.angle) * shard.speed * t;
-      final py = origin.dy + math.sin(shard.angle) * shard.speed * t + 210 * t * t;
+      final py =
+          origin.dy + math.sin(shard.angle) * shard.speed * t + 210 * t * t;
 
       canvas.save();
       canvas.translate(px, py);

@@ -52,7 +52,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
-          final totalUsers = (_controller.metrics['totalUsers'] as num?)?.toInt() ?? 0;
+          final totalUsers =
+              (_controller.metrics['totalUsers'] as num?)?.toInt() ?? 0;
           final activeRequests =
               (_controller.metrics['activeRequests'] as num?)?.toInt() ?? 0;
           final totalVolume =
@@ -64,8 +65,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           final displayRequests = isBn
               ? Formatters.toBengaliDigits('$activeRequests')
               : '$activeRequests';
-          final displayVolume =
-              Formatters.formatCurrency(totalVolume, useBnDigits: isBn);
+          final displayVolume = Formatters.formatCurrency(
+            totalVolume,
+            useBnDigits: isBn,
+          );
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppDimensions.paddingLarge),
@@ -118,14 +121,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       return Column(
                         children: [
                           _buildMetricTile(
-                            isBn ? 'যাচাইকৃত মোট ব্যবহারকারী' : 'Total Verified Users',
+                            isBn
+                                ? 'যাচাইকৃত মোট ব্যবহারকারী'
+                                : 'Total Verified Users',
                             displayUsers,
                             Icons.people_rounded,
                             tokens.brandAccent,
                           ),
                           const SizedBox(height: 12),
                           _buildMetricTile(
-                            isBn ? 'সক্রিয় সার্ভিস কাজ' : 'Active Service Jobs',
+                            isBn
+                                ? 'সক্রিয় সার্ভিস কাজ'
+                                : 'Active Service Jobs',
                             displayRequests,
                             Icons.handyman_rounded,
                             AppColors.accent,
@@ -137,7 +144,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       children: [
                         Expanded(
                           child: _buildMetricTile(
-                            isBn ? 'যাচাইকৃত মোট ব্যবহারকারী' : 'Total Verified Users',
+                            isBn
+                                ? 'যাচাইকৃত মোট ব্যবহারকারী'
+                                : 'Total Verified Users',
                             displayUsers,
                             Icons.people_rounded,
                             tokens.brandAccent,
@@ -146,7 +155,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildMetricTile(
-                            isBn ? 'সক্রিয় সার্ভিস কাজ' : 'Active Service Jobs',
+                            isBn
+                                ? 'সক্রিয় সার্ভিস কাজ'
+                                : 'Active Service Jobs',
                             displayRequests,
                             Icons.handyman_rounded,
                             AppColors.accent,
@@ -167,7 +178,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 const SizedBox(height: AppDimensions.paddingLarge),
 
                 Text(
-                  isBn ? 'অপারেশন ও মডারেশন ওয়ার্কফ্লো' : 'Operations & Moderation Workflows',
+                  isBn
+                      ? 'অপারেশন ও মডারেশন ওয়ার্কফ্লো'
+                      : 'Operations & Moderation Workflows',
                   style: TextStyle(
                     fontFamily: AppTypography.headingFont,
                     fontWeight: FontWeight.w800,
@@ -179,7 +192,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildActionCard(
                   context,
-                  title: isBn ? 'কর্মী যাচাইকরণ কিউ' : 'Worker Verification Queue',
+                  title: isBn
+                      ? 'কর্মী যাচাইকরণ কিউ'
+                      : 'Worker Verification Queue',
                   subtitle: isBn
                       ? 'এনআইডি, ট্রেড লাইসেন্স ও সনদপত্র পর্যালোচনা'
                       : 'Review government NID, trade licenses, and certificates',
@@ -193,7 +208,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
                 _buildActionCard(
                   context,
-                  title: isBn ? 'এসক্রো বিরোধ নিষ্পত্তি' : 'Escrow Dispute Resolution',
+                  title: isBn
+                      ? 'এসক্রো বিরোধ নিষ্পত্তি'
+                      : 'Escrow Dispute Resolution',
                   subtitle: isBn
                       ? 'গ্রাহক ও কর্মীর দাবি, বাতিল ও রিফান্ড নিষ্পত্তি'
                       : 'Mediate client-worker claims, cancellations, and refunds',

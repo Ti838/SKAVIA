@@ -90,10 +90,7 @@ class ConversationTile extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         timeStr,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: tokens.mutedText,
-                        ),
+                        style: TextStyle(fontSize: 11, color: tokens.mutedText),
                       ),
                     ],
                   ),

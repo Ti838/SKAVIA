@@ -160,10 +160,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
             Text(
               '৳ ${widget.agreedPrice.toStringAsFixed(0)} completion verified for escrow settlement.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: tokens.secondaryText,
-              ),
+              style: TextStyle(fontSize: 14, color: tokens.secondaryText),
             ),
             const SizedBox(height: 20),
             SizedBox(

@@ -26,8 +26,9 @@ class PaymentMethodSelector extends StatelessWidget {
       children: methods.map((method) {
         final isSelected = selectedMethod == method['id'];
         final rawColor = method['color'] as Color;
-        final methodColor =
-            isDark && method['id'] == 'Card' ? tokens.brandAccent : rawColor;
+        final methodColor = isDark && method['id'] == 'Card'
+            ? tokens.brandAccent
+            : rawColor;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),

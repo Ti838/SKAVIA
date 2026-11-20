@@ -113,10 +113,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
     if (skills is List && skills.isNotEmpty) {
       final result = <Map<String, String>>[];
       for (var i = 0; i < skills.length && i < 4; i++) {
-        result.add({
-          'role': '${skills[i]} Specialist',
-          'index': '${i + 1}',
-        });
+        result.add({'role': '${skills[i]} Specialist', 'index': '${i + 1}'});
       }
       if (result.length < 3) {
         result.add({
@@ -131,7 +128,9 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   }
 
   String get _resolvedSummary {
-    final summary = widget.analysisData?['technical_summary']?.toString().trim();
+    final summary = widget.analysisData?['technical_summary']
+        ?.toString()
+        .trim();
     if (summary != null && summary.isNotEmpty) return summary;
     final prompt = widget.initialPrompt?.trim();
     if (prompt != null && prompt.isNotEmpty) return prompt;
@@ -141,7 +140,9 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
   String get _resolvedProjectTitle {
     final title = widget.analysisData?['suggested_title']?.toString().trim();
     if (title != null && title.isNotEmpty) return title;
-    final categoryName = widget.analysisData?['category_name']?.toString().trim();
+    final categoryName = widget.analysisData?['category_name']
+        ?.toString()
+        .trim();
     if (categoryName != null && categoryName.isNotEmpty) {
       return '$categoryName Project';
     }
@@ -239,8 +240,7 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
           projectSummary: _resolvedSummary,
           projectTitle: _resolvedProjectTitle,
           projectId: widget.analysisData?['project_id']?.toString(),
-          onEditRequest: () =>
-              setState(() => _currentMode = AiScreenMode.chat),
+          onEditRequest: () => setState(() => _currentMode = AiScreenMode.chat),
         );
       case AiScreenMode.chat:
         return AiChatView(
@@ -284,7 +284,9 @@ class _SkaviaAiScreenState extends State<SkaviaAiScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: active ? tokens.onBrandAccent : colorScheme.onSurfaceVariant,
+              color: active
+                  ? tokens.onBrandAccent
+                  : colorScheme.onSurfaceVariant,
             ),
           ),
         ),

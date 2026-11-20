@@ -59,7 +59,8 @@ class _SakugaSliderState extends State<SakugaSlider> {
 
   void _handleChangeEnd(double finalVal) {
     if (!SakugaMotion.isReduced(context)) {
-      final isEdge = (finalVal - widget.min).abs() < 0.001 ||
+      final isEdge =
+          (finalVal - widget.min).abs() < 0.001 ||
           (finalVal - widget.max).abs() < 0.001;
       if (isEdge) {
         HapticFeedback.lightImpact();

@@ -120,11 +120,7 @@ class FeedCardActions extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   child: Padding(
                     padding: const EdgeInsets.all(5),
-                    child: Icon(
-                      Icons.share_outlined,
-                      size: 17,
-                      color: muted,
-                    ),
+                    child: Icon(Icons.share_outlined, size: 17, color: muted),
                   ),
                 ),
 

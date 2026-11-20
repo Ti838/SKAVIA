@@ -84,11 +84,10 @@ class ComplaintRemoteDataSource {
     }
 
     final existing = getCachedComplaints(userId);
-    LocalCacheService.instance.put(
-      'skavia_complaints_$userId',
-      [payload, ...existing],
-    );
+    LocalCacheService.instance.put('skavia_complaints_$userId', [
+      payload,
+      ...existing,
+    ]);
     return submittedOnline;
   }
 }
-

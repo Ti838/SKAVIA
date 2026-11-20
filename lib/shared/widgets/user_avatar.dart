@@ -126,11 +126,7 @@ class UserAvatar extends StatelessWidget {
       return Semantics(
         button: true,
         label: name.trim().isEmpty ? 'User profile' : '$name profile',
-        child: InkResponse(
-          onTap: onTap,
-          radius: radius + 8,
-          child: avatar,
-        ),
+        child: InkResponse(onTap: onTap, radius: radius + 8, child: avatar),
       );
     }
     return avatar;

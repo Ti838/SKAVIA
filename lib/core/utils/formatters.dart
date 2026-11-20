@@ -8,7 +8,9 @@ abstract class Formatters {
   static final NumberFormat _currencyFormat = NumberFormat('#,##,##0', 'en_US');
   static final DateFormat _dateFormatEn = DateFormat('dd MMM yyyy');
   static final DateFormat _timeFormatEn = DateFormat('hh:mm a');
-  static final DateFormat _dateTimeFormatEn = DateFormat('dd MMM yyyy, hh:mm a');
+  static final DateFormat _dateTimeFormatEn = DateFormat(
+    'dd MMM yyyy, hh:mm a',
+  );
 
   static const Map<String, String> _bnDigits = {
     '0': '০',

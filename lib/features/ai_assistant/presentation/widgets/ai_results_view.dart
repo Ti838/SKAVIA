@@ -31,7 +31,8 @@ class AiResultsView extends StatelessWidget {
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     final summaryText = projectSummary?.trim() ?? '';
     final targetTitle = projectTitle?.trim() ?? '';
-    final hasAnyData = summaryText.isNotEmpty ||
+    final hasAnyData =
+        summaryText.isNotEmpty ||
         requiredSkills.isNotEmpty ||
         recommendedTeam.isNotEmpty;
 
@@ -214,11 +215,15 @@ class AiResultsView extends StatelessWidget {
           // Action Buttons: Edit Request & Continue (stack on narrow/2.0x textScale)
           LayoutBuilder(
             builder: (context, constraints) {
-              final stackButtons = constraints.maxWidth < 330 || textScale > 1.35;
+              final stackButtons =
+                  constraints.maxWidth < 330 || textScale > 1.35;
               final editBtn = OutlinedButton(
                 onPressed: onEditRequest,
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 12,
+                  ),
                   side: BorderSide(color: tokens.brandAccent, width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
@@ -246,8 +251,9 @@ class AiResultsView extends StatelessWidget {
                       AppRoutes.projectDashboard,
                       arguments: {
                         'projectId': projectId!.trim(),
-                        'projectTitle':
-                            targetTitle.isNotEmpty ? targetTitle : 'Project',
+                        'projectTitle': targetTitle.isNotEmpty
+                            ? targetTitle
+                            : 'Project',
                       },
                     );
                   } else {
@@ -258,13 +264,18 @@ class AiResultsView extends StatelessWidget {
                   backgroundColor: tokens.brandAccent,
                   foregroundColor: tokens.onBrandAccent,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 12,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
                 ),
                 child: Text(
-                  hasProjectId ? l10n.aiOpenProject : l10n.businessCreateRequirement,
+                  hasProjectId
+                      ? l10n.aiOpenProject
+                      : l10n.businessCreateRequirement,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -278,11 +289,7 @@ class AiResultsView extends StatelessWidget {
               if (stackButtons) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    editBtn,
-                    const SizedBox(height: 10),
-                    createBtn,
-                  ],
+                  children: [editBtn, const SizedBox(height: 10), createBtn],
                 );
               }
               return Row(

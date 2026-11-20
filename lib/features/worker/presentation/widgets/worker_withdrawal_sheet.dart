@@ -121,10 +121,7 @@ class _WorkerWithdrawalSheetState extends State<WorkerWithdrawalSheet> {
               const SizedBox(height: 8),
               Text(
                 'Available for payout: ৳ ${widget.availableBalance.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: tokens.secondaryText,
-                ),
+                style: TextStyle(fontSize: 13, color: tokens.secondaryText),
               ),
               const SizedBox(height: 16),
               Wrap(
@@ -183,7 +180,10 @@ class _WorkerWithdrawalSheetState extends State<WorkerWithdrawalSheet> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: tokens.brandAccent, width: 1.5),
+                    borderSide: BorderSide(
+                      color: tokens.brandAccent,
+                      width: 1.5,
+                    ),
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -206,4 +206,3 @@ class _WorkerWithdrawalSheetState extends State<WorkerWithdrawalSheet> {
     );
   }
 }
-

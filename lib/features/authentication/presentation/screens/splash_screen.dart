@@ -80,8 +80,11 @@ class _SplashScreenState extends State<SplashScreen>
       final supabaseSession = Supabase.instance.client.auth.currentSession;
       final supabaseUser = Supabase.instance.client.auth.currentUser;
 
-      if (firebaseUser != null || supabaseSession != null || supabaseUser != null) {
-        final uid = firebaseUser?.uid ?? supabaseSession?.user.id ?? supabaseUser?.id;
+      if (firebaseUser != null ||
+          supabaseSession != null ||
+          supabaseUser != null) {
+        final uid =
+            firebaseUser?.uid ?? supabaseSession?.user.id ?? supabaseUser?.id;
         String? activeMode;
 
         if (uid != null && uid.isNotEmpty) {
@@ -101,7 +104,8 @@ class _SplashScreenState extends State<SplashScreen>
           if (activeMode == null || activeMode.isEmpty) {
             try {
               final prefs = await SharedPreferences.getInstance();
-              activeMode = prefs.getString('${AppConstants.userModeStorageKey}_$uid') ??
+              activeMode =
+                  prefs.getString('${AppConstants.userModeStorageKey}_$uid') ??
                   prefs.getString(AppConstants.userModeStorageKey);
             } catch (_) {}
           }
@@ -157,10 +161,8 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     // 4. Atomic, irreversible route replacement so splash cannot be popped or re-entered
-    Navigator.of(context).pushReplacementNamed(
-      targetRoute,
-      arguments: routeArgs,
-    );
+    Navigator.of(context)
+        .pushReplacementNamed(targetRoute, arguments: routeArgs);
   }
 
   @override
@@ -177,8 +179,9 @@ class _SplashScreenState extends State<SplashScreen>
     // Minimal, professional canvas background
     final backgroundColor = isDark ? const Color(0xFF05080F) : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final secondaryTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF475569);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -222,8 +225,10 @@ class _SplashScreenState extends State<SplashScreen>
                         boxShadow: [
                           BoxShadow(
                             color: isDark
-                                ? const Color(0xFF3898EC).withValues(alpha: 0.12)
-                                : const Color(0xFF003399).withValues(alpha: 0.08),
+                                ? const Color(0xFF3898EC)
+                                      .withValues(alpha: 0.12)
+                                : const Color(0xFF003399)
+                                      .withValues(alpha: 0.08),
                             blurRadius: 32,
                             spreadRadius: 4,
                           ),

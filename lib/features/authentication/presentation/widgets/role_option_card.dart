@@ -42,18 +42,20 @@ class RoleOptionCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isSelected
                 ? (isDark
-                    ? accentColor.withValues(alpha: 0.16)
-                    : accentColor.withValues(alpha: 0.08))
+                      ? accentColor.withValues(alpha: 0.16)
+                      : accentColor.withValues(alpha: 0.08))
                 : (isDark
-                    ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)
-                    : Colors.white),
+                      ? colorScheme.surfaceContainerHighest.withValues(
+                          alpha: 0.4,
+                        )
+                      : Colors.white),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isSelected
                   ? accentColor
                   : (isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : const Color(0xFFE2E8F0)),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFFE2E8F0)),
               width: isSelected ? 2 : 1,
             ),
             boxShadow: [
@@ -158,10 +160,7 @@ class RoleOptionCard extends StatelessWidget {
               ),
               if (roleId == 'enterprise' && isSelected) ...[
                 const SizedBox(height: 12),
-                Divider(
-                  color: skavia.subtleBorder,
-                  height: 1,
-                ),
+                Divider(color: skavia.subtleBorder, height: 1),
                 const SizedBox(height: 10),
                 Text(
                   isBn
@@ -177,45 +176,40 @@ class RoleOptionCard extends StatelessWidget {
                 Wrap(
                   spacing: 8,
                   runSpacing: 6,
-                  children: ['Business Client', 'Organization'].map(
-                    (subtype) {
-                      final active = corporateSubtype == subtype;
-                      return InkWell(
-                        onTap: () => onSubtypeChanged(subtype),
-                        borderRadius: BorderRadius.circular(10),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: active
-                                ? accentColor.withValues(alpha: 0.2)
-                                : colorScheme.surfaceContainerHighest
-                                    .withValues(alpha: 0.45),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: active
-                                  ? accentColor
-                                  : skavia.subtleBorder,
-                            ),
-                          ),
-                          child: Text(
-                            subtype,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: active
-                                  ? FontWeight.w800
-                                  : FontWeight.w600,
-                              color: active
-                                  ? accentColor
-                                  : colorScheme.onSurface,
-                            ),
+                  children: ['Business Client', 'Organization'].map((subtype) {
+                    final active = corporateSubtype == subtype;
+                    return InkWell(
+                      onTap: () => onSubtypeChanged(subtype),
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? accentColor.withValues(alpha: 0.2)
+                              : colorScheme.surfaceContainerHighest.withValues(
+                                  alpha: 0.45,
+                                ),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: active ? accentColor : skavia.subtleBorder,
                           ),
                         ),
-                      );
-                    },
-                  ).toList(),
+                        child: Text(
+                          subtype,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: active
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: active ? accentColor : colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ],

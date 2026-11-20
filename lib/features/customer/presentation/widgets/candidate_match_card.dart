@@ -62,9 +62,7 @@ class CandidateMatchCard extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: isTopMatch
-                      ? AppColors.accent
-                      : tokens.softBlueBg,
+                  color: isTopMatch ? AppColors.accent : tokens.softBlueBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -75,7 +73,9 @@ class CandidateMatchCard extends StatelessWidget {
                           ? Icons.workspace_premium_rounded
                           : Icons.star_rounded,
                       size: 13,
-                      color: isTopMatch ? AppColors.textDark : tokens.brandAccent,
+                      color: isTopMatch
+                          ? AppColors.textDark
+                          : tokens.brandAccent,
                     ),
                     const SizedBox(width: 4),
                     Flexible(
@@ -138,11 +138,7 @@ class CandidateMatchCard extends StatelessWidget {
               CircleAvatar(
                 radius: 26,
                 backgroundColor: tokens.softBlueBg,
-                child: Icon(
-                  Icons.person,
-                  color: tokens.brandAccent,
-                  size: 28,
-                ),
+                child: Icon(Icons.person, color: tokens.brandAccent, size: 28),
               ),
               const SizedBox(width: AppDimensions.paddingMedium),
               Expanded(
@@ -312,11 +308,7 @@ class CandidateMatchCard extends StatelessWidget {
               if (stackActions) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    bookBtn,
-                    const SizedBox(height: 8),
-                    scorecardBtn,
-                  ],
+                  children: [bookBtn, const SizedBox(height: 8), scorecardBtn],
                 );
               }
 

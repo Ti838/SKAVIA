@@ -32,20 +32,20 @@ class UserAddressModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_id': userId,
-        'label': label,
-        'recipient_name': recipientName,
-        'recipient_phone': recipientPhone,
-        'address_line': addressLine,
-        'zone': zone,
-        'city': city,
-        'postal_code': postalCode,
-        'latitude': latitude,
-        'longitude': longitude,
-        'is_default': isDefault,
-        'created_at': createdAt?.toIso8601String(),
-      };
+    'id': id,
+    'user_id': userId,
+    'label': label,
+    'recipient_name': recipientName,
+    'recipient_phone': recipientPhone,
+    'address_line': addressLine,
+    'zone': zone,
+    'city': city,
+    'postal_code': postalCode,
+    'latitude': latitude,
+    'longitude': longitude,
+    'is_default': isDefault,
+    'created_at': createdAt?.toIso8601String(),
+  };
 
   factory UserAddressModel.fromJson(Map<String, dynamic> json) =>
       UserAddressModel(
@@ -98,4 +98,3 @@ class UserAddressModel {
     );
   }
 }
-

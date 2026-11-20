@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -34,7 +35,9 @@ class NotificationCenterController extends ChangeNotifier {
   void initialize(String userId, {bool forceRefresh = false}) {
     final trimmed = userId.trim();
     if (trimmed.isEmpty) return;
-    if (!forceRefresh && _activeUserId == trimmed && _notifications.isNotEmpty) {
+    if (!forceRefresh &&
+        _activeUserId == trimmed &&
+        _notifications.isNotEmpty) {
       return;
     }
 
@@ -81,8 +84,11 @@ class NotificationCenterController extends ChangeNotifier {
               .order('created_at', ascending: false)
               .limit(40);
           return (rows as List)
-              .map((row) =>
-                  AppNotificationModel.fromJson(Map<String, dynamic>.from(row)))
+              .map(
+                (row) => AppNotificationModel.fromJson(
+                  Map<String, dynamic>.from(row),
+                ),
+              )
               .toList();
         } catch (_) {
           return const [];
@@ -100,7 +106,9 @@ class NotificationCenterController extends ChangeNotifier {
           return (legacyRows as List).map((row) {
             final map = Map<String, dynamic>.from(row);
             return AppNotificationModel(
-              id: map['notification_id']?.toString() ?? UuidUtil.generateUuidV4(),
+              id:
+                  map['notification_id']?.toString() ??
+                  UuidUtil.generateUuidV4(),
               userId: map['user_id']?.toString() ?? targetUserId,
               dedupKey: map['notification_id'] != null
                   ? 'legacy_${map['notification_id']}'
@@ -111,7 +119,7 @@ class NotificationCenterController extends ChangeNotifier {
               isRead: map['is_read'] as bool? ?? false,
               createdAt: map['created_at'] != null
                   ? DateTime.tryParse(map['created_at'].toString()) ??
-                      DateTime.now()
+                        DateTime.now()
                   : DateTime.now(),
             );
           }).toList();
@@ -127,8 +135,8 @@ class NotificationCenterController extends ChangeNotifier {
         final existingIds = _notifications.map((n) => n.id).toSet();
         bool added = false;
         for (final item in fetched) {
-          final existsByKey = item.dedupKey != null &&
-              _seenDedupKeys.contains(item.dedupKey);
+          final existsByKey =
+              item.dedupKey != null && _seenDedupKeys.contains(item.dedupKey);
           if (!existingIds.contains(item.id) && !existsByKey) {
             existingIds.add(item.id);
             if (item.dedupKey != null) {
@@ -233,7 +241,10 @@ class NotificationCenterController extends ChangeNotifier {
     try {
       await client
           .from(DatabaseTables.userNotifications)
-          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .update({
+            'is_read': true,
+            'read_at': DateTime.now().toIso8601String(),
+          })
           .eq('id', id)
           .eq('user_id', _activeUserId!);
     } catch (_) {}
@@ -252,7 +263,10 @@ class NotificationCenterController extends ChangeNotifier {
     try {
       await client
           .from(DatabaseTables.userNotifications)
-          .update({'is_read': true, 'read_at': DateTime.now().toIso8601String()})
+          .update({
+            'is_read': true,
+            'read_at': DateTime.now().toIso8601String(),
+          })
           .eq('user_id', _activeUserId!);
     } catch (_) {}
     try {
@@ -273,16 +287,18 @@ class NotificationCenterController extends ChangeNotifier {
     final dob = profile.dateOfBirth!;
     if (dob.month == now.month && dob.day == now.day) {
       final dedupKey = 'birthday_${profile.id}_${now.year}';
-      addNotification(AppNotificationModel(
-        id: UuidUtil.generateUuidV4(),
-        userId: profile.id,
-        dedupKey: dedupKey,
-        title: '🎂 Happy Birthday from SKAVIA!',
-        body:
-            'Wishing you a fantastic day! Enjoy a 20% discount on any SKAVIA Technical or Home repair this week. Promo code: BDAY${now.year}.',
-        category: 'birthday',
-        createdAt: now,
-      ));
+      addNotification(
+        AppNotificationModel(
+          id: UuidUtil.generateUuidV4(),
+          userId: profile.id,
+          dedupKey: dedupKey,
+          title: '🎂 Happy Birthday from SKAVIA!',
+          body:
+              'Wishing you a fantastic day! Enjoy a 20% discount on any SKAVIA Technical or Home repair this week. Promo code: BDAY${now.year}.',
+          category: 'birthday',
+          createdAt: now,
+        ),
+      );
     }
   }
 
@@ -296,16 +312,18 @@ class NotificationCenterController extends ChangeNotifier {
     final action = result.nextRecommendedAction!;
     final dedupKey = 'profile_reminder_${profile.id}_${action.key}';
 
-    addNotification(AppNotificationModel(
-      id: UuidUtil.generateUuidV4(),
-      userId: profile.id,
-      dedupKey: dedupKey,
-      title: 'Complete Profile: Add ${action.label}',
-      body:
-          'Your profile is ${result.percentage}% complete. ${action.reason}.',
-      category: 'profile',
-      actionRoute: action.actionRoute,
-      createdAt: DateTime.now(),
-    ));
+    addNotification(
+      AppNotificationModel(
+        id: UuidUtil.generateUuidV4(),
+        userId: profile.id,
+        dedupKey: dedupKey,
+        title: 'Complete Profile: Add ${action.label}',
+        body:
+            'Your profile is ${result.percentage}% complete. ${action.reason}.',
+        category: 'profile',
+        actionRoute: action.actionRoute,
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 }

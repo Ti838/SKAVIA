@@ -110,7 +110,9 @@ class ProfileController extends ChangeNotifier {
       }
       return;
     }
-    if (_profile == null || _profile!.id != resolvedId || _profile!.id == 'guest') {
+    if (_profile == null ||
+        _profile!.id != resolvedId ||
+        _profile!.id == 'guest') {
       await loadProfile(
         resolvedId,
         fallbackEmail: fallbackEmail ?? fbUser?.email,
@@ -287,9 +289,7 @@ class ProfileController extends ChangeNotifier {
     final ok = await _dataSource.revokeSession(sessionId, userId);
     if (ok) {
       _sessions = _sessions
-          .map(
-            (s) => s.id == sessionId ? s.copyWith(isRevoked: true) : s,
-          )
+          .map((s) => s.id == sessionId ? s.copyWith(isRevoked: true) : s)
           .toList();
       notifyListeners();
     }
@@ -304,9 +304,7 @@ class ProfileController extends ChangeNotifier {
     final ok = await _dataSource.revokeOtherSessions(userId, currentId);
     if (ok) {
       _sessions = _sessions
-          .map(
-            (s) => s.deviceId == currentId ? s : s.copyWith(isRevoked: true),
-          )
+          .map((s) => s.deviceId == currentId ? s : s.copyWith(isRevoked: true))
           .toList();
       notifyListeners();
     }
@@ -331,8 +329,10 @@ class ProfileController extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final success =
-        await _dataSource.requestAccountDeletion(_profile!.id, reason);
+    final success = await _dataSource.requestAccountDeletion(
+      _profile!.id,
+      reason,
+    );
     if (success) {
       _profile = _profile!.copyWith(accountStatus: 'pending_deletion');
     }

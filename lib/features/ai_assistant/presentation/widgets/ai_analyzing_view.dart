@@ -163,7 +163,9 @@ class AiAnalyzingView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          isBn ? 'পর্যালোচনা সম্পন্ন হয়েছে!' : 'Analyzing completed!',
+                          isBn
+                              ? 'পর্যালোচনা সম্পন্ন হয়েছে!'
+                              : 'Analyzing completed!',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -172,7 +174,9 @@ class AiAnalyzingView extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          isBn ? 'ফলাফল দেখতে এখানে ট্যাপ করুন...' : 'Here are the results...',
+                          isBn
+                              ? 'ফলাফল দেখতে এখানে ট্যাপ করুন...'
+                              : 'Here are the results...',
                           style: TextStyle(
                             fontSize: 12,
                             color: tokens.mutedText,

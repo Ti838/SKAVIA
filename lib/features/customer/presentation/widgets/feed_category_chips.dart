@@ -58,8 +58,9 @@ class FeedCategoryChips extends StatelessWidget {
                     cat['label']!,
                     style: TextStyle(
                       fontSize: 10.5,
-                      fontWeight:
-                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
                       color: isSelected
                           ? Colors.white
                           : colorScheme.onSurfaceVariant,

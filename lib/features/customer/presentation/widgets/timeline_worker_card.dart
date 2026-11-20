@@ -84,11 +84,7 @@ class TimelineWorkerCard extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: tokens.softBlueBg,
-                child: Icon(
-                  Icons.person,
-                  color: tokens.brandAccent,
-                  size: 28,
-                ),
+                child: Icon(Icons.person, color: tokens.brandAccent, size: 28),
               ),
               const SizedBox(width: AppDimensions.paddingMedium),
               Expanded(

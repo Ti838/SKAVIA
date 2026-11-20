@@ -202,9 +202,7 @@ ThemeData buildLightTheme({String languageCode = 'en'}) {
         borderSide: const BorderSide(color: AppColors.error, width: 2),
       ),
       labelStyle: textTheme.bodyMedium,
-      hintStyle: textTheme.bodyMedium?.copyWith(
-        color: AppColors.textTertiary,
-      ),
+      hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
     ),
     cardTheme: CardThemeData(
       color: Colors.white,

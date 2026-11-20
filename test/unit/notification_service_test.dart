@@ -13,17 +13,38 @@ void main() {
       expect(identical(s1, s2), isTrue);
     });
 
-    test('Urgent and General Channel IDs adhere to on-demand specifications', () {
-      expect(NotificationService.urgentChannelId, equals('skavia_urgent_channel'));
-      expect(NotificationService.generalChannelId, equals('skavia_general_channel'));
-      expect(NotificationService.messageChannelId, equals('skavia_message_channel'));
-      expect(NotificationService.customSoundResource, equals('notification_sound'));
-      expect(NotificationService.customSoundUrgent, equals('urgent_dispatch'));
-      expect(NotificationService.customSoundMessage, equals('message_chime'));
-      expect(NotificationService.customSoundCompleted, equals('job_completed'));
-      expect(NotificationService.urgentChannelName, contains('Urgent'));
-      expect(NotificationSoundType.values.length, equals(4));
-    });
+    test(
+      'Urgent and General Channel IDs adhere to on-demand specifications',
+      () {
+        expect(
+          NotificationService.urgentChannelId,
+          equals('skavia_urgent_channel'),
+        );
+        expect(
+          NotificationService.generalChannelId,
+          equals('skavia_general_channel'),
+        );
+        expect(
+          NotificationService.messageChannelId,
+          equals('skavia_message_channel'),
+        );
+        expect(
+          NotificationService.customSoundResource,
+          equals('notification_sound'),
+        );
+        expect(
+          NotificationService.customSoundUrgent,
+          equals('urgent_dispatch'),
+        );
+        expect(NotificationService.customSoundMessage, equals('message_chime'));
+        expect(
+          NotificationService.customSoundCompleted,
+          equals('job_completed'),
+        );
+        expect(NotificationService.urgentChannelName, contains('Urgent'));
+        expect(NotificationSoundType.values.length, equals(4));
+      },
+    );
 
     test('Notification payload tap stream is accessible and non-null', () {
       expect(NotificationService.instance.onNotificationTapped, isNotNull);
@@ -31,18 +52,21 @@ void main() {
   });
 
   group('NotificationPermissionSheet Widget Test', () {
-    testWidgets('Renders prompt title, benefit items, and CTA buttons', (tester) async {
+    testWidgets('Renders prompt title, benefit items, and CTA buttons', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: NotificationPermissionSheet(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: NotificationPermissionSheet())),
       );
 
       // Verify header and description
       expect(find.text('Stay Updated in Real Time'), findsOneWidget);
-      expect(find.textContaining('Enable notifications to receive urgent job offers'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'Enable notifications to receive urgent job offers',
+        ),
+        findsOneWidget,
+      );
 
       // Verify benefits list
       expect(find.text('Instant Job Bids & Match Alerts'), findsOneWidget);
@@ -55,4 +79,3 @@ void main() {
     });
   });
 }
-

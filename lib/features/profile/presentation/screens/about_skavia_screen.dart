@@ -138,15 +138,14 @@ class _AboutSkaviaScreenState extends State<AboutSkaviaScreen> {
                       final statusText = isChecking
                           ? 'Checking SKAVIA release channel...'
                           : eval == null
-                              ? 'Tap below to verify latest official release'
-                              : eval.updateAvailable
-                                  ? 'Update Available: v${eval.latestRelease?.versionName} (Build #${eval.latestRelease?.buildNumber})'
-                                  : eval.status == AppUpdateAvailability.upToDate
-                                      ? 'You are on the latest verified build'
-                                      : eval.status ==
-                                              AppUpdateAvailability.unconfigured
-                                          ? 'Manual distribution mode'
-                                          : 'Check update status & release notes';
+                          ? 'Tap below to verify latest official release'
+                          : eval.updateAvailable
+                          ? 'Update Available: v${eval.latestRelease?.versionName} (Build #${eval.latestRelease?.buildNumber})'
+                          : eval.status == AppUpdateAvailability.upToDate
+                          ? 'You are on the latest verified build'
+                          : eval.status == AppUpdateAvailability.unconfigured
+                          ? 'Manual distribution mode'
+                          : 'Check update status & release notes';
 
                       return Column(
                         children: [
@@ -171,9 +170,9 @@ class _AboutSkaviaScreenState extends State<AboutSkaviaScreen> {
                                 onPressed: isChecking
                                     ? null
                                     : () => _updateProvider.checkForUpdates(
-                                          trigger: 'about_screen',
-                                          force: true,
-                                        ),
+                                        trigger: 'about_screen',
+                                        force: true,
+                                      ),
                                 icon: isChecking
                                     ? const SizedBox(
                                         width: 14,
@@ -191,8 +190,9 @@ class _AboutSkaviaScreenState extends State<AboutSkaviaScreen> {
                               ),
                               if (hasUpdate)
                                 ElevatedButton.icon(
-                                  onPressed: () => Navigator.of(context)
-                                      .pushNamed(AppRoutes.appUpdate),
+                                  onPressed: () =>
+                                      Navigator.of(context)
+                                          .pushNamed(AppRoutes.appUpdate),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.primaryRoyal,
                                     foregroundColor: Colors.white,
@@ -296,9 +296,7 @@ class _AboutSkaviaScreenState extends State<AboutSkaviaScreen> {
                 children: const [
                   Icon(Icons.gavel_rounded, size: 18),
                   SizedBox(width: 8),
-                  Flexible(
-                    child: Text('Terms, Privacy & 15% Fee Schedule'),
-                  ),
+                  Flexible(child: Text('Terms, Privacy & 15% Fee Schedule')),
                 ],
               ),
             ),

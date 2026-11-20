@@ -53,7 +53,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         final profile = await DashboardRepository().getUserProfileRecord(
           user.uid,
         );
-        final activeMode = profile?['active_mode']?.toString() ??
+        final activeMode =
+            profile?['active_mode']?.toString() ??
             LocalCacheService.instance
                 .get('${AppConstants.userModeStorageKey}_${user.uid}')
                 ?.toString() ??
@@ -112,8 +113,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     final backgroundColor = isDark ? const Color(0xFF05080F) : Colors.white;
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    final secondaryTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF475569);
     final borderColor = isDark
         ? Colors.white.withValues(alpha: 0.12)
         : const Color(0xFFE2E8F0);
@@ -251,7 +253,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           height: 50,
                           child: OutlinedButton(
                             onPressed: () {
-                              Navigator.of(context).pushNamed(AppRoutes.register);
+                              Navigator.of(context)
+                                  .pushNamed(AppRoutes.register);
                             },
                             style: OutlinedButton.styleFrom(
                               foregroundColor: primaryTextColor,
@@ -276,7 +279,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           children: [
                             Expanded(child: Divider(color: borderColor)),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                               child: Text(
                                 'or',
                                 style: TextStyle(
@@ -301,7 +306,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               width: double.infinity,
                               height: 50,
                               child: OutlinedButton(
-                                onPressed: isLoading ? null : _handleGoogleSignIn,
+                                onPressed: isLoading
+                                    ? null
+                                    : _handleGoogleSignIn,
                                 style: OutlinedButton.styleFrom(
                                   backgroundColor: isDark
                                       ? colorScheme.surfaceContainerHighest
@@ -323,8 +330,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           strokeWidth: 2.2,
                                           valueColor:
                                               AlwaysStoppedAnimation<Color>(
-                                            Color(0xFF003399),
-                                          ),
+                                                Color(0xFF003399),
+                                              ),
                                         ),
                                       )
                                     : Row(
@@ -337,10 +344,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             width: 20,
                                             errorBuilder: (_, _, _) =>
                                                 const Icon(
-                                              Icons.g_mobiledata_rounded,
-                                              color: Color(0xFFEA4335),
-                                              size: 24,
-                                            ),
+                                                  Icons.g_mobiledata_rounded,
+                                                  color: Color(0xFFEA4335),
+                                                  size: 24,
+                                                ),
                                           ),
                                           const SizedBox(width: 10),
                                           const Text(

@@ -14,16 +14,15 @@ class AppReleaseRepository {
   final http.Client _client;
   final String _baseOrigin;
 
-  AppReleaseRepository({
-    http.Client? client,
-    String? baseOrigin,
-  })  : _client = client ?? http.Client(),
-        _baseOrigin = (baseOrigin ?? AppConfig.releaseApiBaseUrl)
-            .trim()
-            .replaceAll(RegExp(r'/+$'), '');
+  AppReleaseRepository({http.Client? client, String? baseOrigin})
+    : _client = client ?? http.Client(),
+      _baseOrigin = (baseOrigin ?? AppConfig.releaseApiBaseUrl)
+          .trim()
+          .replaceAll(RegExp(r'/+$'), '');
 
   String get configuredOrigin => _baseOrigin;
-  bool get isConfigured => _baseOrigin.isNotEmpty && _isValidOrigin(_baseOrigin);
+  bool get isConfigured =>
+      _baseOrigin.isNotEmpty && _isValidOrigin(_baseOrigin);
 
   static bool _isValidOrigin(String origin) {
     final uri = Uri.tryParse(origin);
@@ -44,8 +43,7 @@ class AppReleaseRepository {
         channel: channel,
         installedVersion: installedVersion,
         installedBuild: installedBuild,
-        errorMessage:
-            'Release server origin is not configured in this build.',
+        errorMessage: 'Release server origin is not configured in this build.',
         checkedAt: DateTime.now(),
       );
     }
@@ -65,10 +63,7 @@ class AppReleaseRepository {
 
     try {
       final response = await _client
-          .get(
-            uri,
-            headers: const {'Accept': 'application/json'},
-          )
+          .get(uri, headers: const {'Accept': 'application/json'})
           .timeout(AppConfig.connectTimeout);
 
       if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -77,8 +72,7 @@ class AppReleaseRepository {
           channel: channel,
           installedVersion: installedVersion,
           installedBuild: installedBuild,
-          errorMessage:
-              'Update server returned HTTP ${response.statusCode}.',
+          errorMessage: 'Update server returned HTTP ${response.statusCode}.',
           checkedAt: DateTime.now(),
         );
       }

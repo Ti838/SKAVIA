@@ -46,10 +46,7 @@ class SecurityDangerZoneSection extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.warning),
               foregroundColor: AppColors.warning,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 13,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,

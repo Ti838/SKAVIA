@@ -207,7 +207,10 @@ class ProfileCompletionBannerCard extends StatelessWidget {
                           if (onActionTap != null) {
                             onActionTap!();
                           } else {
-                            Navigator.pushNamed(context, nextAction.actionRoute);
+                            Navigator.pushNamed(
+                              context,
+                              nextAction.actionRoute,
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(

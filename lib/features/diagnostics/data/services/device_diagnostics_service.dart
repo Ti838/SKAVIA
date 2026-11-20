@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
@@ -15,19 +16,20 @@ import 'network_probe_service.dart';
 /// Central diagnostic inspection engine for SKAVIA mobile.
 /// Inspects hardware, permissions, network, and responsiveness with strict privacy guarantees.
 class DeviceDiagnosticsService {
-  static final DeviceDiagnosticsService instance = DeviceDiagnosticsService._internal();
+  static final DeviceDiagnosticsService instance =
+      DeviceDiagnosticsService._internal();
   factory DeviceDiagnosticsService() => instance;
   DeviceDiagnosticsService._internal({
     DeviceInfoPlugin? deviceInfoPlugin,
     NetworkProbeService? networkProbe,
-  })  : _deviceInfoPlugin = deviceInfoPlugin ?? DeviceInfoPlugin(),
-        _networkProbe = networkProbe ?? NetworkProbeService.instance;
+  }) : _deviceInfoPlugin = deviceInfoPlugin ?? DeviceInfoPlugin(),
+       _networkProbe = networkProbe ?? NetworkProbeService.instance;
 
   DeviceDiagnosticsService.custom({
     DeviceInfoPlugin? deviceInfoPlugin,
     NetworkProbeService? networkProbe,
-  })  : _deviceInfoPlugin = deviceInfoPlugin ?? DeviceInfoPlugin(),
-        _networkProbe = networkProbe ?? NetworkProbeService.instance;
+  }) : _deviceInfoPlugin = deviceInfoPlugin ?? DeviceInfoPlugin(),
+       _networkProbe = networkProbe ?? NetworkProbeService.instance;
 
   final DeviceInfoPlugin _deviceInfoPlugin;
   final NetworkProbeService _networkProbe;
@@ -52,8 +54,12 @@ class DeviceDiagnosticsService {
       if (!kIsWeb && Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
         return HardwareTelemetry(
-          manufacturer: androidInfo.manufacturer.isNotEmpty ? androidInfo.manufacturer : 'Android OEM',
-          model: androidInfo.model.isNotEmpty ? androidInfo.model : 'Generic Android Device',
+          manufacturer: androidInfo.manufacturer.isNotEmpty
+              ? androidInfo.manufacturer
+              : 'Android OEM',
+          model: androidInfo.model.isNotEmpty
+              ? androidInfo.model
+              : 'Generic Android Device',
           osName: 'Android',
           osVersion: androidInfo.version.release,
           sdkInt: androidInfo.version.sdkInt,
@@ -118,12 +124,14 @@ class DeviceDiagnosticsService {
       }
 
       // 2. Location check (GPS service status + coarse/fine permission)
-      final locationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+      final locationServiceEnabled =
+          await Geolocator.isLocationServiceEnabled();
       final locPerm = await Geolocator.checkPermission();
 
       if (!locationServiceEnabled) {
         locationStatus = DiagnosticStatus.limited;
-      } else if (locPerm == LocationPermission.always || locPerm == LocationPermission.whileInUse) {
+      } else if (locPerm == LocationPermission.always ||
+          locPerm == LocationPermission.whileInUse) {
         locationStatus = DiagnosticStatus.supported;
       } else {
         locationStatus = DiagnosticStatus.permissionRequired;

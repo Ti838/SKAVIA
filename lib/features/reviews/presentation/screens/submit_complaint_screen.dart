@@ -216,8 +216,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
                       label: 'Describe What Happened',
                       hint: 'Provide timeline, specialist details & expected resolution',
                       maxLines: 4,
-                      validator: (val) =>
-                          val == null || val.trim().length < 15
+                      validator: (val) => val == null || val.trim().length < 15
                           ? 'Please describe the issue in at least 15 characters'
                           : null,
                     ),
@@ -245,8 +244,7 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
               const SizedBox(height: 10),
               ..._complaints.map((c) {
                 final status = c['status']?.toString() ?? 'Open';
-                final isResolved =
-                    status == 'Resolved' || status == 'Closed';
+                final isResolved = status == 'Resolved' || status == 'Closed';
                 final badgeColor = isResolved
                     ? AppColors.success
                     : AppColors.warning;
@@ -328,4 +326,3 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
     );
   }
 }
-

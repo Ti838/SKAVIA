@@ -58,7 +58,9 @@ class _ListShimmerSkeletonState extends State<ListShimmerSkeleton>
           itemBuilder: (context, index) {
             return Container(
               height: widget.itemHeight,
-              margin: const EdgeInsets.only(bottom: AppDimensions.paddingMedium),
+              margin: const EdgeInsets.only(
+                bottom: AppDimensions.paddingMedium,
+              ),
               padding: const EdgeInsets.all(AppDimensions.paddingMedium),
               decoration: BoxDecoration(
                 color: tokens.cardBg,

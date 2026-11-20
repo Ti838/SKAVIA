@@ -150,7 +150,8 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                   children: [
                     TileLayer(
                       urlTemplate: tileUrl,
-                      fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      fallbackUrl:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       subdomains: const ['a', 'b', 'c', 'd'],
                       retinaMode: isRetina,
                       userAgentPackageName: 'com.skavia.app',
@@ -330,8 +331,8 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                 bottom: 12,
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    final textScale =
-                        MediaQuery.textScalerOf(context).scale(1.0);
+                    final textScale = MediaQuery.textScalerOf(context)
+                        .scale(1.0);
                     final compact =
                         constraints.maxWidth < 290 || textScale > 1.3;
                     final colorScheme = Theme.of(context).colorScheme;

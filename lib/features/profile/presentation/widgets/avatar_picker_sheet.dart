@@ -146,8 +146,8 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
     final effectiveUid = (widget.userId != null && widget.userId!.isNotEmpty)
         ? widget.userId
         : (FirebaseAuth.instance.currentUser?.uid ??
-            tryGetSupabaseClient()?.auth.currentUser?.id ??
-            tryGetSupabaseClient()?.auth.currentSession?.user.id);
+              tryGetSupabaseClient()?.auth.currentUser?.id ??
+              tryGetSupabaseClient()?.auth.currentSession?.user.id);
 
     if (effectiveUid != null && effectiveUid.isNotEmpty) {
       final supabase = tryGetSupabaseClient();
@@ -482,7 +482,7 @@ class _AvatarPickerSheetState extends State<AvatarPickerSheet> {
                               final uri = Uri.tryParse(raw);
                               if (uri == null || !uri.isScheme('https')) {
                                 UiFeedbackHelper.showError(
-                                   context,
+                                  context,
                                   'Enter a valid https:// image URL.',
                                 );
                                 return;

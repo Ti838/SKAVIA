@@ -296,18 +296,23 @@ class AppLanguageService {
   static String getRoleName(String roleText) {
     final lower = roleText.toLowerCase().trim();
     if (lower.contains('super')) return tr('super_admin');
-    if (lower.contains('company') || (lower.contains('admin') && !lower.contains('branch'))) {
+    if (lower.contains('company') ||
+        (lower.contains('admin') && !lower.contains('branch'))) {
       return tr('company_admin');
     }
     if (lower.contains('branch')) return tr('branch_manager');
-    if (lower.contains('worker') || lower.contains('technician') || lower.contains('specialist')) {
+    if (lower.contains('worker') ||
+        lower.contains('technician') ||
+        lower.contains('specialist')) {
       return tr('worker');
     }
     if (lower.contains('business') || lower.contains('corporate')) {
       return tr('business_client');
     }
     if (lower.contains('org')) return tr('organization');
-    if (lower.contains('customer') || lower.contains('individual') || lower.contains('client')) {
+    if (lower.contains('customer') ||
+        lower.contains('individual') ||
+        lower.contains('client')) {
       return tr('individual_customer');
     }
     return roleText;

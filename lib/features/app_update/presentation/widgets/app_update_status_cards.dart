@@ -91,9 +91,9 @@ class AppUpdateSummaryCard extends StatelessWidget {
                 eval.status == AppUpdateAvailability.unsupportedInstalledBuild
                     ? 'Build #${eval.installedBuild} is no longer supported. Updating preserves your account, bookings, and data seamlessly.'
                     : eval.installedBuildSuspended &&
-                            eval.installedSuspensionReason != null
-                        ? eval.installedSuspensionReason!
-                        : 'This critical release is required before continuing.',
+                          eval.installedSuspensionReason != null
+                    ? eval.installedSuspensionReason!
+                    : 'This critical release is required before continuing.',
                 style: TextStyle(
                   fontSize: 12.5,
                   color: colorScheme.onSurface,
@@ -172,16 +172,10 @@ class AppUpdateStatusInfoCard extends StatelessWidget {
     return switch (eval.status) {
       AppUpdateAvailability.upToDate =>
         'You are running the latest verified SKAVIA Android build.',
-      AppUpdateAvailability.noPublishedRelease =>
-        'No newer Android release has been published on your release channel yet.',
-      AppUpdateAvailability.networkUnavailable =>
-        eval.errorMessage ??
-            'Could not reach SKAVIA release servers right now. You can continue using the app normally and retry when online.',
-      AppUpdateAvailability.unconfigured =>
-        'This development build does not define SKAVIA_WEB_ORIGIN. Pass --dart-define=SKAVIA_WEB_ORIGIN=<url> when building, or download updates directly from the official SKAVIA website.',
-      AppUpdateAvailability.invalidMetadata =>
-        eval.errorMessage ??
-            'Server returned incomplete or invalid release metadata. Safety checks aborted this update prompt.',
+      AppUpdateAvailability.noPublishedRelease => 'No newer Android release has been published on your release channel yet.',
+      AppUpdateAvailability.networkUnavailable => eval.errorMessage ?? 'Could not reach SKAVIA release servers right now. You can continue using the app normally and retry when online.',
+      AppUpdateAvailability.unconfigured => 'This development build does not define SKAVIA_WEB_ORIGIN. Pass --dart-define=SKAVIA_WEB_ORIGIN=<url> when building, or download updates directly from the official SKAVIA website.',
+      AppUpdateAvailability.invalidMetadata => eval.errorMessage ?? 'Server returned incomplete or invalid release metadata. Safety checks aborted this update prompt.',
       _ => '',
     };
   }
@@ -276,4 +270,3 @@ class AppUpdateSupportGuidanceCard extends StatelessWidget {
     );
   }
 }
-

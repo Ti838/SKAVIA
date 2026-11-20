@@ -76,11 +76,7 @@ class CatalogServiceCard extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.schedule_rounded,
-              size: 14,
-              color: tokens.secondaryText,
-            ),
+            Icon(Icons.schedule_rounded, size: 14, color: tokens.secondaryText),
             const SizedBox(width: 4),
             Text(
               service.estimatedDuration,

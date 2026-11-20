@@ -88,8 +88,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final confirmed = await ConfirmationDialog.show(
       context,
       title: 'Clear Cached Data?',
-      message:
-          'This removes locally cached service catalogs and stats. Your account and pending sync items are preserved.',
+      message: 'This removes locally cached service catalogs and stats. Your account and pending sync items are preserved.',
       confirmText: 'Clear Cache',
       isDestructive: true,
     );
@@ -111,10 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (confirmed == true && mounted) {
       await _auth.logout();
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          '/login',
-          (route) => false,
-        );
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
       }
     }
   }
@@ -141,9 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onClearCache: _clearCache,
               ),
               const SizedBox(height: 20),
-              SettingsSupportLegalSection(
-                onCallHelpline: _callHelpline,
-              ),
+              SettingsSupportLegalSection(onCallHelpline: _callHelpline),
               const SizedBox(height: 20),
               AppCard(
                 padding: EdgeInsets.zero,

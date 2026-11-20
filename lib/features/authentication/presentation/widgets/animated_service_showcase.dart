@@ -11,10 +11,7 @@ import '../../../../shared/widgets/skavia_brand_image.dart';
 class AnimatedServiceShowcase extends StatefulWidget {
   final double height;
 
-  const AnimatedServiceShowcase({
-    super.key,
-    this.height = 240,
-  });
+  const AnimatedServiceShowcase({super.key, this.height = 240});
 
   @override
   State<AnimatedServiceShowcase> createState() =>
@@ -102,8 +99,9 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
         ? Colors.white.withValues(alpha: 0.10)
         : const Color(0xFFE2E8F0);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final secondaryTextColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
 
     return SizedBox(
       height: widget.height,
@@ -127,8 +125,10 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF3898EC).withValues(alpha: isDark ? 0.20 : 0.14),
-                        const Color(0xFF15E7CA).withValues(alpha: isDark ? 0.10 : 0.06),
+                        const Color(0xFF3898EC)
+                            .withValues(alpha: isDark ? 0.20 : 0.14),
+                        const Color(0xFF15E7CA)
+                            .withValues(alpha: isDark ? 0.10 : 0.06),
                         Colors.transparent,
                       ],
                       stops: const [0.0, 0.55, 1.0],
@@ -139,7 +139,10 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
 
               // Central Hub Card
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: cardBg,
                   borderRadius: BorderRadius.circular(24),
@@ -283,12 +286,7 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
     // Floating offsets and positions
     final positions = [
       // Top Left: Electrical & Power
-      _PillPosition(
-        top: 14,
-        left: 18,
-        phase: 0.0,
-        index: selectedIndices[0],
-      ),
+      _PillPosition(top: 14, left: 18, phase: 0.0, index: selectedIndices[0]),
       // Top Right: AC & HVAC Cooling
       _PillPosition(
         top: 18,
@@ -350,11 +348,7 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
                     color: cat.color.withValues(alpha: isDark ? 0.25 : 0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    cat.icon,
-                    size: 13,
-                    color: cat.accentColor,
-                  ),
+                  child: Icon(cat.icon, size: 13, color: cat.accentColor),
                 ),
                 const SizedBox(width: 6),
                 Text(

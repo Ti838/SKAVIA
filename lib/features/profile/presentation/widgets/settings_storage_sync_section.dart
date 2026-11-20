@@ -75,10 +75,7 @@ class SettingsStorageSyncSection extends StatelessWidget {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Icon(
-                                    Icons.sync_rounded,
-                                    size: 16,
-                                  ),
+                                : const Icon(Icons.sync_rounded, size: 16),
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
@@ -101,9 +98,7 @@ class SettingsStorageSyncSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Flexible(
-                              child: Text(
-                                isBn ? 'ক্যাশ মুছুন' : 'Clear Cache',
-                              ),
+                              child: Text(isBn ? 'ক্যাশ মুছুন' : 'Clear Cache'),
                             ),
                           ],
                         ),

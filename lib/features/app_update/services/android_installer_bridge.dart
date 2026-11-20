@@ -48,18 +48,18 @@ class MethodChannelAndroidInstaller implements AndroidInstallerPlatform {
   @override
   Future<bool> openUnknownAppSourcesSettings() async {
     if (kIsWeb) return false;
-    final res =
-        await _channel.invokeMethod<bool>('openUnknownAppSourcesSettings');
+    final res = await _channel.invokeMethod<bool>(
+      'openUnknownAppSourcesSettings',
+    );
     return res ?? false;
   }
 
   @override
   Future<String> computeFileSha256(String filePath) async {
     try {
-      final hash = await _channel.invokeMethod<String>(
-        'computeFileSha256',
-        {'filePath': filePath},
-      );
+      final hash = await _channel.invokeMethod<String>('computeFileSha256', {
+        'filePath': filePath,
+      });
       if (hash == null || hash.isEmpty) {
         throw AndroidInstallerException(
           'HASH_EMPTY',
@@ -78,10 +78,9 @@ class MethodChannelAndroidInstaller implements AndroidInstallerPlatform {
   @override
   Future<bool> installApk(String filePath) async {
     try {
-      final launched = await _channel.invokeMethod<bool>(
-        'installApk',
-        {'filePath': filePath},
-      );
+      final launched = await _channel.invokeMethod<bool>('installApk', {
+        'filePath': filePath,
+      });
       return launched ?? false;
     } on PlatformException catch (e) {
       throw AndroidInstallerException(
@@ -91,4 +90,3 @@ class MethodChannelAndroidInstaller implements AndroidInstallerPlatform {
     }
   }
 }
-

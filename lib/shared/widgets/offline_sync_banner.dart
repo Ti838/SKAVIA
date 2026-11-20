@@ -99,4 +99,3 @@ class OfflineSyncBanner extends StatelessWidget {
     );
   }
 }
-

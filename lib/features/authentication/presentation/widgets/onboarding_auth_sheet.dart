@@ -51,9 +51,12 @@ class OnboardingAuthSheet extends StatelessWidget {
                       if (user != null) {
                         final profile = await DashboardRepository()
                             .getUserProfileRecord(user.uid);
-                        final activeMode = profile?['active_mode']?.toString() ??
+                        final activeMode =
+                            profile?['active_mode']?.toString() ??
                             LocalCacheService.instance
-                                .get('${AppConstants.userModeStorageKey}_${user.uid}')
+                                .get(
+                                  '${AppConstants.userModeStorageKey}_${user.uid}',
+                                )
                                 ?.toString() ??
                             LocalCacheService.instance
                                 .get(AppConstants.userModeStorageKey)
@@ -208,18 +211,6 @@ class OnboardingAuthSheet extends StatelessWidget {
                 ],
               ),
             ],
-          ),
-        ),
-
-        // Potted plant decoration at bottom right (Authentic Reference Art)
-        Positioned(
-          right: 22,
-          bottom: 22,
-          child: Image.asset(
-            AppAssets.pottedPlant,
-            height: 50,
-            fit: BoxFit.contain,
-            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           ),
         ),
       ],

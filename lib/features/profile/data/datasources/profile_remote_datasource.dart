@@ -296,7 +296,9 @@ class ProfileRemoteDataSource {
     try {
       final client = _supabase;
       if (client != null) {
-        final mergedPrivacy = Map<String, dynamic>.from(profile.privacySettings);
+        final mergedPrivacy = Map<String, dynamic>.from(
+          profile.privacySettings,
+        );
         final trimmedCover = profile.coverUrl?.trim();
         if (trimmedCover == null || trimmedCover.isEmpty) {
           mergedPrivacy.remove('cover_url');
@@ -308,8 +310,13 @@ class ProfileRemoteDataSource {
           'full_name': profile.fullName,
           'phone': profile.phone,
           'avatar_url': profile.avatarUrl,
-          'cover_url': trimmedCover == null || trimmedCover.isEmpty ? null : trimmedCover,
-          'date_of_birth': profile.dateOfBirth?.toIso8601String().split('T').first,
+          'cover_url': trimmedCover == null || trimmedCover.isEmpty
+              ? null
+              : trimmedCover,
+          'date_of_birth': profile.dateOfBirth
+              ?.toIso8601String()
+              .split('T')
+              .first,
           'birthday_notifications_enabled':
               profile.birthdayNotificationsEnabled,
           'gender': profile.gender,
@@ -347,7 +354,9 @@ class ProfileRemoteDataSource {
             'billing_address': profile.billingAddress,
           }, onConflict: 'user_id');
         } catch (custErr) {
-          debugPrint('[ProfileRemoteDataSource] Customer profile sync: $custErr');
+          debugPrint(
+            '[ProfileRemoteDataSource] Customer profile sync: $custErr',
+          );
         }
 
         return true;

@@ -20,13 +20,11 @@ import '../widgets/hardware_spec_tile.dart';
 class DeviceDiagnosticsScreen extends StatefulWidget {
   final DeviceDiagnosticsService? diagnosticsService;
 
-  const DeviceDiagnosticsScreen({
-    super.key,
-    this.diagnosticsService,
-  });
+  const DeviceDiagnosticsScreen({super.key, this.diagnosticsService});
 
   @override
-  State<DeviceDiagnosticsScreen> createState() => _DeviceDiagnosticsScreenState();
+  State<DeviceDiagnosticsScreen> createState() =>
+      _DeviceDiagnosticsScreenState();
 }
 
 class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
@@ -81,12 +79,15 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
 
     return Scaffold(
       appBar: AppAppBar(
-        title: isBn ? 'ডিভাইস ও সিস্টেম ডায়াগনস্টিকস' : 'Device & System Diagnostics',
+        title: isBn
+            ? 'ডিভাইস ও সিস্টেম ডায়াগনস্টিকস'
+            : 'Device & System Diagnostics',
         actions: [
           IconButton(
             icon: const Icon(Icons.shield_outlined),
             tooltip: isBn ? 'প্রাইভেসি ও ডেটা নিরাপত্তা' : 'Privacy & Security',
-            onPressed: () => DiagnosticConsentDialog.show(context, report: _report),
+            onPressed: () =>
+                DiagnosticConsentDialog.show(context, report: _report),
           ),
         ],
       ),
@@ -138,14 +139,19 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
                           ),
                           icon: const Icon(Icons.copy_rounded, size: 16),
                           label: Text(
-                            isBn ? 'ডায়াগনস্টিক রিপোর্ট কপি করুন' : 'Copy Redacted Diagnostic Report',
+                            isBn
+                                ? 'ডায়াগনস্টিক রিপোর্ট কপি করুন'
+                                : 'Copy Redacted Diagnostic Report',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: theme.colorScheme.onSurface,
                             ),
                           ),
-                          onPressed: () => DiagnosticConsentDialog.show(context, report: _report),
+                          onPressed: () => DiagnosticConsentDialog.show(
+                            context,
+                            report: _report,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -164,9 +170,7 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +188,9 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  isBn ? 'লোকাল ডায়াগনস্টিক ইঞ্জিন' : 'On-Device Diagnostic Engine',
+                  isBn
+                      ? 'লোকাল ডায়াগনস্টিক ইঞ্জিন'
+                      : 'On-Device Diagnostic Engine',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
@@ -206,8 +212,8 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           const SizedBox(height: 8),
           Text(
             isBn
-              ? 'আপনার ফোনের প্রসেসর, ওএস সংস্করণ, নেটওয়ার্ক লেটেন্সি এবং প্রয়োজনীয় পারমিশন যাচাই করা হয়।'
-              : 'Evaluates your device hardware, Android OS compatibility, network latency, and operational permissions.',
+                ? 'আপনার ফোনের প্রসেসর, ওএস সংস্করণ, নেটওয়ার্ক লেটেন্সি এবং প্রয়োজনীয় পারমিশন যাচাই করা হয়।'
+                : 'Evaluates your device hardware, Android OS compatibility, network latency, and operational permissions.',
             style: TextStyle(
               fontSize: 12,
               color: theme.colorScheme.onSurfaceVariant,
@@ -260,8 +266,12 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           title: isBn ? 'ওএস ভার্সন' : 'Operating System',
           value: '${hw.osName} ${hw.osVersion} (API ${hw.sdkInt})',
           subtitle: hw.isMinSdkSatisfied
-              ? (isBn ? 'Android 7.0 থেকে Android 15+ (সকল ফোনে কার্যকর)' : 'Android 7.0 up to Android 15+ (Fully Supported)')
-              : (isBn ? 'Android 7.0 এর নিচে - অসমর্থিত' : 'Below Android 7.0 - Unsupported'),
+              ? (isBn
+                    ? 'Android 7.0 থেকে Android 15+ (সকল ফোনে কার্যকর)'
+                    : 'Android 7.0 up to Android 15+ (Fully Supported)')
+              : (isBn
+                    ? 'Android 7.0 এর নিচে - অসমর্থিত'
+                    : 'Below Android 7.0 - Unsupported'),
         ),
         HardwareSpecTile(
           icon: Icons.verified_user_outlined,
@@ -287,15 +297,25 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           title: isBn ? 'সমর্থিত ABIs' : 'Supported ABIs',
           value: hw.supportedAbis.join(', '),
           subtitle: hw.is64BitArm
-              ? (isBn ? 'আধুনিক 5G ও 4G আর্কিটেকচার (ARM64-v8a) সক্রিয়' : 'Modern 5G & 4G Architecture (ARM64-v8a) Active')
-              : (isBn ? '৩২-বিট ARMv7 লিগ্যাসি মোড' : '32-bit ARMv7 Legacy Mode'),
+              ? (isBn
+                    ? 'আধুনিক 5G ও 4G আর্কিটেকচার (ARM64-v8a) সক্রিয়'
+                    : 'Modern 5G & 4G Architecture (ARM64-v8a) Active')
+              : (isBn
+                    ? '৩২-বিট ARMv7 লিগ্যাসি মোড'
+                    : '32-bit ARMv7 Legacy Mode'),
         ),
         HardwareSpecTile(
           icon: Icons.security_rounded,
-          title: isBn ? 'প্যাকেজ ইনস্টলার কমপ্লায়েন্স' : 'Package Compatibility',
+          title: isBn
+              ? 'প্যাকেজ ইনস্টলার কমপ্লায়েন্স'
+              : 'Package Compatibility',
           value: hw.isMinSdkSatisfied && hw.is64BitArm
-              ? (isBn ? 'সকল 5G ও 4G স্মার্টফোনে ১০০% সমর্থিত' : '100% Compatible with all 5G & 4G Smartphones')
-              : (isBn ? 'ARMv7 32-bit APK প্রয়োজন' : 'Requires ARMv7 32-bit APK'),
+              ? (isBn
+                    ? 'সকল 5G ও 4G স্মার্টফোনে ১০০% সমর্থিত'
+                    : '100% Compatible with all 5G & 4G Smartphones')
+              : (isBn
+                    ? 'ARMv7 32-bit APK প্রয়োজন'
+                    : 'Requires ARMv7 32-bit APK'),
           trailing: DiagnosticStatusBadge(
             status: hw.compatibilityStatus,
             compact: true,
@@ -311,12 +331,16 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
     return DiagnosticCategoryCard(
       icon: Icons.rule_folder_outlined,
       title: isBn ? 'পারমিশন অডিট' : 'Operational Permissions',
-      subtitle: isBn ? 'কাজের প্রয়োজনীয় অনুমোদন' : 'Required App Entitlements',
+      subtitle: isBn
+          ? 'কাজের প্রয়োজনীয় অনুমোদন'
+          : 'Required App Entitlements',
       children: [
         HardwareSpecTile(
           icon: Icons.camera_alt_outlined,
           title: isBn ? 'ক্যামেরা' : 'Camera Access',
-          value: isBn ? 'প্রোফাইল ছবি ও কাজের প্রমাণ' : 'Profile verification & job completion proof',
+          value: isBn
+              ? 'প্রোফাইল ছবি ও কাজের প্রমাণ'
+              : 'Profile verification & job completion proof',
           trailing: perm.camera == DiagnosticStatus.permissionRequired
               ? TextButton(
                   onPressed: () => _requestPermission(Permission.camera),
@@ -327,7 +351,9 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
         HardwareSpecTile(
           icon: Icons.location_on_outlined,
           title: isBn ? 'লোকেশন ও জিপিএস' : 'Location & GPS Service',
-          value: isBn ? 'হাভারসাইন ডিসপ্যাচ ও কাছাকাছি টেকনিশিয়ান' : 'Haversine nearby technician dispatch',
+          value: isBn
+              ? 'হাভারসাইন ডিসপ্যাচ ও কাছাকাছি টেকনিশিয়ান'
+              : 'Haversine nearby technician dispatch',
           trailing: perm.location == DiagnosticStatus.permissionRequired
               ? TextButton(
                   onPressed: () => _requestPermission(Permission.location),
@@ -338,18 +364,25 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
         HardwareSpecTile(
           icon: Icons.notifications_none_rounded,
           title: isBn ? 'নোটিফিকেশন' : 'Notification Service',
-          value: isBn ? 'জরুরি ডিসপ্যাচ ও ৪-সংখ্যার ওটিপি' : 'Urgent dispatch alerts & arrival OTP handoff',
+          value: isBn
+              ? 'জরুরি ডিসপ্যাচ ও ৪-সংখ্যার ওটিপি'
+              : 'Urgent dispatch alerts & arrival OTP handoff',
           trailing: perm.notifications == DiagnosticStatus.permissionRequired
               ? TextButton(
                   onPressed: () => _requestPermission(Permission.notification),
                   child: Text(isBn ? 'অনুমতি দিন' : 'Grant'),
                 )
-              : DiagnosticStatusBadge(status: perm.notifications, compact: true),
+              : DiagnosticStatusBadge(
+                  status: perm.notifications,
+                  compact: true,
+                ),
         ),
         HardwareSpecTile(
           icon: Icons.mic_off_outlined,
           title: isBn ? 'মাইক্রোফোন' : 'Microphone Access',
-          value: isBn ? 'SKAVIA দ্বারা অব্যবহৃত (ম্যানিফেস্টে অপ্রয়োজনীয়)' : 'Feature not used by SKAVIA (Not in manifest)',
+          value: isBn
+              ? 'SKAVIA দ্বারা অব্যবহৃত (ম্যানিফেস্টে অপ্রয়োজনীয়)'
+              : 'Feature not used by SKAVIA (Not in manifest)',
           trailing: const DiagnosticStatusBadge(
             status: DiagnosticStatus.notApplicable,
             compact: true,
@@ -379,7 +412,9 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
           icon: Icons.speed_rounded,
           title: isBn ? 'এজ লেটেন্সি' : 'Edge Ping Latency',
           value: net.latencyMs >= 0 ? '${net.latencyMs} ms' : 'N/A',
-          subtitle: isBn ? 'রাউন্ড-ট্রিপ সময় (RTT)' : 'Round-trip response time',
+          subtitle: isBn
+              ? 'রাউন্ড-ট্রিপ সময় (RTT)'
+              : 'Round-trip response time',
           trailing: TextButton.icon(
             icon: const Icon(Icons.refresh_rounded, size: 14),
             label: Text(isBn ? 'পিং' : 'Ping'),
@@ -410,22 +445,31 @@ class _DeviceDiagnosticsScreenState extends State<DeviceDiagnosticsScreen> {
 
     return DiagnosticCategoryCard(
       icon: Icons.bolt_rounded,
-      title: isBn ? 'অ্যাপ পারফরম্যান্স ও রেসপন্সিভনেস' : 'App Performance & Responsiveness',
+      title: isBn
+          ? 'অ্যাপ পারফরম্যান্স ও রেসপন্সিভনেস'
+          : 'App Performance & Responsiveness',
       subtitle: isBn ? 'ফ্রেম রেন্ডারিং ও স্টার্টআপ' : 'Frame Timing & Startup',
-      trailing: DiagnosticStatusBadge(status: perf.responsiveness, compact: true),
+      trailing: DiagnosticStatusBadge(
+        status: perf.responsiveness,
+        compact: true,
+      ),
       children: [
         HardwareSpecTile(
           icon: Icons.timer_outlined,
           title: isBn ? 'স্টার্টআপ সময়' : 'App Startup Duration',
           value: '${perf.startupDurationMs} ms',
-          subtitle: isBn ? 'বুটস্ট্র্যাপ থেকে প্রথম ফ্রেম রেন্ডার' : 'Bootstrap initialization to first paint',
+          subtitle: isBn
+              ? 'বুটস্ট্র্যাপ থেকে প্রথম ফ্রেম রেন্ডার'
+              : 'Bootstrap initialization to first paint',
         ),
         HardwareSpecTile(
           icon: Icons.speed_outlined,
           title: isBn ? 'UI রাস্টার সময়' : 'UI Frame Raster Duration',
           value: '${perf.recentFrameRasterDurationMs.toStringAsFixed(1)} ms',
           subtitle: perf.recentFrameRasterDurationMs <= 16.67
-              ? (isBn ? '৬০ এফপিএস স্মুথ রেন্ডারিং' : '60 FPS Smooth Render Target')
+              ? (isBn
+                    ? '৬০ এফপিএস স্মুথ রেন্ডারিং'
+                    : '60 FPS Smooth Render Target')
               : (isBn ? '৩২ এফপিএস রেন্ডারিং' : 'Acceptable Frame Timing'),
         ),
         HardwareSpecTile(

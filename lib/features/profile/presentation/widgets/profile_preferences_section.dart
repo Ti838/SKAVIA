@@ -50,10 +50,7 @@ class ProfilePreferencesSection extends StatelessWidget {
           onTap: onSelectDob,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: tokens.inputBg,
               border: Border.all(color: tokens.border),
@@ -87,10 +84,7 @@ class ProfilePreferencesSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_drop_down,
-                  color: tokens.brandAccent,
-                ),
+                Icon(Icons.arrow_drop_down, color: tokens.brandAccent),
               ],
             ),
           ),
@@ -100,17 +94,11 @@ class ProfilePreferencesSection extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           title: const Text(
             'Receive Birthday Discount Perks',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             'SKAVIA gifts 20% off on your birthday week',
-            style: TextStyle(
-              fontSize: 11,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
           ),
           value: birthdayAlertsEnabled,
           activeThumbColor: tokens.brandAccent,
@@ -155,17 +143,10 @@ class ProfilePreferencesSection extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Timezone',
             prefixIcon: const Icon(Icons.schedule_outlined),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
           ),
           items: timezoneOptions
-              .map(
-                (tz) => DropdownMenuItem(
-                  value: tz,
-                  child: Text(tz),
-                ),
-              )
+              .map((tz) => DropdownMenuItem(value: tz, child: Text(tz)))
               .toList(),
           onChanged: (val) {
             if (val != null) onTimezoneChanged(val);

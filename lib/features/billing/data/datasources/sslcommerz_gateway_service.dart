@@ -47,8 +47,7 @@ class SslCommerzGatewayService {
     if (storeId.trim().isEmpty || storePasswd.trim().isEmpty) {
       return SslCommerzInitResult(
         isSuccess: false,
-        errorMessage:
-            'SSLCommerz credentials are not configured (set SSLCOMMERZ_STORE_ID and SSLCOMMERZ_STORE_PASSWD via --dart-define).',
+        errorMessage: 'SSLCommerz credentials are not configured (set SSLCOMMERZ_STORE_ID and SSLCOMMERZ_STORE_PASSWD via --dart-define).',
       );
     }
 

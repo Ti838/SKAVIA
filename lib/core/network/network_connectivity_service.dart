@@ -1,13 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-enum NetworkQualityState {
-  online,
-  poorNetwork,
-  offline,
-  syncing,
-  syncFailed,
-}
+enum NetworkQualityState { online, poorNetwork, offline, syncing, syncFailed }
 
 /// Production Network Connectivity & Quality Monitoring Service.
 /// Implements heartbeat ping latency calculation and state streaming.
@@ -93,4 +87,3 @@ class NetworkConnectivityService {
     _stateController.close();
   }
 }
-

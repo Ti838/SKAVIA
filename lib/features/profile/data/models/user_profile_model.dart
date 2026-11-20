@@ -68,31 +68,31 @@ class UserProfileModel {
       customerType == 'Business Client' || customerType == 'Organization';
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'email': email,
-        'phone': phone,
-        'full_name': fullName,
-        'avatar_url': avatarUrl,
-        'cover_url': coverUrl,
-        'role': role,
-        'customer_type': customerType,
-        'company_name': companyName,
-        'trade_license': tradeLicense,
-        'billing_address': billingAddress,
-        'date_of_birth': dateOfBirth?.toIso8601String(),
-        'birthday_notifications_enabled': birthdayNotificationsEnabled,
-        'gender': gender,
-        'emergency_contact_name': emergencyContactName,
-        'emergency_contact_phone': emergencyContactPhone,
-        'preferred_language': preferredLanguage,
-        'timezone': timezone,
-        'account_status': accountStatus,
-        'verification_status': verificationStatus,
-        'privacy_settings': privacySettings,
-        'notification_preferences': notificationPreferences,
-        'saved_addresses': savedAddresses.map((a) => a.toJson()).toList(),
-        'profile_completion_percentage': profileCompletionPercentage,
-      };
+    'id': id,
+    'email': email,
+    'phone': phone,
+    'full_name': fullName,
+    'avatar_url': avatarUrl,
+    'cover_url': coverUrl,
+    'role': role,
+    'customer_type': customerType,
+    'company_name': companyName,
+    'trade_license': tradeLicense,
+    'billing_address': billingAddress,
+    'date_of_birth': dateOfBirth?.toIso8601String(),
+    'birthday_notifications_enabled': birthdayNotificationsEnabled,
+    'gender': gender,
+    'emergency_contact_name': emergencyContactName,
+    'emergency_contact_phone': emergencyContactPhone,
+    'preferred_language': preferredLanguage,
+    'timezone': timezone,
+    'account_status': accountStatus,
+    'verification_status': verificationStatus,
+    'privacy_settings': privacySettings,
+    'notification_preferences': notificationPreferences,
+    'saved_addresses': savedAddresses.map((a) => a.toJson()).toList(),
+    'profile_completion_percentage': profileCompletionPercentage,
+  };
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
     List<UserAddressModel> addresses = [];
@@ -116,8 +116,7 @@ class UserProfileModel {
             'data_sharing_consent': true,
           };
     final resolvedCoverUrl =
-        json['cover_url']?.toString() ??
-        parsedPrivacy['cover_url']?.toString();
+        json['cover_url']?.toString() ?? parsedPrivacy['cover_url']?.toString();
 
     return UserProfileModel(
       id: json['user_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -142,7 +141,8 @@ class UserProfileModel {
       preferredLanguage: json['preferred_language']?.toString() ?? 'en',
       timezone: json['timezone']?.toString() ?? 'Asia/Dhaka',
       accountStatus: json['account_status']?.toString() ?? 'active',
-      verificationStatus: json['verification_status']?.toString() ?? 'unverified',
+      verificationStatus:
+          json['verification_status']?.toString() ?? 'unverified',
       privacySettings: parsedPrivacy,
       notificationPreferences: json['notification_preferences'] is Map
           ? Map<String, dynamic>.from(json['notification_preferences'] as Map)

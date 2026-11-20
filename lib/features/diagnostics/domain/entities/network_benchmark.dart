@@ -17,17 +17,17 @@ class NetworkBenchmark {
   });
 
   const NetworkBenchmark.initial()
-      : isOnline = false,
-        latencyMs = -1,
-        testEndpoint = 'https://1.1.1.1',
-        quality = DiagnosticStatus.notTested,
-        connectionType = 'Unknown';
+    : isOnline = false,
+      latencyMs = -1,
+      testEndpoint = 'https://1.1.1.1',
+      quality = DiagnosticStatus.notTested,
+      connectionType = 'Unknown';
 
   Map<String, dynamic> toJson() => {
-        'is_online': isOnline,
-        'latency_ms': latencyMs,
-        'test_endpoint': testEndpoint,
-        'quality': quality.name,
-        'connection_type': connectionType,
-      };
+    'is_online': isOnline,
+    'latency_ms': latencyMs,
+    'test_endpoint': testEndpoint,
+    'quality': quality.name,
+    'connection_type': connectionType,
+  };
 }

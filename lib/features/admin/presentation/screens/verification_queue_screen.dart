@@ -32,9 +32,14 @@ class _VerificationQueueScreenState extends State<VerificationQueueScreen> {
     super.dispose();
   }
 
-  Future<void> _handleDecision(Map<String, dynamic> item, bool isApproved) async {
-    final id = item['verification_id']?.toString() ?? item['id']?.toString() ?? '';
-    final name = item['full_name']?.toString() ?? item['name']?.toString() ?? 'Worker';
+  Future<void> _handleDecision(
+    Map<String, dynamic> item,
+    bool isApproved,
+  ) async {
+    final id =
+        item['verification_id']?.toString() ?? item['id']?.toString() ?? '';
+    final name =
+        item['full_name']?.toString() ?? item['name']?.toString() ?? 'Worker';
     if (id.isNotEmpty) {
       await _controller.reviewVerification(id, isApproved);
     }
@@ -72,7 +77,9 @@ class _VerificationQueueScreenState extends State<VerificationQueueScreen> {
         animation: _controller,
         builder: (context, _) {
           if (_controller.isLoading && _controller.verifications.isEmpty) {
-            return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+            return const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
           }
 
           final queue = _controller.verifications;
@@ -133,7 +140,8 @@ class _VerificationQueueScreenState extends State<VerificationQueueScreen> {
                   item['document_type']?.toString() ??
                   item['docType']?.toString() ??
                   'Submitted Credential';
-              final nid = item['document_number']?.toString() ??
+              final nid =
+                  item['document_number']?.toString() ??
                   item['nid']?.toString() ??
                   'Pending mask check';
               final submittedAt =
@@ -145,7 +153,9 @@ class _VerificationQueueScreenState extends State<VerificationQueueScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: tokens.cardBg,
-                  borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
+                  borderRadius: BorderRadius.circular(
+                    AppDimensions.radiusLarge,
+                  ),
                   border: Border.all(color: tokens.border),
                 ),
                 child: Column(
@@ -220,7 +230,8 @@ class _VerificationQueueScreenState extends State<VerificationQueueScreen> {
                     const SizedBox(height: 14),
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final textScale = MediaQuery.textScalerOf(context).scale(1);
+                        final textScale = MediaQuery.textScalerOf(context)
+                            .scale(1);
                         final stackBtns =
                             constraints.maxWidth < 310 || textScale > 1.3;
                         final rejectBtn = OutlinedButton(

@@ -55,10 +55,7 @@ class _SakugaPressableState extends State<SakugaPressable>
   @override
   void initState() {
     super.initState();
-    _springController = AnimationController.unbounded(
-      vsync: this,
-      value: 1.0,
-    );
+    _springController = AnimationController.unbounded(vsync: this, value: 1.0);
   }
 
   @override

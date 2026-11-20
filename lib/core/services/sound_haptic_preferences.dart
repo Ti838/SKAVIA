@@ -90,4 +90,3 @@ class SoundHapticPreferences extends ChangeNotifier {
     } catch (_) {}
   }
 }
-

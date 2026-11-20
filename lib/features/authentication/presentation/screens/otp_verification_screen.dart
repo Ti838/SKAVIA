@@ -203,7 +203,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         final profile = await DashboardRepository().getUserProfileRecord(
           user.uid,
         );
-        activeMode = profile?['active_mode']?.toString() ??
+        activeMode =
+            profile?['active_mode']?.toString() ??
             LocalCacheService.instance
                 .get('${AppConstants.userModeStorageKey}_${user.uid}')
                 ?.toString() ??
@@ -413,7 +414,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           onTap: _canResend ? _handleResend : null,
                           child: Text(
                             _canResend
-                                ? (context.isBengali ? 'এখনই পাঠান' : 'Resend Now')
+                                ? (context.isBengali
+                                      ? 'এখনই পাঠান'
+                                      : 'Resend Now')
                                 : '${_resendCountdown}s',
                             style: TextStyle(
                               fontFamily: AppTypography.bodyFont,

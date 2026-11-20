@@ -8,8 +8,7 @@ import '../../domain/entities/requirement_entity.dart';
 class CustomerRemoteDataSource {
   final SupabaseClient? _injectedClient;
 
-  CustomerRemoteDataSource({SupabaseClient? client})
-    : _injectedClient = client;
+  CustomerRemoteDataSource({SupabaseClient? client}) : _injectedClient = client;
 
   SupabaseClient? get _client => _injectedClient ?? tryGetSupabaseClient();
 

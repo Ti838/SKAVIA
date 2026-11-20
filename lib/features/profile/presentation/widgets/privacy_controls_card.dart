@@ -21,10 +21,8 @@ class PrivacyControlsCard extends StatelessWidget {
     final tokens = context.skavia;
     final sharePhone =
         privacy['share_phone_with_assigned_specialist'] as bool? ?? true;
-    final dataConsent =
-        privacy['data_sharing_consent'] as bool? ?? true;
-    final visibility =
-        privacy['profile_visibility']?.toString() ?? 'public';
+    final dataConsent = privacy['data_sharing_consent'] as bool? ?? true;
+    final visibility = privacy['profile_visibility']?.toString() ?? 'public';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,66 +53,67 @@ class PrivacyControlsCard extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 6,
-                children: [
-                  ('public', 'Public'),
-                  ('verified_only', 'Verified Users'),
-                  ('private', 'Private'),
-                ].map((entry) {
-                  final active = visibility == entry.$1;
-                  return InkWell(
-                    onTap: () {
-                      final next = Map<String, dynamic>.from(privacy);
-                      next['profile_visibility'] = entry.$1;
-                      controller.updatePrivacySettings(next);
-                    },
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: active
-                            ? tokens.brandAccent.withValues(alpha: 0.16)
-                            : colorScheme.surfaceContainerHighest
-                                  .withValues(alpha: 0.5),
+                children:
+                    [
+                      ('public', 'Public'),
+                      ('verified_only', 'Verified Users'),
+                      ('private', 'Private'),
+                    ].map((entry) {
+                      final active = visibility == entry.$1;
+                      return InkWell(
+                        onTap: () {
+                          final next = Map<String, dynamic>.from(privacy);
+                          next['profile_visibility'] = entry.$1;
+                          controller.updatePrivacySettings(next);
+                        },
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: active
-                              ? tokens.brandAccent
-                              : tokens.subtleBorder,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (active) ...[
-                            Icon(
-                              Icons.check_rounded,
-                              size: 14,
-                              color: tokens.brandAccent,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          Flexible(
-                            child: Text(
-                              entry.$2,
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: active
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                color: active
-                                    ? tokens.brandAccent
-                                    : colorScheme.onSurface,
-                              ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: active
+                                ? tokens.brandAccent.withValues(alpha: 0.16)
+                                : colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: active
+                                  ? tokens.brandAccent
+                                  : tokens.subtleBorder,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  );
-                }).toList(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (active) ...[
+                                Icon(
+                                  Icons.check_rounded,
+                                  size: 14,
+                                  color: tokens.brandAccent,
+                                ),
+                                const SizedBox(width: 6),
+                              ],
+                              Flexible(
+                                child: Text(
+                                  entry.$2,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: active
+                                        ? FontWeight.w800
+                                        : FontWeight.w600,
+                                    color: active
+                                        ? tokens.brandAccent
+                                        : colorScheme.onSurface,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
               Divider(color: tokens.subtleBorder, height: 22),
               SwitchListTile(

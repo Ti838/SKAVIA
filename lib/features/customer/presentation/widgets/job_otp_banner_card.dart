@@ -89,17 +89,11 @@ class JobOtpBannerCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (compact) ...[
-                        const SizedBox(height: 6),
-                        badge,
-                      ],
+                      if (compact) ...[const SizedBox(height: 6), badge],
                     ],
                   ),
                 ),
-                if (!compact) ...[
-                  const SizedBox(width: 8),
-                  badge,
-                ],
+                if (!compact) ...[const SizedBox(width: 8), badge],
               ],
             );
           },

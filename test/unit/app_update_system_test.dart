@@ -70,7 +70,8 @@ Map<String, dynamic> _buildReleaseJson({
   int fileSizeBytes = 12,
   String sha256 =
       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-  String downloadUrl = 'https://releases.skavia.example/api/public/releases/rel_2/download',
+  String downloadUrl =
+      'https://releases.skavia.example/api/public/releases/rel_2/download',
 }) {
   return {
     'releaseId': releaseId,
@@ -80,7 +81,8 @@ Map<String, dynamic> _buildReleaseJson({
     'minSupportedBuild': minSupportedBuild,
     'minSdkVersion': 24,
     'targetSdkVersion': 35,
-    'releaseNotes': '- Improved dispatch matching\n- Faster escrow receipt loading',
+    'releaseNotes':
+        '- Improved dispatch matching\n- Faster escrow receipt loading',
     'isMandatory': isMandatory,
     'fileName': 'skavia-$versionName.apk',
     'fileSizeBytes': fileSizeBytes,
@@ -120,7 +122,9 @@ void main() {
         {
           'updateStatus': 'mandatory_update',
           'channel': 'stable',
-          'latestRelease': _buildReleaseJson(downloadUrl: 'file:///sdcard/evil.apk'),
+          'latestRelease': _buildReleaseJson(
+            downloadUrl: 'file:///sdcard/evil.apk',
+          ),
         },
         installedVersion: '1.0.0',
         installedBuild: 1,
@@ -130,57 +134,65 @@ void main() {
       expect(badUrlEval.requiresImmediateBlockingUpdate, isFalse);
     });
 
-    test('identifies optional, mandatory, unsupported, and suspended states', () {
-      final optionalEval = AppUpdateEvaluation.fromServerJson(
-        {
-          'updateStatus': 'optional_update',
-          'channel': 'stable',
-          'latestRelease': _buildReleaseJson(buildNumber: 5, isMandatory: false),
-        },
-        installedVersion: '1.0.0',
-        installedBuild: 4,
-        channel: 'stable',
-      );
-      expect(optionalEval.status, AppUpdateAvailability.optionalUpdate);
-      expect(optionalEval.updateAvailable, isTrue);
-      expect(optionalEval.requiresImmediateBlockingUpdate, isFalse);
+    test(
+      'identifies optional, mandatory, unsupported, and suspended states',
+      () {
+        final optionalEval = AppUpdateEvaluation.fromServerJson(
+          {
+            'updateStatus': 'optional_update',
+            'channel': 'stable',
+            'latestRelease': _buildReleaseJson(
+              buildNumber: 5,
+              isMandatory: false,
+            ),
+          },
+          installedVersion: '1.0.0',
+          installedBuild: 4,
+          channel: 'stable',
+        );
+        expect(optionalEval.status, AppUpdateAvailability.optionalUpdate);
+        expect(optionalEval.updateAvailable, isTrue);
+        expect(optionalEval.requiresImmediateBlockingUpdate, isFalse);
 
-      final unsupportedEval = AppUpdateEvaluation.fromServerJson(
-        {
-          'updateStatus': 'unsupported_installed_build',
-          'channel': 'stable',
-          'latestRelease':
-              _buildReleaseJson(buildNumber: 5, minSupportedBuild: 3),
-        },
-        installedVersion: '1.0.0',
-        installedBuild: 1,
-        channel: 'stable',
-      );
-      expect(
-        unsupportedEval.status,
-        AppUpdateAvailability.unsupportedInstalledBuild,
-      );
-      expect(unsupportedEval.requiresImmediateBlockingUpdate, isTrue);
+        final unsupportedEval = AppUpdateEvaluation.fromServerJson(
+          {
+            'updateStatus': 'unsupported_installed_build',
+            'channel': 'stable',
+            'latestRelease': _buildReleaseJson(
+              buildNumber: 5,
+              minSupportedBuild: 3,
+            ),
+          },
+          installedVersion: '1.0.0',
+          installedBuild: 1,
+          channel: 'stable',
+        );
+        expect(
+          unsupportedEval.status,
+          AppUpdateAvailability.unsupportedInstalledBuild,
+        );
+        expect(unsupportedEval.requiresImmediateBlockingUpdate, isTrue);
 
-      final suspendedEval = AppUpdateEvaluation.fromServerJson(
-        {
-          'updateStatus': 'suspended_installed_build',
-          'installedBuildSuspended': true,
-          'installedSuspensionReason': 'Critical bug fixed in 1.2.0',
-          'channel': 'stable',
-          'latestRelease': _buildReleaseJson(buildNumber: 5),
-        },
-        installedVersion: '1.1.0',
-        installedBuild: 4,
-        channel: 'stable',
-      );
-      expect(
-        suspendedEval.status,
-        AppUpdateAvailability.suspendedInstalledBuild,
-      );
-      expect(suspendedEval.installedBuildSuspended, isTrue);
-      expect(suspendedEval.requiresImmediateBlockingUpdate, isTrue);
-    });
+        final suspendedEval = AppUpdateEvaluation.fromServerJson(
+          {
+            'updateStatus': 'suspended_installed_build',
+            'installedBuildSuspended': true,
+            'installedSuspensionReason': 'Critical bug fixed in 1.2.0',
+            'channel': 'stable',
+            'latestRelease': _buildReleaseJson(buildNumber: 5),
+          },
+          installedVersion: '1.1.0',
+          installedBuild: 4,
+          channel: 'stable',
+        );
+        expect(
+          suspendedEval.status,
+          AppUpdateAvailability.suspendedInstalledBuild,
+        );
+        expect(suspendedEval.installedBuildSuspended, isTrue);
+        expect(suspendedEval.requiresImmediateBlockingUpdate, isTrue);
+      },
+    );
   });
 
   group('AppUpdateService & AppUpdateProvider lifecycle', () {
@@ -197,60 +209,67 @@ void main() {
       expect(provider.shouldShowAutomaticDialog, isFalse);
     });
 
-    test('handles network error gracefully and respects check throttling', () async {
-      int getCalls = 0;
-      final client = MockClient((req) async {
-        if (req.method == 'GET') {
-          getCalls += 1;
-          if (getCalls == 1) {
-            throw const SocketException('No route to host');
+    test(
+      'handles network error gracefully and respects check throttling',
+      () async {
+        int getCalls = 0;
+        final client = MockClient((req) async {
+          if (req.method == 'GET') {
+            getCalls += 1;
+            if (getCalls == 1) {
+              throw const SocketException('No route to host');
+            }
+            return http.Response(
+              jsonEncode({
+                'updateStatus': 'optional_update',
+                'channel': 'stable',
+                'latestRelease': _buildReleaseJson(buildNumber: 5),
+              }),
+              200,
+            );
           }
-          return http.Response(
-            jsonEncode({
-              'updateStatus': 'optional_update',
-              'channel': 'stable',
-              'latestRelease': _buildReleaseJson(buildNumber: 5),
-            }),
-            200,
-          );
-        }
-        return http.Response('{"ok":true}', 200);
-      });
+          return http.Response('{"ok":true}', 200);
+        });
 
-      final repo = AppReleaseRepository(
-        client: client,
-        baseOrigin: 'https://releases.skavia.example',
-      );
-      final service = AppUpdateService(
-        repository: repo,
-        packageReader: () async => (version: '1.0.0', buildNumber: 2),
-        onNewReleaseNotifier: (_, {required bool mandatory}) {},
-      );
-      final provider = AppUpdateProvider(service: service);
+        final repo = AppReleaseRepository(
+          client: client,
+          baseOrigin: 'https://releases.skavia.example',
+        );
+        final service = AppUpdateService(
+          repository: repo,
+          packageReader: () async => (version: '1.0.0', buildNumber: 2),
+          onNewReleaseNotifier: (_, {required bool mandatory}) {},
+        );
+        final provider = AppUpdateProvider(service: service);
 
-      // First offline attempt returns networkUnavailable cleanly
-      final offlineEval = await provider.checkForUpdates(trigger: 'startup');
-      expect(offlineEval.status, AppUpdateAvailability.networkUnavailable);
+        // First offline attempt returns networkUnavailable cleanly
+        final offlineEval = await provider.checkForUpdates(trigger: 'startup');
+        expect(offlineEval.status, AppUpdateAvailability.networkUnavailable);
 
-      // Next online check succeeds (offline failure didn't populate throttle timestamp)
-      final onlineEval = await provider.checkForUpdates(trigger: 'foreground_resume');
-      expect(onlineEval.status, AppUpdateAvailability.optionalUpdate);
-      expect(getCalls, 2);
+        // Next online check succeeds (offline failure didn't populate throttle timestamp)
+        final onlineEval = await provider.checkForUpdates(
+          trigger: 'foreground_resume',
+        );
+        expect(onlineEval.status, AppUpdateAvailability.optionalUpdate);
+        expect(getCalls, 2);
 
-      // Throttled check without force skips network and returns cached result
-      final throttledEval = await provider.checkForUpdates(trigger: 'foreground_resume');
-      expect(throttledEval.isFromCache, isTrue);
-      expect(getCalls, 2);
+        // Throttled check without force skips network and returns cached result
+        final throttledEval = await provider.checkForUpdates(
+          trigger: 'foreground_resume',
+        );
+        expect(throttledEval.isFromCache, isTrue);
+        expect(getCalls, 2);
 
-      // Deferring optional update suppresses modal while activating banner
-      provider.deferOptionalUpdate();
-      expect(provider.shouldShowAutomaticDialog, isFalse);
-      expect(provider.shouldShowDeferredBanner, isTrue);
+        // Deferring optional update suppresses modal while activating banner
+        provider.deferOptionalUpdate();
+        expect(provider.shouldShowAutomaticDialog, isFalse);
+        expect(provider.shouldShowDeferredBanner, isTrue);
 
-      // Force refresh hits backend again
-      await provider.checkForUpdates(trigger: 'manual', force: true);
-      expect(getCalls, 3);
-    });
+        // Force refresh hits backend again
+        await provider.checkForUpdates(trigger: 'manual', force: true);
+        expect(getCalls, 3);
+      },
+    );
 
     test('verifies SHA-256 checksum, rejects tampered binary, and handles install permission handoff', () async {
       final tempDir = await Directory.systemTemp.createTemp('skavia_apk_test_');
@@ -276,8 +295,7 @@ void main() {
                 isMandatory: true,
                 fileSizeBytes: apkBytes.length,
                 sha256: expectedSha,
-                downloadUrl:
-                    'https://releases.skavia.example/api/public/releases/rel_2/download',
+                downloadUrl: 'https://releases.skavia.example/api/public/releases/rel_2/download',
               ),
             }),
             200,
@@ -361,130 +379,137 @@ void main() {
   });
 
   group('Flutter Update UI widgets', () {
-    testWidgets('AppUpdateDialog shows Later on optional update and hides Later on mandatory update',
-        (tester) async {
-      final optionalEval = AppUpdateEvaluation.fromServerJson(
-        {
-          'updateStatus': 'optional_update',
-          'channel': 'stable',
-          'latestRelease': _buildReleaseJson(isMandatory: false),
-        },
-        installedVersion: '1.0.0',
-        installedBuild: 1,
-        channel: 'stable',
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: AppUpdateDialog(
-              evaluation: optionalEval,
-              onUpdateNow: () {},
-              onLater: () {},
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('SKAVIA Update Ready'), findsOneWidget);
-      expect(find.text('Later'), findsOneWidget);
-      expect(find.text('Update Now'), findsOneWidget);
-
-      final mandatoryEval = AppUpdateEvaluation.fromServerJson(
-        {
-          'updateStatus': 'mandatory_update',
-          'channel': 'stable',
-          'latestRelease': _buildReleaseJson(isMandatory: true),
-        },
-        installedVersion: '1.0.0',
-        installedBuild: 1,
-        channel: 'stable',
-      );
-
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: Scaffold(
-            body: AppUpdateDialog(
-              evaluation: mandatoryEval,
-              onUpdateNow: () {},
-              onLater: null,
-            ),
-          ),
-        ),
-      );
-
-      expect(find.text('Required App Update'), findsOneWidget);
-      expect(find.text('Later'), findsNothing);
-      expect(find.text('Update Now'), findsOneWidget);
-    });
-
-    testWidgets('AboutSkaviaScreen triggers manual update check and AppUpdateScreen displays support paths',
-        (tester) async {
-      final client = MockClient((req) async {
-        return http.Response(
-          jsonEncode({
+    testWidgets(
+      'AppUpdateDialog shows Later on optional update and hides Later on mandatory update',
+      (tester) async {
+        final optionalEval = AppUpdateEvaluation.fromServerJson(
+          {
             'updateStatus': 'optional_update',
             'channel': 'stable',
-            'latestRelease': _buildReleaseJson(versionName: '2.0.0', buildNumber: 10),
-            'supportInfo': {
-              'websiteDownloadUrl': 'https://releases.skavia.example/#download',
-              'helpline': '16524',
-              'supportEmail': 'support@skavia.com',
-            },
-          }),
-          200,
+            'latestRelease': _buildReleaseJson(isMandatory: false),
+          },
+          installedVersion: '1.0.0',
+          installedBuild: 1,
+          channel: 'stable',
         );
-      });
 
-      final fakeInstaller = _FakeAndroidInstaller(
-        updatesDir: '',
-        canInstall: true,
-        sha256ToReturn: 'a' * 64,
-      );
-      final provider = AppUpdateProvider(
-        service: AppUpdateService(
-          repository: AppReleaseRepository(
-            client: client,
-            baseOrigin: 'https://releases.skavia.example',
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: AppUpdateDialog(
+                evaluation: optionalEval,
+                onUpdateNow: () {},
+                onLater: () {},
+              ),
+            ),
           ),
-          installer: fakeInstaller,
-          packageReader: () async => (version: '1.0.0', buildNumber: 1),
-          onNewReleaseNotifier: (_, {required bool mandatory}) {},
-        ),
-      );
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: AboutSkaviaScreen(updateProvider: provider),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+        expect(find.text('SKAVIA Update Ready'), findsOneWidget);
+        expect(find.text('Later'), findsOneWidget);
+        expect(find.text('Update Now'), findsOneWidget);
 
-      await tester.tap(find.text('Check for Updates'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      await tester.pump();
+        final mandatoryEval = AppUpdateEvaluation.fromServerJson(
+          {
+            'updateStatus': 'mandatory_update',
+            'channel': 'stable',
+            'latestRelease': _buildReleaseJson(isMandatory: true),
+          },
+          installedVersion: '1.0.0',
+          installedBuild: 1,
+          channel: 'stable',
+        );
 
-      expect(find.textContaining('Update Available: v2.0.0'), findsOneWidget);
-      expect(find.text('Update Now'), findsOneWidget);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: AppUpdateDialog(
+                evaluation: mandatoryEval,
+                onUpdateNow: () {},
+                onLater: null,
+              ),
+            ),
+          ),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: AppUpdateScreen(provider: provider),
-        ),
-      );
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 50));
+        expect(find.text('Required App Update'), findsOneWidget);
+        expect(find.text('Later'), findsNothing);
+        expect(find.text('Update Now'), findsOneWidget);
+      },
+    );
 
-      expect(find.text('Available Release: v2.0.0'), findsOneWidget);
-      expect(find.text('Helpline 16524'), findsOneWidget);
-      expect(find.text('Open Website Download'), findsOneWidget);
-    });
+    testWidgets(
+      'AboutSkaviaScreen triggers manual update check and AppUpdateScreen displays support paths',
+      (tester) async {
+        final client = MockClient((req) async {
+          return http.Response(
+            jsonEncode({
+              'updateStatus': 'optional_update',
+              'channel': 'stable',
+              'latestRelease': _buildReleaseJson(
+                versionName: '2.0.0',
+                buildNumber: 10,
+              ),
+              'supportInfo': {
+                'websiteDownloadUrl':
+                    'https://releases.skavia.example/#download',
+                'helpline': '16524',
+                'supportEmail': 'support@skavia.com',
+              },
+            }),
+            200,
+          );
+        });
+
+        final fakeInstaller = _FakeAndroidInstaller(
+          updatesDir: '',
+          canInstall: true,
+          sha256ToReturn: 'a' * 64,
+        );
+        final provider = AppUpdateProvider(
+          service: AppUpdateService(
+            repository: AppReleaseRepository(
+              client: client,
+              baseOrigin: 'https://releases.skavia.example',
+            ),
+            installer: fakeInstaller,
+            packageReader: () async => (version: '1.0.0', buildNumber: 1),
+            onNewReleaseNotifier: (_, {required bool mandatory}) {},
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: AboutSkaviaScreen(updateProvider: provider),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+
+        await tester.tap(find.text('Check for Updates'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        await tester.pump();
+
+        expect(find.textContaining('Update Available: v2.0.0'), findsOneWidget);
+        expect(find.text('Update Now'), findsOneWidget);
+
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            home: AppUpdateScreen(provider: provider),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
+
+        expect(find.text('Available Release: v2.0.0'), findsOneWidget);
+        expect(find.text('Helpline 16524'), findsOneWidget);
+        expect(find.text('Open Website Download'), findsOneWidget);
+      },
+    );
   });
 }
-

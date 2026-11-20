@@ -91,64 +91,83 @@ void main() {
   }
 
   group('Stage E — Security, Offline Safety & Financial Integrity', () {
-    test('RouteGuards handles uninitialized Firebase/Supabase safely', () async {
-      final isAdmin = await RouteGuards.hasAnyAdminRole();
-      expect(isAdmin, isFalse);
-    });
+    test(
+      'RouteGuards handles uninitialized Firebase/Supabase safely',
+      () async {
+        final isAdmin = await RouteGuards.hasAnyAdminRole();
+        expect(isAdmin, isFalse);
+      },
+    );
 
-    test('AdminRemoteDataSource returns honest zero metrics when offline', () async {
-      final ds = AdminRemoteDataSource();
-      final metrics = await ds.getPlatformMetrics();
-      expect(metrics['totalUsers'], 0);
-      expect(metrics['activeRequests'], 0);
-      expect(metrics['totalVolume'], 0.0);
-      expect(metrics['isLive'], isFalse);
-      expect(await ds.getPendingVerifications(), isEmpty);
-      expect(await ds.getOpenDisputes(), isEmpty);
-    });
+    test(
+      'AdminRemoteDataSource returns honest zero metrics when offline',
+      () async {
+        final ds = AdminRemoteDataSource();
+        final metrics = await ds.getPlatformMetrics();
+        expect(metrics['totalUsers'], 0);
+        expect(metrics['activeRequests'], 0);
+        expect(metrics['totalVolume'], 0.0);
+        expect(metrics['isLive'], isFalse);
+        expect(await ds.getPendingVerifications(), isEmpty);
+        expect(await ds.getOpenDisputes(), isEmpty);
+      },
+    );
 
-    test('ChatRemoteDataSource supports offline optimistic streaming cleanly', () async {
-      final ds = ChatRemoteDataSource();
-      final conv = await ds.getOrCreateConversation(
-        currentUserId: 'u_1',
-        otherUserId: 'u_2',
-      );
-      expect(conv.conversationId, isNotEmpty);
+    test(
+      'ChatRemoteDataSource supports offline optimistic streaming cleanly',
+      () async {
+        final ds = ChatRemoteDataSource();
+        final conv = await ds.getOrCreateConversation(
+          currentUserId: 'u_1',
+          otherUserId: 'u_2',
+        );
+        expect(conv.conversationId, isNotEmpty);
 
-      final received = <List<ChatMessageModel>>[];
-      final sub = ds.getMessagesStream(conv.conversationId).listen(received.add);
-      await ds.sendMessage(
-        conversationId: conv.conversationId,
-        senderId: 'u_1',
-        text: 'Confirmed site arrival at 10 AM.',
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-      await sub.cancel();
+        final received = <List<ChatMessageModel>>[];
+        final sub = ds
+            .getMessagesStream(conv.conversationId)
+            .listen(received.add);
+        await ds.sendMessage(
+          conversationId: conv.conversationId,
+          senderId: 'u_1',
+          text: 'Confirmed site arrival at 10 AM.',
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        await sub.cancel();
 
-      expect(received, isNotEmpty);
-      expect(
-        received.last.any((m) => m.messageText.contains('Confirmed site arrival')),
-        isTrue,
-      );
-    });
+        expect(received, isNotEmpty);
+        expect(
+          received.last.any(
+            (m) => m.messageText.contains('Confirmed site arrival'),
+          ),
+          isTrue,
+        );
+      },
+    );
 
-    test('ReviewRemoteDataSource handles uninitialized Supabase safely', () async {
-      final ds = ReviewRemoteDataSource();
-      expect(await ds.getWorkerReviews('wp_test'), isEmpty);
-      expect(await ds.getWorkerReputation('wp_test'), isNull);
-      expect(
-        () => ds.submitReview(
-          workerProfileId: 'wp_test',
-          clientId: 'c_test',
-          rating: 5,
-        ),
-        throwsException,
-      );
-    });
+    test(
+      'ReviewRemoteDataSource handles uninitialized Supabase safely',
+      () async {
+        final ds = ReviewRemoteDataSource();
+        expect(await ds.getWorkerReviews('wp_test'), isEmpty);
+        expect(await ds.getWorkerReputation('wp_test'), isNull);
+        expect(
+          () => ds.submitReview(
+            workerProfileId: 'wp_test',
+            clientId: 'c_test',
+            rating: 5,
+          ),
+          throwsException,
+        );
+      },
+    );
 
     test('PaymentController computes transparent 15% platform fee split', () {
       final controller = PaymentController();
-      expect(controller.platformFeePercentage, AppConfig.skaviaPlatformFeePercent);
+      expect(
+        controller.platformFeePercentage,
+        AppConfig.skaviaPlatformFeePercent,
+      );
       final split = controller.calculateFeeSplit(2000.0);
       expect(split['totalAmount'], 2000.0);
       expect(split['skaviaFee'], 300.0);
@@ -157,97 +176,99 @@ void main() {
   });
 
   group('Stage E — Interactive Security & Persistence Controls', () {
-    testWidgets('WorkerJobOtpSheet rejects incorrect 4-digit OTP and accepts exact OTP', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(360, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'WorkerJobOtpSheet rejects incorrect 4-digit OTP and accepts exact OTP',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      bool verified = false;
-      await tester.pumpWidget(
-        wrapScreen(
-          Scaffold(
-            body: Builder(
-              builder: (context) => WorkerJobOtpSheet(
-                expectedOtp: '4829',
-                onOtpVerified: () => verified = true,
+        bool verified = false;
+        await tester.pumpWidget(
+          wrapScreen(
+            Scaffold(
+              body: Builder(
+                builder: (context) => WorkerJobOtpSheet(
+                  expectedOtp: '4829',
+                  onOtpVerified: () => verified = true,
+                ),
               ),
             ),
+            ThemeMode.light,
+            size: const Size(360, 640),
+            textScale: 1.0,
           ),
-          ThemeMode.light,
-          size: const Size(360, 640),
-          textScale: 1.0,
-        ),
-      );
+        );
 
-      // Enter wrong 4-digit OTP
-      await tester.enterText(find.byType(TextField), '1234');
-      await tester.ensureVisible(find.text('Verify & Release Earnings ৳'));
-      await tester.tap(find.text('Verify & Release Earnings ৳'));
-      await tester.pumpAndSettle();
+        // Enter wrong 4-digit OTP
+        await tester.enterText(find.byType(TextField), '1234');
+        await tester.ensureVisible(find.text('Verify & Release Earnings ৳'));
+        await tester.tap(find.text('Verify & Release Earnings ৳'));
+        await tester.pumpAndSettle();
 
-      expect(verified, isFalse);
-      expect(find.textContaining('Invalid'), findsAtLeastNWidgets(1));
+        expect(verified, isFalse);
+        expect(find.textContaining('Invalid'), findsAtLeastNWidgets(1));
 
-      // Enter exact OTP
-      await tester.enterText(find.byType(TextField), '4829');
-      await tester.ensureVisible(find.text('Verify & Release Earnings ৳'));
-      await tester.tap(find.text('Verify & Release Earnings ৳'));
-      await tester.pumpAndSettle();
+        // Enter exact OTP
+        await tester.enterText(find.byType(TextField), '4829');
+        await tester.ensureVisible(find.text('Verify & Release Earnings ৳'));
+        await tester.tap(find.text('Verify & Release Earnings ৳'));
+        await tester.pumpAndSettle();
 
-      expect(verified, isTrue);
-    });
+        expect(verified, isTrue);
+      },
+    );
 
-    testWidgets('WorkerWithdrawalSheet blocks over-balance withdrawals cleanly', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(360, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'WorkerWithdrawalSheet blocks over-balance withdrawals cleanly',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      double? submittedAmount;
-      String? submittedMethod;
+        double? submittedAmount;
+        String? submittedMethod;
 
-      await tester.pumpWidget(
-        wrapScreen(
-          Scaffold(
-            body: WorkerWithdrawalSheet(
-              availableBalance: 2500.0,
-              onConfirmWithdrawal: (amt, method) {
-                submittedAmount = amt;
-                submittedMethod = method;
-              },
+        await tester.pumpWidget(
+          wrapScreen(
+            Scaffold(
+              body: WorkerWithdrawalSheet(
+                availableBalance: 2500.0,
+                onConfirmWithdrawal: (amt, method) {
+                  submittedAmount = amt;
+                  submittedMethod = method;
+                },
+              ),
             ),
+            ThemeMode.dark,
+            size: const Size(360, 640),
+            textScale: 1.0,
           ),
-          ThemeMode.dark,
-          size: const Size(360, 640),
-          textScale: 1.0,
-        ),
-      );
+        );
 
-      await tester.enterText(find.byType(TextField), '5000');
-      await tester.ensureVisible(find.text('Confirm Withdrawal'));
-      await tester.tap(find.text('Confirm Withdrawal'));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '5000');
+        await tester.ensureVisible(find.text('Confirm Withdrawal'));
+        await tester.tap(find.text('Confirm Withdrawal'));
+        await tester.pumpAndSettle();
 
-      expect(submittedAmount, isNull);
-      expect(find.textContaining('exceed available balance'), findsOneWidget);
+        expect(submittedAmount, isNull);
+        expect(find.textContaining('exceed available balance'), findsOneWidget);
 
-      await tester.enterText(find.byType(TextField), '1500');
-      await tester.ensureVisible(find.text('Confirm Withdrawal'));
-      await tester.tap(find.text('Confirm Withdrawal'));
-      await tester.pumpAndSettle();
+        await tester.enterText(find.byType(TextField), '1500');
+        await tester.ensureVisible(find.text('Confirm Withdrawal'));
+        await tester.tap(find.text('Confirm Withdrawal'));
+        await tester.pumpAndSettle();
 
-      expect(submittedAmount, 1500.0);
-      expect(submittedMethod, 'bKash');
-    });
+        expect(submittedAmount, 1500.0);
+        expect(submittedMethod, 'bKash');
+      },
+    );
 
     testWidgets('TeamDiscoveryScreen filters teams & persists bookmarks', (
       tester,
@@ -281,263 +302,332 @@ void main() {
       expect(find.text('Reset Filters'), findsOneWidget);
     });
 
-    testWidgets('AdminDashboardScreen displays honest zero counts when offline', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(360, 640);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+    testWidgets(
+      'AdminDashboardScreen displays honest zero counts when offline',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      await tester.pumpWidget(
-        wrapScreen(const AdminDashboardScreen(), ThemeMode.dark),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          wrapScreen(const AdminDashboardScreen(), ThemeMode.dark),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('128'), findsNothing);
-      expect(find.text('36'), findsNothing);
-      expect(find.textContaining('285'), findsNothing);
-      expect(find.text('0'), findsAtLeastNWidgets(2));
-    });
+        expect(find.text('128'), findsNothing);
+        expect(find.text('36'), findsNothing);
+        expect(find.textContaining('285'), findsNothing);
+        expect(find.text('0'), findsAtLeastNWidgets(2));
+      },
+    );
   });
 
-  group('Stage E — Light/Dark @ 320x568 + 2.0x TextScale Zero-Overflow Audit', () {
-    Future<void> verifyScreenNoOverflow(
-      WidgetTester tester,
-      Widget widget,
-      ThemeMode mode,
-    ) async {
-      tester.view.physicalSize = const Size(320, 568);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      await tester.pumpWidget(wrapScreen(widget, mode));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 200));
-
-      final exception = tester.takeException();
-      expect(exception, isNull, reason: 'Unexpected overflow/error on ${widget.runtimeType} ($mode)');
-    }
-
-    for (final mode in [ThemeMode.light, ThemeMode.dark]) {
-      testWidgets('Worker screens & key widgets render cleanly ($mode, 320dp 2.0x)', (
-        tester,
+  group(
+    'Stage E — Light/Dark @ 320x568 + 2.0x TextScale Zero-Overflow Audit',
+    () {
+      Future<void> verifyScreenNoOverflow(
+        WidgetTester tester,
+        Widget widget,
+        ThemeMode mode,
       ) async {
-        await verifyScreenNoOverflow(
-          tester,
-          Scaffold(
-            body: SingleChildScrollView(
-              child: WorkerDashboardView(
-                workerEarnings: 42500.0,
-                workerCompletedJobs: 18,
-                workerRating: 4.9,
-                isWorkerAvailable: true,
-                locationZone: 'Gulshan & Banani, Dhaka',
-                liveJobRequests: const [],
-                onToggleAvailability: (_) {},
-              ),
-            ),
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(tester, const IncomingRequestsScreen(), mode);
-        await verifyScreenNoOverflow(
-          tester,
-          Scaffold(
-            body: SingleChildScrollView(
-              child: IncomingRequestCard(
-                request: const {
-                  'service_request_id': 'req_01',
-                  'title': 'Emergency Main Circuit Breaker Replacement',
-                  'agreed_price': 2500,
-                  'location_zone': 'Dhanmondi 27',
-                  'client_name': 'Sadia Rahman',
-                },
-                onAccept: () {},
-                onDecline: () {},
-              ),
-            ),
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          const ActiveJobScreen(
-            requestId: 'sr-demo-1234',
-            jobTitle: 'Industrial HVAC Filter & Coolant Tune-up',
-            clientName: 'Delta Apparels Ltd',
-            location: 'Tejgaon Industrial Area, Dhaka',
-            agreedPrice: 4500.0,
-            expectedOtp: '4829',
-            scheduledTime: 'Today, 03:30 PM',
-            serviceNotes: 'Bring manifold gauge set and refrigerant cylinder.',
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(tester, const WorkerEarningsScreen(), mode);
-        await verifyScreenNoOverflow(tester, const AvailabilityCalendarScreen(), mode);
-        await verifyScreenNoOverflow(tester, const PortfolioManagementScreen(), mode);
-        await verifyScreenNoOverflow(tester, const WorkerEditProfileScreen(), mode);
-        await verifyScreenNoOverflow(tester, const WorkerProfileDetailScreen(), mode);
-      });
+        tester.view.physicalSize = const Size(320, 568);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
 
-      testWidgets('Team Project screens render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        await verifyScreenNoOverflow(
-          tester,
-          const ProjectDashboardScreen(projectId: 'proj_001'),
-          mode,
-        );
-        await verifyScreenNoOverflow(tester, const TeamDiscoveryScreen(), mode);
-        await verifyScreenNoOverflow(tester, const ProjectShowcaseScreen(), mode);
-        await verifyScreenNoOverflow(
-          tester,
-          const TaskBoardScreen(projectId: 'proj_001'),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          const TeamRosterScreen(projectId: 'proj_001'),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          const AssignTaskScreen(projectId: 'proj_001'),
-          mode,
-        );
-      });
+        await tester.pumpWidget(wrapScreen(widget, mode));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 200));
 
-      testWidgets('Chat screens & tiles render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        await verifyScreenNoOverflow(tester, const ChatListScreen(), mode);
-        await verifyScreenNoOverflow(
-          tester,
-          const ChatRoomScreen(
-            conversationId: 'conv_demo_1',
-            otherParticipantName: 'Engr. Tariqul Islam (HVAC Lead)',
-            otherParticipantId: 'u_worker_1',
-          ),
-          mode,
+        final exception = tester.takeException();
+        expect(
+          exception,
+          isNull,
+          reason: 'Unexpected overflow/error on ${widget.runtimeType} ($mode)',
         );
-        await verifyScreenNoOverflow(
-          tester,
-          Scaffold(
-            body: ConversationTile(
-              conversation: ConversationModel(
-                conversationId: 'conv_demo_1',
-                participantOne: 'u_client',
-                participantTwo: 'u_worker_1',
-                otherParticipantName: 'Rahul Ahmed • Master Electrician',
-                lastMessageText: 'Inspection checklist uploaded for your review.',
-                unreadCount: 2,
-                lastMessageAt: DateTime.now(),
-                createdAt: DateTime.now(),
-              ),
-              currentUserId: 'u_client',
-              onReturn: () {},
-            ),
-          ),
-          mode,
-        );
-      });
+      }
 
-      testWidgets('Billing screens render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        await verifyScreenNoOverflow(
-          tester,
-          const SimulatedCheckoutScreen(
-            title: '3-Phase Industrial DB Panel Servicing',
-            amount: 5500.0,
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          InvoiceScreen(
-            invoiceNumber: 'INV-2026-0091',
-            serviceTitle: '3-Phase Industrial DB Panel Servicing',
-            clientName: 'Fazle Rabbi',
-            clientPhone: '01711223344',
-            specialistName: 'Rahul Ahmed',
-            baseAmount: 5500.0,
-            platformFee: 825.0,
-            totalAmount: 6325.0,
-            paymentMethod: 'bKash',
-            transactionId: 'TRX-894210',
-            paidAt: DateTime(2026, 11, 12),
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          PaymentSuccessScreen(
-            amount: 6325.0,
-            transactionId: 'TRX-894210',
-            paymentMethod: 'Cash',
-            jobTitle: '3-Phase Industrial DB Panel Servicing',
-            specialistName: 'Rahul Ahmed',
-            onViewInvoice: () {},
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(
-          tester,
-          const TransactionHistoryScreen(),
-          mode,
-        );
-      });
-
-      testWidgets('Review & Complaint screens render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        await verifyScreenNoOverflow(
-          tester,
-          const SubmitReviewScreen(
-            workerProfileId: 'wp_demo_1',
-            workerName: 'Kamal Hossain',
-          ),
-          mode,
-        );
-        await verifyScreenNoOverflow(tester, const SubmitComplaintScreen(), mode);
-        await verifyScreenNoOverflow(tester, const WorkerReputationScreen(), mode);
-        await verifyScreenNoOverflow(
-          tester,
-          Scaffold(
-            body: SingleChildScrollView(
-              child: ReviewItemCard(
-                review: ReviewModel(
-                  reviewId: 'rev_1',
-                  workerProfileId: 'wp_1',
-                  clientId: 'c_1',
-                  clientName: 'Sadia Chowdhury (Banani Zone)',
-                  rating: 5,
-                  comment: 'Completed wiring neatly and tested every breaker.',
-                  createdAt: DateTime(2026, 11, 10),
+      for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+        testWidgets(
+          'Worker screens & key widgets render cleanly ($mode, 320dp 2.0x)',
+          (tester) async {
+            await verifyScreenNoOverflow(
+              tester,
+              Scaffold(
+                body: SingleChildScrollView(
+                  child: WorkerDashboardView(
+                    workerEarnings: 42500.0,
+                    workerCompletedJobs: 18,
+                    workerRating: 4.9,
+                    isWorkerAvailable: true,
+                    locationZone: 'Gulshan & Banani, Dhaka',
+                    liveJobRequests: const [],
+                    onToggleAvailability: (_) {},
+                  ),
                 ),
-                dateFormat: DateFormat('dd MMM yyyy'),
+              ),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const IncomingRequestsScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              Scaffold(
+                body: SingleChildScrollView(
+                  child: IncomingRequestCard(
+                    request: const {
+                      'service_request_id': 'req_01',
+                      'title': 'Emergency Main Circuit Breaker Replacement',
+                      'agreed_price': 2500,
+                      'location_zone': 'Dhanmondi 27',
+                      'client_name': 'Sadia Rahman',
+                    },
+                    onAccept: () {},
+                    onDecline: () {},
+                  ),
+                ),
+              ),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const ActiveJobScreen(
+                requestId: 'sr-demo-1234',
+                jobTitle: 'Industrial HVAC Filter & Coolant Tune-up',
+                clientName: 'Delta Apparels Ltd',
+                location: 'Tejgaon Industrial Area, Dhaka',
+                agreedPrice: 4500.0,
+                expectedOtp: '4829',
+                scheduledTime: 'Today, 03:30 PM',
+                serviceNotes:
+                    'Bring manifold gauge set and refrigerant cylinder.',
+              ),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const WorkerEarningsScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const AvailabilityCalendarScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const PortfolioManagementScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const WorkerEditProfileScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const WorkerProfileDetailScreen(),
+              mode,
+            );
+          },
+        );
+
+        testWidgets('Team Project screens render cleanly ($mode, 320dp 2.0x)', (
+          tester,
+        ) async {
+          await verifyScreenNoOverflow(
+            tester,
+            const ProjectDashboardScreen(projectId: 'proj_001'),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const TeamDiscoveryScreen(),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const ProjectShowcaseScreen(),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const TaskBoardScreen(projectId: 'proj_001'),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const TeamRosterScreen(projectId: 'proj_001'),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const AssignTaskScreen(projectId: 'proj_001'),
+            mode,
+          );
+        });
+
+        testWidgets('Chat screens & tiles render cleanly ($mode, 320dp 2.0x)', (
+          tester,
+        ) async {
+          await verifyScreenNoOverflow(tester, const ChatListScreen(), mode);
+          await verifyScreenNoOverflow(
+            tester,
+            const ChatRoomScreen(
+              conversationId: 'conv_demo_1',
+              otherParticipantName: 'Engr. Tariqul Islam (HVAC Lead)',
+              otherParticipantId: 'u_worker_1',
+            ),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            Scaffold(
+              body: ConversationTile(
+                conversation: ConversationModel(
+                  conversationId: 'conv_demo_1',
+                  participantOne: 'u_client',
+                  participantTwo: 'u_worker_1',
+                  otherParticipantName: 'Rahul Ahmed • Master Electrician',
+                  lastMessageText:
+                      'Inspection checklist uploaded for your review.',
+                  unreadCount: 2,
+                  lastMessageAt: DateTime.now(),
+                  createdAt: DateTime.now(),
+                ),
+                currentUserId: 'u_client',
+                onReturn: () {},
               ),
             ),
-          ),
-          mode,
-        );
-      });
+            mode,
+          );
+        });
 
-      testWidgets('Admin screens render cleanly ($mode, 320dp 2.0x)', (
-        tester,
-      ) async {
-        await verifyScreenNoOverflow(tester, const AdminDashboardScreen(), mode);
-        await verifyScreenNoOverflow(tester, const VerificationQueueScreen(), mode);
-        await verifyScreenNoOverflow(tester, const DisputeResolutionScreen(), mode);
-        await verifyScreenNoOverflow(tester, const TeamAssemblyScreen(), mode);
-      });
-    }
-  });
+        testWidgets('Billing screens render cleanly ($mode, 320dp 2.0x)', (
+          tester,
+        ) async {
+          await verifyScreenNoOverflow(
+            tester,
+            const SimulatedCheckoutScreen(
+              title: '3-Phase Industrial DB Panel Servicing',
+              amount: 5500.0,
+            ),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            InvoiceScreen(
+              invoiceNumber: 'INV-2026-0091',
+              serviceTitle: '3-Phase Industrial DB Panel Servicing',
+              clientName: 'Fazle Rabbi',
+              clientPhone: '01711223344',
+              specialistName: 'Rahul Ahmed',
+              baseAmount: 5500.0,
+              platformFee: 825.0,
+              totalAmount: 6325.0,
+              paymentMethod: 'bKash',
+              transactionId: 'TRX-894210',
+              paidAt: DateTime(2026, 11, 12),
+            ),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            PaymentSuccessScreen(
+              amount: 6325.0,
+              transactionId: 'TRX-894210',
+              paymentMethod: 'Cash',
+              jobTitle: '3-Phase Industrial DB Panel Servicing',
+              specialistName: 'Rahul Ahmed',
+              onViewInvoice: () {},
+            ),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const TransactionHistoryScreen(),
+            mode,
+          );
+        });
+
+        testWidgets(
+          'Review & Complaint screens render cleanly ($mode, 320dp 2.0x)',
+          (tester) async {
+            await verifyScreenNoOverflow(
+              tester,
+              const SubmitReviewScreen(
+                workerProfileId: 'wp_demo_1',
+                workerName: 'Kamal Hossain',
+              ),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const SubmitComplaintScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              const WorkerReputationScreen(),
+              mode,
+            );
+            await verifyScreenNoOverflow(
+              tester,
+              Scaffold(
+                body: SingleChildScrollView(
+                  child: ReviewItemCard(
+                    review: ReviewModel(
+                      reviewId: 'rev_1',
+                      workerProfileId: 'wp_1',
+                      clientId: 'c_1',
+                      clientName: 'Sadia Chowdhury (Banani Zone)',
+                      rating: 5,
+                      comment:
+                          'Completed wiring neatly and tested every breaker.',
+                      createdAt: DateTime(2026, 11, 10),
+                    ),
+                    dateFormat: DateFormat('dd MMM yyyy'),
+                  ),
+                ),
+              ),
+              mode,
+            );
+          },
+        );
+
+        testWidgets('Admin screens render cleanly ($mode, 320dp 2.0x)', (
+          tester,
+        ) async {
+          await verifyScreenNoOverflow(
+            tester,
+            const AdminDashboardScreen(),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const VerificationQueueScreen(),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const DisputeResolutionScreen(),
+            mode,
+          );
+          await verifyScreenNoOverflow(
+            tester,
+            const TeamAssemblyScreen(),
+            mode,
+          );
+        });
+      }
+    },
+  );
 }

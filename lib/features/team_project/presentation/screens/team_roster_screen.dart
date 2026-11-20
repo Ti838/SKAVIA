@@ -58,7 +58,8 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
           _members = (res as List).map((m) {
             final worker = m['worker_profiles'] as Map<String, dynamic>?;
             final user = worker?['users'] as Map<String, dynamic>?;
-            final name = (user?['full_name'] as String?)?.trim() ?? 'Specialist';
+            final name =
+                (user?['full_name'] as String?)?.trim() ?? 'Specialist';
             final role =
                 (m['role_in_team'] as String?)?.trim() ?? 'Team Member';
             final trade =
@@ -114,182 +115,179 @@ class _TeamRosterScreenState extends State<TeamRosterScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: tokens.brandAccent),
-            )
+          ? Center(child: CircularProgressIndicator(color: tokens.brandAccent))
           : _members.isEmpty
-              ? Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.people_outline_rounded,
-                          size: 56,
-                          color: tokens.mutedText,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No Specialists Assigned Yet',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontFamily: AppTypography.headingFont,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Specialists assigned to this project team by the Team Leader will appear here.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: tokens.secondaryText,
-                          ),
-                        ),
-                      ],
+          ? Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.people_outline_rounded,
+                      size: 56,
+                      color: tokens.mutedText,
                     ),
-                  ),
-                )
-              : ListView.separated(
-                  padding: const EdgeInsets.all(AppDimensions.paddingLarge),
-                  itemCount: _members.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final member = _members[index];
-                    final rating = (member['rating'] as num?)?.toDouble() ?? 0.0;
-
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: tokens.cardBg,
-                        borderRadius:
-                            BorderRadius.circular(AppDimensions.radiusLarge),
-                        border: Border.all(color: tokens.border),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black
-                                .withValues(alpha: isDark ? 0.16 : 0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                    const SizedBox(height: 16),
+                    Text(
+                      'No Specialists Assigned Yet',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: colorScheme.onSurface,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          UserAvatar(
-                            name: member['name'] as String,
-                            isVerified: member['isVerified'] == true,
-                            radius: 24,
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Specialists assigned to this project team by the Team Leader will appear here.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: tokens.secondaryText,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(AppDimensions.paddingLarge),
+              itemCount: _members.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final member = _members[index];
+                final rating = (member['rating'] as num?)?.toDouble() ?? 0.0;
+
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: tokens.cardBg,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
+                    ),
+                    border: Border.all(color: tokens.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.16 : 0.03,
+                        ),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      UserAvatar(
+                        name: member['name'] as String,
+                        isVerified: member['isVerified'] == true,
+                        radius: 24,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
                               children: [
-                                Wrap(
-                                  spacing: 6,
-                                  runSpacing: 4,
-                                  crossAxisAlignment:
-                                      WrapCrossAlignment.center,
-                                  children: [
-                                    Text(
-                                      member['name'] as String,
-                                      style: TextStyle(
-                                        fontFamily: AppTypography.headingFont,
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 15,
-                                        color: colorScheme.onSurface,
-                                      ),
+                                Text(
+                                  member['name'] as String,
+                                  style: TextStyle(
+                                    fontFamily: AppTypography.headingFont,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                if (rating > 0)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
                                     ),
-                                    if (rating > 0)
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 6,
-                                          vertical: 2,
+                                    decoration: BoxDecoration(
+                                      color: tokens.softPeachBg,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.star_rounded,
+                                          size: 11,
+                                          color: AppColors.accent,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: tokens.softPeachBg,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          rating.toStringAsFixed(1),
+                                          style: const TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppColors.accent,
+                                          ),
                                         ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              Icons.star_rounded,
-                                              size: 11,
-                                              color: AppColors.accent,
-                                            ),
-                                            const SizedBox(width: 2),
-                                            Text(
-                                              rating.toStringAsFixed(1),
-                                              style: const TextStyle(
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppColors.accent,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  member['role'] as String,
-                                  style: TextStyle(
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: tokens.brandAccent,
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${member['trade']} • ${member['activeTasks']} active tasks',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    color: tokens.mutedText,
-                                  ),
-                                ),
                               ],
                             ),
-                          ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              color: tokens.brandAccent,
-                              size: 20,
+                            const SizedBox(height: 3),
+                            Text(
+                              member['role'] as String,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: tokens.brandAccent,
+                              ),
                             ),
-                            onPressed: () {
-                              User? currentUser;
-                              try {
-                                currentUser =
-                                    FirebaseAuth.instance.currentUser;
-                              } catch (_) {
-                                currentUser = null;
-                              }
-                              if (currentUser == null) {
-                                UiFeedbackHelper.showInfo(
-                                  context,
-                                  'Sign in to message ${member['name']}.',
-                                );
-                                return;
-                              }
-                              UiFeedbackHelper.showInfo(
-                                context,
-                                'Use the Project Messages tab to coordinate with ${member['name']}.',
-                              );
-                            },
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              '${member['trade']} • ${member['activeTasks']} active tasks',
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: tokens.mutedText,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.chat_bubble_outline_rounded,
+                          color: tokens.brandAccent,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          User? currentUser;
+                          try {
+                            currentUser = FirebaseAuth.instance.currentUser;
+                          } catch (_) {
+                            currentUser = null;
+                          }
+                          if (currentUser == null) {
+                            UiFeedbackHelper.showInfo(
+                              context,
+                              'Sign in to message ${member['name']}.',
+                            );
+                            return;
+                          }
+                          UiFeedbackHelper.showInfo(
+                            context,
+                            'Use the Project Messages tab to coordinate with ${member['name']}.',
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 }

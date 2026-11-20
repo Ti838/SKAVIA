@@ -67,27 +67,24 @@ class RadarMapFilterBar extends StatelessWidget {
                   size: 16,
                   color: tokens.brandAccent,
                 ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'All',
-                      child: Text('All Trades', overflow: TextOverflow.ellipsis),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Electrical',
-                      child: Text(
-                        'Electrician',
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    DropdownMenuItem(
-                      value: 'HVAC',
-                      child: Text('AC / HVAC', overflow: TextOverflow.ellipsis),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Plumbing',
-                      child: Text('Plumber', overflow: TextOverflow.ellipsis),
-                    ),
-                  ],
+                items: const [
+                  DropdownMenuItem(
+                    value: 'All',
+                    child: Text('All Trades', overflow: TextOverflow.ellipsis),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Electrical',
+                    child: Text('Electrician', overflow: TextOverflow.ellipsis),
+                  ),
+                  DropdownMenuItem(
+                    value: 'HVAC',
+                    child: Text('AC / HVAC', overflow: TextOverflow.ellipsis),
+                  ),
+                  DropdownMenuItem(
+                    value: 'Plumbing',
+                    child: Text('Plumber', overflow: TextOverflow.ellipsis),
+                  ),
+                ],
                 onChanged: (val) {
                   if (val != null) onTradeFilterChanged(val);
                 },

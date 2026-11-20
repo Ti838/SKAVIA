@@ -17,17 +17,17 @@ class PermissionHealth {
   });
 
   const PermissionHealth.initial()
-      : camera = DiagnosticStatus.notTested,
-        location = DiagnosticStatus.notTested,
-        notifications = DiagnosticStatus.notTested,
-        microphone = DiagnosticStatus.notApplicable,
-        storage = DiagnosticStatus.notTested;
+    : camera = DiagnosticStatus.notTested,
+      location = DiagnosticStatus.notTested,
+      notifications = DiagnosticStatus.notTested,
+      microphone = DiagnosticStatus.notApplicable,
+      storage = DiagnosticStatus.notTested;
 
   Map<String, dynamic> toJson() => {
-        'camera': camera.name,
-        'location': location.name,
-        'notifications': notifications.name,
-        'microphone': microphone.name,
-        'storage': storage.name,
-      };
+    'camera': camera.name,
+    'location': location.name,
+    'notifications': notifications.name,
+    'microphone': microphone.name,
+    'storage': storage.name,
+  };
 }

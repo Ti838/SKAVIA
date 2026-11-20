@@ -22,7 +22,9 @@ class ReviewRemoteDataSource {
   }) async {
     final client = _supabase;
     if (client == null) {
-      throw Exception('Review submission requires an active backend connection.');
+      throw Exception(
+        'Review submission requires an active backend connection.',
+      );
     }
 
     final now = DateTime.now().toIso8601String();

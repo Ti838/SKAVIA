@@ -79,10 +79,7 @@ class TeamMemberTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   role,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: tokens.mutedText,
-                  ),
+                  style: TextStyle(fontSize: 12, color: tokens.mutedText),
                 ),
               ],
             ),

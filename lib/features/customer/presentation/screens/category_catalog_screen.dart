@@ -96,9 +96,8 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                     children: [
                       if (!widget.isTab) ...[
                         IconButton(
-                          tooltip: MaterialLocalizations.of(
-                            context,
-                          ).backButtonTooltip,
+                          tooltip: MaterialLocalizations.of(context)
+                              .backButtonTooltip,
                           onPressed: () => Navigator.pop(context),
                           icon: Icon(
                             Icons.arrow_back_ios_new_rounded,
@@ -204,7 +203,9 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    l10n.servicesAvailableCount(_controller.services.length),
+                                    l10n.servicesAvailableCount(
+                                      _controller.services.length,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: theme.textTheme.titleMedium

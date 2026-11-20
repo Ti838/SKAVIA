@@ -140,7 +140,8 @@ class FeedCardBody extends StatelessWidget {
             ),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final stackRows = constraints.maxWidth < 330 || textScale > 1.35;
+                final stackRows =
+                    constraints.maxWidth < 330 || textScale > 1.35;
                 if (stackRows) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

@@ -28,7 +28,9 @@ class RequirementTypeSelector extends StatelessWidget {
 
     return Material(
       color: isSelected
-          ? AppColors.primarySky.withValues(alpha: context.isDarkMode ? 0.18 : 0.08)
+          ? AppColors.primarySky.withValues(
+              alpha: context.isDarkMode ? 0.18 : 0.08,
+            )
           : tokens.cardBg,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
@@ -61,16 +63,15 @@ class RequirementTypeSelector extends StatelessWidget {
                   fontFamily: AppTypography.headingFont,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: isSelected ? tokens.brandAccent : colorScheme.onSurface,
+                  color: isSelected
+                      ? tokens.brandAccent
+                      : colorScheme.onSurface,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: tokens.mutedText,
-                ),
+                style: TextStyle(fontSize: 11, color: tokens.mutedText),
               ),
             ],
           ),
@@ -116,11 +117,7 @@ class RequirementTypeSelector extends StatelessWidget {
             );
             if (stackCards) {
               return Column(
-                children: [
-                  singleCard,
-                  const SizedBox(height: 10),
-                  teamCard,
-                ],
+                children: [singleCard, const SizedBox(height: 10), teamCard],
               );
             }
             return Row(

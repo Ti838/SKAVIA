@@ -70,8 +70,8 @@ class _NotificationPermissionSheetState
       return;
     }
 
-    final granted =
-        await NotificationService.instance.requestNotificationPermission();
+    final granted = await NotificationService.instance
+        .requestNotificationPermission();
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -179,8 +179,7 @@ class _NotificationPermissionSheetState
                 icon: Icons.bolt_rounded,
                 iconColor: AppColors.warning,
                 title: 'Instant Job Bids & Match Alerts',
-                description:
-                    'Get notified immediately with custom sound when new tasks match your skill.',
+                description: 'Get notified immediately with custom sound when new tasks match your skill.',
               ),
               const SizedBox(height: 14),
               _buildFeatureRow(
@@ -188,8 +187,7 @@ class _NotificationPermissionSheetState
                 icon: Icons.chat_bubble_outline_rounded,
                 iconColor: AppColors.primarySky,
                 title: 'Direct Client & Worker Chat',
-                description:
-                    'Never miss an update or message during an ongoing project.',
+                description: 'Never miss an update or message during an ongoing project.',
               ),
               const SizedBox(height: 14),
               _buildFeatureRow(
@@ -310,4 +308,3 @@ class _NotificationPermissionSheetState
     );
   }
 }
-

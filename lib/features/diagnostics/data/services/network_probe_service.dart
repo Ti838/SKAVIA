@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:http/http.dart' as http;
 
 import '../../domain/entities/network_benchmark.dart';
@@ -59,7 +60,9 @@ class NetworkProbeService {
       stopwatch.stop();
       return NetworkBenchmark(
         isOnline: false,
-        latencyMs: stopwatch.elapsedMilliseconds > 0 ? stopwatch.elapsedMilliseconds : -1,
+        latencyMs: stopwatch.elapsedMilliseconds > 0
+            ? stopwatch.elapsedMilliseconds
+            : -1,
         testEndpoint: endpoint,
         quality: DiagnosticStatus.unsupported,
         connectionType: 'Disconnected / Unreachable',

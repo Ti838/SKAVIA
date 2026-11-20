@@ -212,19 +212,19 @@ class _CandidateMatchesScreenState extends State<CandidateMatchesScreen> {
                               decoration: BoxDecoration(
                                 color: tokens.softBlueBg,
                                 borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Text(
-                                  'SRS Rule-Based',
-                                  style: AppTypography.caption.copyWith(
-                                    color: tokens.brandAccent,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                              ),
+                              child: Text(
+                                'SRS Rule-Based',
+                                style: AppTypography.caption.copyWith(
+                                  color: tokens.brandAccent,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      }
+                            ),
+                          ],
+                        ),
+                      );
+                    }
 
                     final candidate = matches[index - 1];
                     return CandidateMatchCard(

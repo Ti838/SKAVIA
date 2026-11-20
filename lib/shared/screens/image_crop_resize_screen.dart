@@ -100,7 +100,10 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
   }
 
   void _syncZoomFromController() {
-    final scale = _transformController.value.getMaxScaleOnAxis().clamp(1.0, 4.5);
+    final scale = _transformController.value.getMaxScaleOnAxis().clamp(
+      1.0,
+      4.5,
+    );
     if ((scale - _zoom).abs() > 0.01 && mounted) {
       setState(() => _zoom = scale);
     }
@@ -189,10 +192,7 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
       final pngFile = File(
         '${tempDir.path}${Platform.pathSeparator}skavia_crop_${DateTime.now().millisecondsSinceEpoch}.png',
       );
-      await pngFile.writeAsBytes(
-        byteData.buffer.asUint8List(),
-        flush: true,
-      );
+      await pngFile.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
 
       final compressed = await MediaPickerService.compressToJpeg(
         pngFile,
@@ -324,10 +324,7 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
                                 child: SizedBox(
                                   width: _dispW,
                                   height: _dispH,
-                                  child: RawImage(
-                                    image: img,
-                                    fit: BoxFit.fill,
-                                  ),
+                                  child: RawImage(image: img, fit: BoxFit.fill),
                                 ),
                               ),
                             ),
@@ -360,4 +357,3 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
     );
   }
 }
-

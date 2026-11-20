@@ -26,17 +26,17 @@ class AppNotificationModel {
   });
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'user_id': userId,
-        'dedup_key': dedupKey,
-        'title': title,
-        'body': body,
-        'category': category,
-        'action_route': actionRoute,
-        'metadata': metadata,
-        'is_read': isRead,
-        'created_at': createdAt.toIso8601String(),
-      };
+    'id': id,
+    'user_id': userId,
+    'dedup_key': dedupKey,
+    'title': title,
+    'body': body,
+    'category': category,
+    'action_route': actionRoute,
+    'metadata': metadata,
+    'is_read': isRead,
+    'created_at': createdAt.toIso8601String(),
+  };
 
   factory AppNotificationModel.fromJson(Map<String, dynamic> json) =>
       AppNotificationModel(
@@ -82,4 +82,3 @@ class AppNotificationModel {
     );
   }
 }
-

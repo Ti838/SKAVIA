@@ -50,8 +50,7 @@ class ProfilePersonalDetailsSection extends StatelessWidget {
           hint: 'Enter your legal full name',
           prefixIcon: const Icon(Icons.person_outline),
           onChanged: (_) => onFieldChanged(),
-          validator: (val) =>
-              val == null || val.trim().length < 3
+          validator: (val) => val == null || val.trim().length < 3
               ? 'Please enter at least 3 characters'
               : null,
         ),

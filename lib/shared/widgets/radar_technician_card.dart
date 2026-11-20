@@ -73,21 +73,14 @@ class RadarTechnicianCard extends StatelessWidget {
             ),
             if (tech.isVerified) ...[
               const SizedBox(width: 4),
-              Icon(
-                Icons.verified_rounded,
-                size: 15,
-                color: tokens.tealAccent,
-              ),
+              Icon(Icons.verified_rounded, size: 15, color: tokens.tealAccent),
             ],
           ],
         ),
         const SizedBox(height: 2),
         Text(
           '${tech.trade} • ${tech.zone}',
-          style: TextStyle(
-            fontSize: 11,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 11, color: colorScheme.onSurfaceVariant),
           maxLines: isLargeText ? 2 : 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -101,11 +94,7 @@ class RadarTechnicianCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.star_rounded,
-                    size: 14,
-                    color: tokens.warning,
-                  ),
+                  Icon(Icons.star_rounded, size: 14, color: tokens.warning),
                   const SizedBox(width: 3),
                   Flexible(
                     child: Text(
@@ -128,10 +117,7 @@ class RadarTechnicianCard extends StatelessWidget {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 6,
-                vertical: 2,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: tokens.softBlueBg,
                 borderRadius: BorderRadius.circular(6),
@@ -157,10 +143,7 @@ class RadarTechnicianCard extends StatelessWidget {
       children: [
         Text(
           isBn ? 'শুরুর রেট' : 'Starting',
-          style: TextStyle(
-            fontSize: 10,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 10, color: colorScheme.onSurfaceVariant),
         ),
         Text(
           '৳ ${tech.startingRate.toStringAsFixed(0)}',
@@ -206,10 +189,7 @@ class RadarTechnicianCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(child: infoColumn),
-                if (!isLargeText) ...[
-                  const SizedBox(width: 8),
-                  rateColumn,
-                ],
+                if (!isLargeText) ...[const SizedBox(width: 8), rateColumn],
               ],
             ),
             if (isLargeText) ...[

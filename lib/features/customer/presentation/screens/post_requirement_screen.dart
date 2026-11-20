@@ -267,9 +267,7 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
         child: Column(
           children: [
             // Top App Bar matching Screen 6 (Request a Service)
-            PostRequirementHeader(
-              onBack: () => Navigator.pop(context),
-            ),
+            PostRequirementHeader(onBack: () => Navigator.pop(context)),
 
             // Horizontal Stepper Indicator matching Screen 6
             const PostRequirementStepper(activeStep: 1),

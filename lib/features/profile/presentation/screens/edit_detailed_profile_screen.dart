@@ -327,8 +327,9 @@ class _EditDetailedProfileScreenState extends State<EditDetailedProfileScreen> {
                       ),
                       const SizedBox(height: 28),
                       AppButton(
-                        text:
-                            isBn ? 'তথ্য সংরক্ষণ করুন' : 'Save Profile Details',
+                        text: isBn
+                            ? 'তথ্য সংরক্ষণ করুন'
+                            : 'Save Profile Details',
                         isLoading: widget.controller.isLoading,
                         onPressed: _handleSave,
                       ),

@@ -60,10 +60,7 @@ class CropControlsToolbar extends StatelessWidget {
                   ? 'ছবি সরাতে টেনে নিন এবং জুম করতে পিঞ্চ বা স্লাইডার ব্যবহার করুন'
                   : 'Drag to reposition and pinch or slide to resize',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 11.5,
-              ),
+              style: const TextStyle(color: Colors.white60, fontSize: 11.5),
             ),
             const SizedBox(height: 14),
             Row(
@@ -109,9 +106,7 @@ class CropControlsToolbar extends StatelessWidget {
                       isSaving
                           ? (isBengali ? 'প্রসেস হচ্ছে...' : 'Applying...')
                           : (isBengali ? 'সেভ ও আপলোড' : 'Crop & Save'),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w700,
-                      ),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),

@@ -110,11 +110,7 @@ class IncomingRequestCard extends StatelessWidget {
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 16,
-                color: tokens.brandAccent,
-              ),
+              Icon(Icons.schedule_rounded, size: 16, color: tokens.brandAccent),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -172,16 +168,15 @@ class IncomingRequestCard extends StatelessWidget {
                 ),
               );
 
-              final acceptBtn = AppButton(text: 'Accept Job', onPressed: onAccept);
+              final acceptBtn = AppButton(
+                text: 'Accept Job',
+                onPressed: onAccept,
+              );
 
               if (stackButtons) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    acceptBtn,
-                    const SizedBox(height: 8),
-                    declineBtn,
-                  ],
+                  children: [acceptBtn, const SizedBox(height: 8), declineBtn],
                 );
               }
               return Row(

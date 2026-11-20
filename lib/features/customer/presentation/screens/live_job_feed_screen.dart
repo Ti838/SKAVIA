@@ -225,11 +225,7 @@ class _LiveJobFeedScreenState extends State<LiveJobFeedScreen> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: widget.isTab
-          ? null
-          : AppAppBar(
-              title: l10n.feedTitle,
-            ),
+      appBar: widget.isTab ? null : AppAppBar(title: l10n.feedTitle),
       body: SafeArea(
         top: !widget.isTab,
         child: RefreshIndicator(

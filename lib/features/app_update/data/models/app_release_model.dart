@@ -59,14 +59,16 @@ class AppReleaseInfo {
     final versionName = json['versionName']?.toString().trim() ?? '';
     final buildNumber = (json['buildNumber'] as num?)?.toInt() ?? 0;
     final minSupportedBuild = (json['minSupportedBuild'] as num?)?.toInt() ?? 1;
-    final fileName = json['fileName']?.toString().trim() ?? 'skavia-release.apk';
+    final fileName =
+        json['fileName']?.toString().trim() ?? 'skavia-release.apk';
     final fileSizeBytes = (json['fileSizeBytes'] as num?)?.toInt() ?? 0;
     final sha256Checksum =
         json['sha256Checksum']?.toString().trim().toLowerCase() ?? '';
     final downloadUrl = json['downloadUrl']?.toString().trim() ?? '';
 
     final uri = Uri.tryParse(downloadUrl);
-    final validScheme = uri != null &&
+    final validScheme =
+        uri != null &&
         (uri.scheme == 'https' || uri.scheme == 'http') &&
         uri.host.isNotEmpty;
 
@@ -93,7 +95,10 @@ class AppReleaseInfo {
       fileName: fileName.isEmpty ? 'skavia-release.apk' : fileName,
       fileSizeBytes: fileSizeBytes,
       sha256Checksum: sha256Checksum,
-      signingCertSha256: json['signingCertSha256']?.toString().trim().toLowerCase(),
+      signingCertSha256: json['signingCertSha256']
+          ?.toString()
+          .trim()
+          .toLowerCase(),
       downloadUrl: downloadUrl,
       publishedAt: json['publishedAt'] != null
           ? DateTime.tryParse(json['publishedAt'].toString())
@@ -102,22 +107,22 @@ class AppReleaseInfo {
   }
 
   Map<String, dynamic> toJson() => {
-        'releaseId': releaseId,
-        'packageName': packageName,
-        'versionName': versionName,
-        'buildNumber': buildNumber,
-        'minSupportedBuild': minSupportedBuild,
-        'minSdkVersion': minSdkVersion,
-        'targetSdkVersion': targetSdkVersion,
-        'releaseNotes': releaseNotes,
-        'isMandatory': isMandatory,
-        'fileName': fileName,
-        'fileSizeBytes': fileSizeBytes,
-        'sha256Checksum': sha256Checksum,
-        'signingCertSha256': signingCertSha256,
-        'downloadUrl': downloadUrl,
-        'publishedAt': publishedAt?.toIso8601String(),
-      };
+    'releaseId': releaseId,
+    'packageName': packageName,
+    'versionName': versionName,
+    'buildNumber': buildNumber,
+    'minSupportedBuild': minSupportedBuild,
+    'minSdkVersion': minSdkVersion,
+    'targetSdkVersion': targetSdkVersion,
+    'releaseNotes': releaseNotes,
+    'isMandatory': isMandatory,
+    'fileName': fileName,
+    'fileSizeBytes': fileSizeBytes,
+    'sha256Checksum': sha256Checksum,
+    'signingCertSha256': signingCertSha256,
+    'downloadUrl': downloadUrl,
+    'publishedAt': publishedAt?.toIso8601String(),
+  };
 
   String get formattedSize => Formatters.formatFileSize(fileSizeBytes);
 }
@@ -148,10 +153,10 @@ class AppUpdateSupportInfo {
   }
 
   Map<String, dynamic> toJson() => {
-        'websiteDownloadUrl': websiteDownloadUrl,
-        'helpline': helpline,
-        'supportEmail': supportEmail,
-      };
+    'websiteDownloadUrl': websiteDownloadUrl,
+    'helpline': helpline,
+    'supportEmail': supportEmail,
+  };
 }
 
 @immutable
@@ -209,8 +214,8 @@ class AppUpdateEvaluation {
     final latestMap = json['latestRelease'] is Map<String, dynamic>
         ? json['latestRelease'] as Map<String, dynamic>
         : (json['latestRelease'] is Map
-            ? Map<String, dynamic>.from(json['latestRelease'] as Map)
-            : null);
+              ? Map<String, dynamic>.from(json['latestRelease'] as Map)
+              : null);
 
     AppReleaseInfo? parsedRelease;
     if (latestMap != null) {
@@ -236,16 +241,20 @@ class AppUpdateEvaluation {
     final status = switch (rawStatus) {
       'up_to_date' => AppUpdateAvailability.upToDate,
       'no_published_release' => AppUpdateAvailability.noPublishedRelease,
-      'optional_update' => parsedRelease != null
-          ? AppUpdateAvailability.optionalUpdate
-          : AppUpdateAvailability.invalidMetadata,
-      'mandatory_update' => parsedRelease != null
-          ? AppUpdateAvailability.mandatoryUpdate
-          : AppUpdateAvailability.invalidMetadata,
-      'unsupported_installed_build' => parsedRelease != null
-          ? AppUpdateAvailability.unsupportedInstalledBuild
-          : AppUpdateAvailability.invalidMetadata,
-      'suspended_installed_build' => AppUpdateAvailability.suspendedInstalledBuild,
+      'optional_update' =>
+        parsedRelease != null
+            ? AppUpdateAvailability.optionalUpdate
+            : AppUpdateAvailability.invalidMetadata,
+      'mandatory_update' =>
+        parsedRelease != null
+            ? AppUpdateAvailability.mandatoryUpdate
+            : AppUpdateAvailability.invalidMetadata,
+      'unsupported_installed_build' =>
+        parsedRelease != null
+            ? AppUpdateAvailability.unsupportedInstalledBuild
+            : AppUpdateAvailability.invalidMetadata,
+      'suspended_installed_build' =>
+        AppUpdateAvailability.suspendedInstalledBuild,
       _ => AppUpdateAvailability.invalidMetadata,
     };
 
@@ -254,7 +263,8 @@ class AppUpdateEvaluation {
       channel: json['channel']?.toString() ?? channel,
       installedVersion: installedVersion,
       installedBuild: installedBuild,
-      installedBuildSuspended: json['installedBuildSuspended'] as bool? ?? false,
+      installedBuildSuspended:
+          json['installedBuildSuspended'] as bool? ?? false,
       installedSuspensionReason: json['installedSuspensionReason']?.toString(),
       latestRelease: parsedRelease,
       supportInfo: AppUpdateSupportInfo.fromJson(
@@ -273,25 +283,24 @@ class AppUpdateEvaluation {
   }
 
   Map<String, dynamic> toCacheJson() => {
-        'updateStatus': switch (status) {
-          AppUpdateAvailability.upToDate => 'up_to_date',
-          AppUpdateAvailability.noPublishedRelease => 'no_published_release',
-          AppUpdateAvailability.optionalUpdate => 'optional_update',
-          AppUpdateAvailability.mandatoryUpdate => 'mandatory_update',
-          AppUpdateAvailability.unsupportedInstalledBuild =>
-            'unsupported_installed_build',
-          AppUpdateAvailability.suspendedInstalledBuild =>
-            'suspended_installed_build',
-          _ => 'invalid_metadata',
-        },
-        'channel': channel,
-        'installedVersion': installedVersion,
-        'installedBuild': installedBuild,
-        'installedBuildSuspended': installedBuildSuspended,
-        'installedSuspensionReason': installedSuspensionReason,
-        'latestRelease': latestRelease?.toJson(),
-        'supportInfo': supportInfo.toJson(),
-        'checkedAt': checkedAt.toIso8601String(),
-      };
+    'updateStatus': switch (status) {
+      AppUpdateAvailability.upToDate => 'up_to_date',
+      AppUpdateAvailability.noPublishedRelease => 'no_published_release',
+      AppUpdateAvailability.optionalUpdate => 'optional_update',
+      AppUpdateAvailability.mandatoryUpdate => 'mandatory_update',
+      AppUpdateAvailability.unsupportedInstalledBuild =>
+        'unsupported_installed_build',
+      AppUpdateAvailability.suspendedInstalledBuild =>
+        'suspended_installed_build',
+      _ => 'invalid_metadata',
+    },
+    'channel': channel,
+    'installedVersion': installedVersion,
+    'installedBuild': installedBuild,
+    'installedBuildSuspended': installedBuildSuspended,
+    'installedSuspensionReason': installedSuspensionReason,
+    'latestRelease': latestRelease?.toJson(),
+    'supportInfo': supportInfo.toJson(),
+    'checkedAt': checkedAt.toIso8601String(),
+  };
 }
-

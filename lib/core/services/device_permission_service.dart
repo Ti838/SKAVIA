@@ -14,8 +14,7 @@ class DevicePermissionService {
       final proceed = await _showRationaleDialog(
         context: context,
         title: 'Camera Access Required',
-        description:
-            'SKAVIA needs camera access so you can take clear photos of your broken appliances or plumbing fixtures. This helps technicians diagnose the exact issue before arriving.',
+        description: 'SKAVIA needs camera access so you can take clear photos of your broken appliances or plumbing fixtures. This helps technicians diagnose the exact issue before arriving.',
         icon: Icons.camera_alt_outlined,
       );
       if (!proceed) return false;
@@ -39,8 +38,7 @@ class DevicePermissionService {
       final proceed = await _showRationaleDialog(
         context: context,
         title: 'Location Access Required',
-        description:
-            'SKAVIA uses your location to discover the closest verified trade specialists in your area and calculate accurate dispatch arrival times.',
+        description: 'SKAVIA uses your location to discover the closest verified trade specialists in your area and calculate accurate dispatch arrival times.',
         icon: Icons.location_on_outlined,
       );
       if (!proceed) return false;

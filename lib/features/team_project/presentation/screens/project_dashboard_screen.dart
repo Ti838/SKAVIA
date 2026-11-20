@@ -131,7 +131,9 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
 
             final tasksRes = await client
                 .from('tasks')
-                .select('task_id, title, status, description, deadline, created_at')
+                .select(
+                  'task_id, title, status, description, deadline, created_at',
+                )
                 .eq('project_id', projId);
 
             if (tasksRes.isNotEmpty) {
@@ -144,8 +146,11 @@ class _ProjectDashboardScreenState extends State<ProjectDashboardScreen> {
                     statusRaw == 'Submitted') {
                   statusClean = 'In Progress';
                 }
-                final rawDate = (t['deadline'] ?? t['created_at'])?.toString() ?? '';
-                final shortDate = rawDate.length >= 10 ? rawDate.substring(0, 10) : 'TBD';
+                final rawDate =
+                    (t['deadline'] ?? t['created_at'])?.toString() ?? '';
+                final shortDate = rawDate.length >= 10
+                    ? rawDate.substring(0, 10)
+                    : 'TBD';
                 return {
                   'id': t['task_id']?.toString() ?? '',
                   'title': t['title']?.toString() ?? 'Task',

@@ -229,125 +229,129 @@ class _PortfolioManagementScreenState extends State<PortfolioManagementScreen> {
               ),
             )
           : ListView.separated(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
-        itemCount: _portfolioItems.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 14),
-        itemBuilder: (context, index) {
-          final item = _portfolioItems[index];
-          return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: tokens.cardBg,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-              border: Border.all(color: tokens.border),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: tokens.softBlueBg,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        item['category'] as String,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: tokens.brandAccent,
-                        ),
-                      ),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
+              itemCount: _portfolioItems.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 14),
+              itemBuilder: (context, index) {
+                final item = _portfolioItems[index];
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: tokens.cardBg,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusLarge,
                     ),
-                    Wrap(
-                      spacing: 6,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        if (item['verified'] == true) ...[
-                          Icon(
-                            Icons.verified_rounded,
-                            size: 14,
-                            color: tokens.brandAccent,
-                          ),
-                          Text(
-                            'Verified',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: tokens.brandAccent,
+                    border: Border.all(color: tokens.border),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: tokens.softBlueBg,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              item['category'] as String,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: tokens.brandAccent,
+                              ),
                             ),
                           ),
-                        ],
-                        Text(
-                          item['year'] as String,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: tokens.secondaryText,
+                          Wrap(
+                            spacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              if (item['verified'] == true) ...[
+                                Icon(
+                                  Icons.verified_rounded,
+                                  size: 14,
+                                  color: tokens.brandAccent,
+                                ),
+                                Text(
+                                  'Verified',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: tokens.brandAccent,
+                                  ),
+                                ),
+                              ],
+                              Text(
+                                item['year'] as String,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: tokens.secondaryText,
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  item['title'] as String,
-                  style: TextStyle(
-                    fontFamily: AppTypography.headingFont,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15.5,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  item['description'] as String,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: tokens.secondaryText,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: (item['skills'] as List<dynamic>).map((skill) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
+                        ],
                       ),
-                      decoration: BoxDecoration(
-                        color: tokens.subtleCardBg,
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: tokens.subtleBorder),
-                      ),
-                      child: Text(
-                        skill.toString(),
+                      const SizedBox(height: 10),
+                      Text(
+                        item['title'] as String,
                         style: TextStyle(
-                          fontSize: 11,
+                          fontFamily: AppTypography.headingFont,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 15.5,
                           color: colorScheme.onSurface,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-              ],
+                      const SizedBox(height: 6),
+                      Text(
+                        item['description'] as String,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: tokens.secondaryText,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: (item['skills'] as List<dynamic>).map((
+                          skill,
+                        ) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: tokens.subtleCardBg,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: tokens.subtleBorder),
+                            ),
+                            child: Text(
+                              skill.toString(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: colorScheme.onSurface,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addNewProject,
         backgroundColor: tokens.brandAccent,

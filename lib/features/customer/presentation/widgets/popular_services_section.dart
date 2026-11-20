@@ -109,9 +109,7 @@ class PopularServicesSection extends StatelessWidget {
               );
             }
             return Row(
-              children: items
-                  .map((item) => Expanded(child: item))
-                  .toList(),
+              children: items.map((item) => Expanded(child: item)).toList(),
             );
           },
         ),

@@ -245,8 +245,9 @@ class _LiveJobBidSheetState extends State<LiveJobBidSheet> {
                     ),
                   ),
                   IconButton(
-                    onPressed:
-                        _isSubmitting ? null : () => Navigator.pop(context),
+                    onPressed: _isSubmitting
+                        ? null
+                        : () => Navigator.pop(context),
                     icon: Icon(
                       Icons.close_rounded,
                       size: 20,

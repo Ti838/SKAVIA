@@ -66,8 +66,8 @@ class ProjectTasksTabView extends StatelessWidget {
                           selectedTaskFilter == 1
                               ? Icons.folder_open_rounded
                               : (selectedTaskFilter == 2
-                                  ? Icons.flag_outlined
-                                  : Icons.assignment_outlined),
+                                    ? Icons.flag_outlined
+                                    : Icons.assignment_outlined),
                           size: 46,
                           color: tokens.mutedText,
                         ),
@@ -76,8 +76,8 @@ class ProjectTasksTabView extends StatelessWidget {
                           selectedTaskFilter == 1
                               ? 'No deliverable files attached yet'
                               : (selectedTaskFilter == 2
-                                  ? 'No milestones completed yet'
-                                  : 'No project tasks yet'),
+                                    ? 'No milestones completed yet'
+                                    : 'No project tasks yet'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 14,
@@ -90,8 +90,8 @@ class ProjectTasksTabView extends StatelessWidget {
                           selectedTaskFilter == 1
                               ? 'Upload files on task submissions to track deliverables here.'
                               : (selectedTaskFilter == 2
-                                  ? 'Mark tasks Completed to promote project milestones.'
-                                  : 'Add tasks to start planning and coordinating deliverables.'),
+                                    ? 'Mark tasks Completed to promote project milestones.'
+                                    : 'Add tasks to start planning and coordinating deliverables.'),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,

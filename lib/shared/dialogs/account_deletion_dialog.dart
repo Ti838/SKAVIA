@@ -88,17 +88,15 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
             ),
           ),
         );
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          widget.postLogoutRoute,
-          (route) => false,
-        );
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(widget.postLogoutRoute, (route) => false);
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isDeleting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete account: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete account: $e')));
       }
     }
   }
@@ -275,4 +273,3 @@ class _AccountDeletionDialogState extends State<AccountDeletionDialog> {
     );
   }
 }
-

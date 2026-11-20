@@ -210,7 +210,9 @@ class ChatRemoteDataSource {
           try {
             final msgs = await client
                 .from(DatabaseTables.messages)
-                .select('conversation_id, message_text, is_read, sender_id, created_at')
+                .select(
+                  'conversation_id, message_text, is_read, sender_id, created_at',
+                )
                 .inFilter('conversation_id', conversationIds)
                 .order('created_at', ascending: false);
             for (final row in (msgs as List).whereType<Map>()) {

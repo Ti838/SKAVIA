@@ -48,11 +48,7 @@ class _SakugaProgressState extends State<SakugaProgress> {
       if (widget.celebrateOnComplete && !SakugaMotion.isReduced(context)) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          SakugaFx.kira(
-            context,
-            radius: 11,
-            color: AppColors.successGreen,
-          );
+          SakugaFx.kira(context, radius: 11, color: AppColors.successGreen);
         });
       }
     }
@@ -79,9 +75,8 @@ class _SakugaProgressState extends State<SakugaProgress> {
               Flexible(
                 child: Text(
                   widget.label!,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(fontWeight: FontWeight.w600),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -164,11 +164,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               itemCount: filtered.length,
-              separatorBuilder: (_, _) => Divider(
-                height: 1,
-                indent: 72,
-                color: tokens.border,
-              ),
+              separatorBuilder: (_, _) =>
+                  Divider(height: 1, indent: 72, color: tokens.border),
               itemBuilder: (context, index) {
                 return ConversationTile(
                   conversation: filtered[index],

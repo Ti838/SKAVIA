@@ -106,8 +106,7 @@ class _ProtectedAdminRouteState extends State<ProtectedAdminRoute> {
         if (snapshot.data != true) {
           return const _UnauthorizedAdminView(
             title: 'Restricted Admin Portal Access',
-            message:
-                'This module requires verified Super Admin, Company Admin, or Branch Manager privileges via the SKAVIA Admin Web Portal.',
+            message: 'This module requires verified Super Admin, Company Admin, or Branch Manager privileges via the SKAVIA Admin Web Portal.',
           );
         }
         return widget.child;

@@ -181,11 +181,7 @@ class CustomerDashboardView extends StatelessWidget {
                   );
                   if (stackActions) {
                     return Column(
-                      children: [
-                        browseBtn,
-                        const SizedBox(height: 8),
-                        postBtn,
-                      ],
+                      children: [browseBtn, const SizedBox(height: 8), postBtn],
                     );
                   }
                   return Row(
@@ -263,7 +259,11 @@ class CustomerDashboardView extends StatelessWidget {
             context,
             locationZone: currentLocationZone,
             onSelectTechnician: (tech) {
-              onQuickBookService(tech.trade, 'cat_electrical', tech.startingRate);
+              onQuickBookService(
+                tech.trade,
+                'cat_electrical',
+                tech.startingRate,
+              );
             },
           ),
         ),
@@ -337,9 +337,7 @@ class CustomerDashboardView extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  isBn
-                      ? 'প্রথম সার্ভিস রিকোয়েস্ট বা জব পোস্ট করুন।'
-                      : 'When community members post requirements, they will appear here.',
+                  isBn ? 'প্রথম সার্ভিস রিকোয়েস্ট বা জব পোস্ট করুন।' : 'When community members post requirements, they will appear here.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: tokens.secondaryText,

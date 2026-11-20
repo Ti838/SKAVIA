@@ -53,10 +53,7 @@ class InvoicePartiesSection extends StatelessWidget {
               ),
               Text(
                 Formatters.formatBdPhone(clientPhone),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: tokens.mutedText,
-                ),
+                style: TextStyle(fontSize: 12, color: tokens.mutedText),
               ),
             ],
           ),
@@ -82,10 +79,7 @@ class InvoicePartiesSection extends StatelessWidget {
               ),
               Text(
                 Formatters.formatDate(paidAt),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: tokens.mutedText,
-                ),
+                style: TextStyle(fontSize: 12, color: tokens.mutedText),
               ),
             ],
           ),

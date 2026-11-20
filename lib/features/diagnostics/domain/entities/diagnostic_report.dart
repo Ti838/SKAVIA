@@ -20,11 +20,11 @@ class DiagnosticReport {
   });
 
   Map<String, dynamic> toJson() => {
-        'report_type': 'SKAVIA_DEVICE_DIAGNOSTICS',
-        'generated_at': timestamp.toIso8601String(),
-        'hardware': hardware.toJson(),
-        'permissions': permissions.toJson(),
-        'network': network.toJson(),
-        'performance': performance.toJson(),
-      };
+    'report_type': 'SKAVIA_DEVICE_DIAGNOSTICS',
+    'generated_at': timestamp.toIso8601String(),
+    'hardware': hardware.toJson(),
+    'permissions': permissions.toJson(),
+    'network': network.toJson(),
+    'performance': performance.toJson(),
+  };
 }

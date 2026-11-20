@@ -192,10 +192,7 @@ ThemeData buildDarkTheme({String languageCode = 'en'}) {
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: darkSurfaceTinted,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 14,
-      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusMd),
         borderSide: const BorderSide(color: darkBorderInteractive, width: 1),
@@ -219,9 +216,7 @@ ThemeData buildDarkTheme({String languageCode = 'en'}) {
       labelStyle: textTheme.bodyMedium?.copyWith(
         color: const Color(0xFF9BB0C9),
       ),
-      hintStyle: textTheme.bodyMedium?.copyWith(
-        color: const Color(0xFF7189A8),
-      ),
+      hintStyle: textTheme.bodyMedium?.copyWith(color: const Color(0xFF7189A8)),
     ),
     cardTheme: CardThemeData(
       color: darkCard,

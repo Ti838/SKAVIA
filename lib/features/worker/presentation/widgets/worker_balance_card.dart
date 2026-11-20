@@ -76,4 +76,3 @@ class WorkerBalanceCard extends StatelessWidget {
     );
   }
 }
-

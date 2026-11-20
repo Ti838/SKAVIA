@@ -28,19 +28,12 @@ class DiagnosticStatusBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: color.withValues(alpha: 0.35),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            status.icon,
-            size: compact ? 12 : 14,
-            color: color,
-          ),
+          Icon(status.icon, size: compact ? 12 : 14, color: color),
           const SizedBox(width: 5),
           Flexible(
             child: Text(

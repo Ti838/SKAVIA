@@ -31,9 +31,7 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
   @override
   void initState() {
     super.initState();
-    final cachedSaved = LocalCacheService.instance.get(
-      _savedTeamsCacheKey,
-    );
+    final cachedSaved = LocalCacheService.instance.get(_savedTeamsCacheKey);
     _savedIds = cachedSaved is List
         ? cachedSaved.map((e) => e.toString()).toSet()
         : {};
@@ -146,9 +144,16 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                       isActive: _selectedSkill != 'All Skills',
                       onTap: () {
                         setState(() {
-                          const opts = ['All Skills', 'Flutter', 'React', 'Design', 'Cloud'];
+                          const opts = [
+                            'All Skills',
+                            'Flutter',
+                            'React',
+                            'Design',
+                            'Cloud',
+                          ];
                           _selectedSkill =
-                              opts[(opts.indexOf(_selectedSkill) + 1) % opts.length];
+                              opts[(opts.indexOf(_selectedSkill) + 1) %
+                                  opts.length];
                         });
                       },
                     ),
@@ -159,9 +164,15 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                       isActive: _selectedLocation != 'All Locations',
                       onTap: () {
                         setState(() {
-                          const opts = ['All Locations', 'Dhanmondi', 'Gulshan', 'Uttara'];
+                          const opts = [
+                            'All Locations',
+                            'Dhanmondi',
+                            'Gulshan',
+                            'Uttara',
+                          ];
                           _selectedLocation =
-                              opts[(opts.indexOf(_selectedLocation) + 1) % opts.length];
+                              opts[(opts.indexOf(_selectedLocation) + 1) %
+                                  opts.length];
                         });
                       },
                     ),
@@ -172,9 +183,15 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                       isActive: _selectedAvailability != 'Any',
                       onTap: () {
                         setState(() {
-                          const opts = ['Any', 'Immediate', 'Part-time', 'Full-time'];
+                          const opts = [
+                            'Any',
+                            'Immediate',
+                            'Part-time',
+                            'Full-time',
+                          ];
                           _selectedAvailability =
-                              opts[(opts.indexOf(_selectedAvailability) + 1) % opts.length];
+                              opts[(opts.indexOf(_selectedAvailability) + 1) %
+                                  opts.length];
                         });
                       },
                     ),

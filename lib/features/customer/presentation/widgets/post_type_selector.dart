@@ -119,7 +119,9 @@ class PostTypeSelector extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                color: isSelected ? tokens.onBrandAccent : colorScheme.onSurface,
+                color: isSelected
+                    ? tokens.onBrandAccent
+                    : colorScheme.onSurface,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

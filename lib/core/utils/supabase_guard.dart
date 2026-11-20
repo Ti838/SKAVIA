@@ -15,4 +15,3 @@ SupabaseClient? tryGetSupabaseClient() {
     return null;
   }
 }
-

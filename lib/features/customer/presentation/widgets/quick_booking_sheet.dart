@@ -68,7 +68,9 @@ class QuickBookingSheet extends StatelessWidget {
     if (client == null) {
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('Booking queued offline — reconnect to confirm dispatch.'),
+          content: Text(
+            'Booking queued offline — reconnect to confirm dispatch.',
+          ),
         ),
       );
       return;

@@ -14,11 +14,7 @@ class AppUpdateScreen extends StatefulWidget {
   final AppUpdateProvider? provider;
   final bool blockingMode;
 
-  const AppUpdateScreen({
-    super.key,
-    this.provider,
-    this.blockingMode = false,
-  });
+  const AppUpdateScreen({super.key, this.provider, this.blockingMode = false});
 
   @override
   State<AppUpdateScreen> createState() => _AppUpdateScreenState();
@@ -220,9 +216,11 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
                   ],
 
                   if (eval != null &&
-                      (eval.status == AppUpdateAvailability.networkUnavailable ||
+                      (eval.status ==
+                              AppUpdateAvailability.networkUnavailable ||
                           eval.status == AppUpdateAvailability.unconfigured ||
-                          eval.status == AppUpdateAvailability.invalidMetadata ||
+                          eval.status ==
+                              AppUpdateAvailability.invalidMetadata ||
                           eval.status == AppUpdateAvailability.upToDate ||
                           eval.status ==
                               AppUpdateAvailability.noPublishedRelease)) ...[
@@ -237,9 +235,7 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
                     const SizedBox(height: 16),
                   ],
 
-                  AppUpdateSupportGuidanceCard(
-                    supportInfo: eval?.supportInfo,
-                  ),
+                  AppUpdateSupportGuidanceCard(supportInfo: eval?.supportInfo),
                 ],
               ),
             ),
@@ -271,13 +267,19 @@ class _AppUpdateScreenState extends State<AppUpdateScreen>
                       : 'Downloading Official APK...',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
               Text(
                 '${(_provider.progress * 100).toStringAsFixed(0)}%',
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),

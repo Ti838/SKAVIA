@@ -49,16 +49,10 @@ class ChatInputBar extends StatelessWidget {
                 textCapitalization: TextCapitalization.sentences,
                 minLines: 1,
                 maxLines: 4,
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Type a message...',
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    color: tokens.mutedText,
-                  ),
+                  hintStyle: TextStyle(fontSize: 14, color: tokens.mutedText),
                   border: InputBorder.none,
                   enabledBorder: InputBorder.none,
                   focusedBorder: InputBorder.none,

@@ -32,13 +32,9 @@ class ActiveJobLifecycleStepper extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: isDone
-                    ? tokens.brandAccent
-                    : tokens.subtleCardBg,
+                color: isDone ? tokens.brandAccent : tokens.subtleCardBg,
                 border: Border.all(
-                  color: isDone
-                      ? tokens.brandAccent
-                      : tokens.border,
+                  color: isDone ? tokens.brandAccent : tokens.border,
                   width: isCurrent ? 2 : 1,
                 ),
                 shape: BoxShape.circle,

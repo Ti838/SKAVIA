@@ -228,10 +228,7 @@ class ProfileHeaderCard extends StatelessWidget {
         Text(
           contactLabel,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
         ),
         if ((profile.companyName ?? '').isNotEmpty) ...[
           const SizedBox(height: 2),
@@ -247,10 +244,7 @@ class ProfileHeaderCard extends StatelessWidget {
         ],
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 14,
-            vertical: 4,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
             color: roleAccent.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(14),

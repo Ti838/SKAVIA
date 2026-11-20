@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -9,12 +10,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'sound_haptic_preferences.dart';
 
 /// Notification sound categories supported across the SKAVIA ecosystem.
-enum NotificationSoundType {
-  general,
-  urgent,
-  message,
-  completed,
-}
+enum NotificationSoundType { general, urgent, message, completed }
 
 /// Production-Grade Notification & Audio Chime Service for SKAVIA.
 ///
@@ -69,8 +65,9 @@ class NotificationService {
 
     try {
       // 1. Android & Darwin (iOS/macOS) Initialization Settings
-      const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const darwinSettings = DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -87,15 +84,18 @@ class NotificationService {
         initSettings,
         onDidReceiveNotificationResponse: (NotificationResponse response) {
           debugPrint(
-              '[NotificationService] Notification clicked with payload: ${response.payload}');
+            '[NotificationService] Notification clicked with payload: ${response.payload}',
+          );
           _notificationSelectController.add(response.payload);
         },
       );
 
       // 3. Register Explicit Android Notification Channels
       if (!kIsWeb && Platform.isAndroid) {
-        final androidImpl = _notificationsPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+        final androidImpl = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
         if (androidImpl != null) {
           // Urgent Channel: Max importance (Heads-up pop down) with Custom Sound
@@ -154,21 +154,21 @@ class NotificationService {
     final created = AudioPlayer();
     _audioPlayer = created;
     try {
-      await created.setAudioContext(AudioContext(
-        android: const AudioContextAndroid(
-          isSpeakerphoneOn: true,
-          stayAwake: false,
-          contentType: AndroidContentType.sonification,
-          usageType: AndroidUsageType.notification,
-          audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+      await created.setAudioContext(
+        AudioContext(
+          android: const AudioContextAndroid(
+            isSpeakerphoneOn: true,
+            stayAwake: false,
+            contentType: AndroidContentType.sonification,
+            usageType: AndroidUsageType.notification,
+            audioFocus: AndroidAudioFocus.gainTransientMayDuck,
+          ),
+          iOS: AudioContextIOS(
+            category: AVAudioSessionCategory.ambient,
+            options: const {AVAudioSessionOptions.mixWithOthers},
+          ),
         ),
-        iOS: AudioContextIOS(
-          category: AVAudioSessionCategory.ambient,
-          options: const {
-            AVAudioSessionOptions.mixWithOthers,
-          },
-        ),
-      ));
+      );
     } catch (audioErr) {
       debugPrint('[NotificationService] AudioContext notice: $audioErr');
     }
@@ -243,8 +243,8 @@ class NotificationService {
     final allowSound = forcePreview
         ? true
         : (effectiveType == NotificationSoundType.message
-            ? prefs.messageSoundEnabled
-            : prefs.notificationSoundEnabled);
+              ? prefs.messageSoundEnabled
+              : prefs.notificationSoundEnabled);
     final allowHaptic = forcePreview
         ? true
         : (withHaptic ?? prefs.hapticFeedbackEnabled);
@@ -277,10 +277,7 @@ class NotificationService {
           break;
       }
 
-      await player.play(
-        AssetSource(assetName),
-        volume: 1.0,
-      );
+      await player.play(AssetSource(assetName), volume: 1.0);
     } catch (e) {
       // Audio playback fallback to pure system haptic
       if (allowHaptic) {
@@ -318,8 +315,11 @@ class NotificationService {
     }
 
     try {
-      final effectiveType = soundType ??
-          (isUrgent ? NotificationSoundType.urgent : NotificationSoundType.general);
+      final effectiveType =
+          soundType ??
+          (isUrgent
+              ? NotificationSoundType.urgent
+              : NotificationSoundType.general);
       final prefs = SoundHapticPreferences.instance;
 
       // Play in-app chime if enabled

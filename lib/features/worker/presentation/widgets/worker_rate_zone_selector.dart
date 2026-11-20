@@ -98,11 +98,7 @@ class WorkerRateZoneSelector extends StatelessWidget {
         if (stackVertically) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              rateField,
-              const SizedBox(height: 14),
-              zoneField,
-            ],
+            children: [rateField, const SizedBox(height: 14), zoneField],
           );
         }
 

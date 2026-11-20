@@ -45,14 +45,10 @@ class OtpPinInputRow extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                   color: skavia.brandAccent,
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   counterText: '',
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 10,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
                   filled: true,
                   fillColor: hasText
                       ? colorScheme.primary.withValues(alpha: 0.12)

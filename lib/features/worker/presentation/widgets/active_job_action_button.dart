@@ -19,10 +19,7 @@ class ActiveJobActionButton extends StatelessWidget {
     if (jobPhase == 0) {
       return SizedBox(
         width: double.infinity,
-        child: AppButton(
-          text: 'Heading to Location',
-          onPressed: onNextPhase,
-        ),
+        child: AppButton(text: 'Heading to Location', onPressed: onNextPhase),
       );
     }
 

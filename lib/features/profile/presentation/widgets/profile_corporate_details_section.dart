@@ -40,18 +40,18 @@ class ProfileCorporateDetailsSection extends StatelessWidget {
         Wrap(
           spacing: 8,
           runSpacing: 6,
-          children: ['Individual', 'Business Client', 'Organization']
-              .map((type) {
-                final selected = customerType == type;
-                return ChoiceChip(
-                  label: Text(type),
-                  selected: selected,
-                  onSelected: (v) {
-                    if (v) onCustomerTypeChanged(type);
-                  },
-                );
-              })
-              .toList(),
+          children: ['Individual', 'Business Client', 'Organization'].map((
+            type,
+          ) {
+            final selected = customerType == type;
+            return ChoiceChip(
+              label: Text(type),
+              selected: selected,
+              onSelected: (v) {
+                if (v) onCustomerTypeChanged(type);
+              },
+            );
+          }).toList(),
         ),
         if (customerType != 'Individual') ...[
           const SizedBox(height: 14),
@@ -61,8 +61,7 @@ class ProfileCorporateDetailsSection extends StatelessWidget {
             hint: 'Registered legal company or organization name',
             prefixIcon: const Icon(Icons.business_outlined),
             onChanged: (_) => onFieldChanged(),
-            validator: (val) =>
-                val == null || val.trim().length < 2
+            validator: (val) => val == null || val.trim().length < 2
                 ? 'Enter organization name for corporate billing'
                 : null,
           ),

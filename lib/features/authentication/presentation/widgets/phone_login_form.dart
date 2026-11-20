@@ -45,13 +45,8 @@ class PhoneLoginForm extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            isBn
-                ? 'আপনার মোবাইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
-                : 'A 6-digit OTP code will be sent to your mobile phone via SMS.',
-            style: TextStyle(
-              fontSize: 12,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            isBn ? 'আপনার মোবাইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।' : 'A 6-digit OTP code will be sent to your mobile phone via SMS.',
+            style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
           ),
         ),
         const SizedBox(height: 22),
@@ -90,7 +85,9 @@ class PhoneLoginForm extends StatelessWidget {
                           ),
                         )
                       : Text(
-                          isBn ? 'যাচাইকরণ কোড পাঠান' : 'Send Verification Code',
+                          isBn
+                              ? 'যাচাইকরণ কোড পাঠান'
+                              : 'Send Verification Code',
                           textAlign: TextAlign.center,
                           style: const TextStyle(
                             fontSize: 16,

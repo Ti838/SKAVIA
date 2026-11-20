@@ -174,10 +174,7 @@ class TeamDiscoveryCard extends StatelessWidget {
                   Navigator.pushNamed(
                     context,
                     AppRoutes.teamRoster,
-                    arguments: {
-                      'teamId': team['id'],
-                      'teamName': team['name'],
-                    },
+                    arguments: {'teamId': team['id'], 'teamName': team['name']},
                   );
                 }
               },

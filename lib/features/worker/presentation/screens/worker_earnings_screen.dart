@@ -132,8 +132,10 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
               : <Map<String, dynamic>>[];
 
           _transactions = [...localWithdrawals, ...payoutTx, ...earningsTx];
-          _availableBalance =
-              (available - localWithdrawnSum).clamp(0.0, double.infinity);
+          _availableBalance = (available - localWithdrawnSum).clamp(
+            0.0,
+            double.infinity,
+          );
           _pendingEscrow = pending;
           _totalEarned = total;
         } else {
@@ -167,8 +169,10 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
         LocalCacheService.instance.put('worker_withdrawals_$_uidKey', updated);
 
         setState(() {
-          _availableBalance =
-              (_availableBalance - amount).clamp(0.0, double.infinity);
+          _availableBalance = (_availableBalance - amount).clamp(
+            0.0,
+            double.infinity,
+          );
           _transactions = [newTx, ..._transactions];
         });
 
@@ -236,9 +240,7 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
           ),
           child: _isLoading
               ? Center(
-                  child: CircularProgressIndicator(
-                    color: tokens.brandAccent,
-                  ),
+                  child: CircularProgressIndicator(color: tokens.brandAccent),
                 )
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(AppDimensions.paddingLarge),
@@ -266,9 +268,7 @@ class _WorkerEarningsScreenState extends State<WorkerEarningsScreen> {
                       if (_transactions.isEmpty)
                         Center(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 32,
-                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 32),
                             child: Column(
                               children: [
                                 Icon(

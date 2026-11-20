@@ -50,8 +50,9 @@ class MatchResultEntity {
   factory MatchResultEntity.fromMap(Map<String, dynamic> map) {
     final totalReviews = (map['total_reviews'] as num?)?.toInt();
     final rawRating = (map['rating_average'] as num?)?.toDouble() ?? 0.0;
-    final safeRating =
-        (totalReviews != null && totalReviews == 0) ? 0.0 : rawRating;
+    final safeRating = (totalReviews != null && totalReviews == 0)
+        ? 0.0
+        : rawRating;
     return MatchResultEntity(
       matchId: map['match_id']?.toString() ?? '',
       requirementId: map['requirement_id']?.toString() ?? '',

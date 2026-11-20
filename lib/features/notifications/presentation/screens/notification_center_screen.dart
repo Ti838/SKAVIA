@@ -64,10 +64,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
             actions: [
               if (_controller.unreadCount > 0)
                 IconButton(
-                  icon: Icon(
-                    Icons.done_all_rounded,
-                    color: tokens.brandAccent,
-                  ),
+                  icon: Icon(Icons.done_all_rounded, color: tokens.brandAccent),
                   tooltip: l10n.notificationsMarkAllRead,
                   onPressed: () => _controller.markAllAsRead(),
                 ),
@@ -84,63 +81,64 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     vertical: 8,
                   ),
                   child: Row(
-                    children: [
-                      'All',
-                      'Unread',
-                      'Bookings',
-                      'Updates',
-                      'Gifts & Profile',
-                    ].map((filter) {
-                      final isSelected = _selectedFilter == filter;
-                      int? count;
-                      if (filter == 'Unread') {
-                        count = _controller.unreadCount;
-                      }
-                      final label = count != null && count > 0
-                          ? '$filter ($count)'
-                          : filter;
+                    children:
+                        [
+                          'All',
+                          'Unread',
+                          'Bookings',
+                          'Updates',
+                          'Gifts & Profile',
+                        ].map((filter) {
+                          final isSelected = _selectedFilter == filter;
+                          int? count;
+                          if (filter == 'Unread') {
+                            count = _controller.unreadCount;
+                          }
+                          final label = count != null && count > 0
+                              ? '$filter ($count)'
+                              : filter;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () =>
-                                setState(() => _selectedFilter = filter),
-                            borderRadius: BorderRadius.circular(14),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? tokens.brandAccent
-                                    : tokens.cardBg,
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () =>
+                                    setState(() => _selectedFilter = filter),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? tokens.brandAccent
-                                      : tokens.border,
-                                ),
-                              ),
-                              child: Text(
-                                label,
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? tokens.onBrandAccent
-                                      : colorScheme.onSurfaceVariant,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w600,
-                                  fontSize: 12,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? tokens.brandAccent
+                                        : tokens.cardBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? tokens.brandAccent
+                                          : tokens.border,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    label,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? tokens.onBrandAccent
+                                          : colorScheme.onSurfaceVariant,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w700
+                                          : FontWeight.w600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        }).toList(),
                   ),
                 ),
                 Divider(height: 1, color: tokens.border),
@@ -152,16 +150,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                           onRefresh: () => _controller.syncFromBackend(),
                           child: filtered.isEmpty
                               ? LayoutBuilder(
-                                  builder: (context, constraints) =>
-                                      SingleChildScrollView(
+                                  builder: (context, constraints) => SingleChildScrollView(
                                     physics:
                                         const AlwaysScrollableScrollPhysics(),
                                     padding: const EdgeInsets.all(24),
                                     child: ConstrainedBox(
                                       constraints: BoxConstraints(
-                                        minHeight:
-                                            (constraints.maxHeight - 48)
-                                                .clamp(0.0, double.infinity),
+                                        minHeight: (constraints.maxHeight - 48)
+                                            .clamp(0.0, double.infinity),
                                       ),
                                       child: Center(
                                         child: Column(
@@ -356,10 +352,7 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                     const SizedBox(height: 6),
                     Text(
                       DateFormat('dd MMM, hh:mm a').format(notif.createdAt),
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: tokens.mutedText,
-                      ),
+                      style: TextStyle(fontSize: 10, color: tokens.mutedText),
                     ),
                   ],
                 ),

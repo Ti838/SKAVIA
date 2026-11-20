@@ -1,12 +1,7 @@
 import '../../app/router/app_routes.dart';
 import '../../features/profile/data/models/user_profile_model.dart';
 
-enum AppFeature {
-  bookService,
-  acceptJob,
-  requestPayout,
-  postTurnkeyProject,
-}
+enum AppFeature { bookService, acceptJob, requestPayout, postTurnkeyProject }
 
 class FeatureEligibilityResult {
   final bool isEligible;
@@ -64,7 +59,9 @@ class FeatureEligibilityService {
         }
 
         if (profile.phone == null || profile.phone!.trim().length < 8) {
-          missing.add('A verified phone number is required for technician contact.');
+          missing.add(
+            'A verified phone number is required for technician contact.',
+          );
           actionRoute ??= AppRoutes.editDetailedProfile;
           actionLabel ??= 'Add Phone';
         }
@@ -83,7 +80,9 @@ class FeatureEligibilityService {
         String? actionLabel;
 
         if (profile.verificationStatus != 'verified') {
-          missing.add('National ID (NID) and police clearance verification are required before accepting jobs.');
+          missing.add(
+            'National ID (NID) and police clearance verification are required before accepting jobs.',
+          );
           actionRoute = AppRoutes.editDetailedProfile;
           actionLabel = 'Complete Profile & Verification';
         }
@@ -102,7 +101,9 @@ class FeatureEligibilityService {
         String? actionLabel;
 
         if (profile.phone == null || profile.phone!.isEmpty) {
-          missing.add('A verified mobile number (bKash/Nagad) is required for payout transfer.');
+          missing.add(
+            'A verified mobile number (bKash/Nagad) is required for payout transfer.',
+          );
           actionRoute = AppRoutes.editDetailedProfile;
           actionLabel = 'Add Mobile Number';
         }
@@ -121,7 +122,9 @@ class FeatureEligibilityService {
         String? actionLabel;
 
         if (profile.phone == null || profile.phone!.isEmpty) {
-          missing.add('Contact phone number is required for corporate project management.');
+          missing.add(
+            'Contact phone number is required for corporate project management.',
+          );
           actionRoute = AppRoutes.editDetailedProfile;
           actionLabel = 'Add Phone';
         }

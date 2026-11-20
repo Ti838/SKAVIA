@@ -38,8 +38,10 @@ class AppUpdateBanner extends StatelessWidget {
               onTap: () => Navigator.of(context).pushNamed(AppRoutes.appUpdate),
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: accent.withValues(alpha: 0.35)),
@@ -85,4 +87,3 @@ class AppUpdateBanner extends StatelessWidget {
     );
   }
 }
-

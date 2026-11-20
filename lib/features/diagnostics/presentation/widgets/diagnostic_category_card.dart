@@ -39,11 +39,7 @@ class DiagnosticCategoryCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    icon,
-                    size: 18,
-                    color: AppColors.primaryBlue,
-                  ),
+                  Icon(icon, size: 18, color: AppColors.primaryBlue),
                   const SizedBox(width: 8),
                   Flexible(
                     child: Column(

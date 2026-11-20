@@ -92,7 +92,10 @@ abstract class AppTypography {
     );
   }
 
-  static TextTheme _createTextTheme(Brightness brightness, {required bool isBn}) {
+  static TextTheme _createTextTheme(
+    Brightness brightness, {
+    required bool isBn,
+  }) {
     final isDark = brightness == Brightness.dark;
     final primaryColor = isDark ? const Color(0xFFF8FAFC) : AppColors.textDark;
     final secondaryColor = isDark

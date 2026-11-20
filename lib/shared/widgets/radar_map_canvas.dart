@@ -102,16 +102,14 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
             // Base Tile Layer (100% Free Retina Google-Style / Satellite / Dark with OSM fallback)
             if (activeStyle == SkaviaMapStyle.satellite) ...[
               TileLayer(
-                urlTemplate:
-                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.skavia.app',
                 maxZoom: 18,
               ),
               // Hybrid road & area labels overlay on satellite imagery
               TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: isRetina,
                 userAgentPackageName: 'com.skavia.app',
@@ -119,8 +117,7 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: isRetina,
@@ -129,8 +126,7 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
               )
             else
               TileLayer(
-                urlTemplate:
-                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: isRetina,
@@ -181,9 +177,8 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF1A73E8).withValues(
-                              alpha: 0.22,
-                            ),
+                            color: const Color(0xFF1A73E8)
+                                .withValues(alpha: 0.22),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -193,10 +188,7 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
                           decoration: BoxDecoration(
                             color: const Color(0xFF1A73E8),
                             shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 3,
-                            ),
+                            border: Border.all(color: Colors.white, width: 3),
                             boxShadow: const [
                               BoxShadow(
                                 color: Colors.black26,

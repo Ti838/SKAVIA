@@ -115,7 +115,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (user != null) {
         try {
-          final summary = await DashboardRepository().getAuthorizedRoles(user.uid);
+          final summary = await DashboardRepository().getAuthorizedRoles(
+            user.uid,
+          );
           if (mounted &&
               (summary.hasCustomer ||
                   summary.hasEnterprise ||
@@ -136,10 +138,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           }
         } catch (_) {}
 
-        final activeMode =
-            LocalCacheService.instance
-                .get(AppConstants.userModeStorageKey)
-                ?.toString();
+        final activeMode = LocalCacheService.instance
+            .get(AppConstants.userModeStorageKey)
+            ?.toString();
 
         if (activeMode != null && activeMode.isNotEmpty && mounted) {
           Navigator.of(context).pushReplacementNamed(
@@ -290,8 +291,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         strokeWidth: 2.5,
                                         valueColor:
                                             AlwaysStoppedAnimation<Color>(
-                                          Colors.white,
-                                        ),
+                                              Colors.white,
+                                            ),
                                       ),
                                     )
                                   : Text(
@@ -311,9 +312,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 20),
 
-                    SocialAuthButtonsRow(
-                      onGoogleSignIn: _handleGoogleSignUp,
-                    ),
+                    SocialAuthButtonsRow(onGoogleSignIn: _handleGoogleSignUp),
 
                     const SizedBox(height: 28),
 
@@ -334,9 +333,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).pushReplacementNamed(
-                              AppRoutes.login,
-                            );
+                            Navigator.of(context)
+                                .pushReplacementNamed(AppRoutes.login);
                           },
                           child: Text(
                             l10n.authSignIn,

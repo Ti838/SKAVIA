@@ -18,8 +18,8 @@ import '../data/models/app_release_model.dart';
 import '../data/repositories/app_release_repository.dart';
 import 'android_installer_bridge.dart';
 
-typedef InstalledPackageReader = Future<({String version, int buildNumber})>
-    Function();
+typedef InstalledPackageReader =
+    Future<({String version, int buildNumber})> Function();
 
 enum AppUpdateDownloadResultStatus {
   installerLaunched,
@@ -50,7 +50,7 @@ class AppUpdateService {
   final InstalledPackageReader _packageReader;
   final String Function()? currentUserIdReader;
   final void Function(AppReleaseInfo release, {required bool mandatory})?
-      onNewReleaseNotifier;
+  onNewReleaseNotifier;
 
   DateTime? _lastNetworkCheckAt;
 
@@ -60,17 +60,18 @@ class AppUpdateService {
     InstalledPackageReader? packageReader,
     this.currentUserIdReader,
     this.onNewReleaseNotifier,
-  })  : _repository = repository ?? AppReleaseRepository(),
-        _installer = installer ?? MethodChannelAndroidInstaller(),
-        _packageReader = packageReader ?? _defaultReadInstalledPackage;
+  }) : _repository = repository ?? AppReleaseRepository(),
+       _installer = installer ?? MethodChannelAndroidInstaller(),
+       _packageReader = packageReader ?? _defaultReadInstalledPackage;
 
   static Future<({String version, int buildNumber})>
-      _defaultReadInstalledPackage() async {
+  _defaultReadInstalledPackage() async {
     try {
       final info = await PackageInfo.fromPlatform();
       final build = int.tryParse(info.buildNumber.trim()) ?? 1;
-      final version =
-          info.version.trim().isNotEmpty ? info.version.trim() : AppConfig.appVersion;
+      final version = info.version.trim().isNotEmpty
+          ? info.version.trim()
+          : AppConfig.appVersion;
       return (version: version, buildNumber: build > 0 ? build : 1);
     } catch (_) {
       return (version: AppConfig.appVersion, buildNumber: 1);
@@ -164,7 +165,8 @@ class AppUpdateService {
 
     String? uid;
     try {
-      uid = currentUserIdReader?.call() ?? FirebaseAuth.instance.currentUser?.uid;
+      uid =
+          currentUserIdReader?.call() ?? FirebaseAuth.instance.currentUser?.uid;
     } catch (_) {
       uid = null;
     }
@@ -253,9 +255,13 @@ class AppUpdateService {
     } catch (_) {}
 
     final safeBaseName =
-        'skavia-${release.releaseId}-${release.buildNumber}.apk'
-            .replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
-    final finalFile = File('${updatesDir.path}${Platform.pathSeparator}$safeBaseName');
+        'skavia-${release.releaseId}-${release.buildNumber}.apk'.replaceAll(
+          RegExp(r'[^A-Za-z0-9._-]'),
+          '_',
+        );
+    final finalFile = File(
+      '${updatesDir.path}${Platform.pathSeparator}$safeBaseName',
+    );
     final partFile = File('${finalFile.path}.part');
 
     unawaited(
@@ -287,7 +293,8 @@ class AppUpdateService {
         );
       }
 
-      final expectedTotal = streamedResponse.contentLength ?? release.fileSizeBytes;
+      final expectedTotal =
+          streamedResponse.contentLength ?? release.fileSizeBytes;
       final activeSink = partFile.openWrite();
       sink = activeSink;
       int received = 0;
@@ -308,7 +315,10 @@ class AppUpdateService {
         }
         activeSink.add(chunk);
         received += chunk.length;
-        onProgress(received, expectedTotal > 0 ? expectedTotal : release.fileSizeBytes);
+        onProgress(
+          received,
+          expectedTotal > 0 ? expectedTotal : release.fileSizeBytes,
+        );
       }
 
       await activeSink.flush();

@@ -108,10 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final phoneError = Validators.bdPhone(rawPhone);
     if (phoneError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(phoneError),
-          backgroundColor: AppColors.error,
-        ),
+        SnackBar(content: Text(phoneError), backgroundColor: AppColors.error),
       );
       return;
     }
@@ -165,7 +162,8 @@ class _LoginScreenState extends State<LoginScreen> {
       final profile = await DashboardRepository().getUserProfileRecord(
         user.uid,
       );
-      final activeMode = profile?['active_mode']?.toString() ??
+      final activeMode =
+          profile?['active_mode']?.toString() ??
           LocalCacheService.instance
               .get('${AppConstants.userModeStorageKey}_${user.uid}')
               ?.toString() ??
@@ -250,7 +248,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: colorScheme.error.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: colorScheme.error.withValues(alpha: 0.35),
+                                color: colorScheme.error.withValues(
+                                  alpha: 0.35,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -325,9 +325,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            Navigator.of(context).pushReplacementNamed(
-                              AppRoutes.register,
-                            );
+                            Navigator.of(context)
+                                .pushReplacementNamed(AppRoutes.register);
                           },
                           child: Text(
                             l10n.authSignUp,

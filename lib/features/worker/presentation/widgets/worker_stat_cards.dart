@@ -154,7 +154,9 @@ class WorkerStatCards extends StatelessWidget {
                     child: Text(
                       workerRating > 0
                           ? '${AppLanguageService.tr('rating')} ${workerRating.toStringAsFixed(1)}'
-                          : (AppLanguageService.isBengali ? 'নতুন কারিগর' : 'New Specialist'),
+                          : (AppLanguageService.isBengali
+                                ? 'নতুন কারিগর'
+                                : 'New Specialist'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(

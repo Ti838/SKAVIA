@@ -59,48 +59,42 @@ class ServiceModel {
       serviceId: 'srv_ac_master',
       categoryId: 'cat_ac_hvac',
       name: 'Inverter AC Master Jet Wash',
-      description:
-          'Complete high-pressure chemical wash, indoor evaporator coil, blower and outdoor unit cleaning.',
+      description: 'Complete high-pressure chemical wash, indoor evaporator coil, blower and outdoor unit cleaning.',
       basePrice: 1200.0,
     ),
     ServiceModel(
       serviceId: 'srv_circuit_breaker',
       categoryId: 'cat_electrical',
       name: 'Circuit Breaker & Short Circuit Fix',
-      description:
-          'Electrical diagnostic, DB loop breaker replacement, and load balance testing.',
+      description: 'Electrical diagnostic, DB loop breaker replacement, and load balance testing.',
       basePrice: 1800.0,
     ),
     ServiceModel(
       serviceId: 'srv_water_pump',
       categoryId: 'cat_plumbing',
       name: 'Concealed Water Leakage Repair',
-      description:
-          'Pipe pressure testing, concealed joint leakage repair, and water pump inspection.',
+      description: 'Pipe pressure testing, concealed joint leakage repair, and water pump inspection.',
       basePrice: 2200.0,
     ),
     ServiceModel(
       serviceId: 'srv_cctv_setup',
       categoryId: 'cat_it_creative',
       name: '4-Channel IP CCTV Installation',
-      description:
-          'DVR/NVR network configuration, remote viewing setup, and structured cable trunking.',
+      description: 'DVR/NVR network configuration, remote viewing setup, and structured cable trunking.',
       basePrice: 3500.0,
     ),
     ServiceModel(
       serviceId: 'srv_fridge_gas',
       categoryId: 'cat_appliance',
       name: 'Refrigerator Gas Refill & Compressor Check',
-      description:
-          'Eco refrigerant top-up, condenser leak testing, relay check, and thermostat calibration.',
+      description: 'Eco refrigerant top-up, condenser leak testing, relay check, and thermostat calibration.',
       basePrice: 1800.0,
     ),
     ServiceModel(
       serviceId: 'srv_door_lock',
       categoryId: 'cat_civil_carpentry',
       name: 'Smart & Mechanical Door Lock Fitting',
-      description:
-          'Precision wood mortise lock installation, keypad alignment, and latch adjustment.',
+      description: 'Precision wood mortise lock installation, keypad alignment, and latch adjustment.',
       basePrice: 850.0,
     ),
   ];

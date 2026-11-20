@@ -89,8 +89,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
     final confirmed = await ConfirmationDialog.show(
       context,
       title: 'Temporarily Deactivate Account?',
-      message:
-          'Your profile will be hidden from service dispatches immediately. You can sign back in anytime to reactivate.',
+      message: 'Your profile will be hidden from service dispatches immediately. You can sign back in anytime to reactivate.',
       confirmText: 'Deactivate',
       isDestructive: true,
     );

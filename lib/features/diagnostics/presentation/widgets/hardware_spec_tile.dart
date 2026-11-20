@@ -40,11 +40,7 @@ class HardwareSpecTile extends StatelessWidget {
                   color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: AppColors.primaryBlue,
-                ),
+                child: Icon(icon, size: 16, color: AppColors.primaryBlue),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -85,10 +81,7 @@ class HardwareSpecTile extends StatelessWidget {
           ),
           if (trailingWidget != null) ...[
             const SizedBox(height: 6),
-            Align(
-              alignment: Alignment.centerRight,
-              child: trailingWidget,
-            ),
+            Align(alignment: Alignment.centerRight, child: trailingWidget),
           ],
         ],
       ),

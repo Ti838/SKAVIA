@@ -122,7 +122,7 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
           final loc = row['location']?.toString() ?? 'Dhaka';
           final isVerified =
               row['verification_status']?.toString().toLowerCase() ==
-                  'verified';
+              'verified';
 
           // Map text zone to canonical Dhaka operating coordinates cleanly
           final anchor = _resolveDhakaZoneCoords(loc);
@@ -373,7 +373,10 @@ class _RadarMapSheetState extends State<RadarMapSheet> {
               top: false,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
                   border: Border(

@@ -36,7 +36,9 @@ abstract class AppColors {
   // Legacy accent aliases migrated safely to accessible semantic tokens
   static const Color accentAqua = tertiaryTeal;
   static const Color accentAquaSoft = tertiaryContainerLight;
-  static const Color accentPeach = Color(0xFFB45309); // Accessible warm amber-bronze (5.02:1 with white)
+  static const Color accentPeach = Color(
+    0xFFB45309,
+  ); // Accessible warm amber-bronze (5.02:1 with white)
   static const Color accentCoral = Color(0xFF92400E);
   static const Color accentPeachSoft = Color(0xFFFFFBEB);
   static const Color accent = tertiaryTeal;
@@ -55,7 +57,9 @@ abstract class AppColors {
   // Typography Ink Hierarchy (Bengali + Latin WCAG AA/AAA)
   static const Color textDark = Color(0xFF0F172A); // 17.85:1 on white
   static const Color textMedium = Color(0xFF475569); // 7.58:1 on white
-  static const Color textTertiary = Color(0xFF526075); // 6.40:1 on white, 5.66:1 on tinted
+  static const Color textTertiary = Color(
+    0xFF526075,
+  ); // 6.40:1 on white, 5.66:1 on tinted
   static const Color textMuted = textTertiary;
   static const Color textDisabled = Color(0xFF94A3B8);
   static const Color textLight = Color(0xFFFFFFFF);
@@ -65,9 +69,13 @@ abstract class AppColors {
   // Functional Borders & Dividers
   static const Color borderLight = Color(0xFFE2E8F0);
   static const Color borderSubtle = Color(0xFFF1F5F9);
-  static const Color borderInteractive = Color(0xFF8592A6); // 3.15:1 on white (WCAG 1.4.11)
+  static const Color borderInteractive = Color(
+    0xFF8592A6,
+  ); // 3.15:1 on white (WCAG 1.4.11)
   static const Color borderDarkOutline = Color(0xFF243247);
-  static const Color borderDarkInteractive = Color(0xFF64748B); // 3.43:1 on dark card
+  static const Color borderDarkInteractive = Color(
+    0xFF64748B,
+  ); // 3.43:1 on dark card
 
   // Semantic Status Colors (Light Solid & Containers — all >= 5.0:1)
   static const Color success = Color(0xFF15803D);

@@ -63,7 +63,9 @@ void main() {
       expect(await storage.read(key: 'remembered_email'), 'user@skavia.com');
     });
 
-    testWidgets('SkaviaSurfaceTokens expose Light & Dark palettes', (tester) async {
+    testWidgets('SkaviaSurfaceTokens expose Light & Dark palettes', (
+      tester,
+    ) async {
       late SkaviaSurfaceTokens lightTokens;
       late SkaviaSurfaceTokens darkTokens;
 
@@ -144,19 +146,14 @@ void main() {
                   message: 'Please check network connection.',
                   onDismiss: () {},
                 ),
-                const AppCard(
-                  child: Text('Adaptive Card Content'),
-                ),
+                const AppCard(child: Text('Adaptive Card Content')),
                 EmptyDataView(
                   title: 'Nothing Here Yet',
                   message: 'Start a service request.',
                   actionText: 'Browse',
                   onAction: () {},
                 ),
-                ErrorView(
-                  message: 'Could not sync data',
-                  onRetry: () {},
-                ),
+                ErrorView(message: 'Could not sync data', onRetry: () {}),
                 const UserAvatar(name: 'Tariqul Hasan', isVerified: true),
                 const ListShimmerSkeleton(itemCount: 2),
               ],
@@ -179,60 +176,60 @@ void main() {
         );
       });
 
-      testWidgets('Radar sheet widgets render without overflow at 320dp 2.0x scale ($mode)', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(320, 568);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(() => tester.view.resetPhysicalSize());
+      testWidgets(
+        'Radar sheet widgets render without overflow at 320dp 2.0x scale ($mode)',
+        (tester) async {
+          tester.view.physicalSize = const Size(320, 568);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(() => tester.view.resetPhysicalSize());
 
-        await tester.pumpWidget(
-          wrapForTest(
-            mode: mode,
-            child: Column(
-              children: [
-                RadarMapHeader(
-                  locationZone: 'Dhanmondi Residential Area, Dhaka',
-                  onClose: () {},
-                ),
-                RadarMapFilterBar(
-                  selectedRadiusKm: 5,
-                  onRadiusChanged: (_) {},
-                  selectedTradeFilter: 'All',
-                  onTradeFilterChanged: (_) {},
-                  isBn: false,
-                ),
-                const RadarLocationBanner(
-                  selectedPoint: LatLng(23.7461, 90.3742),
-                  selectedAddress: 'House 12, Road 8, Dhanmondi, Dhaka',
-                  isReverseGeocoding: false,
-                ),
-                RadarTechnicianCard(
-                  technician: const RadarTechnician(
-                    id: 'test-tech-1',
-                    name: 'Test Specialist',
-                    trade: 'Electrical',
-                    icon: Icons.bolt_rounded,
-                    color: AppColors.primaryBlue,
-                    rating: 0.0,
-                    jobs: 0,
-                    distanceKm: 1.2,
-                    startingRate: 800,
-                    latitude: 23.7461,
-                    longitude: 90.3742,
-                    zone: 'Dhanmondi',
+          await tester.pumpWidget(
+            wrapForTest(
+              mode: mode,
+              child: Column(
+                children: [
+                  RadarMapHeader(
+                    locationZone: 'Dhanmondi Residential Area, Dhaka',
+                    onClose: () {},
                   ),
-                  onBook: () {},
-                ),
-              ],
+                  RadarMapFilterBar(
+                    selectedRadiusKm: 5,
+                    onRadiusChanged: (_) {},
+                    selectedTradeFilter: 'All',
+                    onTradeFilterChanged: (_) {},
+                    isBn: false,
+                  ),
+                  const RadarLocationBanner(
+                    selectedPoint: LatLng(23.7461, 90.3742),
+                    selectedAddress: 'House 12, Road 8, Dhanmondi, Dhaka',
+                    isReverseGeocoding: false,
+                  ),
+                  RadarTechnicianCard(
+                    technician: const RadarTechnician(
+                      id: 'test-tech-1',
+                      name: 'Test Specialist',
+                      trade: 'Electrical',
+                      icon: Icons.bolt_rounded,
+                      color: AppColors.primaryBlue,
+                      rating: 0.0,
+                      jobs: 0,
+                      distanceKm: 1.2,
+                      startingRate: 800,
+                      latitude: 23.7461,
+                      longitude: 90.3742,
+                      zone: 'Dhanmondi',
+                    ),
+                    onBook: () {},
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
+          );
 
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
+        },
+      );
     }
   });
 }
-

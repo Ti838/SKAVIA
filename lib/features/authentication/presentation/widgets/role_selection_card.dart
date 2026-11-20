@@ -81,10 +81,7 @@ class RoleSelectionCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     desc,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: skavia.secondaryText,
-                    ),
+                    style: TextStyle(fontSize: 12, color: skavia.secondaryText),
                   ),
                 ],
               ),

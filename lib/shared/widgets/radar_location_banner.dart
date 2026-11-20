@@ -44,8 +44,8 @@ class RadarLocationBanner extends StatelessWidget {
               Text(
                 isReverseGeocoding
                     ? (isBn
-                        ? 'ঠিকানা খোঁজা হচ্ছে...'
-                        : 'Resolving street address...')
+                          ? 'ঠিকানা খোঁজা হচ্ছে...'
+                          : 'Resolving street address...')
                     : (selectedAddress ?? 'Selected Coordinates'),
                 style: TextStyle(
                   fontSize: 12,

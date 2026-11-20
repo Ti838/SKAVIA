@@ -29,7 +29,9 @@ class WorkerProfileModel extends WorkerProfileEntity {
         (json['rating_average'] as num?)?.toDouble() ??
         0.0;
     final statusStr =
-        (json['verification_status'] ?? json['status'])?.toString().toLowerCase() ??
+        (json['verification_status'] ?? json['status'])
+            ?.toString()
+            .toLowerCase() ??
         '';
     return WorkerProfileModel(
       workerProfileId: json['worker_profile_id']?.toString() ?? '',

@@ -20,7 +20,7 @@ class AppUpdateProvider extends ChangeNotifier {
   AppUpdateService _service;
 
   AppUpdateProvider({AppUpdateService? service})
-      : _service = service ?? AppUpdateService();
+    : _service = service ?? AppUpdateService();
 
   void configureService(AppUpdateService service) {
     _service = service;
@@ -243,4 +243,3 @@ class AppUpdateProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-

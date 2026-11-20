@@ -7,10 +7,7 @@ import '../../../../app/theme/app_dimensions.dart';
 class ActiveJobEscrowBanner extends StatelessWidget {
   final double agreedPrice;
 
-  const ActiveJobEscrowBanner({
-    super.key,
-    required this.agreedPrice,
-  });
+  const ActiveJobEscrowBanner({super.key, required this.agreedPrice});
 
   @override
   Widget build(BuildContext context) {

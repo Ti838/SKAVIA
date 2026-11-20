@@ -203,18 +203,16 @@ abstract class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return _page(
           settings,
-          (_) => AssignTaskScreen(
-            projectId: args?['projectId'] as String? ?? '',
-          ),
+          (_) =>
+              AssignTaskScreen(projectId: args?['projectId'] as String? ?? ''),
         );
 
       case AppRoutes.teamRoster:
         final args = settings.arguments as Map<String, dynamic>?;
         return _page(
           settings,
-          (_) => TeamRosterScreen(
-            projectId: args?['projectId'] as String? ?? '',
-          ),
+          (_) =>
+              TeamRosterScreen(projectId: args?['projectId'] as String? ?? ''),
         );
 
       case AppRoutes.chatList:
@@ -260,9 +258,8 @@ abstract class AppRouter {
         final args = settings.arguments as Map<String, dynamic>?;
         return _page(
           settings,
-          (_) => SkaviaAiScreen(
-            initialPrompt: args?['initialPrompt'] as String?,
-          ),
+          (_) =>
+              SkaviaAiScreen(initialPrompt: args?['initialPrompt'] as String?),
         );
 
       case AppRoutes.liveJobFeed:
@@ -293,8 +290,7 @@ abstract class AppRouter {
             serviceRequestId: args?['serviceRequestId'] as String?,
             projectId: args?['projectId'] as String?,
             workerProfileId: args?['workerProfileId'] as String?,
-            specialistName:
-                args?['specialistName'] as String? ?? 'Specialist',
+            specialistName: args?['specialistName'] as String? ?? 'Specialist',
             location: args?['location'] as String? ?? 'Dhaka, Bangladesh',
           ),
         );
@@ -309,8 +305,7 @@ abstract class AppRouter {
                 args?['serviceTitle'] as String? ?? 'Technical Service',
             clientName: args?['clientName'] as String? ?? 'Client',
             clientPhone: args?['clientPhone'] as String? ?? '',
-            specialistName:
-                args?['specialistName'] as String? ?? 'Specialist',
+            specialistName: args?['specialistName'] as String? ?? 'Specialist',
             baseAmount: (args?['baseAmount'] as num?)?.toDouble() ?? 0.0,
             platformFee: (args?['platformFee'] as num?)?.toDouble() ?? 0.0,
             totalAmount: (args?['totalAmount'] as num?)?.toDouble() ?? 0.0,

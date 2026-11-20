@@ -100,11 +100,7 @@ class PostRequirementSuccessDialog extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.auto_awesome,
-                  color: tokens.brandAccent,
-                  size: 20,
-                ),
+                Icon(Icons.auto_awesome, color: tokens.brandAccent, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -153,8 +149,8 @@ class PostRequirementSuccessDialog extends StatelessWidget {
                 builder: (_) => CandidateMatchesScreen(
                   requirementId:
                       (requirementId != null && requirementId!.isNotEmpty)
-                          ? requirementId!
-                          : 'req_${DateTime.now().millisecondsSinceEpoch}',
+                      ? requirementId!
+                      : 'req_${DateTime.now().millisecondsSinceEpoch}',
                   requirementTitle: title,
                   requirementZone: selectedLocation,
                   budget: budget,

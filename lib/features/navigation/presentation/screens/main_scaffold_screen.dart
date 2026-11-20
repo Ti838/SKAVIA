@@ -106,9 +106,10 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
             .then<void>((_) {}, onError: (_, _) {}),
       );
       unawaited(
-        NotificationCenterController.instance
-            .syncFromBackend()
-            .then<void>((_) {}, onError: (_, _) {}),
+        NotificationCenterController.instance.syncFromBackend().then<void>(
+          (_) {},
+          onError: (_, _) {},
+        ),
       );
     });
   }
@@ -165,10 +166,8 @@ class _MainScaffoldScreenState extends State<MainScaffoldScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updatePromptScheduled = false;
         if (!mounted) return;
-        Navigator.of(context).pushNamed(
-          AppRoutes.appUpdate,
-          arguments: {'blocking': true},
-        );
+        Navigator.of(context)
+            .pushNamed(AppRoutes.appUpdate, arguments: {'blocking': true});
       });
       return;
     }

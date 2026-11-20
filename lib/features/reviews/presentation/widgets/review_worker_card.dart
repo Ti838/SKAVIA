@@ -30,11 +30,7 @@ class ReviewWorkerCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          UserAvatar(
-            imageUrl: workerAvatar,
-            name: workerName,
-            radius: 28,
-          ),
+          UserAvatar(imageUrl: workerAvatar, name: workerName, radius: 28),
           const SizedBox(width: 14),
           Expanded(
             child: Column(

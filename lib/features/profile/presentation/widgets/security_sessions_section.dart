@@ -68,10 +68,7 @@ class SecuritySessionsSection extends StatelessWidget {
           child: OutlinedButton(
             onPressed: isRevokingAll ? null : onRevokeAllOtherSessions,
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

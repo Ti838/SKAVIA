@@ -10,10 +10,7 @@ import '../../domain/entities/diagnostic_report.dart';
 class DiagnosticConsentDialog extends StatelessWidget {
   final DiagnosticReport? report;
 
-  const DiagnosticConsentDialog({
-    super.key,
-    this.report,
-  });
+  const DiagnosticConsentDialog({super.key, this.report});
 
   static Future<void> show(BuildContext context, {DiagnosticReport? report}) {
     return showDialog(
@@ -73,7 +70,9 @@ class DiagnosticConsentDialog extends StatelessWidget {
             _buildItem(
               icon: Icons.block_rounded,
               color: AppColors.errorRed,
-              title: isBn ? 'জিরো ট্র্যাকিং আইডেন্টিফায়ার' : 'Zero Persistent Trackers',
+              title: isBn
+                  ? 'জিরো ট্র্যাকিং আইডেন্টিফায়ার'
+                  : 'Zero Persistent Trackers',
               desc: isBn
                   ? 'আমরা কোনো IMEI, সিরিয়াল নম্বর, বা হার্ডওয়্যার ট্র্যাকিং আইডি সংগ্রহ করি না।'
                   : 'SKAVIA never queries or records IMEI, IMSI, or persistent hardware serial identifiers.',
@@ -126,7 +125,10 @@ class DiagnosticConsentDialog extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(height: 2),
               Text(

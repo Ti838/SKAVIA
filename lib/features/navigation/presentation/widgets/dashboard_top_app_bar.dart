@@ -172,18 +172,21 @@ class DashboardTopAppBar extends StatelessWidget {
                               switch (mode) {
                                 case ThemeMode.light:
                                   themeIcon = Icons.light_mode_outlined;
-                                  themeTooltip =
-                                      isBn ? 'লাইট মোড' : 'Light Mode';
+                                  themeTooltip = isBn
+                                      ? 'লাইট মোড'
+                                      : 'Light Mode';
                                   break;
                                 case ThemeMode.dark:
                                   themeIcon = Icons.dark_mode_outlined;
-                                  themeTooltip =
-                                      isBn ? 'ডার্ক মোড' : 'Dark Mode';
+                                  themeTooltip = isBn
+                                      ? 'ডার্ক মোড'
+                                      : 'Dark Mode';
                                   break;
                                 case ThemeMode.system:
                                   themeIcon = Icons.brightness_auto_outlined;
-                                  themeTooltip =
-                                      isBn ? 'সিস্টেম থিম' : 'System Theme';
+                                  themeTooltip = isBn
+                                      ? 'সিস্টেম থিম'
+                                      : 'System Theme';
                                   break;
                               }
 

@@ -231,19 +231,18 @@ class _FeaturedWorkersSectionState extends State<FeaturedWorkersSection> {
     final userMap = worker['users'] as Map<String, dynamic>?;
     final rawName =
         (worker['display_name'] as String?)?.trim().isNotEmpty == true
-            ? (worker['display_name'] as String).trim()
-            : (userMap?['full_name'] as String?)?.trim() ?? '';
+        ? (worker['display_name'] as String).trim()
+        : (userMap?['full_name'] as String?)?.trim() ?? '';
     final name = rawName.isNotEmpty
         ? rawName
         : (isBn ? 'দক্ষ কারিগর' : 'Specialist');
     final avatarUrl =
         (worker['avatar_url'] as String?)?.trim().isNotEmpty == true
-            ? (worker['avatar_url'] as String).trim()
-            : (userMap?['avatar_url'] as String?)?.trim() ?? '';
-    final title =
-        (worker['title'] as String?)?.trim().isNotEmpty == true
-            ? (worker['title'] as String).trim()
-            : (isBn ? 'টেকনিশিয়ান' : 'Technician');
+        ? (worker['avatar_url'] as String).trim()
+        : (userMap?['avatar_url'] as String?)?.trim() ?? '';
+    final title = (worker['title'] as String?)?.trim().isNotEmpty == true
+        ? (worker['title'] as String).trim()
+        : (isBn ? 'টেকনিশিয়ান' : 'Technician');
     final location = (worker['location'] as String?)?.trim() ?? '';
     final expectedRate = (worker['expected_rate'] as num?)?.toDouble() ?? 0.0;
     final totalReviews = (worker['total_reviews'] as num?)?.toInt() ?? 0;

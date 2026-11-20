@@ -251,9 +251,10 @@ class _NotificationPreferencesScreenState
                   children: [
                     OutlinedButton.icon(
                       onPressed: () async {
-                        await NotificationService.instance.previewNotificationSound(
-                          soundType: NotificationSoundType.urgent,
-                        );
+                        await NotificationService.instance
+                            .previewNotificationSound(
+                              soundType: NotificationSoundType.urgent,
+                            );
                         if (context.mounted) {
                           UiFeedbackHelper.showInfo(
                             context,
@@ -266,9 +267,10 @@ class _NotificationPreferencesScreenState
                     ),
                     OutlinedButton.icon(
                       onPressed: () async {
-                        await NotificationService.instance.previewNotificationSound(
-                          soundType: NotificationSoundType.message,
-                        );
+                        await NotificationService.instance
+                            .previewNotificationSound(
+                              soundType: NotificationSoundType.message,
+                            );
                         if (context.mounted) {
                           UiFeedbackHelper.showInfo(
                             context,
@@ -276,14 +278,18 @@ class _NotificationPreferencesScreenState
                           );
                         }
                       },
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      icon: const Icon(
+                        Icons.chat_bubble_outline_rounded,
+                        size: 16,
+                      ),
                       label: const Text('Message Tone'),
                     ),
                     OutlinedButton.icon(
                       onPressed: () async {
-                        await NotificationService.instance.previewNotificationSound(
-                          soundType: NotificationSoundType.completed,
-                        );
+                        await NotificationService.instance
+                            .previewNotificationSound(
+                              soundType: NotificationSoundType.completed,
+                            );
                         if (context.mounted) {
                           UiFeedbackHelper.showInfo(
                             context,
@@ -296,9 +302,10 @@ class _NotificationPreferencesScreenState
                     ),
                     OutlinedButton.icon(
                       onPressed: () async {
-                        await NotificationService.instance.previewNotificationSound(
-                          soundType: NotificationSoundType.general,
-                        );
+                        await NotificationService.instance
+                            .previewNotificationSound(
+                              soundType: NotificationSoundType.general,
+                            );
                         if (context.mounted) {
                           UiFeedbackHelper.showInfo(
                             context,
@@ -306,7 +313,10 @@ class _NotificationPreferencesScreenState
                           );
                         }
                       },
-                      icon: const Icon(Icons.notifications_active_outlined, size: 16),
+                      icon: const Icon(
+                        Icons.notifications_active_outlined,
+                        size: 16,
+                      ),
                       label: const Text('General Chime'),
                     ),
                     OutlinedButton.icon(

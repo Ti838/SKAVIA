@@ -115,7 +115,10 @@ class BookingPaymentDetailsCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     hasBreakdown
-                        ? Formatters.formatCurrency(totalAmount!, useBnDigits: isBn)
+                        ? Formatters.formatCurrency(
+                            totalAmount!,
+                            useBnDigits: isBn,
+                          )
                         : displayAmount,
                     style: TextStyle(
                       fontSize: 16,
@@ -162,4 +165,3 @@ class BookingPaymentDetailsCard extends StatelessWidget {
     );
   }
 }
-

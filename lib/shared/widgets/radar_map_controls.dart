@@ -56,7 +56,8 @@ class RadarMapControls extends StatelessWidget {
           _buildButton(
             context: context,
             icon: Icons.layers_rounded,
-            tooltip: layerLabel ?? 'Switch Map Style (Street / Satellite / Dark)',
+            tooltip:
+                layerLabel ?? 'Switch Map Style (Street / Satellite / Dark)',
             onTap: onCycleLayer!,
           ),
           const SizedBox(height: 8),
