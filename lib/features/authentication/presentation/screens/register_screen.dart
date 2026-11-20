@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/validators.dart';
-import '../../../../shared/motion/sakuga_checkbox.dart';
-import '../../../../shared/widgets/app_text_field.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_header_widget.dart';
+import '../widgets/auth_terms_checkbox.dart';
+import '../widgets/registration_form_fields.dart';
+import '../widgets/social_auth_buttons_row.dart';
 
 /// Single unified minimal registration screen for SKAVIA.
 /// Preserves fast 5-field signup (`Full Name`, `Email`, `Phone`, `Password`, `Confirm Password`),
@@ -49,7 +49,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _handleRegister() async {
     setState(() {
-      _termsError = _agreeToTerms ? null : 'You must accept the Terms of Service & Privacy Policy';
+      _termsError = _agreeToTerms
+          ? null
+          : 'You must accept the Terms of Service & Privacy Policy';
     });
 
     if (!_formKey.currentState!.validate() || !_agreeToTerms) return;
@@ -79,7 +81,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Account created successfully! Choose your account mode.'),
+          content: Text(
+            'Account created successfully! Choose your account mode.',
+          ),
           backgroundColor: AppColors.success,
         ),
       );
@@ -106,16 +110,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
           fallbackEmail: user.email,
           fallbackName: user.displayName,
           fallbackPhone: user.phoneNumber,
-          fallbackAvatarUrl: user.photoURL,
         );
+      }
 
-        final profile = await DashboardRepository().getUserProfileRecord(
-          user.uid,
-        );
-        final activeMode = profile?['active_mode']?.toString() ??
-            LocalCacheService.instance
-                .get('${AppConstants.userModeStorageKey}_${user.uid}')
-                ?.toString() ??
+      if (user != null) {
+        try {
+          final summary = await DashboardRepository().getAuthorizedRoles(user.uid);
+          if (mounted &&
+              (summary.hasCustomer ||
+                  summary.hasEnterprise ||
+                  summary.hasWorker)) {
+            final activeMode = summary.hasWorker
+                ? 'worker'
+                : (summary.hasEnterprise ? 'enterprise' : 'customer');
+            LocalCacheService.instance.put(
+              AppConstants.userModeStorageKey,
+              activeMode,
+            );
+            if (!mounted) return;
+            Navigator.of(context).pushReplacementNamed(
+              AppRoutes.appShell,
+              arguments: {'initialMode': activeMode},
+            );
+            return;
+          }
+        } catch (_) {}
+
+        final activeMode =
             LocalCacheService.instance
                 .get(AppConstants.userModeStorageKey)
                 ?.toString();
@@ -142,54 +163,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  void _showLegalDialog(String title, String content) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        content: SingleChildScrollView(
-          child: Text(
-            content,
-            style: const TextStyle(fontSize: 13, height: 1.5),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final skavia = context.skavia;
     final l10n = context.l10n;
     final isBn = context.isBengali;
-
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.12)
-        : const Color(0xFFE2E8F0);
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 480),
-            child: SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(
-                24,
-                20,
-                24,
-                MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 440),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -215,7 +204,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               color: colorScheme.error.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: colorScheme.error.withValues(alpha: 0.35),
+                                color: colorScheme.error.withValues(
+                                  alpha: 0.35,
+                                ),
                               ),
                             ),
                             child: Row(
@@ -244,202 +235,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                     ),
 
-                    AppTextField(
-                      controller: _fullNameController,
-                      label: l10n.authFullName,
-                      hint: l10n.authFullNameHint,
-                      prefixIcon: Icon(
-                        Icons.badge_outlined,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().length < 3) {
-                          return isBn
-                              ? 'সম্পূর্ণ নাম কমপক্ষে ৩ অক্ষরের হতে হবে'
-                              : 'Full name must be at least 3 characters';
-                        }
-                        return null;
+                    RegistrationFormFields(
+                      fullNameController: _fullNameController,
+                      emailController: _emailController,
+                      phoneController: _phoneController,
+                      passwordController: _passwordController,
+                      confirmPasswordController: _confirmPasswordController,
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    AuthTermsCheckbox(
+                      value: _agreeToTerms,
+                      errorText: _termsError,
+                      onChanged: (val) {
+                        setState(() {
+                          _agreeToTerms = val;
+                          if (_agreeToTerms) _termsError = null;
+                        });
                       },
                     ),
-                    const SizedBox(height: 14),
-
-                    AppTextField(
-                      controller: _emailController,
-                      label: l10n.authEmail,
-                      hint: l10n.authEmailHint,
-                      keyboardType: TextInputType.emailAddress,
-                      prefixIcon: Icon(
-                        Icons.alternate_email_rounded,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      validator: Validators.email,
-                    ),
-                    const SizedBox(height: 14),
-
-                    AppTextField(
-                      controller: _phoneController,
-                      label: l10n.authPhone,
-                      hint: l10n.authPhoneHint,
-                      keyboardType: TextInputType.phone,
-                      prefixIcon: Icon(
-                        Icons.phone_iphone_rounded,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      validator: Validators.bdPhone,
-                    ),
-                    const SizedBox(height: 14),
-
-                    AppTextField(
-                      controller: _passwordController,
-                      label: l10n.authPassword,
-                      hint: '••••••••',
-                      isPassword: true,
-                      prefixIcon: Icon(
-                        Icons.lock_outline_rounded,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      validator: (val) {
-                        if (val == null || val.isEmpty) {
-                          return isBn
-                              ? 'পাসওয়ার্ড আবশ্যক'
-                              : 'Password is required';
-                        }
-                        if (val.length < 6) {
-                          return isBn
-                              ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে'
-                              : 'Password must be at least 6 characters';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-
-                    AppTextField(
-                      controller: _confirmPasswordController,
-                      label: l10n.authConfirmPassword,
-                      hint: '••••••••',
-                      isPassword: true,
-                      prefixIcon: Icon(
-                        Icons.lock_reset_rounded,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      ),
-                      validator: (val) {
-                        if (val != _passwordController.text) {
-                          return isBn
-                              ? 'পাসওয়ার্ড দুটি মিলছে না'
-                              : 'Passwords do not match';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Terms & Privacy Acceptance Checkbox
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SakugaCheckbox(
-                          value: _agreeToTerms,
-                          semanticLabel: isBn
-                              ? 'শর্তাবলী ও গোপনীয়তা নীতি স্বীকার করুন'
-                              : 'Agree to Terms and Privacy Policy',
-                          activeColor: const Color(0xFF003399),
-                          onChanged: (val) {
-                            setState(() {
-                              _agreeToTerms = val;
-                              if (_agreeToTerms) _termsError = null;
-                            });
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text(
-                                isBn ? 'আমি ' : 'I agree to the ',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => _showLegalDialog(
-                                  isBn ? 'সেবার শর্তাবলী' : 'Terms of Service',
-                                  isBn
-                                      ? 'SKAVIA ব্যবহার করার মাধ্যমে আপনি আমাদের প্ল্যাটফর্ম সেবার শর্তাবলী, এসক্রো নিয়মাবলী এবং কর্মক্ষেত্রের মান মেনে চলতে সম্মত হচ্ছেন।'
-                                      : 'By accessing or using SKAVIA, you agree to be bound by our platform service terms, verified operational procedures, escrow rules, and workplace safety standards.',
-                                ),
-                                child: Text(
-                                  isBn ? 'সেবার শর্তাবলী' : 'Terms of Service',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark
-                                        ? const Color(0xFF3898EC)
-                                        : const Color(0xFF003399),
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                isBn ? ' এবং ' : ' and ',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () => _showLegalDialog(
-                                  isBn ? 'গোপনীয়তা নীতি' : 'Privacy Policy',
-                                  isBn
-                                      ? 'SKAVIA আপনার ব্যক্তিগত তথ্য ডেটা সুরক্ষা আইন ও ক্রিপ্টোগ্রাফিক সুরক্ষা অনুযায়ী নিরাপদে সংরক্ষণ করে।'
-                                      : 'SKAVIA collects and protects your personal data in accordance with our national data protection obligations and cryptographic access security rules.',
-                                ),
-                                child: Text(
-                                  isBn ? 'গোপনীয়তা নীতি' : 'Privacy Policy',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark
-                                        ? const Color(0xFF3898EC)
-                                        : const Color(0xFF003399),
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              ),
-                              if (isBn)
-                                Text(
-                                  ' মেনে নিচ্ছি',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_termsError != null) ...[
-                      const SizedBox(height: 6),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          _termsError!,
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: colorScheme.error,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
 
                     const SizedBox(height: 20),
 
@@ -496,85 +311,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Divider: OR CONTINUE WITH
-                    Row(
-                      children: [
-                        Expanded(child: Divider(color: borderColor)),
-                        Flexible(
-                          flex: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text(
-                              l10n.authOrContinueWith,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(child: Divider(color: borderColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-
-                    // Official Google Sign-Up Full-Width Button
-                    ListenableBuilder(
-                      listenable: _authController,
-                      builder: (context, _) {
-                        return SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: OutlinedButton(
-                            onPressed: _authController.isLoading
-                                ? null
-                                : _handleGoogleSignUp,
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: isDark
-                                  ? colorScheme.surfaceContainerHighest
-                                  : Colors.white,
-                              foregroundColor: colorScheme.onSurface,
-                              side: BorderSide(color: borderColor, width: 1.2),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Image.asset(
-                                  AppAssets.googleLogo,
-                                  height: 20,
-                                  width: 20,
-                                  errorBuilder: (_, _, _) => const Icon(
-                                    Icons.g_mobiledata_rounded,
-                                    color: Color(0xFFEA4335),
-                                    size: 24,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Flexible(
-                                  child: Text(
-                                    isBn
-                                        ? 'Google দিয়ে সাইন আপ করুন'
-                                        : 'Sign up with Google',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 0.1,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                    SocialAuthButtonsRow(
+                      onGoogleSignIn: _handleGoogleSignUp,
                     ),
 
                     const SizedBox(height: 28),

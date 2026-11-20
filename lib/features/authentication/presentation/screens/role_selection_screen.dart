@@ -4,17 +4,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimensions.dart';
 import '../../../../app/theme/app_typography.dart';
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/extensions/context_extensions.dart';
+import '../../../../core/constants/database_tables.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/supabase_guard.dart';
-import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_button.dart';
-import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
+import '../widgets/role_option_card.dart';
 
 /// Screen allowing new and existing users to select their intent and active role.
 /// Zero initial pre-selection enforces deliberate user choice and persists both
@@ -98,85 +96,82 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
 
     final customerType = selectedRole == 'enterprise'
         ? _corporateSubtype
-        : 'Individual';
+        : (selectedRole == 'worker' ? 'Specialist' : 'Individual');
+
+    final userId = _resolveCurrentUserId();
 
     try {
-      final uid = _resolveCurrentUserId();
-
-      // 1. Guaranteed Immediate Local Persistence (disk + memory mirror)
-      await LocalCacheService.instance.putPersisted(
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.userModeStorageKey, selectedRole);
+      LocalCacheService.instance.put(
         AppConstants.userModeStorageKey,
         selectedRole,
       );
-      if (uid != null && uid.isNotEmpty) {
-        await LocalCacheService.instance.putPersisted(
-          '${AppConstants.userModeStorageKey}_$uid',
-          selectedRole,
-        );
-      }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(AppConstants.userModeStorageKey, selectedRole);
-      if (uid != null && uid.isNotEmpty) {
-        await prefs.setString(
-          '${AppConstants.userModeStorageKey}_$uid',
-          selectedRole,
-        );
-      }
-
-      // 2. Synchronize to Backend Database
-      if (uid != null && uid.isNotEmpty) {
-        await DashboardRepository().updateActiveMode(uid, selectedRole);
-        final supabase = tryGetSupabaseClient();
-        if (supabase != null) {
-          await supabase.from(DatabaseTables.customerProfiles).upsert({
-            'user_id': uid,
-            'customer_type': customerType,
-          }, onConflict: 'user_id');
-        }
-
-        final fbUser = FirebaseAuth.instance.currentUser;
-        await ProfileController.shared.loadProfile(
-          uid,
-          fallbackEmail: fbUser?.email,
-          fallbackName: fbUser?.displayName,
-          fallbackPhone: fbUser?.phoneNumber,
-        );
-        if (ProfileController.shared.profile != null) {
-          await ProfileController.shared.updateProfile(
-            customerType: customerType,
+      final client = tryGetSupabaseClient();
+      if (client != null && userId != null) {
+        if (selectedRole == 'customer' || selectedRole == 'enterprise') {
+          await client.from(DatabaseTables.customerProfiles).upsert(
+            {
+              'customer_id': userId,
+              'customer_type': customerType,
+              'company_name': selectedRole == 'enterprise' ? '' : null,
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            onConflict: 'customer_id',
+          );
+        } else if (selectedRole == 'worker') {
+          await client.from(DatabaseTables.workerProfiles).upsert(
+            {
+              'worker_profile_id': userId,
+              'title': 'Certified Technician',
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            onConflict: 'worker_profile_id',
           );
         }
+
+        try {
+          final roleRows = await client
+              .from(DatabaseTables.roles)
+              .select('role_id, role_name')
+              .limit(20);
+          final matched = (roleRows as List).firstWhere(
+            (r) =>
+                (r['role_name'] as String?)?.toLowerCase() ==
+                (selectedRole == 'worker' ? 'worker' : 'customer'),
+            orElse: () => null,
+          );
+          if (matched != null && matched['role_id'] != null) {
+            await client.from(DatabaseTables.userRoles).upsert(
+              {
+                'user_id': userId,
+                'role_id': matched['role_id'],
+                'is_active': true,
+              },
+              onConflict: 'user_id,role_id',
+            );
+          }
+        } catch (_) {}
+
+        await ProfileController.shared.loadProfile(userId);
       }
-    } catch (e) {
-      debugPrint('[RoleSelectionScreen] Mode confirmation notice: $e');
-    }
+    } catch (_) {}
 
     if (!mounted) return;
-    setState(() => _isSaving = false);
 
-    Navigator.of(context).pushReplacementNamed(
+    final targetMode = selectedRole;
+    Navigator.of(context).pushNamedAndRemoveUntil(
       AppRoutes.appShell,
-      arguments: {
-        'initialMode': selectedRole,
-        'customerType': customerType,
-      },
+      (route) => false,
+      arguments: {'initialMode': targetMode},
     );
-  }
-
-  void _handleBack() {
-    if (Navigator.of(context).canPop()) {
-      Navigator.of(context).pop();
-    } else {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.onboarding);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final skavia = context.skavia;
     final isDark = theme.brightness == Brightness.dark;
     final isBn = AppLanguageService.isBengali;
 
@@ -185,26 +180,15 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: colorScheme.onSurface,
-            size: 20,
-          ),
-          onPressed: _handleBack,
-        ),
         actions: [
           TextButton.icon(
-            onPressed: () {
-              setState(() {
-                AppLanguageService.toggleLanguage();
-              });
-            },
-            icon: const Icon(Icons.language_rounded, size: 16),
+            onPressed: () => setState(() {
+              AppLanguageService.toggleLanguage();
+            }),
+            icon: const Icon(Icons.language_rounded, size: 18),
             label: Text(
-              isBn ? 'Eng' : 'বাংলা',
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              isBn ? 'EN' : 'বাং',
+              style: const TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(width: 8),
@@ -214,307 +198,74 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(
-                  AppDimensions.paddingLarge,
-                  4,
-                  AppDimensions.paddingLarge,
-                  12,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
                 ),
-                children: [
-                  Text(
-                    isBn
-                        ? 'আপনি কিভাবে SKAVIA ব্যবহার করতে চান?'
-                        : 'How do you want to use SKAVIA?',
-                    style: TextStyle(
-                      fontFamily: AppTypography.headingFont,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 22,
-                      color: colorScheme.onSurface,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isBn
+                          ? 'আপনার মোড নির্বাচন করুন'
+                          : 'Choose How You Use SKAVIA',
+                      style: TextStyle(
+                        fontFamily: AppTypography.headingFont,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.onSurface,
+                        letterSpacing: -0.3,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    isBn
-                        ? 'আপনার প্রয়োজন অনুযায়ী অ্যাকাউন্ট মোড সিলেক্ট করুন। পরবর্তীতে প্রোফাইল থেকে যেকোনো সময় মোড পরিবর্তন করতে পারবেন।'
-                        : 'Select your primary role. You can freely switch between modes anytime from your dashboard.',
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      color: colorScheme.onSurfaceVariant,
-                      height: 1.35,
+                    const SizedBox(height: 6),
+                    Text(
+                      isBn
+                          ? 'একই অ্যাকাউন্টে আপনি যেকোনো সময় প্রোফাইল থেকে মোড বদলাতে পারবেন।'
+                          : 'Unified account — switch between Personal, Business, and Specialist mode anytime from Profile.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  for (int index = 0; index < _roles.length; index++) ...[
-                    Builder(
-                      builder: (context) {
-                        final role = _roles[index];
-                        final roleId = role['id'] as String;
-                        final isSelected = _selectedRole == roleId;
-                        final baseColor = role['color'] as Color;
-                        final accentColor = isDark && roleId == 'customer'
-                            ? skavia.brandAccent
-                            : baseColor;
-
-                        return InkWell(
-                          onTap: () => setState(() => _selectedRole = roleId),
-                          borderRadius: BorderRadius.circular(
-                            AppDimensions.radiusLarge,
-                          ),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.all(18),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? accentColor.withValues(
-                                      alpha: isDark ? 0.18 : 0.08,
-                                    )
-                                  : skavia.cardBg,
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.radiusLarge,
-                              ),
-                              border: Border.all(
-                                color: isSelected ? accentColor : skavia.border,
-                                width: isSelected ? 2 : 1,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isSelected
-                                      ? accentColor.withValues(alpha: 0.12)
-                                      : Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: isSelected ? 12 : 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: accentColor.withValues(
-                                          alpha: 0.15,
-                                        ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        role['icon'] as IconData,
-                                        color: accentColor,
-                                        size: 26,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 14),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            isBn
-                                                ? (role['titleBn'] as String)
-                                                : (role['titleEn'] as String),
-                                            style: TextStyle(
-                                              fontFamily:
-                                                  AppTypography.headingFont,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 15,
-                                              color: colorScheme.onSurface,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: accentColor.withValues(
-                                                alpha: 0.12,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              isBn
-                                                  ? (role['badgeBn'] as String)
-                                                  : (role['badgeEn'] as String),
-                                              style: TextStyle(
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w800,
-                                                color: accentColor,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            isBn
-                                                ? (role['subtitleBn'] as String)
-                                                : (role['subtitleEn']
-                                                      as String),
-                                            style: TextStyle(
-                                              fontSize: 12.5,
-                                              color:
-                                                  colorScheme.onSurfaceVariant,
-                                              height: 1.35,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: isSelected
-                                            ? accentColor
-                                            : Colors.transparent,
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? accentColor
-                                              : colorScheme.outline,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: isSelected
-                                          ? const Icon(
-                                              Icons.check_rounded,
-                                              size: 14,
-                                              color: Colors.white,
-                                            )
-                                          : null,
-                                    ),
-                                  ],
-                                ),
-                                if (roleId == 'enterprise' && isSelected) ...[
-                                  const SizedBox(height: 12),
-                                  Divider(
-                                    color: skavia.subtleBorder,
-                                    height: 1,
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    isBn
-                                        ? 'প্রাতিষ্ঠানিক ধরন নির্বাচন করুন:'
-                                        : 'Entity Classification:',
-                                    style: TextStyle(
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 6,
-                                    children:
-                                        ['Business Client', 'Organization'].map(
-                                          (subtype) {
-                                            final active =
-                                                _corporateSubtype == subtype;
-                                            return InkWell(
-                                              onTap: () => setState(
-                                                () => _corporateSubtype =
-                                                    subtype,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 7,
-                                                    ),
-                                                decoration: BoxDecoration(
-                                                  color: active
-                                                      ? accentColor.withValues(
-                                                          alpha: 0.2,
-                                                        )
-                                                      : colorScheme
-                                                            .surfaceContainerHighest
-                                                            .withValues(
-                                                              alpha: 0.45,
-                                                            ),
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  border: Border.all(
-                                                    color: active
-                                                        ? accentColor
-                                                        : skavia.subtleBorder,
-                                                  ),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    if (active) ...[
-                                                      Icon(
-                                                        Icons.check_rounded,
-                                                        size: 14,
-                                                        color: accentColor,
-                                                      ),
-                                                      const SizedBox(width: 6),
-                                                    ],
-                                                    Flexible(
-                                                      child: Text(
-                                                        subtype,
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight: active
-                                                              ? FontWeight.w800
-                                                              : FontWeight.w600,
-                                                          color: active
-                                                              ? accentColor
-                                                              : colorScheme
-                                                                    .onSurfaceVariant,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ).toList(),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (index < _roles.length - 1) const SizedBox(height: 14),
+                    const SizedBox(height: 24),
+                    ..._roles.map((role) {
+                      final roleId = role['id'] as String;
+                      final isSelected = _selectedRole == roleId;
+                      return RoleOptionCard(
+                        role: role,
+                        isSelected: isSelected,
+                        corporateSubtype: _corporateSubtype,
+                        onTap: () => setState(() => _selectedRole = roleId),
+                        onSubtypeChanged: (sub) =>
+                            setState(() => _corporateSubtype = sub),
+                      );
+                    }),
                   ],
-                ],
+                ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppDimensions.paddingLarge,
-                8,
-                AppDimensions.paddingLarge,
-                16,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.6)
+                    : Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
               ),
               child: AppButton(
-                text: _isSaving
-                    ? (isBn ? 'সংরক্ষণ করা হচ্ছে...' : 'Saving Choice...')
-                    : (_selectedRole == null
-                          ? (isBn
-                                ? 'শুরু করতে একটি মোড নির্বাচন করুন'
-                                : 'Select a Mode to Continue')
-                          : (isBn
-                                ? 'এই মোডে প্রবেশ করুন'
-                                : 'Continue to Dashboard')),
-                isLoading: _isSaving,
+                text: isBn ? 'চালিয়ে যান' : 'Continue',
                 onPressed: _selectedRole != null && !_isSaving
                     ? _confirmSelection
                     : null,
+                isLoading: _isSaving,
               ),
             ),
           ],

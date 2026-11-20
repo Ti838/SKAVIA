@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_routes.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_dimensions.dart';
-import '../../../../core/extensions/context_extensions.dart';
-import '../../../../core/utils/formatters.dart';
-import '../../../../shared/widgets/user_avatar.dart';
+import '../../../../shared/enums/app_role_mode.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../../customer/presentation/widgets/avatar_picker_sheet.dart';
-import '../../../navigation/presentation/screens/main_scaffold_screen.dart';
 import '../../data/models/user_profile_model.dart';
 import '../../domain/services/profile_completion_engine.dart';
 import '../controllers/profile_controller.dart';
 import 'profile_completion_banner_card.dart';
+import 'profile_header_card.dart';
+import 'profile_menu_section.dart';
+import 'profile_stats_grid.dart';
 
 /// Screen 16 Complete Unified Profile View with live stats, completion strength, and menu tiles.
 class UnifiedProfileView extends StatefulWidget {
@@ -55,8 +52,6 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
   ProfileController get _profileController =>
       widget.profileController ?? ProfileController.shared;
 
-  bool get isCustomerMode => widget.currentMode == AppRoleMode.customer;
-
   @override
   void initState() {
     super.initState();
@@ -73,12 +68,25 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
     });
   }
 
+  void _handleCoverTap(String? effectiveCoverUrl, String? userId) {
+    if (widget.onCoverPick != null) {
+      widget.onCoverPick!();
+      return;
+    }
+    AvatarPickerSheet.show(
+      context,
+      currentAvatarUrl: effectiveCoverUrl,
+      userId: userId,
+      slot: ProfileMediaSlot.cover,
+      onAvatarSelected: (_) {
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.authController.user;
-    final colorScheme = Theme.of(context).colorScheme;
-    final tokens = context.skavia;
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return ListenableBuilder(
       listenable: _profileController,
@@ -98,15 +106,21 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
             ? profile.email
             : (user?.email?.isNotEmpty == true
                   ? user!.email!
-                  : (profile?.phone ??
-                        user?.phoneNumber ??
-                        'Complete your contact info'));
+                  : (user?.phoneNumber ?? 'contact@skavia.com'));
 
-        final effectiveAvatarUrl =
-            widget.customAvatarUrl ?? profile?.avatarUrl ?? user?.photoURL;
+        final rawAvatarUrl = widget.customAvatarUrl ??
+            (profile?.avatarUrl?.isNotEmpty == true
+                ? profile!.avatarUrl
+                : user?.photoURL);
+        final effectiveAvatarUrl = (rawAvatarUrl != null &&
+                rawAvatarUrl.trim().isNotEmpty &&
+                (rawAvatarUrl.startsWith('http://') ||
+                    rawAvatarUrl.startsWith('https://')))
+            ? rawAvatarUrl.trim()
+            : null;
+
         final rawCoverUrl = widget.customCoverUrl ?? profile?.coverUrl;
-        final effectiveCoverUrl =
-            (rawCoverUrl != null &&
+        final effectiveCoverUrl = (rawCoverUrl != null &&
                 rawCoverUrl.trim().isNotEmpty &&
                 (rawCoverUrl.startsWith('http://') ||
                     rawCoverUrl.startsWith('https://')))
@@ -126,350 +140,29 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
         final completionResult =
             ProfileCompletionEngine.evaluate(effectiveProfile);
 
-        final l10n = context.l10n;
-        final isBn = context.isBengali;
-
-        final roleLabel = widget.currentMode == AppRoleMode.worker
-            ? l10n.roleSpecialistWorker
-            : (widget.currentMode == AppRoleMode.enterprise
-                  ? (profile?.customerType == 'Organization'
-                        ? l10n.roleOrganization
-                        : l10n.roleBusinessClient)
-                  : l10n.roleIndividualCustomer);
-
-        final roleAccent = widget.currentMode == AppRoleMode.worker
-            ? AppColors.accent
-            : (widget.currentMode == AppRoleMode.enterprise
-                  ? AppColors.successGreen
-                  : tokens.brandAccent);
-
-        void handleCoverTap() {
-          if (widget.onCoverPick != null) {
-            widget.onCoverPick!();
-            return;
-          }
-          AvatarPickerSheet.show(
-            context,
-            currentAvatarUrl: effectiveCoverUrl,
-            userId: user?.uid ?? profile?.id,
-            slot: ProfileMediaSlot.cover,
-            onAvatarSelected: (_) {
-              if (mounted) setState(() {});
-            },
-          );
-        }
-
         return SingleChildScrollView(
           physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 1. Facebook-style Cover Banner + Overlapping Circular Profile Photo
-              Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 40),
-                    child: Container(
-                      height: 152,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: tokens.border),
-                        gradient: effectiveCoverUrl == null
-                            ? LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  AppColors.primaryRoyal.withValues(alpha: 0.9),
-                                  tokens.brandAccent.withValues(alpha: 0.78),
-                                ],
-                              )
-                            : null,
-                      ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          if (effectiveCoverUrl != null)
-                            Image.network(
-                              effectiveCoverUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      AppColors.primaryRoyal.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                      tokens.brandAccent.withValues(
-                                        alpha: 0.78,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: Material(
-                              color: Colors.black.withValues(alpha: 0.36),
-                              shape: const CircleBorder(),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Icons.settings_outlined,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                                tooltip: 'Settings',
-                                onPressed: widget.onOpenSettings,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            right: 10,
-                            bottom: 10,
-                            child: InkWell(
-                              onTap: handleCoverTap,
-                              borderRadius: BorderRadius.circular(18),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.56),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.25),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.camera_alt_rounded,
-                                      color: Colors.white,
-                                      size: 13,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      effectiveCoverUrl == null
-                                          ? (isBn ? 'কভার যোগ করুন' : 'Add Cover')
-                                          : (isBn ? 'কভার বদলান' : 'Edit Cover'),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: widget.onAvatarPick,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surface,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: UserAvatar(
-                            imageUrl: effectiveAvatarUrl,
-                            name: displayName,
-                            radius: 40,
-                            isVerified:
-                                effectiveProfile.verificationStatus == 'verified',
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 2,
-                          right: 2,
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: tokens.brandAccent,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: colorScheme.surface,
-                                width: 2,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.camera_alt_rounded,
-                              size: 14,
-                              color: tokens.onBrandAccent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                displayName,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: colorScheme.onSurface,
+              ProfileHeaderCard(
+                profile: effectiveProfile,
+                displayName: displayName,
+                contactLabel: contactLabel,
+                effectiveAvatarUrl: effectiveAvatarUrl,
+                effectiveCoverUrl: effectiveCoverUrl,
+                currentMode: widget.currentMode,
+                onAvatarPick: widget.onAvatarPick,
+                onCoverPick: () => _handleCoverTap(
+                  effectiveCoverUrl,
+                  user?.uid ?? profile?.id,
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                contactLabel,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if ((profile?.companyName ?? '').isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  profile!.companyName!,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: tokens.brandAccent,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
-
-              // Role Capsule Pill
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: roleAccent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text(
-                  roleLabel,
-                  style: TextStyle(
-                    color: roleAccent,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                onOpenSettings: widget.onOpenSettings,
               ),
               const SizedBox(height: 20),
-
-              // Real Profile Activity Stats Card
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final compact = constraints.maxWidth < 300 || textScale > 1.45;
-                  final ratingDisplay = stats.hasVerifiedRating
-                      ? stats.ratingAverage.toStringAsFixed(1)
-                      : '—';
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: tokens.cardBg,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusLg,
-                      ),
-                      border: Border.all(color: tokens.border),
-                    ),
-                    child: compact
-                        ? Wrap(
-                            alignment: WrapAlignment.spaceEvenly,
-                            spacing: 16,
-                            runSpacing: 12,
-                            children: [
-                              _buildProfileStatColumn(
-                                context,
-                                Formatters.toBengaliDigits(stats.servicesCount),
-                                l10n.profileServicesStat,
-                              ),
-                              _buildProfileStatColumn(
-                                context,
-                                Formatters.toBengaliDigits(stats.projectsCount),
-                                l10n.profileProjectsStat,
-                              ),
-                              _buildProfileStatColumn(
-                                context,
-                                isBn && stats.hasVerifiedRating
-                                    ? Formatters.toBengaliDigits(ratingDisplay)
-                                    : ratingDisplay,
-                                l10n.profileRatingStat,
-                              ),
-                            ],
-                          )
-                        : Row(
-                            children: [
-                              Expanded(
-                                child: _buildProfileStatColumn(
-                                  context,
-                                  Formatters.toBengaliDigits(stats.servicesCount),
-                                  l10n.profileServicesStat,
-                                ),
-                              ),
-                              Container(
-                                height: 32,
-                                width: 1,
-                                color: tokens.border,
-                              ),
-                              Expanded(
-                                child: _buildProfileStatColumn(
-                                  context,
-                                  Formatters.toBengaliDigits(stats.projectsCount),
-                                  l10n.profileProjectsStat,
-                                ),
-                              ),
-                              Container(
-                                height: 32,
-                                width: 1,
-                                color: tokens.border,
-                              ),
-                              Expanded(
-                                child: _buildProfileStatColumn(
-                                  context,
-                                  isBn && stats.hasVerifiedRating
-                                      ? Formatters.toBengaliDigits(ratingDisplay)
-                                      : ratingDisplay,
-                                  l10n.profileRatingStat,
-                                ),
-                              ),
-                            ],
-                          ),
-                  );
-                },
-              ),
+              ProfileStatsGrid(stats: stats),
               const SizedBox(height: 16),
-
-              // Profile Strength & Dynamic Completion Intelligence Banner
               ProfileCompletionBannerCard(
                 result: completionResult,
                 onActionTap: completionResult.nextRecommendedAction != null
@@ -481,325 +174,19 @@ class _UnifiedProfileViewState extends State<UnifiedProfileView> {
                     : null,
               ),
               const SizedBox(height: 16),
-
-              // Menu Tiles
-              _buildProfileTile(
-                context: context,
-                icon: Icons.edit_outlined,
-                title: l10n.profileEditPersonalDetails,
-                subtitle: isBn
-                    ? 'নাম, জন্মদিন, জরুরি যোগাযোগ ও প্রাতিষ্ঠানিক তথ্য'
-                    : 'Name, birthday, emergency contact & organization info',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.editDetailedProfile,
-                  arguments: _profileController,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.location_on_outlined,
-                title: l10n.profileSavedAddresses,
-                subtitle: isBn
-                    ? 'বাসা, অফিস ও ডেলিভারি অবস্থান পরিচালনা করুন'
-                    : 'Manage home, office and dispatch locations',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.savedAddresses,
-                  arguments: _profileController,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.notifications_none_rounded,
-                title: l10n.settingsNotifications,
-                subtitle: isBn
-                    ? 'পুশ অ্যালার্ট, অডিও চাইম, এসএমএস ও হ্যাপটিক্স'
-                    : 'Push alerts, audio chime, SMS & haptics',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.notificationPreferences,
-                  arguments: _profileController,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.shield_outlined,
-                title: l10n.profilePrivacySecurity,
-                subtitle: isBn
-                    ? 'ডিভাইস সেশন, পাসওয়ার্ড রিসেট ও নিরাপত্তা নিয়ন্ত্রণ'
-                    : 'Device sessions, password reset & account controls',
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  AppRoutes.privacySecurity,
-                  arguments: _profileController,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.grid_view_outlined,
-                title: l10n.profileMyBookings,
-                subtitle: isBn
-                    ? 'বুকিং ইতিহাস, সার্ভিস রিকোয়েস্ট ও ইনভয়েস দেখুন'
-                    : 'View booking history, service requests and invoices',
-                onTap: widget.onOpenServices,
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.folder_outlined,
-                title: l10n.profileTurnkeyProjects,
-                subtitle: isBn
-                    ? 'বাণিজ্যিক কাজ ও টিম লিডার মাইলস্টোনসমূহ'
-                    : 'Enterprise deliverables & team leader milestones',
-                onTap: widget.onOpenProjects,
-              ),
-              const SizedBox(height: 8),
-              if (widget.currentMode == AppRoleMode.worker) ...[
-                _buildProfileTile(
-                  context: context,
-                  icon: Icons.account_balance_wallet_outlined,
-                  title: l10n.profilePayoutAccount,
-                  subtitle: isBn
-                      ? 'ব্যালেন্স, সম্পন্ন কাজ ও টাকা তোলার হিসাব'
-                      : 'Balance, completed jobs & payout history',
-                  onTap: () =>
-                      Navigator.pushNamed(context, AppRoutes.workerEarnings),
-                ),
-                const SizedBox(height: 8),
-              ],
-              _buildProfileTile(
-                context: context,
-                icon: Icons.receipt_long_outlined,
-                title: isBn ? 'লেনদেন ইতিহাস ও ইনভয়েস' : 'Transaction History & Invoices',
-                subtitle: isBn
-                    ? 'এসক্রো সেটেলমেন্ট ও ডিজিটাল ভ্যাট রসিদ'
-                    : 'Escrow settlements & itemized digital VAT receipts',
-                onTap: () =>
-                    Navigator.pushNamed(context, AppRoutes.transactionHistory),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.settings_outlined,
-                title: l10n.profileSettings,
-                subtitle: isBn
-                    ? 'থিম, ভাষা, অফলাইন সিঙ্ক ও নীতিসমূহ'
-                    : 'Theme, language, offline sync & legal policies',
-                onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.help_outline_rounded,
-                title: l10n.profileHelpSupport,
-                subtitle: isBn
-                    ? 'গাইড দেখুন অথবা ডিসপ্যাচ সাপোর্টে যোগাযোগ করুন'
-                    : 'Search guides or contact dispatch support',
-                onTap: () => Navigator.pushNamed(context, AppRoutes.supportFaq),
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.phone_in_talk_outlined,
-                title: l10n.homeHelpline,
-                subtitle: isBn ? 'জরুরি ডিসপ্যাচ সাপোর্ট হটলাইন' : 'Emergency dispatch support hotline',
-                onTap: widget.onCallHelpline,
-              ),
-              const SizedBox(height: 8),
-              _buildProfileTile(
-                context: context,
-                icon: Icons.info_outline_rounded,
-                title: l10n.profileAboutSkavia,
-                subtitle: isBn
-                    ? 'প্ল্যাটফর্ম সংস্করণ ও ৯টি ট্রেড স্পেশালাইজেশন'
-                    : 'Platform version & 9 specialization branches',
-                onTap: () => Navigator.pushNamed(context, AppRoutes.aboutSkavia),
-              ),
-              if (widget.currentMode == AppRoleMode.worker) ...[
-                const SizedBox(height: 8),
-                _buildProfileTile(
-                  context: context,
-                  icon: Icons.workspace_premium_outlined,
-                  title: l10n.workerReputationTitle,
-                  subtitle: isBn
-                      ? 'আপনার যাচাইকৃত রেটিং, ট্রাস্ট টিয়ার ও রিভিউ দেখুন'
-                      : 'View your verified rating, trust tier & reviews',
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.workerReputation,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 16),
-
-              // Switch Role Mode Tile
-              _buildProfileTile(
-                context: context,
-                icon: Icons.swap_horiz_rounded,
-                title: l10n.switchAccountMode,
-                subtitle: isBn
-                    ? 'ব্যক্তিগত, বিজনেস ও কর্মী মোড পরিবর্তন করুন'
-                    : 'Toggle between Customer, Business and Specialist modes',
-                onTap: widget.onSwitchRole,
-              ),
-              const SizedBox(height: 24),
-
-              // Logout Button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: widget.onLogout,
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                      color: AppColors.errorRed,
-                      width: 1.2,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                  ),
-                  child: Text(
-                    l10n.authSignOut,
-                    style: const TextStyle(
-                      color: AppColors.errorRed,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              ProfileMenuSection(
+                profileController: _profileController,
+                currentMode: widget.currentMode,
+                onOpenServices: widget.onOpenServices,
+                onOpenProjects: widget.onOpenProjects,
+                onCallHelpline: widget.onCallHelpline,
+                onSwitchRole: widget.onSwitchRole,
+                onLogout: widget.onLogout,
               ),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _buildProfileStatColumn(
-    BuildContext context,
-    String value,
-    String label,
-  ) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileTile({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-    bool isDestructive = false,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tokens = context.skavia;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isDestructive
-              ? AppColors.errorRed.withValues(alpha: 0.06)
-              : tokens.subtleCardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDestructive
-                ? AppColors.errorRed.withValues(alpha: 0.25)
-                : tokens.border,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isDestructive
-                    ? AppColors.errorRed.withValues(alpha: 0.14)
-                    : tokens.cardBg,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: isDestructive ? AppColors.errorRed : tokens.brandAccent,
-                size: 18,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: isDestructive
-                          ? AppColors.errorRed
-                          : colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: isDestructive
-                          ? AppColors.errorRed.withValues(alpha: 0.85)
-                          : colorScheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 12,
-              color: isDestructive
-                  ? AppColors.errorRed
-                  : colorScheme.onSurfaceVariant,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

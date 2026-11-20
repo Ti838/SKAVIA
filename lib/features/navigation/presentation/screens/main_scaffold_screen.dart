@@ -27,13 +27,14 @@ import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../../../profile/presentation/widgets/unified_profile_view.dart';
 import '../../../team_project/presentation/screens/project_dashboard_screen.dart';
 import '../../../worker/presentation/screens/incoming_requests_screen.dart';
+import '../../../../shared/enums/app_role_mode.dart';
 import '../../../worker/presentation/widgets/worker_dashboard_view.dart';
 import '../../data/repositories/dashboard_repository.dart';
 import '../widgets/dashboard_bottom_nav_bar.dart';
 import '../widgets/dashboard_top_app_bar.dart';
 import '../widgets/role_switch_bottom_sheet.dart';
 
-enum AppRoleMode { customer, enterprise, worker }
+export '../../../../shared/enums/app_role_mode.dart';
 
 class MainScaffoldScreen extends StatefulWidget {
   const MainScaffoldScreen({super.key});

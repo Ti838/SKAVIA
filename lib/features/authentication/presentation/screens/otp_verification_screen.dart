@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -11,11 +10,11 @@ import '../../../../core/constants/app_assets.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
-import '../../../../core/utils/formatters.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/auth_controller.dart';
+import '../widgets/otp_pin_input_row.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String? phoneNumber;
@@ -94,7 +93,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   String get _currentOtp => _controllers.map((c) => c.text).join();
 
-  void _onDigitChanged(int index, String value) {
+  void _onDigitChanged(int index) {
+    final value = _controllers[index].text;
     if (value.length > 1) {
       final pasted = value.trim();
       for (int i = 0; i < _pinLength; i++) {
@@ -259,7 +259,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top App Bar Header
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -297,8 +296,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ],
                     ),
                   ),
-
-                  // Top Header Title Area
                   Padding(
                     padding: const EdgeInsets.fromLTRB(28, 8, 28, 24),
                     child: Column(
@@ -331,8 +328,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 ],
               ),
             ),
-
-            // 32dp Curved Sheet (Theme-Aware & Scroll-Safe)
             SliverFillRemaining(
               hasScrollBody: false,
               child: Container(
@@ -358,7 +353,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
                     Text(
                       l10n.authOtpTitle,
                       textAlign: TextAlign.center,
@@ -381,126 +375,61 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    // 6-Pin Input Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: List.generate(_pinLength, (index) {
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3),
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(minHeight: 54),
-                              child: TextField(
-                                controller: _controllers[index],
-                                focusNode: _focusNodes[index],
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                maxLength: 1,
-                                style: TextStyle(
-                                  fontFamily: AppTypography.headingFont,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                  color: skavia.brandAccent,
-                                ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                  filled: true,
-                                  fillColor: _controllers[index].text.isNotEmpty
-                                      ? colorScheme.primary.withValues(
-                                          alpha: 0.12,
-                                        )
-                                      : colorScheme.surfaceContainerHighest,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: _controllers[index].text.isNotEmpty
-                                          ? colorScheme.primary
-                                          : colorScheme.outlineVariant,
-                                      width: 1.5,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                    borderSide: BorderSide(
-                                      color: colorScheme.primary,
-                                      width: 2.5,
-                                    ),
-                                  ),
-                                ),
-                                onChanged: (val) => _onDigitChanged(index, val),
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
+                    OtpPinInputRow(
+                      pinLength: _pinLength,
+                      controllers: _controllers,
+                      focusNodes: _focusNodes,
+                      onDigitChanged: _onDigitChanged,
                     ),
 
                     const SizedBox(height: 32),
 
-                    // Verify Button
                     ListenableBuilder(
                       listenable: _authController,
                       builder: (context, _) {
                         return AppButton(
-                          text: isBn ? 'যাচাই করুন ও এগিয়ে যান' : 'Verify & Continue',
+                          text: l10n.authVerifyCode,
                           isLoading: _authController.isLoading,
-                          onPressed: _currentOtp.length == _pinLength
-                              ? _handleVerify
-                              : null,
+                          onPressed: _handleVerify,
                         );
                       },
                     ),
 
                     const SizedBox(height: 24),
 
-                    // Resend Code Section (Wrap avoids 320dp + 2.0x textScale overflow)
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 4,
-                      runSpacing: 4,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          isBn ? 'কোড পাননি?' : "Didn't receive the code?",
+                          l10n.authResendCode,
                           style: TextStyle(
                             fontFamily: AppTypography.bodyFont,
-                            fontSize: 13,
+                            fontSize: 14,
                             color: colorScheme.onSurfaceVariant,
                           ),
                         ),
-                        _canResend
-                            ? GestureDetector(
-                                onTap: _handleResend,
-                                child: Text(
-                                  l10n.authResendCode,
-                                  style: TextStyle(
-                                    fontFamily: AppTypography.bodyFont,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w700,
-                                    color: skavia.brandAccent,
-                                    decoration: TextDecoration.underline,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                isBn
-                                    ? 'পুনরায় পাঠাতে ০:${Formatters.toBengaliDigits(_resendCountdown.toString().padLeft(2, '0'))}'
-                                    : 'Resend in 0:${_resendCountdown.toString().padLeft(2, '0')}',
-                                style: TextStyle(
-                                  fontFamily: AppTypography.bodyFont,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w700,
-                                  color: skavia.warning,
-                                ),
-                              ),
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: _canResend ? _handleResend : null,
+                          child: Text(
+                            _canResend
+                                ? (context.isBengali ? 'এখনই পাঠান' : 'Resend Now')
+                                : '${_resendCountdown}s',
+                            style: TextStyle(
+                              fontFamily: AppTypography.bodyFont,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: _canResend
+                                  ? skavia.brandAccent
+                                  : colorScheme.onSurfaceVariant.withValues(
+                                      alpha: 0.6,
+                                    ),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
