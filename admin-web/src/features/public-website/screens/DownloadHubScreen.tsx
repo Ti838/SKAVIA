@@ -80,21 +80,21 @@ export function DownloadHubScreen() {
 
                   <div>
                     <h3 className={`text-xl sm:text-2xl font-bold ${t.textPrimary}`}>
-                      ARM64-v8a (64-Bit Optimized)
+                      Universal Production Build (All Devices)
                     </h3>
                     <p className={`text-xs sm:text-sm mt-1 leading-relaxed ${t.textSecondary}`}>
-                      Ultra-fast execution, instant UI responsiveness, and lowest battery consumption on 64-bit devices.
+                      Complete universal package compatible with all Android devices (ARM64, ARMv7, x86_64).
                     </p>
                   </div>
 
                   <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                     <a
-                      href={dist.apkUrl ?? '/downloads/skavia-v1.0.0-arm64-v8a.apk'}
-                      download="skavia-v1.0.0-arm64-v8a.apk"
+                      href={dist.apkUrl ?? '/downloads/skavia-latest.apk'}
+                      download="skavia-latest.apk"
                       className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#003399] hover:bg-[#002266] text-white text-xs sm:text-sm font-semibold shadow-lg shadow-blue-900/25 transition-all hover:scale-[1.01]"
                     >
                       <Download className="h-4 w-4" />
-                      <span>Download ARM64 APK (22.6 MB)</span>
+                      <span>Download Official APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
                     </a>
 
                     <button

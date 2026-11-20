@@ -97,7 +97,7 @@ export function CinematicStoryModal({
   isOpen,
   onClose,
   t,
-  apkUrl = '#download',
+  apkUrl = '/download',
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -197,7 +197,7 @@ export function CinematicStoryModal({
         className="relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto"
         style={{
           borderColor: 'var(--border-subtle)',
-          backgroundColor: t.dark ? '#070A11' : '#FFFFFF',
+          backgroundColor: t.dark ? '#000000' : '#FFFFFF',
           color: 'var(--text-primary)',
         }}
       >

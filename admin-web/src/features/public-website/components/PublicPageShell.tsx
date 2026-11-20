@@ -25,10 +25,7 @@ export function PublicPageShell({ children }: PublicPageShellProps) {
         setThemeMode={setThemeMode}
       />
       <main className="w-full">{children(tokens)}</main>
-      <PublicFooter
-        themeMode={themeMode}
-        onSelectTheme={setThemeMode}
-      />
+      <PublicFooter />
     </div>
   );
 }

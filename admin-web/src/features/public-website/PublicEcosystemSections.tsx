@@ -151,7 +151,7 @@ export function DownloadSection({
   const { showToast } = useSakugaToast();
 
   const primaryApkUrl =
-    distribution.android.apkUrl || '/downloads/skavia-v1.0.0-arm64-v8a.apk';
+    distribution.android.apkUrl || '/downloads/skavia-latest.apk';
   const armv7ApkUrl =
     distribution.android.armv7Url || '/downloads/skavia-v1.0.0-armeabi-v7a.apk';
   const sha256 =
@@ -260,7 +260,7 @@ export function DownloadSection({
                   )}
                   <a
                     href={primaryApkUrl}
-                    download="skavia-v1.0.0-arm64-v8a.apk"
+                    download="skavia-latest.apk"
                     className={`w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-2xl bg-gradient-to-r from-[#003399] to-[#1D4ED8] hover:from-[#002266] hover:to-[#1e40af] text-white font-semibold text-sm shadow-xl shadow-blue-900/30 transition-all text-center hover:scale-[1.01] ${
                       telemetry.isLoaded && telemetry.recommendedApk === 'arm64'
                         ? 'ring-2 ring-amber-400/80 shadow-amber-400/10'
@@ -268,7 +268,7 @@ export function DownloadSection({
                     }`}
                   >
                     <Download className="h-4 w-4 shrink-0" />
-                    <span>Download APK (5G &amp; 4G &middot; ARM64 &middot; 22.6 MB)</span>
+                    <span>Download Official Production APK ({apkSizeLabel})</span>
                   </a>
                 </div>
 
