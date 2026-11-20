@@ -19,6 +19,8 @@ import { formatBytes } from '@/lib/formatters';
 import { useTranslation } from '@/lib/l10n/LanguageContext';
 import { elementCenter, sakugaKira, sakugaTicks } from '@/lib/sakuga/sakuga-core';
 import { SmartphoneDeviceMockup } from './SmartphoneDeviceMockup';
+import { DeviceCompatibilityCard } from './components/DeviceCompatibilityCard';
+import { useDeviceDetection } from './hooks/useDeviceDetection';
 import {
   FAQ_ITEMS,
   MOBILE_FEATURES,
@@ -116,6 +118,8 @@ export function DownloadSection({
       ? formatBytes(distribution.android.fileSizeBytes, 1)
       : '22.6 MB';
 
+  const telemetry = useDeviceDetection();
+
   const handleCopySha = async () => {
     try {
       await navigator.clipboard.writeText(sha256);
@@ -162,6 +166,13 @@ export function DownloadSection({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left Column: Direct Download Actions & Technical Verification */}
           <div className="lg:col-span-7 space-y-6">
+            {/* Real-time Hardware, Network & OS Compatibility Assessment */}
+            <DeviceCompatibilityCard
+              telemetry={telemetry}
+              isBengali={isBengali}
+              t={t}
+            />
+
             <div className={`rounded-2xl border p-6 sm:p-8 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-xl`}>
               <div className="flex items-center gap-3 mb-4 flex-wrap">
                 <span
@@ -187,31 +198,57 @@ export function DownloadSection({
                     : 'Download the official SKAVIA client and worker companion app for Android. No third-party stores required.'}
                 </p>
 
-                {/* Primary Download Button */}
-                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                  <a
-                    href={primaryApkUrl}
-                    download="skavia-v1.0.0-arm64-v8a.apk"
-                    className="sakuga-spring-tap inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#003399] to-[#1D4ED8] hover:from-[#002266] hover:to-[#1e40af] text-white font-semibold text-sm shadow-lg shadow-blue-900/30 transition-all text-center"
-                    onClick={(e) => {
-                      const pos = elementCenter(e.currentTarget);
-                      sakugaTicks(pos.x, pos.y);
-                      sakugaKira(pos.x, pos.y);
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                    <span>
-                      {isBengali ? 'অ্যান্ড্রয়েড APK ডাউনলোড (ARM64)' : 'Download APK (ARM64 · 22.6 MB)'}
-                    </span>
-                  </a>
+                {/* Primary Download Button with Auto-Recommendation Highlighting */}
+                <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                  {/* ARM64 Primary Option */}
+                  <div className="relative flex-1">
+                    {telemetry.isLoaded && telemetry.recommendedApk === 'arm64' && (
+                      <span className="absolute -top-3 left-4 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
+                        <span>★</span>
+                        <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
+                      </span>
+                    )}
+                    <a
+                      href={primaryApkUrl}
+                      download="skavia-v1.0.0-arm64-v8a.apk"
+                      className={`sakuga-spring-tap w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#003399] to-[#1D4ED8] hover:from-[#002266] hover:to-[#1e40af] text-white font-semibold text-sm shadow-lg shadow-blue-900/30 transition-all text-center ${
+                        telemetry.isLoaded && telemetry.recommendedApk === 'arm64'
+                          ? 'ring-2 ring-amber-400/80 shadow-amber-400/10'
+                          : ''
+                      }`}
+                      onClick={(e) => {
+                        const pos = elementCenter(e.currentTarget);
+                        sakugaTicks(pos.x, pos.y);
+                        sakugaKira(pos.x, pos.y);
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>
+                        {isBengali ? 'অ্যান্ড্রয়েড APK (ARM64 · ২২.৬ MB)' : 'Download APK (ARM64 · 22.6 MB)'}
+                      </span>
+                    </a>
+                  </div>
 
-                  <a
-                    href={armv7ApkUrl}
-                    download="skavia-v1.0.0-armeabi-v7a.apk"
-                    className={`sakuga-spring-tap inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-xs font-medium ${t.railBorder} ${t.surfaceBg} ${t.textSecondary} hover:${t.textPrimary} transition-all text-center`}
-                  >
-                    <span>{isBengali ? 'ARMv7 সংস্করণ (২০.৩ MB)' : 'ARMv7 32-bit (20.3 MB)'}</span>
-                  </a>
+                  {/* ARMv7 32-bit Legacy Option */}
+                  <div className="relative">
+                    {telemetry.isLoaded && telemetry.recommendedApk === 'armv7' && (
+                      <span className="absolute -top-3 left-3 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-400 text-slate-950 shadow-md flex items-center gap-1 animate-pulse">
+                        <span>★</span>
+                        <span>{isBengali ? 'আপনার ডিভাইসের জন্য সেরা' : 'Recommended for you'}</span>
+                      </span>
+                    )}
+                    <a
+                      href={armv7ApkUrl}
+                      download="skavia-v1.0.0-armeabi-v7a.apk"
+                      className={`sakuga-spring-tap inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl border text-xs font-medium transition-all text-center ${
+                        telemetry.isLoaded && telemetry.recommendedApk === 'armv7'
+                          ? 'border-amber-400 text-amber-300 ring-2 ring-amber-400/60 bg-amber-500/10'
+                          : `${t.railBorder} ${t.surfaceBg} ${t.textSecondary} hover:${t.textPrimary}`
+                      }`}
+                    >
+                      <span>{isBengali ? 'ARMv7 ৩২-বিট (২০.৩ MB)' : 'ARMv7 32-bit (20.3 MB)'}</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs pt-1 flex-wrap">

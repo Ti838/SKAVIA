@@ -23,6 +23,7 @@ import '../../features/customer/presentation/screens/candidate_matches_screen.da
 import '../../features/customer/presentation/screens/category_catalog_screen.dart';
 import '../../features/customer/presentation/screens/live_job_feed_screen.dart';
 import '../../features/customer/presentation/screens/post_requirement_screen.dart';
+import '../../features/diagnostics/presentation/screens/device_diagnostics_screen.dart';
 import '../../features/navigation/presentation/screens/main_scaffold_screen.dart';
 import '../../features/notifications/presentation/screens/notification_center_screen.dart';
 import '../../features/profile/presentation/controllers/profile_controller.dart';
@@ -454,6 +455,9 @@ abstract class AppRouter {
             blockingMode: args?['blocking'] as bool? ?? false,
           ),
         );
+
+      case AppRoutes.deviceDiagnostics:
+        return _page(settings, (_) => const DeviceDiagnosticsScreen());
 
       case AppRoutes.transactionHistory:
         return _page(settings, (_) => const TransactionHistoryScreen());

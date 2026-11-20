@@ -54,6 +54,7 @@ abstract class AppRoutes {
   static const String supportFaq = '/support-faq';
   static const String aboutSkavia = '/about-skavia';
   static const String appUpdate = '/app-update';
+  static const String deviceDiagnostics = '/device-diagnostics';
   static const String transactionHistory = '/transaction-history';
   static const String submitComplaint = '/submit-complaint';
 }

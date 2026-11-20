@@ -142,6 +142,21 @@ class SettingsSupportLegalSection extends StatelessWidget {
               Divider(color: tokens.subtleBorder, height: 1),
               _navTile(
                 context,
+                icon: Icons.monitor_heart_outlined,
+                title: isBn
+                    ? 'ডিভাইস ও সিস্টেম ডায়াগনস্টিকস'
+                    : 'Device & Diagnostics',
+                subtitle: isBn
+                    ? 'হার্ডওয়্যার, প্রসেসর, নেটওয়ার্ক ও পারমিশন টেস্ট'
+                    : 'Hardware, OS, network latency & permission audit',
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  AppRoutes.deviceDiagnostics,
+                ),
+              ),
+              Divider(color: tokens.subtleBorder, height: 1),
+              _navTile(
+                context,
                 icon: Icons.info_outline_rounded,
                 title: isBn ? 'SKAVIA সম্পর্কে' : 'About SKAVIA',
                 subtitle:
