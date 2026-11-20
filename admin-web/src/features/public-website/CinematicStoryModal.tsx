@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowLeft,
   ArrowRight,
@@ -106,9 +107,23 @@ export function CinematicStoryModal({
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const scene = STORY_SCENES[currentSceneIdx] ?? STORY_SCENES[0]!;
   const Icon = scene.icon;
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
@@ -147,7 +162,7 @@ export function CinematicStoryModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleNext = () => {
     setCurrentSceneIdx((sc) => (sc + 1) % STORY_SCENES.length);
@@ -164,15 +179,22 @@ export function CinematicStoryModal({
     setProgress(0);
   };
 
-  return (
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       aria-label="How SKAVIA Works Cinematic Tour"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xl animate-fade-in"
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-2xl animate-fade-in"
     >
       <div
-        className="relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto"
         style={{
           borderColor: 'var(--border-subtle)',
           backgroundColor: t.dark ? '#070A11' : '#FFFFFF',
@@ -394,6 +416,7 @@ export function CinematicStoryModal({
           </a>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
