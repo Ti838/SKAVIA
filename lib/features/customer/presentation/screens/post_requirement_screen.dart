@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_typography.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/skavia_ai_service.dart';
 import '../../../../core/utils/category_resolver.dart';
@@ -12,7 +11,9 @@ import '../../../../shared/widgets/app_text_field.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/models/category_model.dart';
 import '../widgets/post_requirement_ai_button.dart';
+import '../widgets/post_requirement_category_picker.dart';
 import '../widgets/post_requirement_deadline_selector.dart';
+import '../widgets/post_requirement_header.dart';
 import '../widgets/post_requirement_location_budget_picker.dart';
 import '../widgets/post_requirement_stepper.dart';
 import '../widgets/post_requirement_success_dialog.dart';
@@ -266,34 +267,8 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
         child: Column(
           children: [
             // Top App Bar matching Screen 6 (Request a Service)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: colorScheme.onSurface,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      'Request a Service',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            PostRequirementHeader(
+              onBack: () => Navigator.pop(context),
             ),
 
             // Horizontal Stepper Indicator matching Screen 6
@@ -331,54 +306,11 @@ class _PostRequirementScreenState extends State<PostRequirementScreen> {
                       const SizedBox(height: 24),
 
                       // Trade Category Picker
-                      Text(
-                        'Category',
-                        style: TextStyle(
-                          fontFamily: AppTypography.headingFont,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: tokens.subtleCardBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: tokens.border),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: safeSelectedCategory,
-                            isExpanded: true,
-                            dropdownColor: tokens.cardBg,
-                            icon: Icon(
-                              Icons.arrow_drop_down_rounded,
-                              color: tokens.brandAccent,
-                            ),
-                            items: CategoryModel.defaultCategories.map((cat) {
-                              return DropdownMenuItem<String>(
-                                value: cat.categoryId,
-                                child: Text(
-                                  cat.name,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontFamily: AppTypography.bodyFont,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedCategory = val);
-                              }
-                            },
-                          ),
-                        ),
+                      PostRequirementCategoryPicker(
+                        selectedCategory: safeSelectedCategory,
+                        onCategoryChanged: (val) {
+                          setState(() => _selectedCategory = val);
+                        },
                       ),
 
                       const SizedBox(height: 20),

@@ -12,6 +12,8 @@ import '../../../../core/utils/uuid_util.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/motion/sakuga_vfx_overlay.dart';
 import '../../../billing/presentation/screens/simulated_checkout_screen.dart';
+import '../widgets/booking_action_button.dart';
+import '../widgets/booking_address_notes_card.dart';
 import '../widgets/booking_payment_details_card.dart';
 import '../widgets/booking_payment_method_list.dart';
 import 'booking_timeline_screen.dart';
@@ -308,134 +310,19 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Service Address input
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: tokens.subtleCardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: tokens.border),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      color: tokens.brandAccent,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _addressController,
-                        decoration: InputDecoration(
-                          hintText: isBn
-                              ? 'কাজের ঠিকানা (যেমন: ধানমন্ডি, ঢাকা)'
-                              : 'Service Address (e.g. Dhaka, Bangladesh)',
-                          border: InputBorder.none,
-                          isDense: true,
-                          hintStyle: TextStyle(
-                            fontSize: 12.5,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Optional access / job notes input
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: tokens.subtleCardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: tokens.border),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.notes_rounded,
-                      color: colorScheme.onSurfaceVariant,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: _notesController,
-                        decoration: InputDecoration(
-                          hintText: isBn
-                              ? 'বিশেষ নির্দেশনা বা গেট কোড (ঐচ্ছিক)'
-                              : 'Special instructions or gate code (optional)',
-                          border: InputBorder.none,
-                          isDense: true,
-                          hintStyle: TextStyle(
-                            fontSize: 12.5,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              // Service Address & Notes Section
+              BookingAddressNotesCard(
+                addressController: _addressController,
+                notesController: _notesController,
               ),
               const SizedBox(height: 28),
 
               // Pay Now Action Button
-              SizedBox(
-                width: double.infinity,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 50),
-                  child: ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitBooking,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: tokens.brandAccent,
-                      foregroundColor: tokens.onBrandAccent,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                    child: _isSubmitting
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: tokens.onBrandAccent,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Text(
-                            _selectedPaymentMethod == 'Cash'
-                                ? (isBn
-                                    ? 'ক্যাশ বুকিং নিশ্চিত করুন ($displayAmount)'
-                                    : 'Confirm Cash Booking ($displayAmount)')
-                                : (isBn
-                                    ? 'নিশ্চিত করুন ও পেমেন্ট করুন ($displayAmount)'
-                                    : 'Confirm & Pay ($displayAmount)'),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                ),
+              BookingActionButton(
+                isSubmitting: _isSubmitting,
+                selectedPaymentMethod: _selectedPaymentMethod,
+                displayAmount: displayAmount,
+                onPressed: _submitBooking,
               ),
             ],
           ),
