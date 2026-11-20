@@ -146,9 +146,9 @@ export function PublicHeader({
               )}
             </button>
 
-            {/* Portal / Sign In link (Desktop) */}
+            {/* Customer Portal Link (Desktop) */}
             <Link
-              href="/login"
+              href="/customer-portal"
               className="hidden sm:inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition hover:bg-slate-100 dark:hover:bg-slate-800"
               style={{
                 borderColor: 'var(--border-subtle)',
@@ -156,7 +156,7 @@ export function PublicHeader({
               }}
             >
               <User className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-              <span>{t.navPortalSignIn}</span>
+              <span>{t.navCustomerPortal}</span>
             </Link>
 
             {/* Get App CTA (Desktop) */}

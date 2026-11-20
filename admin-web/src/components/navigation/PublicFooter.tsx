@@ -77,24 +77,19 @@ export function PublicFooter() {
             </p>
             <ul className="space-y-1.5 text-xs">
               <li>
-                <Link href="/login?portal=customer" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
+                <Link href="/customer-portal" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
                   {t.roleIndividualCustomer}
                 </Link>
               </li>
               <li>
-                <Link href="/login?portal=business" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
+                <Link href="/business-portal" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
                   {t.roleBusinessClient}
                 </Link>
               </li>
               <li>
-                <Link href="/login?portal=worker" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
+                <a href="#workers" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
                   {t.roleWorker}
-                </Link>
-              </li>
-              <li>
-                <Link href="/login?portal=admin" className="hover:text-[#003399] dark:hover:text-[#3898EC] transition">
-                  {t.roleAdminPortal}
-                </Link>
+                </a>
               </li>
               <li>
                 <a href="#download" className="inline-flex items-center gap-1 text-[#003399] dark:text-[#3898EC] font-semibold hover:underline">

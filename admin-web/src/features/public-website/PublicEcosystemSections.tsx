@@ -686,11 +686,11 @@ export function FaqAndContactSection({
 
               <div className="pt-2">
                 <Link
-                  href="/login"
+                  href="/customer-portal"
                   className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition-all"
                   style={{ color: 'var(--text-primary)' }}
                 >
-                  <span>{isBengali ? 'প্রশাসনিক পোর্টাল লগইন' : 'Administrative Console Sign In'}</span>
+                  <span>{isBengali ? 'সার্ভিস বুকিং ও স্ট্যাটাস ট্র্যাকিং' : 'Track Booking & Service Status'}</span>
                   <ArrowRight className="h-3.5 w-3.5 text-[#3898EC]" />
                 </Link>
               </div>

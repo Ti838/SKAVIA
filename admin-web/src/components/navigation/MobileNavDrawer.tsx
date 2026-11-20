@@ -9,7 +9,6 @@ import {
   HelpCircle,
   Home,
   Layers,
-  Lock,
   Mail,
   Smartphone,
   UserCheck,
@@ -187,7 +186,7 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
             </p>
 
             <Link
-              href="/login?portal=customer"
+              href="/customer-portal"
               onClick={onClose}
               className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#003399]"
               style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
@@ -200,7 +199,7 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
             </Link>
 
             <Link
-              href="/login?portal=business"
+              href="/business-portal"
               onClick={onClose}
               className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#7C3AED]"
               style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
@@ -209,11 +208,11 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
                 <Building2 className="h-4 w-4 text-purple-600" />
                 <span className="font-medium">{t.roleBusinessClient}</span>
               </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Portal</span>
+              <span className="text-[10px] uppercase font-mono-code text-slate-400">Corporate</span>
             </Link>
 
-            <Link
-              href="/login?portal=worker"
+            <a
+              href="#workers"
               onClick={onClose}
               className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-[#0284C7]"
               style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
@@ -222,21 +221,8 @@ export function MobileNavDrawer({ isOpen, onClose, onDownloadClick }: MobileNavD
                 <UserCheck className="h-4 w-4 text-sky-600" />
                 <span className="font-medium">{t.roleWorker}</span>
               </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Console</span>
-            </Link>
-
-            <Link
-              href="/login?portal=admin"
-              onClick={onClose}
-              className="flex items-center justify-between rounded-xl border p-2.5 text-xs transition hover:border-amber-600"
-              style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-surface-subtle)' }}
-            >
-              <div className="flex items-center gap-2.5">
-                <Lock className="h-4 w-4 text-amber-600" />
-                <span className="font-medium">{t.roleAdminPortal}</span>
-              </div>
-              <span className="text-[10px] uppercase font-mono-code text-slate-400">Admin</span>
-            </Link>
+              <span className="text-[10px] uppercase font-mono-code text-slate-400">Join</span>
+            </a>
           </div>
         </div>
 
