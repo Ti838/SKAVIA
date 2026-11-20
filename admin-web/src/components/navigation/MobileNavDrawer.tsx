@@ -169,14 +169,6 @@ export function MobileNavDrawer({
             <Smartphone className="h-4 w-4" />
             <span>Download Mobile App</span>
           </Link>
-
-          <Link
-            href="/login"
-            onClick={onClose}
-            className="w-full flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
-          >
-            <span>Enterprise Admin Portal Sign In →</span>
-          </Link>
         </div>
       </div>
     </div>

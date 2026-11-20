@@ -195,14 +195,10 @@ export function DeviceCompatibilityCard({
         {compatibilityStatus === 'desktop_transfer' && (
           <p>
             <strong>Desktop Computer Detected:</strong> You can download the
-            ARM64 APK to transfer to your Android device via USB/Drive, or
-            access our full{' '}
-            <Link href="/customer-portal" className="underline font-semibold">
-              Client Portal
-            </Link>{' '}
-            or{' '}
-            <Link href="/login" className="underline font-semibold">
-              Admin Console
+            SKAVIA APK to transfer to your Android device via USB/Drive, or
+            explore our complete{' '}
+            <Link href="/services-catalog" className="underline font-semibold">
+              Trade Services Catalog
             </Link>
             .
           </p>

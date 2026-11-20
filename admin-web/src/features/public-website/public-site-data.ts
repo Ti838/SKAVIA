@@ -83,24 +83,24 @@ export function getPublicThemeTokens(dark: boolean): PublicThemeTokens {
 export const INITIAL_DISTRIBUTION: DistributionInfo = {
   android: {
     published: true,
-    releaseId: 'skavia-v1-0-0-prod',
-    apkUrl: '/downloads/skavia-v1.0.0-arm64-v8a.apk',
-    version: '1.0.0',
-    buildNumber: 1,
+    releaseId: 'skavia-v1-0-1-prod',
+    apkUrl: '/downloads/skavia-latest.apk',
+    version: '1.0.1',
+    buildNumber: 2,
     minSupportedBuild: 1,
     minSdkVersion: 24,
-    fileName: 'skavia-v1.0.0-arm64-v8a.apk',
-    fileSizeBytes: 23668477, // 22.57 MB - verified release build
-    sha256Checksum: 'c2ff57a1c6c6b64f1f52ecff435419bb63353486e4940cdb853b04b64ec365e3',
+    fileName: 'skavia-latest.apk',
+    fileSizeBytes: 69726983,
+    sha256Checksum: '87eb8abe7fde09a06e32e794d1157a89fb290faef1db2f68003725e2d5a12768',
     signingCertSha256: '9920bf0cfdf2b5dc988be08044709d7936a18d9ef6f272c72b226f95fec1b4a0',
     releaseNotes:
-      'SKAVIA v1.0.0 official production release. Ultra-compact 22.6 MB optimized release APK with dual Client & Worker modes, live geolocation dispatch, 4-digit arrival OTP, and protected escrow settlement.',
+      'SKAVIA v1.0.1 universal production release. Official signed release APK compatible with all Android devices (ARM64, ARMv7, x86_64). Includes dual Client & Specialist modes, live geolocation dispatch, 4-digit arrival OTP, and protected escrow settlement.',
     isMandatory: false,
-    publishedAt: '2026-11-19T02:30:00.000Z',
+    publishedAt: '2026-11-20T18:00:00.000Z',
     channel: 'stable',
-    distributionMethod: 'Official Signed Production APK (ARM64 & ARMv7)',
+    distributionMethod: 'Official Universal Signed Production APK',
     armv7Url: '/downloads/skavia-v1.0.0-armeabi-v7a.apk',
-    armv7SizeBytes: 21257429, // 20.27 MB
+    armv7SizeBytes: 21257429,
     armv7Sha256Checksum: '3c0603f6178b31fd307cc6b97e46678f6115b2a0e4f4204277735237d40d593e',
   },
   ios: {

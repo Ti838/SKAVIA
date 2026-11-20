@@ -20,7 +20,7 @@ export function SkaviaBrandMark({
   priority = false,
 }: SkaviaBrandMarkProps) {
   if (variant === 'full') {
-    // Exact ratio: 480 / 653 = 0.7350689
+    // Exact master ratio: 480 / 653 = 0.7350689
     const width = Math.max(1, Math.round(size * (480 / 653)));
     return (
       <Image
@@ -29,13 +29,15 @@ export function SkaviaBrandMark({
         width={width}
         height={size}
         priority={priority}
-        style={{ width: 'auto', height: size }}
-        className={`object-contain select-none ${className}`.trim()}
+        unoptimized
+        quality={100}
+        style={{ width: 'auto', height: size, imageRendering: '-webkit-optimize-contrast' }}
+        className={`object-contain select-none shrink-0 ${className}`.trim()}
       />
     );
   }
 
-  // Exact ratio: 480 / 633 = 0.7582938
+  // Exact master ratio: 480 / 633 = 0.7582938
   const width = Math.max(1, Math.round(size * (480 / 633)));
   return (
     <Image
@@ -44,8 +46,10 @@ export function SkaviaBrandMark({
       width={width}
       height={size}
       priority={priority}
-      style={{ width: 'auto', height: size }}
-      className={`object-contain select-none ${className}`.trim()}
+      unoptimized
+      quality={100}
+      style={{ width: 'auto', height: size, imageRendering: '-webkit-optimize-contrast' }}
+      className={`object-contain select-none shrink-0 ${className}`.trim()}
     />
   );
 }

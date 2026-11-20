@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import {
   ChevronDown,
   Menu,
-  Shield,
   Smartphone,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
@@ -182,16 +181,6 @@ export function PublicHeader({
               onSelectTheme={handleSelectTheme}
               compact
             />
-
-            {/* Admin Portal Sign In Link */}
-            <Link
-              href="/login"
-              className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium text-neutral-600 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition whitespace-nowrap shrink-0"
-              title="SKAVIA Enterprise Admin Portal"
-            >
-              <Shield className="h-3.5 w-3.5 opacity-70" />
-              <span>Admin</span>
-            </Link>
 
             {/* High-Contrast Primary CTA (Vercel Style) */}
             <Link

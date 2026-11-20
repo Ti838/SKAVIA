@@ -4,16 +4,16 @@
 
 :root {
   --font-bengali: 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --bg-canvas: #F8FAFC;
+  --bg-canvas: #FAFAFA;
   --bg-surface: #FFFFFF;
   --bg-surface-rgb: 255, 255, 255;
-  --bg-surface-subtle: #F1F5F9;
-  --bg-sidebar: #0B1938;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
-  --border-subtle: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --bg-surface-subtle: #F4F4F5;
+  --bg-sidebar: #FAFAFA;
+  --text-primary: #0A0A0A;
+  --text-secondary: #525252;
+  --text-muted: #737373;
+  --border-subtle: #E5E5E5;
+  --border-strong: #D4D4D4;
   --brand-royal: #003399;
   --brand-sky: #3898EC;
   --brand-aqua: #15E7CA;
@@ -25,28 +25,28 @@
   --role-worker: #0284C7;
   --role-business: #7C3AED;
   --role-admin: #003399;
-  --focus-ring: rgba(56, 152, 236, 0.35);
+  --focus-ring: rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="dark"], .dark {
-  --bg-canvas: #070A11;
-  --bg-surface: #0E1424;
-  --bg-surface-rgb: 14, 20, 36;
-  --bg-surface-subtle: #141C30;
-  --bg-sidebar: #05080E;
-  --text-primary: #EDEFEF;
-  --text-secondary: #9BB0C9;
-  --text-muted: #7189A8;
-  --border-subtle: #192338;
-  --border-strong: #546C8D;
-  --brand-primary: #4C86F0;
+  --bg-canvas: #000000;
+  --bg-surface: #0A0A0A;
+  --bg-surface-rgb: 10, 10, 10;
+  --bg-surface-subtle: #141414;
+  --bg-sidebar: #000000;
+  --text-primary: #EDEDED;
+  --text-secondary: #A1A1A1;
+  --text-muted: #707070;
+  --border-subtle: #262626;
+  --border-strong: #404040;
+  --brand-primary: #3898EC;
   --status-success: #34D399;
   --status-warning: #F59E0B;
   --status-danger: #F87171;
   --role-worker: #38BDF8;
   --role-business: #9D7BF2;
-  --role-admin: #4C86F0;
-  --focus-ring: rgba(76, 134, 240, 0.45);
+  --role-admin: #3898EC;
+  --focus-ring: rgba(255, 255, 255, 0.15);
 }
 
 * {

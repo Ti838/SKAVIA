@@ -3,17 +3,8 @@
 import Link from 'next/link';
 import { BadgeCheck, KeyRound, ShieldCheck, Smartphone } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
-import { VercelThemeToggle, type ThemeMode } from '@/components/theme/VercelThemeToggle';
 
-interface PublicFooterProps {
-  themeMode?: ThemeMode;
-  onSelectTheme?: (mode: ThemeMode) => void;
-}
-
-export function PublicFooter({
-  themeMode = 'system',
-  onSelectTheme,
-}: PublicFooterProps) {
+export function PublicFooter() {
   const branches = [
     { code: 'HOME', name: 'SKAVIA Home', desc: 'Plumbing & sanitary', href: '/branches/home' },
     { code: 'TECH', name: 'SKAVIA Technical', desc: 'HVAC & electrical', href: '/branches/technical' },
@@ -153,36 +144,18 @@ export function PublicFooter({
                   Terms of Service
                 </Link>
               </li>
-              <li>
-                <Link href="/login" className="hover:text-neutral-950 dark:hover:text-white transition-colors">
-                  Admin Portal Sign In
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar (Vercel Style: Status Indicator, Theme Switcher, Copyright) */}
+        {/* Bottom Bar (Vercel Style: Headquarter info and Copyright) */}
         <div className="pt-8 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
           <div className="flex flex-wrap items-center gap-4">
-            {/* Live Operational Status Indicator */}
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 text-[11px] font-mono">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              <span className="text-neutral-700 dark:text-neutral-300">All 8 Branches Operational</span>
-            </div>
             <p>© {new Date().getFullYear()} SKAVIA Technologies. Headquartered in Dhaka, Bangladesh.</p>
           </div>
-
-          {/* Theme Switcher in Footer (Matching Vercel Footer) */}
-          {onSelectTheme && (
-            <VercelThemeToggle
-              themeMode={themeMode}
-              onSelectTheme={onSelectTheme}
-            />
-          )}
+          <p className="text-[11px] font-mono text-neutral-400">
+            Engineered with Vercel Design System Precision
+          </p>
         </div>
       </div>
     </footer>
