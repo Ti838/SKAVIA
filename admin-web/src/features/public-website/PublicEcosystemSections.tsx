@@ -22,30 +22,35 @@ import { SmartphoneDeviceMockup } from './SmartphoneDeviceMockup';
 import { DeviceCompatibilityCard } from './components/DeviceCompatibilityCard';
 import { useDeviceDetection } from './hooks/useDeviceDetection';
 import {
-  FAQ_ITEMS,
-  MOBILE_FEATURES,
-  WORKER_ONBOARDING_STEPS,
+  getFaqItems,
+  getMobileFeatures,
+  getWorkerOnboardingSteps,
   type DistributionInfo,
   type PublicThemeTokens,
 } from './public-site-data';
 
 export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
+  const { isBengali } = useTranslation();
+  const onboardingSteps = getWorkerOnboardingSteps(isBengali);
+  const mobileFeatures = getMobileFeatures(isBengali);
+
   return (
     <section id="workers" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-6 space-y-4">
           <p className={`text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
-            Worker Opportunities
+            {isBengali ? 'কর্মী হিসেবে সম্ভাবনা ও ক্যারিয়ার' : 'Worker Opportunities'}
           </p>
           <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
-            How to Become a Verified SKAVIA Worker
+            {isBengali ? 'কীভাবে স্ক্যাভিয়া ভেরিফাইড কর্মী হবেন' : 'How to Become a Verified SKAVIA Worker'}
           </h2>
           <p className={`text-sm leading-relaxed ${t.textSecondary}`}>
-            Build consistent income and lasting professional reputation under SKAVIA. Workers register
-            directly in the mobile app — no public web forms or third-party brokers required.
+            {isBengali
+              ? 'স্ক্যাভিয়ার অধীনে নিশ্চিত নিয়মিত আয় ও স্থায়ী পেশাদার সুনাম গড়ে তুলুন। কর্মীরা সরাসরি মোবাইল অ্যাপ থেকে নিবন্ধন করতে পারেন — কোনো মধ্যস্বত্বভোগী বা দালালের প্রয়োজন নেই।'
+              : 'Build consistent income and lasting professional reputation under SKAVIA. Workers register directly in the mobile app — no public web forms or third-party brokers required.'}
           </p>
           <div className="space-y-3 pt-2">
-            {WORKER_ONBOARDING_STEPS.map((item) => (
+            {onboardingSteps.map((item) => (
               <div
                 key={item.step}
                 className={`rounded-xl border p-4 ${t.railBorder} ${t.surfaceBg}`}
@@ -59,13 +64,13 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
 
         <div className="lg:col-span-6 space-y-4">
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#3898EC]">
-            Mobile App Features
+            {isBengali ? 'মোবাইল অ্যাপ ফিচারসমূহ' : 'Mobile App Features'}
           </p>
           <h2 className={`text-2xl sm:text-3xl font-bold tracking-tight ${t.textPrimary}`}>
-            One App. Complete Ecosystem Control.
+            {isBengali ? 'একটি অ্যাপ। সম্পূর্ণ ইকোসিস্টেম নিয়ন্ত্রণ।' : 'One App. Complete Ecosystem Control.'}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-            {MOBILE_FEATURES.map((feat) => {
+            {mobileFeatures.map((feat) => {
               const Icon = feat.icon;
               return (
                 <div
@@ -254,7 +259,9 @@ export function DownloadSection({
                 <div className="flex items-center gap-4 text-xs pt-1 flex-wrap">
                   <div className="flex items-center gap-1.5 text-emerald-500">
                     <ShieldCheck className="h-4 w-4" />
-                    <span className="font-medium">Play Protect &amp; VirusTotal Verified</span>
+                    <span className="font-medium">
+                      {isBengali ? 'প্লে প্রটেক্ট ও ভাইরাসটোটাল দ্বারা পরীক্ষিত' : 'Play Protect & VirusTotal Verified'}
+                    </span>
                   </div>
                   <span className={t.textMuted}>•</span>
                   <span className={t.textMuted}>{publishedDateLabel}</span>
@@ -376,15 +383,18 @@ export function FaqAndContactSection({
   openFaq: number | null;
   onToggleFaq: (idx: number) => void;
 }) {
+  const { isBengali } = useTranslation();
+  const faqItems = getFaqItems(isBengali);
+
   return (
     <section id="faq" className={`border-b ${t.railBorder} ${t.subtleCardBg} p-6 sm:p-8`}>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-7 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2">
+          <div className="flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest text-[#3898EC] mb-2 font-semibold">
             <HelpCircle className="h-4 w-4" />
-            <span>Frequently Asked Questions</span>
+            <span>{isBengali ? 'সাধারণ জিজ্ঞাসা ও প্রশ্নোত্তর' : 'Frequently Asked Questions'}</span>
           </div>
-          {FAQ_ITEMS.map((item, idx) => {
+          {faqItems.map((item, idx) => {
             const open = openFaq === idx;
             return (
               <div
@@ -413,28 +423,39 @@ export function FaqAndContactSection({
 
         <div id="contact" className="lg:col-span-5">
           <div className={`rounded-2xl border p-6 space-y-4 ${t.railBorder} ${t.surfaceBg}`}>
-            <div className={`flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
+            <div className={`flex items-center gap-2 text-xs font-mono-code uppercase tracking-widest font-semibold ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>
               <Hammer className="h-4 w-4" />
-              <span>Contact &amp; Official Support</span>
+              <span>{isBengali ? 'যোগাযোগ ও প্রাতিষ্ঠানিক সহায়তা' : 'Contact & Official Support'}</span>
             </div>
-            <h3 className={`text-xl font-bold ${t.textPrimary}`}>Need Business Scoping or Support?</h3>
+            <h3 className={`text-xl font-bold ${t.textPrimary}`}>
+              {isBengali ? 'ব্যবসায়িক সমন্বয় বা সহায়তা প্রয়োজন?' : 'Need Business Scoping or Support?'}
+            </h3>
             <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
-              Reach SKAVIA Operations for enterprise facility partnerships, safety inquiries,
-              or verified distribution questions.
+              {isBengali
+                ? 'প্রাতিষ্ঠানিক চুক্তি, সুরক্ষা অনুসন্ধান বা যাচাইকৃত সেবা সংক্রান্ত যেকোনো তথ্যের জন্য স্ক্যাভিয়া অপারেশনস টিমের সাথে যোগাযোগ করুন।'
+                : 'Reach SKAVIA Operations for enterprise facility partnerships, safety inquiries, or verified distribution questions.'}
             </p>
             <div className="space-y-3 pt-2 text-xs">
               <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
                 <Mail className="h-4 w-4 text-[#3898EC] shrink-0" />
                 <div>
-                  <p className={`font-semibold ${t.textPrimary}`}>Official Support Email</p>
+                  <p className={`font-semibold ${t.textPrimary}`}>
+                    {isBengali ? 'অফিসিয়াল সাপোর্ট ইমেইল' : 'Official Support Email'}
+                  </p>
                   <p className={t.textSecondary}>support@skavia.com</p>
                 </div>
               </div>
               <div className={`flex items-center gap-3 rounded-xl border p-3.5 ${t.railBorder} ${t.cardBg}`}>
                 <Phone className={`h-4 w-4 shrink-0 ${t.dark ? 'text-[#15E7CA]' : 'text-teal-600'}`} />
                 <div>
-                  <p className={`font-semibold ${t.textPrimary}`}>Operations Desk (Dhaka HQ)</p>
-                  <p className={t.textSecondary}>Available daily 09:00 – 21:00 BST via SKAVIA In-App Support</p>
+                  <p className={`font-semibold ${t.textPrimary}`}>
+                    {isBengali ? 'অপারেশনস হেল্পডেস্ক (ঢাকা হেডকোয়ার্টার)' : 'Operations Desk (Dhaka HQ)'}
+                  </p>
+                  <p className={t.textSecondary}>
+                    {isBengali
+                      ? 'প্রতিদিন সকাল ০৯:০০ – রাত ২১:০০ পর্যন্ত স্ক্যাভিয়া ইন-অ্যাপ সাপোর্টে উপলব্ধ'
+                      : 'Available daily 09:00 – 21:00 BST via SKAVIA In-App Support'}
+                  </p>
                 </div>
               </div>
             </div>

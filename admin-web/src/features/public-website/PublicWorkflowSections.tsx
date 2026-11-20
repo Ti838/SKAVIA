@@ -16,11 +16,11 @@ import { useTranslation } from '@/lib/l10n/LanguageContext';
 import { CinematicAtmosphereCanvas } from './CinematicAtmosphereCanvas';
 import { CinematicStoryModal } from './CinematicStoryModal';
 import {
-  BUSINESS_HIGHLIGHTS,
-  INDIVIDUAL_HIGHLIGHTS,
-  LIFECYCLE_STEPS,
-  SPECIALIZATION_BRANCHES,
-  WORKFLOW_TABS,
+  getBusinessHighlights,
+  getIndividualHighlights,
+  getLifecycleSteps,
+  getSpecializationBranches,
+  getWorkflowTabs,
   type PublicThemeTokens,
   type WorkflowTab,
 } from './public-site-data';
@@ -306,6 +306,8 @@ export function WorkflowSection({
   onSelectTab: (tab: WorkflowTab) => void;
 }) {
   const { isBengali } = useTranslation();
+  const workflowTabs = getWorkflowTabs(isBengali);
+  const lifecycleSteps = getLifecycleSteps(isBengali);
 
   return (
     <section id="about" className={`border-b ${theme.railBorder} ${theme.surfaceBg}`}>
@@ -326,7 +328,7 @@ export function WorkflowSection({
           </p>
 
           <div className="mt-5 space-y-2">
-            {WORKFLOW_TABS.map((tab) => {
+            {workflowTabs.map((tab) => {
               const active = activeTab === tab.id;
               return (
                 <button
@@ -356,7 +358,7 @@ export function WorkflowSection({
               {isBengali ? 'ধাপভিত্তিক সেবা পরিচালনা' : 'End-to-End Solution Lifecycle'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {LIFECYCLE_STEPS.map((step) => (
+              {lifecycleSteps.map((step) => (
                 <div
                   key={step.n}
                   className={`rounded-xl border p-3.5 sm:p-4 ${theme.railBorder} ${theme.cardBg}`}
@@ -402,9 +404,10 @@ export function BranchesSection({
   onSelectBranch: (code: string) => void;
 }) {
   const { isBengali } = useTranslation();
+  const branches = getSpecializationBranches(isBengali);
   const activeBranch =
-    SPECIALIZATION_BRANCHES.find((b) => b.code === selectedBranchCode) ??
-    SPECIALIZATION_BRANCHES[0]!;
+    branches.find((b) => b.code === selectedBranchCode) ??
+    branches[0]!;
 
   return (
     <section id="branches" className={`border-b ${theme.railBorder} ${theme.subtleCardBg} p-6 sm:p-8`}>
@@ -425,7 +428,7 @@ export function BranchesSection({
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        {SPECIALIZATION_BRANCHES.map((branch) => {
+        {branches.map((branch) => {
           const Icon = branch.icon;
           const selected = branch.code === selectedBranchCode;
           return (
@@ -459,7 +462,7 @@ export function BranchesSection({
             <div className="flex items-center gap-2">
               <span className="h-2.5 w-2.5 rounded-full bg-[#003399] dark:bg-[#3898EC]" />
               <span className="text-xs font-mono-code uppercase tracking-widest text-[#003399] dark:text-[#3898EC] font-semibold">
-                {activeBranch.name} &middot; Internal Unit
+                {activeBranch.name} &middot; {isBengali ? 'অভ্যন্তরীণ ইউনিট' : 'Internal Unit'}
               </span>
             </div>
             <h3 className={`text-xl font-bold ${theme.textPrimary}`}>{activeBranch.tagline}</h3>
@@ -484,6 +487,8 @@ export function BranchesSection({
 
 export function SolutionsSection({ t: theme }: { t: PublicThemeTokens }) {
   const { isBengali } = useTranslation();
+  const individualHighlights = getIndividualHighlights(isBengali);
+  const businessHighlights = getBusinessHighlights(isBengali);
 
   return (
     <section id="solutions" className={`border-b ${theme.railBorder} ${theme.surfaceBg}`}>
@@ -502,7 +507,7 @@ export function SolutionsSection({ t: theme }: { t: PublicThemeTokens }) {
               : 'Book vetted technicians or skilled craftspeople for home repairs, AC & electrical work, renovations, and household support.'}
           </p>
           <ul className={`mt-5 space-y-2.5 text-xs ${theme.textSecondary}`}>
-            {INDIVIDUAL_HIGHLIGHTS.map((item) => (
+            {individualHighlights.map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
                 {item}
@@ -525,7 +530,7 @@ export function SolutionsSection({ t: theme }: { t: PublicThemeTokens }) {
               : 'For offices, factories, retail chains, and events, SKAVIA assembles structured project crews supervised by a designated Team Leader.'}
           </p>
           <ul className={`mt-5 space-y-2.5 text-xs ${theme.textSecondary}`}>
-            {BUSINESS_HIGHLIGHTS.map((item) => (
+            {businessHighlights.map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-[#003399] dark:text-[#3898EC] shrink-0" />
                 {item}

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-11-20
+
+### Added
+- **Complete Bilingual (English & Bengali) Public Ecosystem (`admin-web`):**
+  - Full localization across all 8 internal specialization branches (Home, Agriculture, Technical, Logistics, Digital, Business, Construction, Events).
+  - Bilingual 3-phase workflow tabs (Understand, Assemble, Deliver) and 6-stage end-to-end service lifecycle.
+  - Bilingual worker onboarding roadmap and mobile application feature breakdown.
+  - Fully translated Frequently Asked Questions (FAQ) accordion and corporate support desk contact information.
+  - Localized legal documentation (`/privacy` and `/terms`) with dual-script English and Bengali policy terms.
+- **Executive Authentication Gateway (`LoginScreen.tsx`):**
+  - High-aesthetic branded interface with ambient mesh lighting, responsive surface toggle between Company Admin and Super Admin.
+  - 1-click FIDO2 WebAuthn biometric / hardware passkey authentication with instant fallback to Google Workspace SSO and email/password.
+  - Multi-Factor Authentication (TOTP MFA) challenge modal and emergency single-use recovery code workflow.
+  - In-header theme toggle and seamless language switcher.
+- **Enhanced Security Portals (`AccessDeniedScreen.tsx` & `ActivateInvitationScreen.tsx`):**
+  - Refined 403 fail-closed RBAC boundary alert card with dual-language navigation cues.
+  - Streamlined administrative invitation onboarding and credential verification workflow.
+
+### Changed
+- **Unified Theme Persistence:**
+  - Synchronized administrative `TopBar` theme preferences with public `skavia-theme` storage, ensuring seamless dark/light/system mode continuity across public pages and admin console.
+- **Public Site Data Refactoring:**
+  - Converted static English data structures in `public-site-data.ts` into parameterized localized getters (`getSpecializationBranches`, `getWorkflowTabs`, `getLifecycleSteps`, `getWorkerOnboardingSteps`, `getMobileFeatures`, `getFaqItems`).
+
+---
+
 ## [1.0.0] - 2026-11-20
 
 ### Added

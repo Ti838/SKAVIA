@@ -7,23 +7,32 @@ import { signOutFirebaseClient } from '@/lib/firebase-client';
 import { useAdminSession } from './SessionProvider';
 import { CommandPalette } from './CommandPalette';
 import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
+import { useTranslation } from '@/lib/l10n/LanguageContext';
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const router = useRouter();
   const { session, availableBranches, selectedBranchId, setSelectedBranchId, openStepUp } =
     useAdminSession();
+  const { isBengali } = useTranslation();
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [dark, setDark] = useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem('skavia_admin_theme');
-    if (saved === 'dark') {
+    const saved =
+      window.localStorage.getItem('skavia-theme') ||
+      window.localStorage.getItem('skavia_admin_theme');
+    const prefersDark =
+      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDarkActive = saved === 'dark' || ((!saved || saved === 'system') && prefersDark);
+
+    if (isDarkActive) {
       document.documentElement.setAttribute('data-theme', 'dark');
       document.documentElement.classList.add('dark');
       setDark(true);
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
       document.documentElement.classList.remove('dark');
+      setDark(false);
     }
   }, []);
 
@@ -44,10 +53,12 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
     if (next) {
       document.documentElement.setAttribute('data-theme', 'dark');
       document.documentElement.classList.add('dark');
+      window.localStorage.setItem('skavia-theme', 'dark');
       window.localStorage.setItem('skavia_admin_theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
       document.documentElement.classList.remove('dark');
+      window.localStorage.setItem('skavia-theme', 'light');
       window.localStorage.setItem('skavia_admin_theme', 'light');
     }
   }
@@ -91,8 +102,8 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                 data-testid="branch-scope-indicator"
                 className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800/70 px-3 py-1 text-xs font-semibold text-amber-900 dark:text-amber-200 truncate"
               >
-                Branch Scope:{' '}
-                {session.assignedBranches.map((b) => b.name).join(', ') || 'Unassigned'}
+                {isBengali ? 'শাখার পরিধি:' : 'Branch Scope:'}{' '}
+                {session.assignedBranches.map((b) => b.name).join(', ') || (isBengali ? 'অনর্ধারিত' : 'Unassigned')}
               </span>
             ) : (
               <div className="flex items-center gap-2">
@@ -111,7 +122,9 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
                     color: 'var(--text-primary)',
                   }}
                 >
-                  <option value="">All SKAVIA Branches (Global)</option>
+                  <option value="">
+                    {isBengali ? 'সকল স্ক্যাভিয়া শাখা (গ্লোবাল)' : 'All SKAVIA Branches (Global)'}
+                  </option>
                   {availableBranches.map((b) => (
                     <option key={b.branch_id} value={b.branch_id}>
                       {b.name} ({b.code})
@@ -135,7 +148,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             }}
           >
             <Search className="h-3.5 w-3.5" />
-            <span>Search...</span>
+            <span>{isBengali ? 'অনুসন্ধান...' : 'Search...'}</span>
             <kbd className="rounded bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-mono-code text-slate-700 dark:text-slate-300">
               Ctrl K
             </kbd>
@@ -144,7 +157,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
           <button
             type="button"
             onClick={openStepUp}
-            title="Manage Step-Up MFA Authorization"
+            title={isBengali ? 'স্টেপ-আপ এমএফএ অনুমোদন' : 'Manage Step-Up MFA Authorization'}
             className={`hidden md:inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
               stepUpActive
                 ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800/70 text-emerald-800 dark:text-emerald-200'
@@ -152,7 +165,9 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             }`}
           >
             <ShieldCheck className="h-3.5 w-3.5" />
-            {stepUpActive ? 'Step-Up Verified' : 'Verify Step-Up'}
+            {stepUpActive
+              ? isBengali ? 'স্টেপ-আপ নিশ্চিত' : 'Step-Up Verified'
+              : isBengali ? 'স্টেপ-আপ যাচাই' : 'Verify Step-Up'}
           </button>
 
           <LanguageSwitcher />
@@ -174,7 +189,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
             style={{ borderColor: 'var(--border-subtle)' }}
           >
             <LogOut className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Sign Out</span>
+            <span className="hidden sm:inline">{isBengali ? 'লগআউট' : 'Sign Out'}</span>
           </button>
         </div>
       </header>

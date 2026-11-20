@@ -4,13 +4,15 @@ import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import {
+  ArrowLeft,
   BadgeCheck,
   CheckCircle2,
   KeyRound,
   ShieldAlert,
   ShieldCheck,
 } from 'lucide-react';
-import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
+import { useTranslation } from '@/lib/l10n/LanguageContext';
 import {
   createInvitedAdminFirebaseAccount,
   isFirebaseWebConfigured,
@@ -34,6 +36,7 @@ function ActivateInvitationContent() {
   const searchParams = useSearchParams();
   const token = (searchParams.get('token') || '').trim();
   const firebaseConfigured = isFirebaseWebConfigured();
+  const { isBengali } = useTranslation();
 
   const [preview, setPreview] = useState<InvitationPreview | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(true);
@@ -56,7 +59,11 @@ function ActivateInvitationContent() {
 
   useEffect(() => {
     if (!token) {
-      setPreviewError('No activation token found in this link.');
+      setPreviewError(
+        isBengali
+          ? 'এই লিংকে কোনো অ্যাক্টিভেশন টোকেন পাওয়া যায়নি।'
+          : 'No activation token found in this link.'
+      );
       setLoadingPreview(false);
       return;
     }
@@ -74,10 +81,16 @@ function ActivateInvitationContent() {
         setFullName(inv.full_name);
       })
       .catch((err) => {
-        setPreviewError(err instanceof Error ? err.message : 'Unable to verify invitation link.');
+        setPreviewError(
+          err instanceof Error
+            ? err.message
+            : isBengali
+              ? 'আমন্ত্রণ লিংকটি যাচাই করা যায়নি।'
+              : 'Unable to verify invitation link.'
+        );
       })
       .finally(() => setLoadingPreview(false));
-  }, [token]);
+  }, [token, isBengali]);
 
   async function handleActivate(e: React.FormEvent) {
     e.preventDefault();
@@ -85,17 +98,29 @@ function ActivateInvitationContent() {
     setSubmitError(null);
 
     if (!acceptedTerms) {
-      setSubmitError('You must accept the SKAVIA Administrative Security Policy.');
+      setSubmitError(
+        isBengali
+          ? 'আপনাকে অবশ্যই স্ক্যাভিয়া প্রশাসনিক সুরক্ষা নীতি মেনে নিতে হবে।'
+          : 'You must accept the SKAVIA Administrative Security Policy.'
+      );
       return;
     }
 
     if (authMode === 'new_password') {
       if (password.length < 10) {
-        setSubmitError('Password must be at least 10 characters long.');
+        setSubmitError(
+          isBengali
+            ? 'পাসওয়ার্ড অবশ্যই কমপক্ষে ১০ অক্ষরের হতে হবে।'
+            : 'Password must be at least 10 characters long.'
+        );
         return;
       }
       if (password !== confirmPassword) {
-        setSubmitError('Password confirmation does not match.');
+        setSubmitError(
+          isBengali
+            ? 'পাসওয়ার্ড নিশ্চিতকরণ মিলছে না।'
+            : 'Password confirmation does not match.'
+        );
         return;
       }
     }
@@ -103,6 +128,7 @@ function ActivateInvitationContent() {
     setSubmitting(true);
     try {
       let idToken = '';
+
       if (authMode === 'new_password') {
         idToken = await createInvitedAdminFirebaseAccount({
           email: preview.email,
@@ -112,15 +138,23 @@ function ActivateInvitationContent() {
       } else if (authMode === 'existing_password') {
         const loginRes = await signInAdminWithEmail(preview.email, password);
         if (!loginRes.idToken) {
-          throw new Error('Could not verify your existing Firebase credential.');
+          throw new Error(
+            isBengali
+              ? 'বিদ্যমান পাসওয়ার্ড যাচাই করা যায়নি।'
+              : 'Could not verify your existing Firebase credential.'
+          );
         }
         idToken = loginRes.idToken;
       } else {
-        const googleRes = await signInAdminWithGoogle(preview.email);
-        if (!googleRes.idToken) {
-          throw new Error('Google sign-in did not complete.');
+        const loginRes = await signInAdminWithGoogle(preview.email);
+        if (!loginRes.idToken) {
+          throw new Error(
+            isBengali
+              ? 'গুগল সাইন ইন থেকে ক্রেডেনশিয়াল পাওয়া যায়নি।'
+              : 'Google sign-in did not return a credential.'
+          );
         }
-        idToken = googleRes.idToken;
+        idToken = loginRes.idToken;
       }
 
       const res = await apiFetch<{ status: string; message: string }>(
@@ -131,20 +165,20 @@ function ActivateInvitationContent() {
             token,
             idToken,
             fullName: fullName.trim() || preview.full_name,
-            acceptedTerms: true,
-            deviceLabel: navigator.userAgent.slice(0, 100),
           }),
         }
       );
 
-      setActivationResult({ status: res.status, message: res.message });
-    } catch (err) {
+      setActivationResult(res);
+    } catch (err: unknown) {
       if (err instanceof AdminApiError) {
         setSubmitError(`${err.message} (${err.code})`);
       } else if (err instanceof Error) {
         setSubmitError(err.message);
       } else {
-        setSubmitError('Invitation activation failed.');
+        setSubmitError(
+          isBengali ? 'অ্যাক্টিভেশন সম্পন্ন করা যায়নি।' : 'Failed to complete activation.'
+        );
       }
     } finally {
       setSubmitting(false);
@@ -152,193 +186,220 @@ function ActivateInvitationContent() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-6"
-      style={{
-        background: 'linear-gradient(135deg, #003399 0%, #0B1938 55%, #0F172A 100%)',
-      }}
-    >
-      <div
-        className="w-full max-w-lg rounded-2xl border p-8 shadow-2xl space-y-6"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-1.5 shrink-0">
-            <SkaviaBrandMark variant="emblem" size={38} priority />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight">Internal Admin Activation</h1>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-              Single-Use Invitation Verification &amp; Identity Binding
+    <div className="min-h-screen relative flex flex-col justify-between p-4 sm:p-6 bg-[#05080F] text-slate-100 skavia-subtle-mesh-dark">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-b from-[#003399]/20 via-[#15E7CA]/10 to-transparent blur-3xl pointer-events-none" />
+
+      {/* Top Bar */}
+      <header className="relative z-10 w-full max-w-4xl mx-auto flex items-center justify-between py-2 sm:py-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-700 bg-slate-900/80 text-slate-300 hover:text-white transition"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 text-blue-500" />
+          <span>{isBengali ? 'হোমপেজে ফিরুন' : 'Back to Website'}</span>
+        </Link>
+        <LanguageSwitcher />
+      </header>
+
+      {/* Card */}
+      <main className="relative z-10 w-full max-w-lg mx-auto my-auto py-6 sm:py-8">
+        <div
+          className="rounded-3xl border p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6"
+          style={{
+            backgroundColor: 'var(--bg-surface)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-mono-code font-semibold border-cyan-400/30 bg-cyan-500/10 text-cyan-400">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              <span>{isBengali ? 'এডমিন আমন্ত্রণ গ্রহণ' : 'Administrative Onboarding'}</span>
+            </div>
+
+            <h1 className="font-heading text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              {isBengali ? 'স্ক্যাভিয়া এডমিন এক্টিভেশন' : 'Activate SKAVIA Invitation'}
+            </h1>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+              {isBengali
+                ? 'অনুমোদিত অভ্যন্তরীণ এডমিন বা ব্রাঞ্চ ম্যানেজার হিসেবে আপনার পরিচয় নিশ্চিত করুন।'
+                : 'Securely verify your credential, enroll in RBAC, and initialize administrative access.'}
             </p>
           </div>
-        </div>
 
-        {loadingPreview ? (
-          <p className="text-sm text-slate-600 dark:text-slate-300">Verifying cryptographic invitation token...</p>
-        ) : previewError ? (
-          <div
-            role="alert"
-            className="rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-900 dark:text-red-200 space-y-2"
-          >
-            <div className="flex items-center gap-2 font-semibold">
-              <ShieldAlert className="h-4 w-4 text-red-700 dark:text-red-300" />
-              Invitation Unavailable
+          {loadingPreview ? (
+            <div className="py-12 text-center text-xs text-slate-400">
+              {isBengali ? 'আমন্ত্রণ যাচাই করা হচ্ছে...' : 'Verifying invitation token...'}
             </div>
-            <p>{previewError}</p>
-          </div>
-        ) : activationResult ? (
-          <div className="rounded-xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/40 p-5 text-sm text-emerald-950 dark:text-emerald-200 space-y-3">
-            <div className="flex items-center gap-2 font-bold text-base">
-              <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-300" />
-              {activationResult.status === 'PendingApproval'
-                ? 'Activation Submitted — Awaiting Super Admin Approval'
-                : 'Internal Admin Account Activated'}
-            </div>
-            <p className="leading-relaxed">{activationResult.message}</p>
-            <div className="pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white"
-                style={{ backgroundColor: '#003399' }}
-              >
-                <ShieldCheck className="h-4 w-4" />
-                Go to Internal Admin Login
-              </Link>
-            </div>
-          </div>
-        ) : preview ? (
-          <form onSubmit={handleActivate} className="space-y-4">
-            <div className="rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/70 dark:bg-blue-950/40 p-4 text-xs text-slate-800 dark:text-slate-200 space-y-1.5">
-              <div className="flex items-center gap-1.5 font-semibold text-blue-900 dark:text-blue-200">
-                <BadgeCheck className="h-4 w-4 text-blue-700 dark:text-blue-300" />
-                Verified SKAVIA Invitation
+          ) : previewError ? (
+            <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 text-xs text-rose-300 space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <ShieldAlert className="h-4 w-4 text-rose-400" />
+                <span>{isBengali ? 'আমন্ত্রণ লিংকটি অনুপলব্ধ' : 'Invitation Unavailable'}</span>
               </div>
-              <p>
-                <strong>Invited Email:</strong> {preview.email}
-              </p>
-              <p>
-                <strong>Assigned Role:</strong> {preview.role_name}
-              </p>
-              <p>
-                <strong>Branch Scope:</strong>{' '}
-                {preview.assigned_branch_names.length > 0
-                  ? preview.assigned_branch_names.join(', ')
-                  : 'All SKAVIA Branches'}
-              </p>
-              <p>
-                <strong>Approval Policy:</strong>{' '}
-                {preview.require_approval
-                  ? 'Requires Primary Super Admin final approval after setup'
-                  : 'Immediate portal activation'}
-              </p>
+              <p>{previewError}</p>
             </div>
-
-            {!firebaseConfigured && (
-              <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-200">
-                Firebase Web SDK config is required in <code className="font-mono-code">.env.local</code>{' '}
-                to create or link your Firebase credential.
+          ) : activationResult ? (
+            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-sm text-emerald-200 space-y-4">
+              <div className="flex items-center gap-2 font-bold text-base text-emerald-300">
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+                <span>
+                  {activationResult.status === 'PendingApproval'
+                    ? (isBengali ? 'আবেদন জমা হয়েছে — সুপার এডমিন অনুমোদনের অপেক্ষায়' : 'Activation Submitted — Awaiting Super Admin Approval')
+                    : (isBengali ? 'এডমিন একাউন্ট সফলভাবে সক্রিয় হয়েছে' : 'Internal Admin Account Activated')}
+                </span>
               </div>
-            )}
-
-            {submitError && (
-              <div role="alert" className="rounded-xl border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-3 text-xs text-red-900 dark:text-red-200">
-                {submitError}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-semibold uppercase mb-1">Full Name</label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full rounded-lg border px-3.5 py-2 text-sm"
-                style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-canvas)' }}
-              />
-            </div>
-
-            <div className="flex gap-1.5 text-xs">
-              {[
-                { id: 'new_password', label: 'Create Password' },
-                { id: 'existing_password', label: 'Existing Password' },
-                { id: 'google', label: 'Google Email' },
-              ].map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setAuthMode(m.id as typeof authMode)}
-                  className={`flex-1 rounded-lg border px-2 py-2 font-medium ${
-                    authMode === m.id
-                      ? 'bg-[#003399] text-white border-[#003399]'
-                      : 'border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300'
-                  }`}
+              <p className="text-xs leading-relaxed text-emerald-100">{activationResult.message}</p>
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  className="sakuga-spring-tap inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-semibold text-white bg-[#003399] hover:bg-[#00287a] shadow-md transition"
                 >
-                  {m.label}
-                </button>
-              ))}
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>{isBengali ? 'এডমিন লগইন প্যানেলে যান' : 'Go to Admin Login'}</span>
+                </Link>
+              </div>
             </div>
-
-            {authMode !== 'google' && (
-              <>
-                <div>
-                  <label className="block text-xs font-semibold uppercase mb-1">
-                    {authMode === 'new_password' ? 'Set Strong Password (min 10 chars)' : 'Current Password'}
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full rounded-lg border px-3.5 py-2 text-sm"
-                    style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-canvas)' }}
-                  />
+          ) : preview ? (
+            <form onSubmit={handleActivate} className="space-y-4">
+              <div className="rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs space-y-1.5 text-slate-200">
+                <div className="flex items-center gap-1.5 font-semibold text-blue-300">
+                  <BadgeCheck className="h-4 w-4 text-blue-400" />
+                  <span>{isBengali ? 'যাচাইকৃত স্ক্যাভিয়া আমন্ত্রণ' : 'Verified SKAVIA Invitation'}</span>
                 </div>
-                {authMode === 'new_password' && (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase mb-1">
-                      Confirm Password
+                <p>
+                  <strong>{isBengali ? 'আমন্ত্রিত ইমেইল:' : 'Invited Email:'}</strong> {preview.email}
+                </p>
+                <p>
+                  <strong>{isBengali ? 'প্রদত্ত ভূমিকা:' : 'Assigned Role:'}</strong> {preview.role_name}
+                </p>
+                <p>
+                  <strong>{isBengali ? 'শাখা পরিধি:' : 'Branch Scope:'}</strong>{' '}
+                  {preview.assigned_branch_names.length > 0
+                    ? preview.assigned_branch_names.join(', ')
+                    : isBengali ? 'সকল স্ক্যাভিয়া শাখা' : 'All SKAVIA Branches'}
+                </p>
+                <p>
+                  <strong>{isBengali ? 'অনুমোদন নীতি:' : 'Approval Policy:'}</strong>{' '}
+                  {preview.require_approval
+                    ? isBengali ? 'সেটআপের পর সুপার এডমিনের চূড়ান্ত অনুমোদন প্রয়োজন' : 'Requires Super Admin final approval'
+                    : isBengali ? 'তাৎক্ষণিক এক্টিভেশন' : 'Immediate activation'}
+                </p>
+              </div>
+
+              {!firebaseConfigured && (
+                <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  Firebase Web SDK config is required in <code className="font-mono-code">.env.local</code>.
+                </div>
+              )}
+
+              {submitError && (
+                <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-200">
+                  {submitError}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {isBengali ? 'পূর্ণ নাম' : 'Full Name'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+              </div>
+
+              <div className="flex gap-1.5 text-xs">
+                {[
+                  { id: 'new_password', label: isBengali ? 'নতুন পাসওয়ার্ড' : 'Create Password' },
+                  { id: 'existing_password', label: isBengali ? 'বিদ্যমান পাসওয়ার্ড' : 'Existing Password' },
+                  { id: 'google', label: isBengali ? 'গুগল একাউন্ট' : 'Google Account' },
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => setAuthMode(m.id as typeof authMode)}
+                    className={`flex-1 rounded-xl border px-2 py-2 text-xs font-semibold transition ${
+                      authMode === m.id
+                        ? 'bg-[#003399] text-white border-[#003399] shadow-sm'
+                        : 'border-slate-700 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+
+              {authMode !== 'google' && (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                      {authMode === 'new_password'
+                        ? isBengali ? 'শক্তিশালী পাসওয়ার্ড দিন (কমপক্ষে ১০ অক্ষর)' : 'Set Strong Password (min 10 chars)'
+                        : isBengali ? 'বর্তমান পাসওয়ার্ড' : 'Current Password'}
                     </label>
                     <input
                       type="password"
                       required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full rounded-lg border px-3.5 py-2 text-sm"
-                      style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--bg-canvas)' }}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/30"
                     />
                   </div>
-                )}
-              </>
-            )}
 
-            <label className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-300 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="mt-0.5"
-              />
-              <span>
-                I acknowledge that SKAVIA administrative access is strictly audited, branch-scoped,
-                and governed by MFA/Passkey security policy. After activation, I will enroll a
-                device Passkey or authenticator factor in My Settings.
-              </span>
-            </label>
+                  {authMode === 'new_password' && (
+                    <div className="space-y-1">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                        {isBengali ? 'পাসওয়ার্ড পুনরায় লিখুন' : 'Confirm Password'}
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-4 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-blue-500/30"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
-            <button
-              type="submit"
-              disabled={submitting || !firebaseConfigured}
-              className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
-              style={{ backgroundColor: '#003399' }}
-            >
-              <KeyRound className="h-4 w-4" />
-              {submitting ? 'Completing Activation...' : 'Complete Identity Activation'}
-            </button>
-          </form>
-        ) : null}
-      </div>
+              <label className="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(e) => setAcceptedTerms(e.target.checked)}
+                  className="mt-0.5 rounded border-slate-700 text-blue-600 focus:ring-0"
+                />
+                <span className="leading-relaxed">
+                  {isBengali
+                    ? 'আমি স্বীকার করছি যে স্ক্যাভিয়ার প্রশাসনিক কার্যক্রম সম্পূর্ণভাবে অডিট লগ, শাখাভিত্তিক সীমাবদ্ধতা এবং পাসকি/এমএফএ নীতি দ্বারা নিয়ন্ত্রিত।'
+                    : 'I acknowledge that SKAVIA administrative access is strictly audited, branch-scoped, and governed by MFA/Passkey security policy.'}
+                </span>
+              </label>
+
+              <button
+                type="submit"
+                disabled={submitting || !firebaseConfigured}
+                className="sakuga-spring-tap w-full flex items-center justify-center gap-2 rounded-xl py-3 px-4 text-sm font-bold text-white shadow-lg bg-[#003399] hover:bg-[#00287a] transition-all disabled:opacity-50"
+              >
+                <KeyRound className="h-4 w-4" />
+                <span>
+                  {submitting
+                    ? (isBengali ? 'অ্যাক্টিভেশন সম্পন্ন হচ্ছে...' : 'Completing Activation...')
+                    : (isBengali ? 'পরিচয় এক্টিভেশন সম্পন্ন করুন' : 'Complete Identity Activation')}
+                </span>
+              </button>
+            </form>
+          ) : null}
+        </div>
+      </main>
+
+      <footer className="relative z-10 w-full max-w-4xl mx-auto py-3 text-center text-xs text-slate-500">
+        <p>© {new Date().getFullYear()} SKAVIA Technologies Ltd. &middot; Accountable Workforce Platform</p>
+      </footer>
     </div>
   );
 }
@@ -356,4 +417,3 @@ export function ActivateInvitationScreen() {
     </Suspense>
   );
 }
-
