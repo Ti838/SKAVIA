@@ -1,0 +1,29 @@
+flowchart TD
+    Start([👤 Customer Needs Service]) --> Browse[🔍 Browse 8 Standard Trade Categories]
+    Browse --> SelectSKU[🛠️ Select Verified Service & Addons]
+    SelectSKU --> Checkout[💳 Escrow Payment via SSLCommerz Gateway]
+    
+    Checkout --> FundEscrow[(🔒 Funds Held in Escrow Account)]
+    FundEscrow --> Dispatch[📡 Instant Dispatch to Nearby Verified Workers]
+    
+    Dispatch --> Accept{Worker Accepts?}
+    Accept -- No --> ReRoute[🔄 Auto-Route to Next Nearest Specialist]
+    ReRoute --> Dispatch
+    
+    Accept -- Yes --> EnRoute[🚗 Worker Dispatched & Live Location Tracked]
+    EnRoute --> Arrive[📍 Worker Arrives at Customer Location]
+    
+    Arrive --> Handshake{🤝 4-Digit Arrival OTP Handshake}
+    Handshake -- Invalid --> BlockTimer[⛔ Timer & Job Blocked]
+    Handshake -- Verified --> InProgress[⏱️ Billable Job In-Progress]
+    
+    InProgress --> JobDone[📸 Worker Uploads Photo Proof & Marks Done]
+    JobDone --> CustomerApproval{Customer Signs Off?}
+    
+    CustomerApproval -- Dispute --> Mediation[⚖️ Admin Dispute Mediation Desk]
+    CustomerApproval -- Approved --> ReleaseEscrow[(🔓 Atomic Escrow Payout Released)]
+    
+    ReleaseEscrow --> PayoutWorker[💵 Worker Wallet Credited 90%]
+    ReleaseEscrow --> PlatformFee[🏢 Platform Maintenance Retained 10%]
+    PayoutWorker --> Review[⭐ Dual Rating & Review Exchange]
+    Review --> Done([🎉 Service Order Completed])

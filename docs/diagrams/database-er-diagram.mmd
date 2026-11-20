@@ -1,0 +1,46 @@
+erDiagram
+    BRANCHES ||--o{ CATEGORIES : "organizes"
+    BRANCHES ||--o{ USER_ROLES : "assigns"
+    USERS ||--o| CUSTOMER_PROFILES : "has profile"
+    USERS ||--o| WORKER_PROFILES : "has profile"
+    USERS ||--o{ USER_ROLES : "holds"
+    USERS ||--o{ USER_LOCATIONS : "saves"
+    USERS ||--o{ NOTIFICATION_LOGS : "receives"
+    USERS ||--o{ AUDIT_LOGS : "audited in"
+    
+    CATEGORIES ||--o{ SERVICES : "contains"
+    SERVICES ||--o{ SERVICE_ADDONS : "provides"
+    
+    CUSTOMER_PROFILES ||--o{ REQUIREMENTS : "posts"
+    CUSTOMER_PROFILES ||--o{ SERVICE_REQUESTS : "orders"
+    CUSTOMER_PROFILES ||--o{ PROJECTS : "commissions"
+    
+    WORKER_PROFILES ||--o{ REQUIREMENT_BIDS : "submits"
+    WORKER_PROFILES ||--o{ SERVICE_REQUESTS : "fulfills"
+    WORKER_PROFILES ||--o{ TEAM_MEMBERS : "joins"
+    WORKER_PROFILES ||--o{ WORKER_EARNINGS : "accrues"
+    WORKER_PROFILES ||--o| WORKER_REPUTATIONS : "maintains"
+    WORKER_PROFILES ||--o| WORKER_VERIFICATIONS : "undergoes"
+    
+    REQUIREMENTS ||--o{ REQUIREMENT_BIDS : "receives"
+    
+    SERVICE_REQUESTS ||--o{ SERVICE_REQUEST_STATUS_HISTORY : "tracks"
+    SERVICE_REQUESTS ||--o{ SERVICE_REQUEST_COORDINATES : "locates"
+    SERVICE_REQUESTS ||--o{ REVIEWS : "reviewed in"
+    SERVICE_REQUESTS ||--o{ DISPUTES : "disputed in"
+    SERVICE_REQUESTS ||--o| ESCROW_ACCOUNTS : "secured by"
+    SERVICE_REQUESTS ||--o| INVOICES : "billed in"
+    
+    PROJECTS ||--o{ PROJECT_MILESTONES : "divided into"
+    PROJECT_MILESTONES ||--o{ TASKS : "tracks"
+    PROJECTS ||--o| TEAMS : "executed by"
+    TEAMS ||--o{ TEAM_MEMBERS : "composed of"
+    
+    CONVERSATIONS ||--o{ CONVERSATION_PARTICIPANTS : "includes"
+    CONVERSATIONS ||--o{ MESSAGES : "contains"
+    
+    PAYMENTS ||--o| INVOICES : "settles"
+    PAYMENTS ||--o| ESCROW_ACCOUNTS : "funds"
+    ESCROW_ACCOUNTS ||--o{ WORKER_EARNINGS : "releases to"
+    
+    DISPUTES ||--o{ DISPUTE_MESSAGES : "logs"

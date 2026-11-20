@@ -1,0 +1,29 @@
+sequenceDiagram
+    autonumber
+    actor User as 👤 Mobile User
+    participant Flutter as 📱 SKAVIA App
+    participant Firebase as 🔥 Firebase Auth
+    participant Supabase as ☁️ Supabase PostgreSQL
+
+    User->>Flutter: Inputs Mobile Number (+880...)
+    Flutter->>Firebase: verifyPhoneNumber(number)
+    Firebase-->>User: 6-Digit SMS OTP Code
+    User->>Flutter: Submits SMS Code
+    Flutter->>Firebase: signInWithCredential(credential)
+    Firebase-->>Flutter: UserCredential (UID & ID Token)
+
+    rect rgb(240, 248, 255)
+        Note over Flutter,Supabase: Handshake & Authorization
+        Flutter->>Supabase: SELECT FROM users WHERE id = auth.uid()
+        alt Account Exists
+            Supabase-->>Flutter: User Record (id, primary_role)
+            Flutter->>Flutter: Cache Session in FlutterSecureStorage
+            Flutter->>User: Route to Dashboard
+        else New Account
+            Flutter->>User: Route to Role Selection
+            User->>Flutter: Chooses Role (Customer / Worker / Business)
+            Flutter->>Supabase: INSERT INTO users & user_roles
+            Supabase-->>Flutter: Account Registered
+            Flutter->>User: Route to Profile Wizard
+        end
+    end

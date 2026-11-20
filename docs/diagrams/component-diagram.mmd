@@ -1,0 +1,28 @@
+graph TD
+    subgraph Presentation_Layer ["Presentation Layer (Flutter UI)"]
+        Screens["Feature Screens<br/>(Customer, Worker, Billing, Team, Diagnostics, Settings)"]
+        Widgets["Reusable Design System<br/>(AppButton, AppCard, AppTextField, Badges, Pickers)"]
+        Controllers["Feature State Controllers<br/>(NotificationCenterController, AppUpdateProvider, etc.)"]
+        Screens --> Widgets
+        Screens --> Controllers
+    end
+
+    subgraph Domain_Layer ["Domain Layer (Business Logic)"]
+        Entities["Immutable Entities<br/>(HardwareTelemetry, AppReleaseModel, ChatMessageModel, etc.)"]
+        Enums["Core Enums<br/>(DiagnosticStatus, AppRoleMode, VerificationStatus)"]
+        RepoInterfaces["Repository Interfaces<br/>(DashboardRepository, AuthRepository, UpdateRepository)"]
+        Controllers --> Entities
+        Controllers --> RepoInterfaces
+    end
+
+    subgraph Data_Layer ["Data Layer (Data Access & Hardware)"]
+        RepoImpl["Repository Implementations"]
+        Services["Core Services<br/>(DeviceDiagnosticsService, NetworkProbeService, NotificationService)"]
+        LocalStore["Local Storage<br/>(FlutterSecureStorage, SharedPreferences, SQLite)"]
+        RemoteSource["Remote Data Sources<br/>(SupabaseClient, FirebaseAuth, HttpClient)"]
+        
+        RepoInterfaces --> RepoImpl
+        RepoImpl --> Services
+        RepoImpl --> LocalStore
+        RepoImpl --> RemoteSource
+    end

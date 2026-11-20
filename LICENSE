@@ -1,21 +1,40 @@
-MIT License
+Proprietary Software License — All Rights Reserved
 
-Copyright (c) 2026 Timon Biswas
+Copyright (c) 2026 Timon Biswas. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software, source code, architecture, visual design, and associated documentation
+(collectively, the "Software") are the exclusive and proprietary property of Timon Biswas ("Author").
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+TERMS AND CONDITIONS
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+1. RESTRICTIONS ON USE:
+   No permission is granted to any person, company, or entity to use, copy, modify,
+   merge, publish, distribute, sublicense, translate, decompile, reverse-engineer,
+   or sell copies of the Software, in whole or in part, in source code or binary form,
+   for personal, educational, commercial, or non-commercial purposes, without express
+   prior written consent from the copyright owner.
+
+2. OWNERSHIP:
+   The Software is licensed, not sold. All title, copyright, intellectual property rights,
+   trade secrets, and ownership in and to the Software remain exclusively with Timon Biswas.
+
+3. INDEPENDENT PRODUCT DECLARATION:
+   SKAVIA is an independently developed software product created by Timon Biswas.
+   No corporate affiliation, transfer of ownership, assignment of rights, or employment
+   work-for-hire relationship is created or implied.
+
+4. THIRD-PARTY NOTICES:
+   Third-party open-source libraries, frameworks (including Flutter, Dart, and npm packages),
+   fonts, and SDKs embedded or referenced by this project are the intellectual property of
+   their respective copyright holders and are governed by their respective licenses
+   (MIT, Apache 2.0, BSD-3-Clause, etc.). For an exhaustive inventory of third-party
+   dependencies and their respective notices, refer to:
+   docs/project/third-party-licenses.md
+
+5. DISCLAIMER OF WARRANTY:
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+   PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE
+   FOR ANY CLAIM, DAMAGES, LOSS OF PROFITS, DATA LOSS, OR OTHER LIABILITY, WHETHER IN AN
+   ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH
+   THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

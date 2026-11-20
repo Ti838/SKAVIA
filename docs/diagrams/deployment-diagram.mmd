@@ -1,0 +1,42 @@
+graph TB
+    subgraph Mobile_Devices ["📱 Mobile Hardware Tier"]
+        Android64["Android 64-bit Phone<br/>(ARM64-v8a 5G/4G)"]
+        Android32["Android 32-bit Phone<br/>(ARMv7 Legacy 4G/3G)"]
+        AppleIOS["Apple iOS Device<br/>(iPhone/iPad via PWA)"]
+    end
+
+    subgraph CDN_and_Edge ["🛡️ Global Anycast & CDN Tier"]
+        VercelEdge["▲ Vercel Global Edge Network<br/>(TLS 1.3, Next.js 15 SSR & API Routes)"]
+        Cloudflare["🛡️ Cloudflare Anycast CDN<br/>(1.1.1.1 Network Latency Endpoint)"]
+    end
+
+    subgraph App_Serverless ["⚡ Application & Compute Services"]
+        AdminWebEngine["Next.js 15 Serverless Lambda<br/>(Admin Console, Release Inspector, WebAuthn)"]
+        SupabaseEdgeFunctions["Supabase Deno Edge Functions<br/>(analyze-requirement, verify-sslcommerz-ipn)"]
+    end
+
+    subgraph Persistent_Storage ["🗄️ Relational & Object Storage Tier"]
+        SupabaseDB["PostgreSQL 15 Managed DB<br/>(RLS Security, ACID Ledger, Realtime WSS)"]
+        FirebaseBuckets["Google Firebase Storage<br/>(User KYC Documents, Work Completion Photos)"]
+        ReleaseBucket["Supabase Private Release Storage<br/>(apk-releases, Signed Hashes)"]
+    end
+
+    subgraph Financial_Rails ["💳 Payment Infrastructure"]
+        SSLCommerzGateway["SSLCommerz Hosted Payment Gateway<br/>(bKash, Nagad, Visa, Mastercard, AMEX)"]
+    end
+
+    Android64 -->|HTTPS REST & Realtime WSS| SupabaseDB
+    Android64 -->|Latency Ping| Cloudflare
+    Android64 -->|Update Check & APK Download| VercelEdge
+    
+    Android32 -->|HTTPS REST & Realtime WSS| SupabaseDB
+    Android32 -->|Update Check & APK Download| VercelEdge
+    
+    AppleIOS -->|HTTPS Web App Portal| VercelEdge
+
+    VercelEdge --> AdminWebEngine
+    AdminWebEngine -->|Service Role Key| SupabaseDB
+    AdminWebEngine -->|Signed Stream| ReleaseBucket
+
+    SupabaseEdgeFunctions -->|Internal State Sync| SupabaseDB
+    SSLCommerzGateway -->|Server-to-Server IPN| VercelEdge

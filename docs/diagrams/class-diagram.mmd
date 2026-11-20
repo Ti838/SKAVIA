@@ -1,0 +1,61 @@
+classDiagram
+    class HardwareTelemetry {
+        +String manufacturer
+        +String model
+        +String osName
+        +String osVersion
+        +int sdkInt
+        +List~String~ supportedAbis
+        +bool isPhysicalDevice
+        +String deviceType
+        +bool is64BitArm
+        +bool isMinSdkSatisfied
+        +DiagnosticStatus compatibilityStatus
+    }
+
+    class PermissionHealth {
+        +DiagnosticStatus camera
+        +DiagnosticStatus location
+        +DiagnosticStatus notifications
+        +DiagnosticStatus microphone
+        +DiagnosticStatus storage
+    }
+
+    class NetworkBenchmark {
+        +bool isOnline
+        +int latencyMs
+        +String testEndpoint
+        +DiagnosticStatus quality
+        +String connectionType
+    }
+
+    class PerformanceTelemetry {
+        +int startupDurationMs
+        +DiagnosticStatus responsiveness
+        +double recentFrameRasterDurationMs
+        +String estimatedStorageStatus
+    }
+
+    class DiagnosticReport {
+        +DateTime timestamp
+        +HardwareTelemetry hardware
+        +PermissionHealth permissions
+        +NetworkBenchmark network
+        +PerformanceTelemetry performance
+        +Map~String, dynamic~ toRedactedJson()
+    }
+
+    DiagnosticReport *-- HardwareTelemetry
+    DiagnosticReport *-- PermissionHealth
+    DiagnosticReport *-- NetworkBenchmark
+    DiagnosticReport *-- PerformanceTelemetry
+
+    class AppReleaseModel {
+        +String releaseId
+        +String versionName
+        +int versionCode
+        +String apkUrl
+        +String sha256Checksum
+        +bool isMandatory
+        +bool isSuspended
+    }

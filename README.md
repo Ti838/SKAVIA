@@ -1,352 +1,195 @@
 # SKAVIA — On-Demand Services & Skilled Workforce Platform
 
 <p align="center">
-  <img src="assets/images/skavia_logo.png" alt="SKAVIA Logo" width="240"/>
+  <img src="assets/images/skavia_logo.png" alt="SKAVIA Logo" width="220"/>
 </p>
 
 <p align="center">
-  <strong>Every Skill. Every Opportunity.</strong><br>
-  <em>A unified platform for on-demand home repairs, technical services, commercial turnkey projects, and secure escrow payments.</em>
+  <strong>Accountable On-Demand Services, Skilled Workforce Management & Escrow Financial Settlement</strong><br>
+  <em>An independently developed enterprise ecosystem for doorstep technical maintenance, commercial turnkey contracting, and verified workforce dispatch.</em>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Flutter-3.38+-02569B?logo=flutter&logoColor=white" alt="Flutter"/>
-  <img src="https://img.shields.io/badge/Admin_Portal-Next.js_15_%2B_TypeScript-000000?logo=nextdotjs&logoColor=white" alt="Admin Web Portal"/>
+  <img src="https://img.shields.io/badge/Flutter-3.13+-02569B?logo=flutter&logoColor=white" alt="Flutter"/>
+  <img src="https://img.shields.io/badge/Dart-3.0+_Null--Safe-0175C2?logo=dart&logoColor=white" alt="Dart 3"/>
+  <img src="https://img.shields.io/badge/Web_Console-Next.js_15_App_Router-000000?logo=nextdotjs&logoColor=white" alt="Next.js 15"/>
   <img src="https://img.shields.io/badge/Architecture-Feature--First_Clean-blueviolet?logo=dart&logoColor=white" alt="Clean Architecture"/>
-  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL-3ECF8E?logo=supabase&logoColor=white" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/Auth-Firebase_%2B_Session_MFA-FFCA28?logo=firebase&logoColor=black" alt="Firebase"/>
-  <img src="https://img.shields.io/badge/Payment-SSLCommerz_+_bKash_+_Nagad-success" alt="Payment"/>
-  <img src="https://img.shields.io/badge/Security-RBAC_%2B_ABAC_%2B_RLS-success?logo=owasp&logoColor=white" alt="Security"/>
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/>
+  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL_15-3ECF8E?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Auth-Firebase_SMS_OTP_%2B_Passkeys-FFCA28?logo=firebase&logoColor=black" alt="Auth"/>
+  <img src="https://img.shields.io/badge/Payment-SSLCommerz_v4-success" alt="Payment"/>
+  <img src="https://img.shields.io/badge/Flutter_Tests-182_Passed-brightgreen" alt="Flutter Tests"/>
+  <img src="https://img.shields.io/badge/Web_Tests-43_Passed-brightgreen" alt="Web Tests"/>
+  <img src="https://img.shields.io/badge/License-Proprietary_/_All_Rights_Reserved-red.svg" alt="License"/>
 </p>
 
 ---
 
-## 📖 1. What is SKAVIA?
+## 📌 Project Overview
 
-**SKAVIA** is an all-in-one platform built for on-demand home services, technical maintenance, and commercial turnkey projects. 
+**SKAVIA** is an accountable service and workforce management platform designed for the Bangladesh market. 
 
-Instead of acting like an unverified open classifieds board where anyone can post an ad, **SKAVIA operates as a trusted, verified service platform**. When a customer books a service, SKAVIA assigns vetted specialists, tracks the work in real time, holds payments safely in escrow, and only releases payment when the customer is completely satisfied.
+Unlike unmonitored classified directories, SKAVIA provides an end-to-end operational guarantee:
+1. **Physical Arrival Verification:** Cryptographic 4-digit arrival OTP handoff required before any billable timer or job execution begins.
+2. **Atomic Escrow Financial Settlement:** Customer funds are held securely in escrow upon order confirmation and released to the worker's earnings wallet only after customer digital sign-off.
+3. **Multi-Role Single Enterprise Ecosystem:** One unified mobile application serving Individual Customers, Enterprise Business Clients, and Skilled Specialists (Workers), supervised by an administrative web console (`admin-web`).
+4. **Device Detection & Smart APK Recommendation:** Real-time client-side device telemetry that automatically highlights the optimal 5G/4G 64-bit APK (`arm64-v8a`) or 32-bit legacy APK (`armeabi-v7a`), with dedicated iOS Web App (PWA) guidance.
+5. **On-Device Hardware & Network Diagnostics:** Built-in mobile diagnostics module inspecting device hardware, permissions, and network edge latency with strict privacy controls (zero IMEI, zero serials, zero GPS logging).
 
-### The Three Service Branches of SKAVIA:
+---
+
+## 🏛️ System Architecture
 
 ```mermaid
-flowchart TD
-    subgraph SKAVIA_PLATFORM ["🏢 SKAVIA Enterprise Platform"]
-        TECH["⚡ SKAVIA Technical<br/>(Electrical, AC Inverter, IT & CCTV Security)"]
-        HOME["🏡 SKAVIA Home<br/>(Plumbing, Painting, Carpentry, Masonry)"]
-        CORP["🏢 SKAVIA Corporate<br/>(Office Renovation, Commercial Fit-Outs, Multi-Trade Teams)"]
+graph TB
+    subgraph Users ["Actors & Stakeholder Personas"]
+        ClientUser["👤 Individual Customer<br/>(Service discovery, Instant booking, OTP verification)"]
+        BizUser["🏢 Business Client / Organization<br/>(Turnkey projects, Milestone contracts, Kanban boards)"]
+        WorkerUser["🔧 Skilled Specialist / Contractor<br/>(Accepts dispatches, Job execution, Wallet earnings)"]
+        AdminUser["👔 Internal SKAVIA Administrator<br/>(KYC verification, Dispute mediation, Operations audit)"]
     end
 
-    subgraph USERS ["👥 Who Uses SKAVIA?"]
-        CUST["👤 Individual Customers<br/>(Doorstep repairs, instant booking)"]
-        BIZ["🏢 Businesses & Offices<br/>(Turnkey projects & facility upkeep)"]
-        WRK["🔧 Verified Specialists<br/>(Guaranteed jobs & secure payouts)"]
+    subgraph SKAVIA_System ["🏢 SKAVIA Core Enterprise Platform"]
+        UserApp["📱 SKAVIA Client Application<br/>(Flutter 3.13+ / Dart 3 Null-Safe)"]
+        AdminWeb["🌐 SKAVIA Web Administration & Public Portal<br/>(Next.js 15 App Router, TypeScript)"]
+        CloudBackend["☁️ SKAVIA Backend Infrastructure<br/>(Supabase PostgreSQL 15, PostgREST API, Realtime WSS)"]
+        
+        UserApp <-->|HTTPS REST & Realtime WSS| CloudBackend
+        AdminWeb <-->|Server-Side Service Role & PostgREST| CloudBackend
     end
 
-    CUST --> TECH
-    CUST --> HOME
-    BIZ --> TECH
-    BIZ --> CORP
-    WRK --> SKAVIA_PLATFORM
-```
-
-1. **SKAVIA Technical (`TECH`):** Electrical repairs, inverter AC servicing, industrial wiring, CCTV installation, and network setup.
-2. **SKAVIA Home (`HOME`):** Sanitary plumbing, leak repairs, wall painting, waterproofing, and custom wood carpentry.
-3. **SKAVIA Corporate (`CORP`):** Full office renovations, commercial fit-outs, and multi-specialist project teams.
-
-> Beyond the core three (`TECH`, `HOME`, `CORP`), migration [`20261112000000`](supabase/migrations/20261112000000_admin_invitations_passkeys_and_superadmin.sql) seeds 6 additional internal specialization branches (`AGRI`, `LOGI`, `DIGI`, `BIZ`, `CONS`, `EVNT`), totaling **9 database branches** (**8 consumer-facing branches** displayed on the public website).
-
----
-
-## 🎯 2. The Problems We Solve
-
-In traditional service markets, hiring a technician is often stressful, risky, and unreliable. SKAVIA solves these everyday problems directly:
-
-| Traditional Problem | Real-World Issue | How SKAVIA Solves It |
-| :--- | :--- | :--- |
-| **Safety & Trust Concerns** | Strangers enter homes without background checks or verified identity. | **100% Verified Specialists:** Every technician must pass National ID (NID) checks, police verification, and a practical skill test. |
-| **Unpredictable Pricing** | Technicians quote arbitrary prices after arriving, leading to arguments. | **Fixed, Upfront Pricing:** Standard catalog services have clear, fixed rates in BDT. No hidden fees. |
-| **Unfinished Work** | Contractors demand payment before the work is properly finished. | **4-Digit Handshake OTP:** Technicians cannot mark a job complete without the customer's secret 4-digit code. |
-| **Commercial Contract Risks** | Businesses lose money when contractors delay or abandon large projects. | **Milestone Escrow:** Project funds are held securely and released stage by stage only after inspection. |
-| **No Arrival Time Tracking** | Customers wait hours without knowing when the technician will arrive. | **Live Proximity Radar:** Customers can view nearby technicians on an animated radar screen. |
-| **No Digital Receipts** | Cash payments leave no proof of transaction or tax records. | **Instant Digital Invoices:** Downloadable VAT-compliant receipts are generated automatically for bKash, Nagad, and card payments. |
-
----
-
-## 🏛️ 3. The Four Core Pillars of SKAVIA
-
-```mermaid
-flowchart LR
-    P1["🛡️ 1. Full Platform<br/>Accountability"] --> P2["🔒 2. Anti-Fraud<br/>4-Digit Job OTP"]
-    P2 --> P3["🧮 3. Smart Matching<br/>Logic"]
-    P3 --> P4["💼 4. Milestone Escrow<br/>For Turnkey Projects"]
-```
-
-1. **Full Platform Accountability:** Every service request is backed by responsive customer support, quality standards, and customer protection.
-2. **Anti-Fraud 4-Digit Handshake OTP:** When a technician finishes work, the customer gives them a secret 4-digit code shown on the customer's phone. Entering this code confirms completion and unlocks the payment.
-3. **Smart Matching Logic:** When customers post custom requirements, the system automatically finds and ranks the best-suited specialists based on skills, distance, ratings, and budget.
-4. **Milestone Escrow for Turnkey Projects:** Large projects are broken down into clear stages. Money is held safely in escrow and released one stage at a time as each milestone is approved.
-
----
-
-## 🛠️ 4. Core Features & Smart Logic Used in SKAVIA
-
-Rather than complex academic math, SKAVIA applies clean, real-world software engineering logic to solve everyday on-demand service problems:
-
-### 1. Smart Candidate Matching Logic
-* **What we used:** A practical 4-factor scoring check in `SpecialistMatchingEngine`.
-* **How it works:** When a customer requests a job, available technicians are ranked by:
-  - **Skill Match (40%):** Does the specialist have the exact skills required for this job?
-  - **Proximity (25%):** How close is the technician to the customer's location (prioritizing technicians within 2 km)?
-  - **Reputation (20%):** Customer ratings and past completed jobs on the platform.
-  - **Budget Fit (15%):** Does the specialist's hourly rate match what the customer wants to pay?
-* **Why it matters:** The customer instantly sees the top, most relevant specialists at the top of their screen.
-
----
-
-### 2. Device-Based Distance Calculation
-* **What we used:** Direct latitude and longitude distance calculation in `LocationService` and `RadarMapCanvas`.
-* **How it works:** Compares the GPS coordinates of the customer and the technician to find the exact distance in kilometers.
-* **Why it matters:** Runs directly on the user's phone in milliseconds without needing expensive paid third-party map API requests for simple distance checks.
-
----
-
-### 3. Anti-Fraud 4-Digit Job OTP Verification
-* **What we used:** Secure random 4-digit code verification between `JobOtpBannerCard` and `ActiveJobScreen`.
-* **How it works:**
-  1. When a booking starts, the system generates a random 4-digit code (e.g. `4821`) visible **only on the customer's phone**.
-  2. When the technician completes the repair work on site, the customer tells the code to the technician.
-  3. The technician inputs the code into the app.
-  4. Once verified by the database, the job marks as completed and the technician receives payment.
-* **Why it matters:** Technicians cannot falsely mark jobs completed to claim money without actually visiting the customer.
-
----
-
-### 4. Safe Financial Settlement (Atomic Database Transaction)
-* **What we used:** PostgreSQL stored procedure (`complete_payment_transaction`) inside an atomic database transaction.
-* **How it works:**
-  - **Duplicate Prevention:** Locks the transaction row so double taps or delayed network requests never process twice.
-  - **Automatic Split:** Automatically allocates 85% of the payment to the technician's earnings wallet and 15% to the platform service account.
-  - **All-or-Nothing:** Updates booking status, credits wallet balance, and creates an official digital receipt simultaneously. If any step fails, the entire transaction cancels safely.
-* **Why it matters:** Guarantees zero lost money, zero duplicate deductions, and accurate bookkeeping.
-
----
-
-### 5. Interactive Radar Visualizer
-* **What we used:** Custom Flutter Canvas rendering in `RadarMapCanvas`.
-* **How it works:** Takes GPS locations of nearby specialists and maps them onto a clean circular radar screen with an animated sweep effect.
-* **Why it matters:** Customers can see nearby technicians in real time with a modern, responsive UI.
-
----
-
-### 6. Offline-First Sync Queue
-* **What we used:** Local SQLite/cache queuing in `OfflineSyncQueueService` with auto-retry.
-* **How it works:** If a user saves an address or updates profile details while having no internet connection, the app saves the action safely on the device. As soon as the internet connection returns, it automatically uploads the changes to the database.
-* **Why it matters:** The app never crashes or loses user inputs even in poor network conditions.
-
----
-
-## 👥 5. User Roles and Experiences
-
-SKAVIA automatically adapts its screens, menus, and permissions based on who logs in:
-
-```mermaid
-graph TD
-    User([Logged-in User]) --> CheckRole{User Account Type}
-    CheckRole -->|Individual Customer| Cust[Customer Experience]
-    CheckRole -->|Business / Corporate| Biz[Corporate Experience]
-    CheckRole -->|Specialist / Worker| Wrk[Specialist Operations]
-```
-
-* 👤 **Individual Customers:** Browse service catalog, book doorstep repairs in 1 tap, describe custom jobs with AI assistance, track technicians on radar, chat in real time, and pay securely via bKash, Nagad, or cards.
-* 🏢 **Business Clients:** Manage commercial turnkey renovations, create multi-specialist teams, manage milestone payments in escrow, track progress on Kanban task boards, and download VAT-compliant invoices.
-* 🔧 **Specialists & Technicians:** Receive real-time job notifications, manage weekly working shifts, verify completed work using 4-digit OTPs, track earnings, and request bank or MFS withdrawals.
-
----
-
-## 🏗️ 6. System Architecture
-
-SKAVIA is built following **Clean Feature-First Architecture** principles to keep code modular, testable, and maintainable. Every feature is isolated in its own domain module with distinct presentation, data, and domain responsibilities:
-
-```
-lib/
-├── main.dart                          # Application entry point (44 lines)
-├── app/                               # Core Application Orchestration
-│   ├── app.dart                       # Root MaterialApp widget & providers
-│   ├── config/                        # Environment & application config
-│   ├── router/                        # Typed route generator & routing guards
-│   └── theme/                         # Light & Dark themes, design tokens & typography
-│       ├── app_theme.dart             # Modular theme orchestrator
-│       ├── app_theme_light.dart       # Light theme definition
-│       ├── app_theme_dark.dart        # Dark theme definition
-│       ├── app_colors.dart            # Unified semantic color palette
-│       └── app_typography.dart        # Responsive font specifications
-├── core/                              # Cross-Cutting Infrastructure
-│   ├── constants/                     # Constants, assets, storage & database tables
-│   ├── errors/ & exceptions/          # Resilient error models & handlers
-│   ├── extensions/                    # Context, Theme, and L10n extensions
-│   ├── network/ & storage/            # Local cache & remote storage data sources
-│   ├── services/                      # Sound, language, update, and AI services
-│   └── utils/                         # Validators, formatters, and Supabase guards
-├── shared/                            # Centralized Reusable Component System
-│   ├── enums/                         # Shared domain enums (AppRoleMode, etc.)
-│   ├── widgets/                       # Buttons, TextFields, Badges, UserAvatars
-│   ├── screens/                       # Shared utility canvas tools (image crop/resize)
-│   ├── motion/                        # Sakuga VFX & micro-interactions
-│   └── empty_states/ & error_states/  # Standardized empty & error views
-├── features/                          # Feature-First Modular Domains
-│   ├── authentication/                # Auth, OTP verification, Role selection
-│   ├── profile/                       # Unified profile, settings, privacy, addresses
-│   ├── customer/                      # Requirements, live job feed, booking & payments
-│   ├── worker/                        # Dispatch radar, active jobs, verification
-│   ├── team_project/                  # Multi-specialist teams, discovery, roster
-│   ├── billing/                       # Itemized invoices, checkout, escrow records
-│   ├── navigation/                    # Shell scaffold, dynamic dashboard, role modes
-│   ├── chat/                          # Real-time WebSocket messaging
-│   ├── review/ & complaint/           # Ratings, mediation, and dispute resolution
-│   └── admin/                         # In-app administration and role auditing
-└── l10n/                              # Bilingual ARB translations (en, bn)
-```
-
-```
-┌────────────────────────────────────────────────────────┐
-│               PRESENTATION LAYER (Flutter)             │
-│   Screens, Custom Widgets, Theme Tokens, Navigation    │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│               STATE CONTROLLER LAYER                   │
-│   ChangeNotifier Controllers (Auth, Customer, Worker)  │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│                    DOMAIN LAYER                        │
-│   Business Entities, Value Objects, Repository Models  │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│                    DATA LAYER                          │
-│   Supabase PostgREST, WebSockets, Firebase, SSLCommerz │
-└────────────────────────────────────────────────────────┘
-```
-
-* **Frontend:** Flutter 3.38+ with Dart 3.10+ (Null-Safe, strict `--fatal-infos` compliance).
-* **Database & Realtime:** Supabase PostgreSQL 15 across **58 tables** (`supabase_schema.sql` + **8 migrations**) with Row Level Security (RLS).
-* **Authentication & Media:** Firebase Auth (SMS OTP, Google, Email/Password) + Firebase Cloud Storage (mobile) and HMAC Session + WebAuthn/TOTP MFA (`admin-web`).
-* **Payments:** SSLCommerz, bKash, and Nagad (verified server-side via `verify-sslcommerz-ipn` Edge Function).
-
----
-
-## 🔄 7. How a Service Booking Works
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Customer as 👤 Customer
-    actor Specialist as 🔧 Specialist
-    participant App as 📱 SKAVIA App
-    participant DB as 🗄️ Database (Supabase)
-    participant Pay as 💳 Payment Gateway
-
-    Customer->>App: Chooses a service or accepts technician quote
-    App->>DB: Creates booking (status = pending)
-    Customer->>Pay: Pays via bKash / Nagad / Card
-    Pay-->>App: Confirms payment with Transaction ID
-    
-    critical Secure Escrow Lock
-        Pay-->>DB: IPN Webhook -> Edge Function -> complete_payment_transaction()
-        Note over DB: service_role validates payment,<br/>locks row, credits worker wallet (85%),<br/>and generates official invoice
-        DB-->>App: Payment locked in escrow
+    subgraph External_Services ["🌐 External Cloud & Financial Rails"]
+        FirebaseEngine["🔥 Google Firebase Cloud<br/>(Phone SMS OTP, Google OAuth, Media Storage)"]
+        PaymentRails["💳 Bangladesh Banking & MFS Rails<br/>(SSLCommerz Gateway v4, bKash Direct, Nagad)"]
+        CloudflareEdge["🛡️ Cloudflare CDN & 1.1.1.1 Latency Endpoint"]
     end
 
-    App-->>Specialist: Sends instant job alert with customer address
-    Specialist->>App: Accepts job & taps "On the Way"
-    Specialist->>App: Arrives and starts work ("In Progress")
+    ClientUser <-->|Orders Services| UserApp
+    BizUser <-->|Manages Projects| UserApp
+    WorkerUser <-->|Fulfills Dispatches| UserApp
+    AdminUser <-->|Supervises Operations| AdminWeb
 
-    Note over Customer,Specialist: Work is completed on-site
+    UserApp <-->|Phone Auth & Storage| FirebaseEngine
+    UserApp <-->|Latency Ping| CloudflareEdge
+    CloudBackend <-->|Server-to-Server IPN| PaymentRails
+    UserApp -->|Hosted Checkout Redirect| PaymentRails
+```
 
-    Customer->>App: Views secret 4-Digit Job OTP (e.g. 4821)
-    Customer-->>Specialist: Shares OTP verbally with technician
-    Specialist->>App: Types OTP into ActiveJobScreen
-    App->>DB: Validates OTP
-    
-    alt Correct OTP
-        DB-->>App: OTP Verified!
-        DB->>DB: Status -> "completed", money released to technician wallet
-        App-->>Specialist: Funds now available for withdrawal
-        App-->>Customer: Rate your technician (1 to 5 stars)
-    else Wrong OTP
-        App-->>Specialist: Error: Invalid OTP. Work cannot be marked complete.
-    end
+For complete architectural specifications, see the [Architecture Documentation](docs/architecture/system-overview.md) and [Editable Mermaid Diagrams](docs/diagrams/).
+
+---
+
+## 📂 Source Code Directory Structure
+
+```
+SKAVIA/
+├── lib/                               # Flutter Mobile Client Source
+│   ├── main.dart                      # Minimal application bootstrap
+│   ├── app/                           # App configuration, routing & themes
+│   ├── core/                          # Cross-cutting foundational services
+│   ├── shared/                        # Reusable design system & UI components
+│   └── features/                      # Modular feature-first business domains
+│       ├── authentication/            # Login, registration, OTP & role selection
+│       ├── billing/                   # Invoices, escrow status & payment handoff
+│       ├── customer/                  # Category catalog, bidding & bookings
+│       ├── diagnostics/               # On-device hardware, permissions & latency
+│       ├── navigation/                # Main shell scaffold & role mode switcher
+│       ├── notifications/             # Notification center & urgent alert routing
+│       ├── profile/                   # User profile, security & settings
+│       ├── team_project/              # Turnkey commercial projects & Kanban
+│       ├── update/                    # Android in-app update & SHA-256 verify
+│       └── worker/                    # Dispatch radar, job timers & active jobs
+│
+├── admin-web/                         # Next.js 15 Web Portal & Admin Console
+│   ├── src/app/                       # App Router pages & API routes
+│   ├── src/features/                  # Public website, passkey auth & admin panels
+│   └── public/downloads/              # Official production APK binaries
+│
+├── supabase/                          # PostgreSQL 15 Database Tier
+│   └── migrations/                    # 8 Sequential SQL migrations (58 tables total)
+│
+├── test/                              # Comprehensive Flutter Test Suite (182 tests)
+│   └── unit/                          # Unit & widget tests verifying 320dp layouts & logic
+│
+└── docs/                              # Comprehensive Documentation Hub
 ```
 
 ---
 
-## 📚 8. Core Documentation
+## ⚡ Quick Start & Development
 
-| Document | Coverage |
-| :--- | :--- |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System C4 diagrams, Flutter Clean Architecture, Admin Portal boundaries |
-| [`docs/DATABASE_SCHEMA.md`](docs/DATABASE_SCHEMA.md) | PostgreSQL schema, RLS policies, atomic settlement RPCs |
-| [`docs/APP_RELEASE_AND_UPDATE_ARCHITECTURE.md`](docs/APP_RELEASE_AND_UPDATE_ARCHITECTURE.md) | Signed APK releases, SHA-256 verification, in-app update checker |
-| [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) | Supabase migrations, Vercel (`admin-web/`) setup, Flutter release builds |
-
----
-
-## 🚀 9. How to Run Both Applications
-
-### A. Flutter Mobile Application (`lib/`, `test/`)
-1. Copy `.env.example` to `.env` and populate your Supabase & gateway keys.
-2. Run static analysis, tests, and app startup:
+### 1. Flutter Mobile App
 ```powershell
+# Install Flutter dependencies
 flutter pub get
-flutter analyze --no-fatal-infos
+
+# Run static analysis (strict zero-warning policy)
+dart analyze --fatal-infos
+
+# Run comprehensive test suite (182 unit/widget tests)
 flutter test
+
+# Run application on Android or Desktop
 flutter run
 ```
 
-### B. Admin Web Portal & Public Website (`admin-web/`)
-1. Copy `admin-web/.env.example` to `admin-web/.env.local` and configure Firebase public SDK keys plus server-only `SUPABASE_SERVICE_ROLE_KEY` and `ADMIN_SESSION_SECRET`.
-2. Verify, test, build, and run:
+### 2. Admin Web Portal
 ```powershell
-Set-Location admin-web
-npm install
-npm run typecheck
+cd admin-web
+
+# Install npm dependencies
+npm ci
+
+# Run lint, typecheck and test suite (43 vitest tests)
 npm run lint
+npm run typecheck
 npm test
+
+# Build production bundle
 npm run build
-npm run dev      # Starts on http://localhost:3001
+
+# Start development server
+npm run dev
 ```
 
-See [`docs/DEPLOYMENT_GUIDE.md`](docs/DEPLOYMENT_GUIDE.md) for Vercel deployment, domain configuration, and Supabase migrations.
+For detailed setup instructions and environment variable configurations, refer to the [Getting Started Guide](docs/development/getting-started.md).
 
 ---
 
-## 🛡️ 10. Quality & Verification Highlights
+## 📚 Complete Documentation Index
 
-```text
-========================================================================================
-SKAVIA ECOSYSTEM ARCHITECTURE SUMMARY
-========================================================================================
-[1] Mobile Static Analysis & Tests  : flutter analyze --fatal-infos (0 issues) + flutter test (175 tests / 18 files)
-[2] Admin Portal Verification       : tsc --noEmit, eslint (--max-warnings=0), vitest (20 tests), next build, Playwright (5 specs)
-[3] Database & Security             : PostgreSQL RLS + 8 Migrations + Immutable Audit Logs + Maker-Checker
-[4] Modularity                      : Feature-first Flutter (lib/features/*) & Admin Portal (admin-web/src/features/*)
-[5] License                         : MIT License
-========================================================================================
-```
+| Topic | Documentation Link |
+| :--- | :--- |
+| **System Overview & C4 Model** | [docs/architecture/system-overview.md](docs/architecture/system-overview.md) |
+| **Flutter Application Architecture** | [docs/architecture/application-architecture.md](docs/architecture/application-architecture.md) |
+| **Feature Directory Decomposition** | [docs/architecture/feature-architecture.md](docs/architecture/feature-architecture.md) |
+| **Authentication & Identity Flow** | [docs/architecture/authentication-flow.md](docs/architecture/authentication-flow.md) |
+| **Authorization & User Roles** | [docs/architecture/authorization-and-roles.md](docs/architecture/authorization-and-roles.md) |
+| **Data Flow & Escrow Lifecycle** | [docs/architecture/data-flow.md](docs/architecture/data-flow.md) |
+| **Multi-Cloud Infrastructure** | [docs/architecture/infrastructure.md](docs/architecture/infrastructure.md) |
+| **System Diagrams (Mermaid)** | [docs/diagrams/](docs/diagrams/) |
+| **Developer Getting Started** | [docs/development/getting-started.md](docs/development/getting-started.md) |
+| **Project Structure Guide** | [docs/development/project-structure.md](docs/development/project-structure.md) |
+| **Coding & Responsive Guidelines** | [docs/development/coding-guidelines.md](docs/development/coding-guidelines.md) |
+| **Dependency Rationale Audit** | [docs/development/dependencies.md](docs/development/dependencies.md) |
+| **Developer Troubleshooting** | [docs/development/troubleshooting.md](docs/development/troubleshooting.md) |
+| **PostgreSQL Database Schema** | [docs/backend/database-schema.md](docs/backend/database-schema.md) |
+| **Supabase Stored Procedures (RPC)** | [docs/backend/supabase-integration.md](docs/backend/supabase-integration.md) |
+| **Row-Level Security (RLS)** | [docs/backend/rls-security.md](docs/backend/rls-security.md) |
+| **Storage Bucket Policies** | [docs/backend/storage.md](docs/backend/storage.md) |
+| **API Reference Catalog** | [docs/backend/api-reference.md](docs/backend/api-reference.md) |
+| **Android Release & Keystore Signing** | [docs/deployment/android-release.md](docs/deployment/android-release.md) |
+| **Production Pre-Flight Checklist** | [docs/deployment/production-checklist.md](docs/deployment/production-checklist.md) |
+| **Project Status & Test Metrics** | [docs/project/project-status.md](docs/project/project-status.md) |
+| **Third-Party Open-Source Licenses** | [docs/project/third-party-licenses.md](docs/project/third-party-licenses.md) |
 
 ---
 
-## 📄 11. License
+## 🔒 Ownership, Author & License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
-
-<p align="center">
-  <strong>SKAVIA</strong><br>
-  <em>Every Skill. Every Opportunity.</em><br>
-  © 2026 Timon Biswas
-</p>
+- **Product:** SKAVIA
+- **Product Type:** Service and Workforce Management Platform
+- **Developer / Author:** **Timon Biswas** ([GitHub: @Ti838](https://github.com/Ti838))
+- **Organization:** Independent Project
+- **Copyright:** &copy; 2026 Timon Biswas. All rights reserved.
+- **License:** Proprietary Software License — All Rights Reserved. See [LICENSE](LICENSE) for terms.
+- **Third-Party Open-Source Attributions:** See [Third-Party License Inventory](docs/project/third-party-licenses.md).
