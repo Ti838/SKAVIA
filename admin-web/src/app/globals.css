@@ -6,6 +6,7 @@
   --font-bengali: 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --bg-canvas: #F8FAFC;
   --bg-surface: #FFFFFF;
+  --bg-surface-rgb: 255, 255, 255;
   --bg-surface-subtle: #F1F5F9;
   --bg-sidebar: #0B1938;
   --text-primary: #0F172A;
@@ -30,6 +31,7 @@
 [data-theme="dark"], .dark {
   --bg-canvas: #070A11;
   --bg-surface: #0E1424;
+  --bg-surface-rgb: 14, 20, 36;
   --bg-surface-subtle: #141C30;
   --bg-sidebar: #05080E;
   --text-primary: #EDEFEF;

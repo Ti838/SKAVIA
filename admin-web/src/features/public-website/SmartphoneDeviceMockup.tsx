@@ -15,7 +15,6 @@ import {
   Wrench,
   Zap,
 } from 'lucide-react';
-import { useTranslation } from '@/lib/l10n/LanguageContext';
 import type { PublicThemeTokens } from './public-site-data';
 
 interface SmartphoneDeviceMockupProps {
@@ -28,7 +27,6 @@ export function SmartphoneDeviceMockup({
   t,
   version = '1.0.0',
 }: SmartphoneDeviceMockupProps) {
-  const { isBengali } = useTranslation();
   const [activeScreen, setActiveScreen] = useState<'client' | 'worker'>('client');
   const [phoneDark, setPhoneDark] = useState<boolean>(t.dark);
 
@@ -52,7 +50,7 @@ export function SmartphoneDeviceMockup({
           }`}
         >
           <Sparkles className="h-3.5 w-3.5" />
-          <span>{isBengali ? 'গ্রাহক মোড' : 'Client Mode'}</span>
+          <span>Client Mode</span>
         </button>
 
         <button
@@ -65,7 +63,7 @@ export function SmartphoneDeviceMockup({
           }`}
         >
           <Wrench className="h-3.5 w-3.5" />
-          <span>{isBengali ? 'কর্মী মোড' : 'Worker Mode'}</span>
+          <span>Worker Mode</span>
         </button>
 
         <button
@@ -151,7 +149,7 @@ export function SmartphoneDeviceMockup({
                     </span>
                   </div>
                   <p className="text-[9.5px] leading-tight text-slate-500 dark:text-slate-400">
-                    {activeScreen === 'client' ? (isBengali ? 'গ্রাহক সেবা হাব' : 'Customer Service') : (isBengali ? 'কর্মী অপারেশনস' : 'Worker Console')}
+                    {activeScreen === 'client' ? 'Customer Service' : 'Worker Console'}
                   </p>
                 </div>
               </div>
@@ -165,7 +163,7 @@ export function SmartphoneDeviceMockup({
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                <span>{activeScreen === 'client' ? (isBengali ? 'গ্রাহক' : 'Client') : (isBengali ? 'অনলাইন' : 'Online')}</span>
+                <span>{activeScreen === 'client' ? 'Client' : 'Online'}</span>
               </div>
             </div>
 
@@ -187,23 +185,23 @@ export function SmartphoneDeviceMockup({
                       </span>
                       <span className="text-[10px] font-mono-code text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        {isBengali ? 'টেকনিশিয়ান পথে রয়েছেন' : 'Technician Dispatched'}
+                        Technician Dispatched
                       </span>
                     </div>
 
                     <div className="flex items-center gap-2.5 pt-1">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#003399] to-[#0A1633] flex items-center justify-center text-white font-bold text-sm shrink-0 border border-white/10">
-                        ম.র
+                        MR
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="font-semibold text-xs truncate">
-                            {isBengali ? 'মো. রফিকুল ইসলাম' : 'Md. Rafiqul Islam'}
+                            Md. Rafiqul Islam
                           </p>
                           <ShieldCheck className="h-3 w-3 text-emerald-500 shrink-0" />
                         </div>
                         <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                          {isBengali ? 'সার্টিফাইড এইচভ্যাক ও এসি স্পেশালিস্ট' : 'Certified HVAC Specialist'} &middot; ★ 4.95
+                          Certified HVAC Specialist &middot; ★ 4.95
                         </p>
                       </div>
                     </div>
@@ -215,11 +213,11 @@ export function SmartphoneDeviceMockup({
                     >
                       <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                         <MapPin className="h-3 w-3 text-blue-500 shrink-0" />
-                        <span className="truncate">{isBengali ? '০.৮ কিমি দূরে' : '0.8 km away'}</span>
+                        <span className="truncate">0.8 km away</span>
                       </div>
                       <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
                         <Clock className="h-3 w-3 text-blue-500 shrink-0" />
-                        <span>{isBengali ? '১৪ মিনিটে পৌঁছাবে' : 'ETA: 14 mins'}</span>
+                        <span>ETA: 14 mins</span>
                       </div>
                     </div>
                   </div>
@@ -234,13 +232,11 @@ export function SmartphoneDeviceMockup({
                   >
                     <div className="flex items-center justify-center gap-1 text-[10.5px] font-semibold text-[#003399] dark:text-[#3898EC]">
                       <KeyRound className="h-3.5 w-3.5" />
-                      <span>{isBengali ? '৪-সংখ্যার আগমন যাচাই ওটিপি' : '4-Digit Arrival Handshake OTP'}</span>
+                      <span>4-Digit Arrival Handshake OTP</span>
                     </div>
 
                     <p className="text-[9.5px] text-slate-500 dark:text-slate-400">
-                      {isBengali
-                        ? 'টেকনিশিয়ান পৌঁছানোর পর কাজ শুরুর সময় এই কোডটি প্রদান করুন:'
-                        : 'Provide this code in person when the technician arrives:'}
+                      Provide this code in person when the technician arrives:
                     </p>
 
                     <div className="flex items-center justify-center gap-2 pt-0.5">
@@ -255,7 +251,7 @@ export function SmartphoneDeviceMockup({
                     </div>
 
                     <p className="text-[9px] text-emerald-600 dark:text-emerald-400 font-medium">
-                      ✓ {isBengali ? 'ওটিপি যাচাইয়ের পূর্বে বিলিং শুরু হয় না' : 'Billing does not start until OTP verified'}
+                      ✓ Billing does not start until OTP verified
                     </p>
                   </div>
 
@@ -267,14 +263,14 @@ export function SmartphoneDeviceMockup({
                   >
                     <div>
                       <p className="font-semibold text-slate-700 dark:text-slate-200">
-                        {isBengali ? 'সুরক্ষিত এসক্রো পেমেন্ট' : 'Escrow Protected Deposit'}
+                        Escrow Protected Deposit
                       </p>
                       <p className="text-[9px] text-slate-500 dark:text-slate-400">
-                        {isBengali ? 'কাজ সম্পূর্ণ না হওয়া পর্যন্ত তহবিল সুরক্ষিত' : 'Funds held securely until completion'}
+                        Funds held securely until completion
                       </p>
                     </div>
                     <span className="font-bold text-[#003399] dark:text-[#3898EC] font-mono-code">
-                      ৳ ১,২০০
+                      ৳ 1,200
                     </span>
                   </div>
                 </>
@@ -290,7 +286,7 @@ export function SmartphoneDeviceMockup({
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        {isBengali ? 'অনলাইন ও সক্রিয়' : 'Online & Active'}
+                        Online &amp; Active
                       </span>
                       <span className="text-[9px] font-mono-code text-slate-400">
                         NID: Verified ★ 4.95
@@ -299,15 +295,15 @@ export function SmartphoneDeviceMockup({
 
                     <div className="grid grid-cols-2 gap-2 text-center pt-1 border-t border-slate-100 dark:border-white/[0.05]">
                       <div>
-                        <p className="text-[9px] text-slate-500">{isBengali ? 'আজকের মোট আয়' : "Today's Earnings"}</p>
+                        <p className="text-[9px] text-slate-500">Today&apos;s Earnings</p>
                         <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono-code">
-                          ৳ ৩,৪৫০
+                          ৳ 3,450
                         </p>
                       </div>
                       <div>
-                        <p className="text-[9px] text-slate-500">{isBengali ? 'সম্পন্ন কাজ' : 'Completed Jobs'}</p>
+                        <p className="text-[9px] text-slate-500">Completed Jobs</p>
                         <p className="text-xs font-bold text-[#003399] dark:text-[#3898EC] font-mono-code">
-                          ৩টি
+                          3
                         </p>
                       </div>
                     </div>
@@ -323,26 +319,26 @@ export function SmartphoneDeviceMockup({
                   >
                     <div className="flex items-center justify-between">
                       <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 border border-amber-500/30 px-1.5 py-0.2 text-[9.5px] font-semibold text-amber-600 dark:text-amber-400">
-                        {isBengali ? 'জরুরি ডিসপ্যাচ' : 'Urgent Dispatch'}
+                        Urgent Dispatch
                       </span>
                       <span className="text-[10px] font-mono-code text-slate-500">
-                        {isBengali ? '১.২ কিমি দূরে' : '1.2 km away'}
+                        1.2 km away
                       </span>
                     </div>
 
                     <div>
                       <h4 className="font-bold text-xs">
-                        {isBengali ? 'এসি কুলিং ও সার্কিট মেরামত' : 'AC Cooling & Circuit Diagnostics'}
+                        AC Cooling &amp; Circuit Diagnostics
                       </h4>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                         <MapPin className="h-3 w-3 text-red-500 shrink-0" />
-                        <span className="truncate">{isBengali ? 'বসুন্ধরা আবাসিক এলাকা, ব্লক সি' : 'Bashundhara R/A, Block C'}</span>
+                        <span className="truncate">Bashundhara R/A, Block C</span>
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] font-semibold pt-1 border-t border-slate-100 dark:border-white/[0.05]">
-                      <span className="text-slate-600 dark:text-slate-300">{isBengali ? 'নিট কর্মী পেআউট' : 'Net Worker Payout'}:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-mono-code">৳ ১,৬২০</span>
+                      <span className="text-slate-600 dark:text-slate-300">Net Worker Payout:</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-mono-code">৳ 1,620</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-1.5 pt-1">
@@ -350,13 +346,13 @@ export function SmartphoneDeviceMockup({
                         type="button"
                         className="rounded-lg bg-[#003399] text-white py-1.5 text-[10px] font-semibold text-center hover:bg-[#00287a] transition shadow-xs"
                       >
-                        {isBengali ? 'গ্রহণ করুন' : 'Accept Job'}
+                        Accept Job
                       </button>
                       <button
                         type="button"
                         className="rounded-lg border border-slate-300 dark:border-slate-700 py-1.5 text-[10px] font-semibold text-center hover:bg-slate-500/10 transition"
                       >
-                        {isBengali ? 'ম্যাপে দেখুন' : 'View Route'}
+                        View Route
                       </button>
                     </div>
                   </div>
@@ -369,9 +365,7 @@ export function SmartphoneDeviceMockup({
                   >
                     <Users className="h-3.5 w-3.5 text-blue-500 shrink-0" />
                     <span className="text-slate-600 dark:text-slate-300 leading-tight">
-                      {isBengali
-                        ? 'টিম লিডার মোড সক্রিয়: মাল্টি-স্পেশালিস্ট দল পরিচালনা করুন'
-                        : 'Team Leader Mode enabled: coordinate multi-skill crews'}
+                      Team Leader Mode enabled: coordinate multi-skill crews
                     </span>
                   </div>
                 </>
@@ -396,7 +390,7 @@ export function SmartphoneDeviceMockup({
       >
         <span className="inline-flex items-center gap-1.5 font-medium text-slate-600 dark:text-slate-300 text-[11px]">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-          <span>{isBengali ? 'অফিসিয়াল অ্যান্ড্রয়েড রিলিজ' : 'Official Android Release'}</span>
+          <span>Official Android Release</span>
         </span>
         <span className="font-mono-code text-[10.5px] text-slate-500 font-semibold">
           ARM64 &middot; v{version}

@@ -160,6 +160,7 @@ For detailed setup instructions and environment variable configurations, refer t
 | Topic | Documentation Link |
 | :--- | :--- |
 | **System Overview & C4 Model** | [docs/architecture/system-overview.md](docs/architecture/system-overview.md) |
+| **Web Ecosystem Architecture (Public Site & Admin Portal)** | [docs/architecture/web-ecosystem-architecture.md](docs/architecture/web-ecosystem-architecture.md) |
 | **Flutter Application Architecture** | [docs/architecture/application-architecture.md](docs/architecture/application-architecture.md) |
 | **Feature Directory Decomposition** | [docs/architecture/feature-architecture.md](docs/architecture/feature-architecture.md) |
 | **Authentication & Identity Flow** | [docs/architecture/authentication-flow.md](docs/architecture/authentication-flow.md) |

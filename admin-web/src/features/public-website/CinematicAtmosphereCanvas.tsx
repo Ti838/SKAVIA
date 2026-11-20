@@ -79,28 +79,7 @@ export function CinematicAtmosphereCanvas({ dark }: { dark: boolean }) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       pulse += 0.01;
 
-      // Soft ambient light orb
-      const gradient = ctx.createRadialGradient(
-        canvas.width * 0.5,
-        canvas.height * 0.35,
-        20,
-        canvas.width * 0.5,
-        canvas.height * 0.35,
-        canvas.width * 0.6
-      );
-      if (dark) {
-        gradient.addColorStop(0, 'rgba(0, 51, 153, 0.14)');
-        gradient.addColorStop(0.5, 'rgba(21, 231, 202, 0.04)');
-        gradient.addColorStop(1, 'transparent');
-      } else {
-        gradient.addColorStop(0, 'rgba(0, 51, 153, 0.04)');
-        gradient.addColorStop(0.5, 'rgba(56, 152, 236, 0.02)');
-        gradient.addColorStop(1, 'transparent');
-      }
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Render floating cinematic dust particles
+      // Render floating cinematic dust particles (ambient gradient lighting is handled seamlessly by HeroAtmosphere)
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
