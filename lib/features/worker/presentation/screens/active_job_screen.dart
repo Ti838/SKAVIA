@@ -9,9 +9,10 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/uuid_util.dart';
-import '../../../../shared/widgets/app_button.dart';
 import '../../../chat/presentation/screens/chat_room_screen.dart';
+import '../widgets/active_job_action_button.dart';
 import '../widgets/active_job_client_card.dart';
+import '../widgets/active_job_escrow_banner.dart';
 import '../widgets/active_job_lifecycle_stepper.dart';
 import '../widgets/worker_job_otp_sheet.dart';
 
@@ -216,83 +217,7 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingLarge,
-              vertical: AppDimensions.paddingSmall,
-            ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(AppDimensions.radiusLarge),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.24)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: const BoxDecoration(
-                      color: AppColors.accent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.monetization_on_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: AppDimensions.paddingMedium),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Guaranteed Escrow Payout',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
-                        ),
-                        const SizedBox(height: 2),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(
-                              '৳ ${widget.agreedPrice.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.35),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Secured',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          ActiveJobEscrowBanner(agreedPrice: widget.agreedPrice),
           const SizedBox(height: AppDimensions.paddingSmall),
 
           Expanded(
@@ -348,50 +273,10 @@ class _ActiveJobScreenState extends State<ActiveJobScreen> {
 
                     const SizedBox(height: AppDimensions.paddingXLarge),
 
-                    if (_jobPhase == 0)
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: 'Heading to Location',
-                          onPressed: _nextPhase,
-                        ),
-                      )
-                    else if (_jobPhase == 1)
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: 'Arrived at Site & Start Work',
-                          onPressed: _nextPhase,
-                        ),
-                      )
-                    else if (_jobPhase == 2)
-                      SizedBox(
-                        width: double.infinity,
-                        child: AppButton(
-                          text: 'Complete Work (Enter Job OTP)',
-                          onPressed: _nextPhase,
-                        ),
-                      )
-                    else
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Job Finished & Verified',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppColors.success,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                      ),
+                    ActiveJobActionButton(
+                      jobPhase: _jobPhase,
+                      onNextPhase: _nextPhase,
+                    ),
 
                     const SizedBox(height: AppDimensions.paddingLarge),
                   ],

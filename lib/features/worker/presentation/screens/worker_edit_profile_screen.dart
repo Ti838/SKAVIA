@@ -10,6 +10,8 @@ import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/skavia_brand_image.dart';
 import '../../../authentication/presentation/controllers/auth_controller.dart';
 import '../../data/datasources/worker_profile_remote_datasource.dart';
+import '../widgets/worker_availability_section.dart';
+import '../widgets/worker_rate_zone_selector.dart';
 import '../widgets/worker_verification_section.dart';
 
 class WorkerEditProfileScreen extends StatefulWidget {
@@ -158,8 +160,6 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
 
     return Scaffold(
       backgroundColor: tokens.canvasBg,
@@ -238,52 +238,10 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                         const SizedBox(height: 20),
 
                         // Availability Toggle Switch
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: tokens.subtleCardBg,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: tokens.border),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Active Dispatch Status',
-                                      style: TextStyle(
-                                        fontFamily: AppTypography.headingFont,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w700,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                    ),
-                                    Text(
-                                      _isAvailable
-                                          ? 'Ready for immediate job alerts'
-                                          : 'Currently off-duty',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: tokens.secondaryText,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Switch.adaptive(
-                                value: _isAvailable,
-                                activeTrackColor: tokens.brandAccent,
-                                onChanged: (val) =>
-                                    setState(() => _isAvailable = val),
-                              ),
-                            ],
-                          ),
+                        WorkerAvailabilitySection(
+                          isAvailable: _isAvailable,
+                          onAvailabilityChanged: (val) =>
+                              setState(() => _isAvailable = val),
                         ),
                         const SizedBox(height: 20),
 
@@ -299,99 +257,12 @@ class _WorkerEditProfileScreenState extends State<WorkerEditProfileScreen> {
                         const SizedBox(height: 16),
 
                         // Expected Rate & Working Zone
-                        LayoutBuilder(
-                          builder: (context, constraints) {
-                            final stackVertically =
-                                constraints.maxWidth < 330 || textScale > 1.3;
-
-                            final rateField = AppTextField(
-                              controller: _rateController,
-                              label: 'Rate (৳/Hour)',
-                              hint: 'e.g. 500',
-                              keyboardType: TextInputType.number,
-                              prefixIcon: Icon(
-                                Icons.sell_outlined,
-                                color: tokens.brandAccent,
-                                size: 20,
-                              ),
-                            );
-
-                            final zoneField = Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Working Zone',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: tokens.secondaryText,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: tokens.inputBg,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: tokens.border),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: _workingArea,
-                                      isExpanded: true,
-                                      dropdownColor: tokens.cardBg,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: colorScheme.onSurface,
-                                      ),
-                                      items: _workingZones.map((z) {
-                                        return DropdownMenuItem<String>(
-                                          value: z,
-                                          child: Text(
-                                            z,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.w600,
-                                              color: colorScheme.onSurface,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        if (val != null) {
-                                          setState(() => _workingArea = val);
-                                        }
-                                      },
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-
-                            if (stackVertically) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  rateField,
-                                  const SizedBox(height: 14),
-                                  zoneField,
-                                ],
-                              );
-                            }
-
-                            return Row(
-                              children: [
-                                Expanded(flex: 3, child: rateField),
-                                const SizedBox(width: 12),
-                                Expanded(flex: 4, child: zoneField),
-                              ],
-                            );
-                          },
+                        WorkerRateZoneSelector(
+                          rateController: _rateController,
+                          workingArea: _workingArea,
+                          workingZones: _workingZones,
+                          onZoneChanged: (val) =>
+                              setState(() => _workingArea = val),
                         ),
                         const SizedBox(height: 16),
 

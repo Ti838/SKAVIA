@@ -11,6 +11,7 @@ import '../../../../shared/empty_states/empty_data_view.dart';
 import '../../../../shared/error_states/error_view.dart';
 import '../../../customer/presentation/screens/live_job_feed_screen.dart';
 import '../widgets/incoming_request_card.dart';
+import '../widgets/incoming_requests_segment_header.dart';
 import 'active_job_screen.dart';
 
 /// Screen for Workers to review, accept, or reject incoming live service requests.
@@ -217,145 +218,11 @@ class _IncomingRequestsScreenState extends State<IncomingRequestsScreen> {
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverToBoxAdapter(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingLarge,
-                    vertical: AppDimensions.paddingSmall,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingMedium),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusLarge,
-                      ),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.24),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.radar_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: AppDimensions.paddingMedium),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Radar Dispatch Active',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                              Text(
-                                'You are visible to customers in your service area',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingLarge,
-                    vertical: 4,
-                  ),
-                  child: Container(
-                    constraints: const BoxConstraints(minHeight: 40),
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedSegment = 0),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _selectedSegment == 0
-                                    ? tokens.cardBg
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Direct (${_requests.length})',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: _selectedSegment == 0
-                                      ? tokens.brandAccent
-                                      : Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => setState(() => _selectedSegment = 1),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: _selectedSegment == 1
-                                    ? tokens.cardBg
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                'Open Jobs Feed',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w800,
-                                  color: _selectedSegment == 1
-                                      ? tokens.brandAccent
-                                      : Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-              ],
+            child: IncomingRequestsSegmentHeader(
+              selectedSegment: _selectedSegment,
+              directCount: _requests.length,
+              onSegmentChanged: (seg) =>
+                  setState(() => _selectedSegment = seg),
             ),
           ),
         ],
