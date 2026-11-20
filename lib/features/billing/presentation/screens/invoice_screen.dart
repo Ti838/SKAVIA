@@ -8,6 +8,8 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
 import '../../../../shared/widgets/skavia_badge.dart';
+import '../widgets/invoice_breakdown_section.dart';
+import '../widgets/invoice_parties_section.dart';
 
 /// Official itemized digital invoice screen with tax breakdown, payment rail details, and sharing.
 class InvoiceScreen extends StatelessWidget {
@@ -168,73 +170,11 @@ class InvoiceScreen extends StatelessWidget {
               ),
               Divider(height: 32, color: tokens.border),
 
-              SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  spacing: 16,
-                  runSpacing: 12,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${l10n.invoiceTo}:',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: tokens.mutedText,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          clientName,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          Formatters.formatBdPhone(clientPhone),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: tokens.mutedText,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${l10n.invoiceNumber}:',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: tokens.mutedText,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          invoiceNumber,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          Formatters.formatDate(paidAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: tokens.mutedText,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              InvoicePartiesSection(
+                clientName: clientName,
+                clientPhone: clientPhone,
+                invoiceNumber: invoiceNumber,
+                paidAt: paidAt,
               ),
               const SizedBox(height: 20),
 
@@ -272,141 +212,18 @@ class InvoiceScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              Text(
-                'Itemized Breakdown',
-                style: TextStyle(
-                  fontFamily: AppTypography.headingFont,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              _buildInvoiceItem(
-                context,
-                serviceTitle,
-                'Certified execution by $specialistName',
-                Formatters.formatCurrency(baseAmount),
-              ),
-              Divider(height: 20, color: tokens.border),
-              _buildInvoiceItem(
-                context,
-                'SKAVIA Platform & Trust Escrow (15%)',
-                'Insurance protection, dispute mediation & Job OTP verification',
-                Formatters.formatCurrency(platformFee),
-              ),
-              Divider(height: 24, color: tokens.border),
-
-              SizedBox(
-                width: double.infinity,
-                child: Wrap(
-                  alignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    Text(
-                      'Total Paid ($paymentMethod)',
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    Text(
-                      Formatters.formatCurrency(totalAmount),
-                      style: TextStyle(
-                        fontFamily: AppTypography.headingFont,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 20,
-                        color: tokens.brandAccent,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: tokens.softBlueBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.shield_outlined,
-                      color: tokens.brandAccent,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'This invoice is digitally signed and compliant with the SKAVIA Marketplace Services Standard. Escrow balance is settled upon Job OTP verification.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: tokens.secondaryText,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              InvoiceBreakdownSection(
+                serviceTitle: serviceTitle,
+                specialistName: specialistName,
+                baseAmount: baseAmount,
+                platformFee: platformFee,
+                totalAmount: totalAmount,
+                paymentMethod: paymentMethod,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildInvoiceItem(
-    BuildContext context,
-    String title,
-    String subtitle,
-    String amount,
-  ) {
-    final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(fontSize: 11, color: tokens.mutedText),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          amount,
-          style: TextStyle(
-            fontSize: 13.5,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-        ),
-      ],
     );
   }
 }

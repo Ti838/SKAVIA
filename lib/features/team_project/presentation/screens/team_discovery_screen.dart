@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/router/app_routes.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/storage/local_cache_service.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
 import '../../../../data/tables/database_tables.dart';
 import '../../../../shared/widgets/app_app_bar.dart';
-import '../../../../shared/widgets/user_avatar.dart';
+import '../widgets/team_discovery_card.dart';
+import '../widgets/team_discovery_filter_chip.dart';
 
 /// Screen 9: Team Discovery ("Find Teams") with real filtering and bookmark persistence.
 class TeamDiscoveryScreen extends StatefulWidget {
@@ -140,22 +140,43 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    _buildFilterChip(
-                      'Skills',
-                      _selectedSkill,
+                    TeamDiscoveryFilterChip(
+                      label: 'Skills',
+                      value: _selectedSkill,
                       isActive: _selectedSkill != 'All Skills',
+                      onTap: () {
+                        setState(() {
+                          const opts = ['All Skills', 'Flutter', 'React', 'Design', 'Cloud'];
+                          _selectedSkill =
+                              opts[(opts.indexOf(_selectedSkill) + 1) % opts.length];
+                        });
+                      },
                     ),
                     const SizedBox(width: 10),
-                    _buildFilterChip(
-                      'Location',
-                      _selectedLocation,
+                    TeamDiscoveryFilterChip(
+                      label: 'Location',
+                      value: _selectedLocation,
                       isActive: _selectedLocation != 'All Locations',
+                      onTap: () {
+                        setState(() {
+                          const opts = ['All Locations', 'Dhanmondi', 'Gulshan', 'Uttara'];
+                          _selectedLocation =
+                              opts[(opts.indexOf(_selectedLocation) + 1) % opts.length];
+                        });
+                      },
                     ),
                     const SizedBox(width: 10),
-                    _buildFilterChip(
-                      'Availability',
-                      _selectedAvailability,
+                    TeamDiscoveryFilterChip(
+                      label: 'Availability',
+                      value: _selectedAvailability,
                       isActive: _selectedAvailability != 'Any',
+                      onTap: () {
+                        setState(() {
+                          const opts = ['Any', 'Immediate', 'Part-time', 'Full-time'];
+                          _selectedAvailability =
+                              opts[(opts.indexOf(_selectedAvailability) + 1) % opts.length];
+                        });
+                      },
                     ),
                   ],
                 ),
@@ -238,256 +259,16 @@ class _TeamDiscoveryScreenState extends State<TeamDiscoveryScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                       itemCount: visibleTeams.length,
                       itemBuilder: (context, index) {
-                        return _buildTeamCard(visibleTeams[index]);
+                        final team = visibleTeams[index];
+                        return TeamDiscoveryCard(
+                          team: team,
+                          onToggleSaved: () => _toggleSaved(team),
+                        );
                       },
                     ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(
-    String label,
-    String value, {
-    required bool isActive,
-  }) {
-    final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          if (label == 'Skills') {
-            const opts = ['All Skills', 'Flutter', 'React', 'Design', 'Cloud'];
-            _selectedSkill =
-                opts[(opts.indexOf(_selectedSkill) + 1) % opts.length];
-          } else if (label == 'Location') {
-            const opts = ['All Locations', 'Dhanmondi', 'Gulshan', 'Uttara'];
-            _selectedLocation =
-                opts[(opts.indexOf(_selectedLocation) + 1) % opts.length];
-          } else if (label == 'Availability') {
-            const opts = ['Any', 'Immediate', 'Part-time', 'Full-time'];
-            _selectedAvailability =
-                opts[(opts.indexOf(_selectedAvailability) + 1) % opts.length];
-          }
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isActive ? tokens.softBlueBg : tokens.subtleCardBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isActive ? tokens.brandAccent : tokens.border,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              isActive ? '$label: $value' : label,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
-                color: isActive ? tokens.brandAccent : colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 16,
-              color: isActive ? tokens.brandAccent : tokens.mutedText,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTeamCard(Map<String, dynamic> team) {
-    final tokens = context.skavia;
-    final colorScheme = context.colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final skills = (team['skills'] as List<dynamic>?)?.cast<String>() ?? [];
-    final isSaved = team['isSaved'] == true;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: tokens.cardBg,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: tokens.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.16 : 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UserAvatar(
-                imageUrl: team['avatar'] as String?,
-                name: team['name'] as String? ?? 'SKAVIA Team',
-                radius: 24,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      team['name'] as String,
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '${team['membersCount']} members • ${team['projectsCount']} projects • ${team['location']}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: tokens.mutedText,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: Color(0xFFF59E0B),
-                              size: 16,
-                            ),
-                            const SizedBox(width: 3),
-                            Flexible(
-                              child: Text(
-                                '${team['rating']} (${team['reviews']})',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          '${team['availability']}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: tokens.brandAccent,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: Icon(
-                  isSaved
-                      ? Icons.bookmark_rounded
-                      : Icons.bookmark_border_rounded,
-                  color: isSaved ? tokens.brandAccent : tokens.mutedText,
-                  size: 22,
-                ),
-                onPressed: () => _toggleSaved(team),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            children: skills.map((s) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: tokens.softBlueBg,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: tokens.brandAccent.withValues(alpha: 0.25),
-                  ),
-                ),
-                child: Text(
-                  s,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: tokens.brandAccent,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 14),
-
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                final projectId = (team['projectId'] as String?)?.trim() ?? '';
-                if (projectId.isNotEmpty) {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.projectDashboard,
-                    arguments: {
-                      'projectId': projectId,
-                      'projectTitle': '${team['name']} Workspace',
-                    },
-                  );
-                } else {
-                  Navigator.pushNamed(
-                    context,
-                    AppRoutes.teamRoster,
-                    arguments: {
-                      'teamId': team['id'],
-                      'teamName': team['name'],
-                    },
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: tokens.brandAccent,
-                foregroundColor: tokens.onBrandAccent,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Text(
-                'Open Team Workspace',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
