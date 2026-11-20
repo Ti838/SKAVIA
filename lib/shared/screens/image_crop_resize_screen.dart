@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 import '../../app/theme/app_colors.dart';
 import '../../core/services/app_language_service.dart';
 import '../../core/services/media_picker_service.dart';
+import '../widgets/crop_controls_toolbar.dart';
+import '../widgets/crop_mask_painter.dart';
 
 /// Pure-Flutter interactive pinch-zoom, pan, and slider-resize crop editor
 /// for both circular profile pictures (1:1) and Facebook-style cover banners (16:9).
@@ -333,7 +335,7 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
                           IgnorePointer(
                             child: CustomPaint(
                               size: Size(availW, availH),
-                              painter: _CropMaskPainter(
+                              painter: CropMaskPainter(
                                 cropWidth: _cropW,
                                 cropHeight: _cropH,
                                 isCircular: !widget.isBanner,
@@ -345,181 +347,17 @@ class _ImageCropResizeScreenState extends State<ImageCropResizeScreen> {
                     },
                   ),
                 ),
-                Container(
-                  color: const Color(0xFF131823),
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                  child: SafeArea(
-                    top: false,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.zoom_out_rounded,
-                              color: Colors.white60,
-                              size: 20,
-                            ),
-                            Expanded(
-                              child: Slider(
-                                value: _zoom.clamp(1.0, 4.5),
-                                min: 1.0,
-                                max: 4.5,
-                                activeColor: AppColors.primarySky,
-                                inactiveColor: Colors.white24,
-                                onChanged: _isSaving ? null : _applySliderZoom,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.zoom_in_rounded,
-                              color: Colors.white60,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                        Text(
-                          isBn
-                              ? 'ছবি সরাতে টেনে নিন এবং জুম করতে পিঞ্চ বা স্লাইডার ব্যবহার করুন'
-                              : 'Drag to reposition and pinch or slide to resize',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white60,
-                            fontSize: 11.5,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.white24),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                onPressed: _isSaving
-                                    ? null
-                                    : () => Navigator.of(context).pop(null),
-                                child: Text(isBn ? 'বাতিল' : 'Cancel'),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              flex: 2,
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primaryRoyal,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 14,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                onPressed: _isSaving
-                                    ? null
-                                    : _exportCroppedImage,
-                                icon: _isSaving
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : const Icon(Icons.check_rounded, size: 18),
-                                label: Text(
-                                  _isSaving
-                                      ? (isBn
-                                            ? 'প্রসেস হচ্ছে...'
-                                            : 'Applying...')
-                                      : (isBn ? 'সেভ ও আপলোড' : 'Crop & Save'),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                CropControlsToolbar(
+                  zoom: _zoom,
+                  isSaving: _isSaving,
+                  isBengali: isBn,
+                  onZoomChanged: _applySliderZoom,
+                  onCancel: () => Navigator.of(context).pop(null),
+                  onConfirm: _exportCroppedImage,
                 ),
               ],
             ),
     );
-  }
-}
-
-class _CropMaskPainter extends CustomPainter {
-  final double cropWidth;
-  final double cropHeight;
-  final bool isCircular;
-
-  _CropMaskPainter({
-    required this.cropWidth,
-    required this.cropHeight,
-    required this.isCircular,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final frameRect = Rect.fromCenter(
-      center: center,
-      width: cropWidth,
-      height: cropHeight,
-    );
-
-    final fullPath = Path()
-      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
-    final cutoutPath = Path();
-    if (isCircular) {
-      cutoutPath.addOval(frameRect);
-    } else {
-      cutoutPath.addRRect(
-        RRect.fromRectAndRadius(frameRect, const Radius.circular(14)),
-      );
-    }
-
-    final maskPath = Path.combine(
-      PathOperation.difference,
-      fullPath,
-      cutoutPath,
-    );
-    canvas.drawPath(
-      maskPath,
-      Paint()..color = const Color(0xAA000000),
-    );
-
-    final borderPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2;
-
-    if (isCircular) {
-      canvas.drawOval(frameRect, borderPaint);
-    } else {
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(frameRect, const Radius.circular(14)),
-        borderPaint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _CropMaskPainter oldDelegate) {
-    return oldDelegate.cropWidth != cropWidth ||
-        oldDelegate.cropHeight != cropHeight ||
-        oldDelegate.isCircular != isCircular;
   }
 }
 
