@@ -372,7 +372,7 @@ export function PublishReleasePanel({
   );
   const hasBlockers = (inspection?.compatibility.blockers.length ?? 0) > 0;
   const canSubmit =
-    Boolean(inspection && storagePath && selectedFile) &&
+    Boolean(inspection && storagePath) &&
     !hasBlockers &&
     releaseNotes.trim().length >= 10 &&
     reviewConfirmed &&
