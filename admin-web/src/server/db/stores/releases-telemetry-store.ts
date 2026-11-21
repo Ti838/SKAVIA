@@ -12,6 +12,10 @@ export class SupabaseReleasesTelemetryStore {
   constructor(private readonly db: StoreDbClient) {}
 
   async createPublishedApkSignedUrl(storagePath: string, fileName?: string): Promise<string> {
+    if (storagePath.startsWith('http://') || storagePath.startsWith('https://')) {
+      return storagePath;
+    }
+
     const { data, error } = await this.db.storage
       .from(RELEASE_BUCKET)
       .createSignedUrl(storagePath, 600, fileName ? { download: fileName } : undefined);
