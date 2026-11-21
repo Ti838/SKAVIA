@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../app/config/app_config.dart';
 import '../../../../app/router/app_routes.dart';
@@ -288,6 +289,97 @@ class _AboutSkaviaScreenState extends State<AboutSkaviaScreen> {
                   .toList(),
             ),
             const SizedBox(height: 20),
+
+            // Parent Organization Endorsement: BITA STUDIO
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          AppAssets.bitaStudioLogo,
+                          height: 40,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: tokens.softBlueBg,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(
+                              Icons.business_rounded,
+                              size: 24,
+                              color: AppColors.primaryRoyal,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'A Product of BITA STUDIO',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                color: colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Building Ideas. Engineering the Future.',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final uri = Uri.parse(
+                          'https://bita-studio.vercel.app/',
+                        );
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(
+                            uri,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.open_in_new_rounded, size: 15),
+                      label: const Text(
+                        'Visit BITA STUDIO',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
 
             OutlinedButton(
               onPressed: () => LegalPoliciesSheet.show(context),
