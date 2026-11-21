@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_assets.dart';
 import '../../../../shared/widgets/skavia_brand_image.dart';
 
-/// Lightweight, 60fps continuous animated brand showcase widget.
-/// Highlights SKAVIA's 8 core operational branches with soft ambient lighting,
-/// subtle harmonic float micro-motion, and full accessibility (reduced-motion safe).
+/// Professional, enterprise-grade service ecosystem showcase.
+/// Displays SKAVIA's 8 core operational branches with dual-track flowing
+/// micro-motion, edge fade gradients, and 100% collision-free responsive geometry.
 class AnimatedServiceShowcase extends StatefulWidget {
   final double height;
 
-  const AnimatedServiceShowcase({super.key, this.height = 240});
+  const AnimatedServiceShowcase({super.key, this.height = 190});
 
   @override
   State<AnimatedServiceShowcase> createState() =>
@@ -22,18 +22,12 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
-  static const List<_ShowcaseCategory> _categories = [
+  static const List<_ShowcaseCategory> _row1Categories = [
     _ShowcaseCategory(
       label: 'Electrical & Power',
       icon: Icons.bolt_rounded,
       color: Color(0xFF003399),
       accentColor: Color(0xFF3898EC),
-    ),
-    _ShowcaseCategory(
-      label: 'Plumbing & Sanitary',
-      icon: Icons.plumbing_rounded,
-      color: Color(0xFF0284C7),
-      accentColor: Color(0xFF38BDF8),
     ),
     _ShowcaseCategory(
       label: 'AC & HVAC Cooling',
@@ -42,11 +36,20 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
       accentColor: Color(0xFF15E7CA),
     ),
     _ShowcaseCategory(
+      label: 'Plumbing & Sanitary',
+      icon: Icons.plumbing_rounded,
+      color: Color(0xFF0284C7),
+      accentColor: Color(0xFF38BDF8),
+    ),
+    _ShowcaseCategory(
       label: 'IT, Software & Creative',
       icon: Icons.code_rounded,
       color: Color(0xFF4F46E5),
       accentColor: Color(0xFF818CF8),
     ),
+  ];
+
+  static const List<_ShowcaseCategory> _row2Categories = [
     _ShowcaseCategory(
       label: 'Civil & Carpentry',
       icon: Icons.construction_rounded,
@@ -78,7 +81,7 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 12),
+      duration: const Duration(seconds: 10),
     )..repeat();
   }
 
@@ -94,66 +97,54 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
     final isDark = theme.brightness == Brightness.dark;
     final reduceMotion = MediaQuery.of(context).disableAnimations;
 
-    final cardBg = isDark ? const Color(0xFF0B1426) : Colors.white;
+    final bgColor = isDark ? const Color(0xFF05080F) : Colors.white;
+    final cardBg = isDark ? const Color(0xFF0F172A) : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.10)
+        ? Colors.white.withValues(alpha: 0.12)
         : const Color(0xFFE2E8F0);
     final primaryTextColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryTextColor = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
 
     return SizedBox(
       height: widget.height,
       width: double.infinity,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          final progress = reduceMotion ? 0.0 : _controller.value;
-          final angle = progress * 2 * math.pi;
-
-          return Stack(
-            alignment: Alignment.center,
-            clipBehavior: Clip.none,
-            children: [
-              // Ambient glow effect
-              Positioned(
-                child: Container(
-                  width: 220,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFF3898EC)
-                            .withValues(alpha: isDark ? 0.20 : 0.14),
-                        const Color(0xFF15E7CA)
-                            .withValues(alpha: isDark ? 0.10 : 0.06),
-                        Colors.transparent,
-                      ],
-                      stops: const [0.0, 0.55, 1.0],
-                    ),
-                  ),
-                ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // 1. Subtle Ambient Center Glow
+          Container(
+            width: 260,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  const Color(0xFF3898EC).withValues(alpha: isDark ? 0.18 : 0.10),
+                  const Color(0xFF15E7CA).withValues(alpha: isDark ? 0.08 : 0.04),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.6, 1.0],
               ),
+            ),
+          ),
 
-              // Central Hub Card
+          // 2. Structured Layout: Verified Badge + Dual Flowing Category Rails
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Top Platform Verified Capsule
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6.5),
                 decoration: BoxDecoration(
                   color: cardBg,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: borderColor, width: 1.2),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: borderColor, width: 1.0),
                   boxShadow: [
                     BoxShadow(
                       color: isDark
-                          ? Colors.black.withValues(alpha: 0.4)
-                          : const Color(0xFF003399).withValues(alpha: 0.08),
-                      blurRadius: 28,
-                      offset: const Offset(0, 8),
+                          ? Colors.black.withValues(alpha: 0.35)
+                          : const Color(0xFF003399).withValues(alpha: 0.06),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -162,211 +153,244 @@ class _AnimatedServiceShowcaseState extends State<AnimatedServiceShowcase>
                   children: [
                     // Official SKAVIA Emblem
                     Container(
-                      width: 44,
-                      height: 44,
-                      padding: const EdgeInsets.all(8),
+                      width: 22,
+                      height: 22,
+                      padding: const EdgeInsets.all(3),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withValues(alpha: 0.06)
+                            ? Colors.white.withValues(alpha: 0.08)
                             : const Color(0xFFF1F5F9),
                         shape: BoxShape.circle,
-                        border: Border.all(color: borderColor),
+                        border: Border.all(color: borderColor, width: 0.8),
                       ),
                       child: SkaviaBrandImage(
                         assetPath: AppAssets.emblem,
-                        width: 28,
-                        height: 28,
+                        width: 16,
+                        height: 16,
                         fit: BoxFit.contain,
                         errorBuilder: (_, _, _) => const Icon(
                           Icons.engineering_rounded,
-                          size: 24,
+                          size: 14,
                           color: Color(0xFF003399),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              'SKAVIA Network',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: primaryTextColor,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 7,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981)
-                                    .withValues(alpha: isDark ? 0.20 : 0.12),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: const Color(0xFF10B981)
-                                      .withValues(alpha: 0.4),
-                                  width: 0.8,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 5,
-                                    height: 5,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF10B981),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text(
-                                    'Active',
-                                    style: TextStyle(
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          '8 Verified Specialization Branches',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.w500,
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(width: 8),
+                    Text(
+                      'SKAVIA Network',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: primaryTextColor,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 3.5,
+                      height: 3.5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: isDark ? Colors.white30 : Colors.black26,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    const Text(
+                      '8 Verified Branches',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF10B981),
+                      ),
                     ),
                   ],
                 ),
               ),
 
-              // Floating Satellite Category Pills (4 floating around hub)
-              ..._buildFloatingPills(
-                context,
-                angle: angle,
-                isDark: isDark,
-                borderColor: borderColor,
-                cardBg: cardBg,
+              const SizedBox(height: 13),
+
+              // Animated Dual Category Rows
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, _) {
+                  final progress = reduceMotion ? 0.0 : _controller.value;
+                  final angle = progress * 2 * math.pi;
+
+                  // Smooth organic sinusoidal offset (prevents clipping, zero collision)
+                  final offset1 = reduceMotion ? 0.0 : math.sin(angle) * 28.0;
+                  final offset2 = reduceMotion ? 0.0 : -math.sin(angle) * 28.0;
+
+                  return Column(
+                    children: [
+                      // Track 1: Moving smoothly
+                      Transform.translate(
+                        offset: Offset(offset1, 0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 16),
+                              ..._row1Categories.map(
+                                (cat) => Padding(
+                                  padding: const EdgeInsets.only(right: 8.5),
+                                  child: _buildCategoryPill(
+                                    cat,
+                                    isDark: isDark,
+                                    cardBg: cardBg,
+                                    borderColor: borderColor,
+                                    primaryTextColor: primaryTextColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 9),
+
+                      // Track 2: Moving smoothly in reverse
+                      Transform.translate(
+                        offset: Offset(offset2, 0),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const NeverScrollableScrollPhysics(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 16),
+                              ..._row2Categories.map(
+                                (cat) => Padding(
+                                  padding: const EdgeInsets.only(right: 8.5),
+                                  child: _buildCategoryPill(
+                                    cat,
+                                    isDark: isDark,
+                                    cardBg: cardBg,
+                                    borderColor: borderColor,
+                                    primaryTextColor: primaryTextColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ],
-          );
-        },
+          ),
+
+          // 3. Left & Right Edge Luxury Fade Masks
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 28,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      bgColor,
+                      bgColor.withValues(alpha: 0.0),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 28,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      bgColor.withValues(alpha: 0.0),
+                      bgColor,
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  List<Widget> _buildFloatingPills(
-    BuildContext context, {
-    required double angle,
+  Widget _buildCategoryPill(
+    _ShowcaseCategory cat, {
     required bool isDark,
-    required Color borderColor,
     required Color cardBg,
+    required Color borderColor,
+    required Color primaryTextColor,
   }) {
-    // 4 prominent dynamic categories with smooth floating physics
-    final selectedIndices = [0, 2, 3, 5]; // Electrical, AC/HVAC, IT, Automotive
-    final widgets = <Widget>[];
-
-    // Floating offsets and positions
-    final positions = [
-      // Top Left: Electrical & Power
-      _PillPosition(top: 14, left: 18, phase: 0.0, index: selectedIndices[0]),
-      // Top Right: AC & HVAC Cooling
-      _PillPosition(
-        top: 18,
-        right: 18,
-        phase: math.pi / 2,
-        index: selectedIndices[1],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6.5),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: cat.accentColor.withValues(alpha: isDark ? 0.35 : 0.25),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.25)
+                : cat.color.withValues(alpha: 0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      // Bottom Left: IT & Software
-      _PillPosition(
-        bottom: 18,
-        left: 20,
-        phase: math.pi,
-        index: selectedIndices[2],
-      ),
-      // Bottom Right: Automotive Mechanics
-      _PillPosition(
-        bottom: 14,
-        right: 20,
-        phase: 3 * math.pi / 2,
-        index: selectedIndices[3],
-      ),
-    ];
-
-    for (final pos in positions) {
-      final cat = _categories[pos.index];
-      final floatY = math.sin(angle + pos.phase) * 6.0;
-
-      widgets.add(
-        Positioned(
-          top: pos.top != null ? pos.top! + floatY : null,
-          bottom: pos.bottom != null ? pos.bottom! - floatY : null,
-          left: pos.left,
-          right: pos.right,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4.5),
             decoration: BoxDecoration(
-              color: cardBg.withValues(alpha: 0.95),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: cat.accentColor.withValues(alpha: isDark ? 0.35 : 0.25),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? Colors.black.withValues(alpha: 0.3)
-                      : cat.color.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: cat.color.withValues(alpha: isDark ? 0.25 : 0.12),
+              shape: BoxShape.circle,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: cat.color.withValues(alpha: isDark ? 0.25 : 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(cat.icon, size: 13, color: cat.accentColor),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  cat.label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : const Color(0xFF1E293B),
-                  ),
-                ),
-              ],
+            child: Icon(cat.icon, size: 13, color: cat.accentColor),
+          ),
+          const SizedBox(width: 7),
+          Text(
+            cat.label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: primaryTextColor,
+              letterSpacing: 0.1,
             ),
           ),
-        ),
-      );
-    }
-
-    return widgets;
+        ],
+      ),
+    );
   }
 }
 
@@ -381,23 +405,5 @@ class _ShowcaseCategory {
     required this.icon,
     required this.color,
     required this.accentColor,
-  });
-}
-
-class _PillPosition {
-  final double? top;
-  final double? bottom;
-  final double? left;
-  final double? right;
-  final double phase;
-  final int index;
-
-  const _PillPosition({
-    this.top,
-    this.bottom,
-    this.left,
-    this.right,
-    required this.phase,
-    required this.index,
   });
 }

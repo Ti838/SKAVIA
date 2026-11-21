@@ -15,16 +15,19 @@ import {
   Tablet,
   Zap,
 } from 'lucide-react';
+import { formatBytes } from '@/lib/formatters';
 import type { DeviceTelemetry } from '../hooks/useDeviceDetection';
-import type { PublicThemeTokens } from '../public-site-data';
+import type { DistributionInfo, PublicThemeTokens } from '../public-site-data';
 
 interface DeviceCompatibilityCardProps {
   telemetry: DeviceTelemetry;
+  distribution?: DistributionInfo;
   t: PublicThemeTokens;
 }
 
 export function DeviceCompatibilityCard({
   telemetry,
+  distribution,
   t,
 }: DeviceCompatibilityCardProps) {
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -70,6 +73,14 @@ export function DeviceCompatibilityCard({
       : network.effectiveType === 'Unknown'
       ? '5G / 4G / Wi-Fi'
       : network.effectiveType.toUpperCase();
+
+  const universalSize = distribution?.android.fileSizeBytes
+    ? formatBytes(distribution.android.fileSizeBytes, 1)
+    : '66.5 MB';
+  const arm64Size = '24.5 MB';
+  const armv7Size = distribution?.android.armv7SizeBytes
+    ? formatBytes(distribution.android.armv7SizeBytes, 1)
+    : '22.5 MB';
 
   return (
     <div
@@ -160,7 +171,8 @@ export function DeviceCompatibilityCard({
         {compatibilityStatus === 'fully_compatible' && (
           <p>
             <strong>Recommended for your device:</strong>{' '}
-            <span className="underline font-bold">ARM64 APK (22.6 MB)</span>.
+            <span className="underline font-bold">Universal Production APK ({universalSize})</span> or compact{' '}
+            <span className="font-bold">ARM64 APK ({arm64Size})</span>.
             Your device supports modern 64-bit Android architecture with
             instant Haversine dispatch and OTP verification.
           </p>
@@ -169,7 +181,7 @@ export function DeviceCompatibilityCard({
         {compatibilityStatus === 'legacy_compatible' && (
           <p>
             <strong>Recommended for your device:</strong>{' '}
-            <span className="underline font-bold">ARMv7 APK (20.3 MB)</span>.
+            <span className="underline font-bold">ARMv7 APK ({armv7Size})</span>.
             Legacy 32-bit architecture detected. The ARMv7 build ensures
             stable, crash-free execution.
           </p>

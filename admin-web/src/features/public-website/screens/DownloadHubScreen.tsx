@@ -120,6 +120,7 @@ export function DownloadHubScreen({
                 {/* Live Device Hardware Telemetry Card */}
                 <DeviceCompatibilityCard
                   telemetry={detection}
+                  distribution={initialDistribution}
                   t={t}
                 />
 
