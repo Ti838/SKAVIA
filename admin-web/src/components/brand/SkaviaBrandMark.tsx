@@ -26,12 +26,11 @@ export function SkaviaBrandMark({
       <Image
         src="/images/skavia_logo.png"
         alt="SKAVIA Official Logo"
-        width={width}
-        height={size}
+        width={width * 3}
+        height={size * 3}
         priority={priority}
         unoptimized
-        quality={100}
-        style={{ width: 'auto', height: size, imageRendering: '-webkit-optimize-contrast' }}
+        style={{ width: 'auto', height: size }}
         className={`object-contain select-none shrink-0 ${className}`.trim()}
       />
     );
@@ -43,12 +42,11 @@ export function SkaviaBrandMark({
     <Image
       src="/images/skavia_emblem.png"
       alt="SKAVIA Official Emblem"
-      width={width}
-      height={size}
+      width={width * 3}
+      height={size * 3}
       priority={priority}
       unoptimized
-      quality={100}
-      style={{ width: 'auto', height: size, imageRendering: '-webkit-optimize-contrast' }}
+      style={{ width: 'auto', height: size }}
       className={`object-contain select-none shrink-0 ${className}`.trim()}
     />
   );

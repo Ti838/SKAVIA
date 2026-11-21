@@ -85,8 +85,7 @@ export function BusinessSolutionsScreen() {
               <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
                 <SakugaLink
                   href="/contact"
-                  celebrateOnClick
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-purple-900/25 bg-gradient-to-r from-[#003399] to-[#7C3AED] hover:from-[#002266] hover:to-[#6d28d9] transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-purple-900/25 bg-gradient-to-r from-[#003399] to-[#7C3AED] hover:from-[#002266] hover:to-[#6d28d9] transition-all active:scale-[0.98]"
                 >
                   <Briefcase className="h-4 w-4" />
                   <span>Contact Enterprise Team</span>
@@ -95,8 +94,7 @@ export function BusinessSolutionsScreen() {
 
                 <SakugaLink
                   href="/services-catalog"
-                  intensity="subtle"
-                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
+                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold border transition-all active:scale-[0.98] ${
                     t.dark
                       ? 'border-slate-800 bg-slate-900/80 text-white hover:bg-slate-800'
                       : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50'

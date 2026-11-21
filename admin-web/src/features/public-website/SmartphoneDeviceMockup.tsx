@@ -31,7 +31,7 @@ export function SmartphoneDeviceMockup({
   const [phoneDark, setPhoneDark] = useState<boolean>(t.dark);
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[380px] sm:max-w-[420px] mx-auto select-none animate-float-gentle">
+    <div className="flex flex-col items-center w-full max-w-[380px] sm:max-w-[420px] mx-auto select-none">
       {/* Interactive Mode Pills on top of device */}
       <div
         className="flex items-center gap-1.5 p-1 rounded-2xl border mb-4 backdrop-blur-md text-xs font-medium shadow-sm"
