@@ -99,21 +99,13 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
             onTap: widget.onMapTap,
           ),
           children: [
-            // Base Tile Layer (100% Free Retina Google-Style / Satellite / Dark with OSM fallback)
+            // Base Tile Layer (100% Free OpenStreetMap & Esri Satellite — No API Key Required)
             if (activeStyle == SkaviaMapStyle.satellite) ...[
               TileLayer(
                 urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.skavia.app',
+                userAgentPackageName: 'com.example.skavia',
                 maxZoom: 18,
-              ),
-              // Hybrid road & area labels overlay on satellite imagery
-              TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                retinaMode: isRetina,
-                userAgentPackageName: 'com.skavia.app',
-                maxZoom: 19,
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
@@ -121,16 +113,16 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 subdomains: const ['a', 'b', 'c', 'd'],
                 retinaMode: isRetina,
-                userAgentPackageName: 'com.skavia.app',
+                userAgentPackageName: 'com.example.skavia',
                 maxZoom: 19,
               )
             else
               TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                fallbackUrl: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c'],
                 retinaMode: isRetina,
-                userAgentPackageName: 'com.skavia.app',
+                userAgentPackageName: 'com.example.skavia',
                 maxZoom: 19,
               ),
 
