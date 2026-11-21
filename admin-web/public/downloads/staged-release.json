@@ -1,0 +1,11 @@
+{
+  "versionName": "1.0.3",
+  "buildNumber": 4,
+  "channel": "stable",
+  "apkUrl": "https://skavia-bd.vercel.app/downloads/skavia-v1.0.3.apk",
+  "latestApkUrl": "https://skavia-bd.vercel.app/downloads/skavia-latest.apk",
+  "fileName": "skavia-v1.0.3.apk",
+  "fileSizeBytes": 69728126,
+  "deployedAt": "2026-11-21T17:26:00.000Z",
+  "releaseNotes": "- Redesigned luxury collision-free onboarding service ecosystem\n- Completely eliminated layout shift on login and signup tabs\n- Real-time OpenStreetMap integration and resilient network telemetry"
+}
