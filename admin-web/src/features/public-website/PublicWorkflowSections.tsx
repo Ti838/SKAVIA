@@ -58,12 +58,11 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
           and guarantees quality through a mandatory 4-digit arrival OTP handshake and protected escrow.
         </p>
 
-        {/* Action CTAs with Sakuga VFX Kinetic Energy */}
+        {/* Action CTAs */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <SakugaLink
             href="/download"
-            celebrateOnClick
-            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-xs sm:text-sm font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-xs sm:text-sm font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-md transition-all active:scale-[0.98]"
           >
             <Smartphone className="h-4 w-4" />
             <span>Download Official Mobile App</span>
@@ -72,9 +71,8 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
 
           <SakugaButton
             variant="ghost"
-            intensity="medium"
             onClick={() => setIsStoryOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md active:scale-[0.98]"
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Play className="h-3 w-3 fill-current ml-0.5" />
@@ -84,8 +82,7 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
 
           <SakugaLink
             href="/services-catalog"
-            intensity="subtle"
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md active:scale-[0.98]"
           >
             <span>Explore Services Catalog</span>
           </SakugaLink>
@@ -173,7 +170,7 @@ export function BranchesSection({
   const branches = getSpecializationBranches(false);
 
   return (
-    <section id="branches" className="py-16 sm:py-24 border-t border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#070A11] transition-colors">
+    <section id="branches" className="py-16 sm:py-24 border-t border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-[#070A11] transition-colors scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#003399] dark:text-[#3898EC] font-bold mb-3">
@@ -327,7 +324,7 @@ export function WorkflowSection({
   const currentTab = tabs.find((t) => t.id === activeTab) ?? tabs[0]!;
 
   return (
-    <section id="how-it-works" className="py-16 sm:py-24 border-b border-slate-200 dark:border-slate-800 transition-colors">
+    <section id="how-it-works" className="py-16 sm:py-24 border-b border-slate-200 dark:border-slate-800 transition-colors scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#003399] dark:text-[#3898EC] font-bold">
@@ -389,7 +386,7 @@ export function SolutionsSection({ t }: { t: PublicThemeTokens }) {
   const businessHighlights = getBusinessHighlights(false);
 
   return (
-    <section id="solutions" className={`py-16 sm:py-24 border-b ${t.railBorder} bg-slate-50/50 dark:bg-[#070A11] transition-colors`}>
+    <section id="solutions" className={`py-16 sm:py-24 border-b ${t.railBorder} bg-slate-50/50 dark:bg-[#070A11] transition-colors scroll-mt-20`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <p className="text-xs font-mono-code uppercase tracking-widest text-[#003399] dark:text-[#3898EC] font-bold">

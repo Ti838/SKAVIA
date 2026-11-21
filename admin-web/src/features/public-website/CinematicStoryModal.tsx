@@ -410,7 +410,6 @@ export function CinematicStoryModal({
           <SakugaLink
             href={apkUrl}
             onClick={onClose}
-            celebrateOnClick
             className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#003399] hover:bg-[#002266] transition shadow-md"
           >
             <Download className="h-3.5 w-3.5" />

@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { formatBytes } from '@/lib/formatters';
 import { useSakugaToast } from '@/components/sakuga';
-import { sakugaCelebrate, sakugaTicks } from '@/lib/sakuga/sakuga-core';
 import { HeroAtmosphere } from '../components/HeroAtmosphere';
 import { PublicPageShell } from '../components/PublicPageShell';
 import { INITIAL_DISTRIBUTION } from '../public-site-data';
@@ -39,9 +38,6 @@ export function DownloadHubScreen() {
     try {
       navigator.clipboard.writeText(hash);
       setCopiedSha(true);
-      if (typeof window !== 'undefined') {
-        sakugaTicks(window.innerWidth / 2, window.innerHeight / 2, { n: 4, r: 8, color: '#10B981' });
-      }
       showToast('SHA-256 hash copied to clipboard', 'success');
       setTimeout(() => setCopiedSha(false), 2500);
     } catch {
@@ -49,8 +45,7 @@ export function DownloadHubScreen() {
     }
   };
 
-  const handleDownloadClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    sakugaCelebrate(e.clientX, e.clientY, { r: 52 });
+  const handleDownloadClick = () => {
     showToast('Starting SKAVIA Universal APK download...', 'success', 3500);
   };
 

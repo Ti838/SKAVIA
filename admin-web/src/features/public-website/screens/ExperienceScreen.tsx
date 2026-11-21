@@ -36,8 +36,7 @@ export function ExperienceScreen() {
               <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
                 <SakugaLink
                   href="/download"
-                  celebrateOnClick
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-teal-900/20 bg-gradient-to-r from-[#003399] to-[#06B6D4] hover:from-[#002266] hover:to-[#0891b2] transition-all"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-teal-900/20 bg-gradient-to-r from-[#003399] to-[#06B6D4] hover:from-[#002266] hover:to-[#0891b2] transition-all active:scale-[0.98]"
                 >
                   <Smartphone className="h-4 w-4" />
                   <span>Download Verified App</span>
@@ -46,8 +45,7 @@ export function ExperienceScreen() {
 
                 <SakugaLink
                   href="/how-it-works"
-                  intensity="subtle"
-                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
+                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold border transition-all active:scale-[0.98] ${
                     t.dark
                       ? 'border-slate-800 bg-slate-900/80 text-white hover:bg-slate-800'
                       : 'border-slate-300 bg-white text-slate-900 hover:bg-slate-50'

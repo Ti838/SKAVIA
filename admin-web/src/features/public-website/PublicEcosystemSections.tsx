@@ -37,7 +37,7 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
   const mobileFeatures = getMobileFeatures(false);
 
   return (
-    <section id="workers" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+    <section id="workers" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-20`}>
       {/* Seamless Ambient Lighting with no sharp bounding borders */}
       <div 
         className="absolute inset-0 pointer-events-none select-none overflow-hidden" 
@@ -184,7 +184,7 @@ export function DownloadSection({
   };
 
   return (
-    <section id="download" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+    <section id="download" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-20`}>
       {/* Seamless Multi-Layered Atmosphere with Zero Banding */}
       <HeroAtmosphere dark={t.dark} variant="subpage" />
 
@@ -433,7 +433,7 @@ export function FaqAndContactSection({
   const faqItems = getFaqItems(false);
 
   return (
-    <section id="faq" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden`}>
+    <section id="faq" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-20`}>
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
@@ -500,7 +500,7 @@ export function FaqAndContactSection({
           </div>
 
           {/* Dhaka HQ Operations Desk Card (5 cols) */}
-          <div id="contact" className="lg:col-span-5">
+          <div id="contact" className="lg:col-span-5 scroll-mt-20">
             <div className={`rounded-3xl border p-6 sm:p-8 space-y-6 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-xl`}>
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className={`inline-flex items-center gap-2 text-xs font-mono-code uppercase tracking-wider font-semibold ${t.dark ? 'text-[#15E7CA]' : 'text-teal-700'}`}>

@@ -183,12 +183,11 @@ export function PublicHeader({
               compact
             />
 
-            {/* High-Contrast Primary CTA (Vercel Style) with Sakuga Tactile Spring */}
+            {/* High-Contrast Primary CTA (Vercel Style) */}
             <SakugaLink
               href="/download"
               onClick={onDownloadClick}
-              intensity="medium"
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-xs whitespace-nowrap shrink-0"
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-xs whitespace-nowrap shrink-0 active:scale-[0.98]"
             >
               <Smartphone className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Get Mobile App</span>
