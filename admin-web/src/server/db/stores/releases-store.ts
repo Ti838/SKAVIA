@@ -131,6 +131,19 @@ export class SupabaseReleasesStore {
   }
 
   async readApkObjectBytes(storagePath: string): Promise<Buffer> {
+    if (storagePath.startsWith('http://') || storagePath.startsWith('https://')) {
+      const res = await fetch(storagePath);
+      if (!res.ok) {
+        throw new ReleaseValidationError(
+          'APK_OBJECT_NOT_FOUND',
+          `Failed to fetch APK from external release URL (${res.status} ${res.statusText}).`,
+          404
+        );
+      }
+      const arr = await res.arrayBuffer();
+      return Buffer.from(arr);
+    }
+
     const { data, error } = await this.db.storage
       .from(RELEASE_BUCKET)
       .download(storagePath);
@@ -229,7 +242,7 @@ export class SupabaseReleasesStore {
         notify_users: input.notifyUsers,
         status: input.status,
         is_current: false,
-        storage_bucket: RELEASE_BUCKET,
+        storage_bucket: input.storagePath.startsWith('http') ? 'github-release' : RELEASE_BUCKET,
         storage_path: input.storagePath,
         file_name: input.fileName,
         file_size_bytes: input.fileSizeBytes,
@@ -552,7 +565,7 @@ export class SupabaseReleasesStore {
       );
     }
 
-    if (existing.storage_path) {
+    if (existing.storage_path && !existing.storage_path.startsWith('http')) {
       await this.db.storage.from(RELEASE_BUCKET).remove([existing.storage_path]).catch(() => undefined);
     }
 

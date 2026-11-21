@@ -5,7 +5,9 @@ import {
   AlertTriangle,
   CheckCircle2,
   FileCheck2,
+  Globe,
   KeyRound,
+  Link as LinkIcon,
   Lock,
   ShieldAlert,
   UploadCloud,
@@ -98,6 +100,9 @@ export function PublishReleasePanel({
   onSigningPolicyUpdated?: (updated: ReleaseSigningPolicyDto) => void;
 }) {
   const [channel, setChannel] = useState<AppReleaseChannel>('stable');
+  const [sourceMode, setSourceMode] = useState<'github' | 'upload'>('github');
+  const [githubUrl, setGithubUrl] = useState<string>('');
+  const [inspectingUrl, setInspectingUrl] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [storagePath, setStoragePath] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -116,6 +121,50 @@ export function PublishReleasePanel({
   const [updatingPin, setUpdatingPin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useSakugaToast();
+
+  async function handleInspectFromUrl() {
+    const trimmed = githubUrl.trim();
+    if (!trimmed) {
+      setError('Enter a valid GitHub Release APK download URL.');
+      return;
+    }
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      setError('Release URL must start with https://');
+      return;
+    }
+
+    setError(null);
+    setInspection(null);
+    setStoragePath(null);
+    setReviewConfirmed(false);
+    setAllowInitialSigningPin(false);
+    setInspectingUrl(true);
+
+    try {
+      const inspectRes = await apiFetch<InspectApiResponse>('/api/admin/releases/inspect', {
+        method: 'POST',
+        body: JSON.stringify({
+          storagePath: trimmed,
+          channel,
+        }),
+      });
+
+      setStoragePath(trimmed);
+      setInspection(inspectRes);
+      setMinSupportedBuild(String(Math.min(1, inspectRes.inspected.buildNumber)));
+      showToast('APK verified cleanly from GitHub Release!', 'success');
+    } catch (err) {
+      if (err instanceof AdminApiError && err.code === 'STEP_UP_REQUIRED') {
+        setError('Step-Up verification opened. Complete verification, then re-inspect.');
+      } else if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed inspecting APK from GitHub Release URL.');
+      }
+    } finally {
+      setInspectingUrl(false);
+    }
+  }
 
   async function handleFileSelectAndUpload(file: File | null) {
     setError(null);
@@ -198,7 +247,7 @@ export function PublishReleasePanel({
 
   async function handleSubmitRelease(e: React.FormEvent) {
     e.preventDefault();
-    if (!inspection || !storagePath || !selectedFile) return;
+    if (!inspection || !storagePath) return;
 
     setError(null);
     const minBuildInt = Number.parseInt(minSupportedBuild, 10);
@@ -211,6 +260,9 @@ export function PublishReleasePanel({
       setError('Confirm pinning the APK signing certificate before saving or publishing.');
       return;
     }
+
+    const derivedFileName =
+      selectedFile?.name || storagePath.split('/').pop()?.split('?')[0] || 'skavia-release.apk';
 
     setSubmitting(true);
     try {
@@ -228,7 +280,7 @@ export function PublishReleasePanel({
             notifyUsers,
             publishImmediately,
             storagePath,
-            fileName: selectedFile.name,
+            fileName: derivedFileName,
             allowInitialSigningPin,
           }),
         }
@@ -362,28 +414,112 @@ export function PublishReleasePanel({
           </div>
         </div>
 
-        <label
-          className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 cursor-pointer transition hover:border-blue-500"
-          style={{ backgroundColor: 'var(--bg-canvas)', borderColor: 'var(--border-subtle)' }}
-        >
-          <UploadCloud className="h-8 w-8 text-blue-600 mb-2" />
-          <p className="text-sm font-semibold">
-            {selectedFile ? selectedFile.name : 'Choose a signed SKAVIA .apk file to upload'}
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Expected package: <span className="font-mono-code">{signingPolicy?.expectedPackageName ?? 'com.example.skavia'}</span>
-            {signingPolicy?.pinnedSigningCertSha256
-              ? ` · Pinned Cert: ${shortFingerprint(signingPolicy.pinnedSigningCertSha256)}`
-              : ' · Signing pin will lock on first release'}
-          </p>
-          <input
-            type="file"
-            accept=".apk,application/vnd.android.package-archive"
-            className="hidden"
-            disabled={uploading || submitting}
-            onChange={(e) => void handleFileSelectAndUpload(e.target.files?.[0] ?? null)}
-          />
-        </label>
+        {/* Release Source Mode Selector */}
+        <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border-subtle)' }}>
+          <button
+            type="button"
+            onClick={() => {
+              setSourceMode('github');
+              setError(null);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              sourceMode === 'github'
+                ? 'bg-[#003399] text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Globe className="h-3.5 w-3.5" />
+            <span>GitHub Release / External URL (Zero Storage Limit)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSourceMode('upload');
+              setError(null);
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+              sourceMode === 'upload'
+                ? 'bg-[#003399] text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <UploadCloud className="h-3.5 w-3.5" />
+            <span>Upload Local File</span>
+          </button>
+        </div>
+
+        {sourceMode === 'github' ? (
+          <div
+            className="rounded-xl border p-5 space-y-3"
+            style={{ backgroundColor: 'var(--bg-canvas)', borderColor: 'var(--border-subtle)' }}
+          >
+            <div className="space-y-1">
+              <label htmlFor="github-apk-url" className="text-xs font-semibold uppercase tracking-wider block">
+                Direct GitHub Release APK Download URL
+              </label>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                Paste the permanent GitHub Release APK download link. Supabase storage remains 0 MB used, with zero file size limits!
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+              <div className="relative flex-1">
+                <LinkIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <input
+                  id="github-apk-url"
+                  type="url"
+                  value={githubUrl}
+                  disabled={inspectingUrl || submitting}
+                  onChange={(e) => setGithubUrl(e.target.value)}
+                  placeholder="https://github.com/Ti838/SKAVIA/releases/download/v1.0.1/skavia-latest.apk"
+                  className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg border outline-none focus:border-blue-500"
+                  style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+                />
+              </div>
+
+              <SakugaButton
+                type="button"
+                variant="primary"
+                onClick={handleInspectFromUrl}
+                disabled={inspectingUrl || submitting || !githubUrl.trim()}
+                className="px-4 py-2 text-xs font-semibold shrink-0"
+              >
+                {inspectingUrl ? 'Fetching & Verifying...' : 'Inspect & Verify APK'}
+              </SakugaButton>
+            </div>
+
+            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+              Expected package: <span className="font-mono-code">{signingPolicy?.expectedPackageName ?? 'com.example.skavia'}</span>
+              {signingPolicy?.pinnedSigningCertSha256
+                ? ` · Pinned Cert: ${shortFingerprint(signingPolicy.pinnedSigningCertSha256)}`
+                : ' · Signing pin will lock on first release'}
+            </p>
+          </div>
+        ) : (
+          <label
+            className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 cursor-pointer transition hover:border-blue-500"
+            style={{ backgroundColor: 'var(--bg-canvas)', borderColor: 'var(--border-subtle)' }}
+          >
+            <UploadCloud className="h-8 w-8 text-blue-600 mb-2" />
+            <p className="text-sm font-semibold">
+              {selectedFile ? selectedFile.name : 'Choose a signed SKAVIA .apk file to upload'}
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              Expected package: <span className="font-mono-code">{signingPolicy?.expectedPackageName ?? 'com.example.skavia'}</span>
+              {signingPolicy?.pinnedSigningCertSha256
+                ? ` · Pinned Cert: ${shortFingerprint(signingPolicy.pinnedSigningCertSha256)}`
+                : ' · Signing pin will lock on first release'}
+            </p>
+            <input
+              type="file"
+              accept=".apk,application/vnd.android.package-archive"
+              className="hidden"
+              disabled={uploading || submitting}
+              onChange={(e) => void handleFileSelectAndUpload(e.target.files?.[0] ?? null)}
+            />
+          </label>
+        )}
 
         {uploading && (
           <SakugaProgress
