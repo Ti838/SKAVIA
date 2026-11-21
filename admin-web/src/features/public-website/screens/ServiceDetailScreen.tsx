@@ -19,9 +19,9 @@ export function ServiceDetailScreen({ service }: { service: PublicServiceDetail 
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-12 pt-4 pb-16 sm:pt-6 sm:pb-24">
+        <div className="space-y-12 pb-16 sm:pb-24">
           {/* Breadcrumbs & Navigation */}
-          <section className="px-4 sm:px-6 lg:px-8">
+          <section className="px-4 sm:px-6 lg:px-8 pt-6">
             <div className="max-w-5xl mx-auto flex items-center gap-2 text-xs font-mono-code text-slate-500">
               <Link href="/" className="hover:text-[#003399] dark:hover:text-[#3898EC]">
                 Home
