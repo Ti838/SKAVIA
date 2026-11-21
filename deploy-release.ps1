@@ -1,4 +1,4 @@
-﻿# SKAVIA One-Click Release Automation Script
+# SKAVIA One-Click Release Automation Script
 # Usage: .\deploy-release.ps1
 
 Write-Host "==========================================" -ForegroundColor Cyan

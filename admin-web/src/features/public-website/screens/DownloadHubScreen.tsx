@@ -8,6 +8,7 @@ import {
   Copy,
   Cpu,
   Download,
+  FileText,
   ShieldCheck,
   Smartphone,
   Sparkles,
@@ -16,24 +17,44 @@ import { formatBytes } from '@/lib/formatters';
 import { useSakugaToast } from '@/components/sakuga';
 import { HeroAtmosphere } from '../components/HeroAtmosphere';
 import { PublicPageShell } from '../components/PublicPageShell';
-import { INITIAL_DISTRIBUTION } from '../public-site-data';
+import { INITIAL_DISTRIBUTION, type DistributionInfo } from '../public-site-data';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import { SmartphoneDeviceMockup } from '../SmartphoneDeviceMockup';
 import { DeviceCompatibilityCard } from '../components/DeviceCompatibilityCard';
 import { DownloadQrCode } from '../components/DownloadQrCode';
 
-export function DownloadHubScreen() {
+export function DownloadHubScreen({
+  initialDistribution = INITIAL_DISTRIBUTION,
+}: {
+  initialDistribution?: DistributionInfo;
+}) {
   const { showToast } = useSakugaToast();
   const detection = useDeviceDetection();
-  const dist = INITIAL_DISTRIBUTION.android;
+  const dist = (initialDistribution ?? INITIAL_DISTRIBUTION).android;
   const [copiedSha, setCopiedSha] = useState(false);
 
   const directApkUrl = dist.apkUrl ?? '/downloads/skavia-latest.apk';
   const [fullDownloadUrl, setFullDownloadUrl] = useState(`https://skavia-bd.vercel.app${directApkUrl}`);
 
+  const versionLabel = dist.version ? `v${dist.version}` : 'v1.0.1';
+  const buildLabel = dist.buildNumber ? `#${dist.buildNumber}` : '#2';
+  const apkSizeLabel =
+    dist.fileSizeBytes && dist.fileSizeBytes > 0
+      ? formatBytes(dist.fileSizeBytes, 1)
+      : '66.5 MB';
+  const publishedDateLabel = dist.publishedAt
+    ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(
+        new Date(dist.publishedAt)
+      )
+    : 'Latest Production';
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setFullDownloadUrl(`${window.location.origin}${directApkUrl}`);
+      if (directApkUrl.startsWith('http://') || directApkUrl.startsWith('https://')) {
+        setFullDownloadUrl(directApkUrl);
+      } else {
+        setFullDownloadUrl(`${window.location.origin}${directApkUrl}`);
+      }
     }
   }, [directApkUrl]);
 
@@ -116,13 +137,18 @@ export function DownloadHubScreen() {
                     <div className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        Universal Build (Recommended for All Android Phones)
+                        Universal Build (All Android Phones)
                       </span>
                     </div>
 
-                    <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
-                      {formatBytes(dist.fileSizeBytes ?? 69726983)} &middot; Complete Release
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                        {versionLabel} (Build {buildLabel})
+                      </span>
+                      <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                        {apkSizeLabel}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="relative z-10 space-y-1.5">
@@ -144,7 +170,7 @@ export function DownloadHubScreen() {
                       className="sakuga-spring-tap flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all text-center active:scale-[0.98]"
                     >
                       <Download className="h-4 w-4 shrink-0" />
-                      <span>Download Universal APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
+                      <span>Download Universal APK ({apkSizeLabel})</span>
                       <ArrowRight className="h-4 w-4 shrink-0" />
                     </a>
 
@@ -175,6 +201,26 @@ export function DownloadHubScreen() {
                   </div>
                 </div>
 
+                {/* Live Admin Release Notes & What's New Card */}
+                {dist.releaseNotes && (
+                  <div className={`p-5 sm:p-6 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-[#3898EC]" />
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                          What&apos;s New in {versionLabel}
+                        </span>
+                      </div>
+                      <span className="text-[11px] font-mono text-neutral-400">
+                        Released {publishedDateLabel}
+                      </span>
+                    </div>
+                    <div className="p-3.5 rounded-xl border border-neutral-200/70 dark:border-neutral-800/70 bg-neutral-50/50 dark:bg-neutral-900/40 text-xs sm:text-sm text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed font-sans">
+                      {dist.releaseNotes}
+                    </div>
+                  </div>
+                )}
+
                 {/* Architecture-Specific Builds (ARM64 & ARMv7) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* ARM64-v8a */}
@@ -184,7 +230,7 @@ export function DownloadHubScreen() {
                         <Cpu className="h-3.5 w-3.5 text-[#3898EC]" />
                         <span>ARM64-v8a Only</span>
                       </span>
-                      <span className="text-[11px] font-mono text-neutral-400">22.6 MB</span>
+                      <span className="text-[11px] font-mono text-neutral-400">24.5 MB</span>
                     </div>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
                       Optimized specifically for 64-bit phones with smaller download size.
@@ -270,7 +316,7 @@ export function DownloadHubScreen() {
                       <span>Live Interactive Preview</span>
                     </span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
-                      v1.0.0
+                      {versionLabel}
                     </span>
                   </div>
 
