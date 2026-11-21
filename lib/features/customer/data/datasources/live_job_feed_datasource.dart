@@ -57,7 +57,16 @@ class LiveJobFeedDataSource {
         final title = isMarkedUpdate
             ? rawTitle.substring(updatePrefix.length).trim()
             : rawTitle;
-        final desc = row['description']?.toString() ?? '';
+        final rawDesc = row['description']?.toString() ?? '';
+        String? mediaUrl;
+        var desc = rawDesc;
+        if (rawDesc.startsWith('[img]')) {
+          final closeIdx = rawDesc.indexOf('[/img]');
+          if (closeIdx != -1) {
+            mediaUrl = rawDesc.substring(5, closeIdx).trim();
+            desc = rawDesc.substring(closeIdx + 6).trim();
+          }
+        }
         final loc = row['location']?.toString() ?? '';
         final budget = (row['budget'] as num?)?.toDouble() ?? 0.0;
         final catId = row['category_id']?.toString() ?? '';
@@ -102,6 +111,7 @@ class LiveJobFeedDataSource {
             isSavedByMe: savedIds.contains(id),
             commentsCount: 0,
             submittedBy: row['submitted_by']?.toString(),
+            mediaUrl: mediaUrl,
           ),
         );
       }

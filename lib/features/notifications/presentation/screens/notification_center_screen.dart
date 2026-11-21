@@ -68,6 +68,17 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                   tooltip: l10n.notificationsMarkAllRead,
                   onPressed: () => _controller.markAllAsRead(),
                 ),
+              if (all.isNotEmpty)
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_sweep_outlined,
+                    color: tokens.brandAccent,
+                  ),
+                  tooltip: context.isBengali
+                      ? 'সব মুছে ফেলুন'
+                      : 'Clear All Notifications',
+                  onPressed: () => _showClearAllConfirm(context),
+                ),
             ],
           ),
           body: SafeArea(
@@ -338,6 +349,19 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                             ),
                           ),
                         ],
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: tokens.mutedText,
+                          ),
+                          tooltip: context.isBengali ? 'মুছে ফেলুন' : 'Delete',
+                          onPressed: () =>
+                              _controller.deleteNotification(notif.id),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -360,6 +384,37 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showClearAllConfirm(BuildContext context) {
+    final isBn = context.isBengali;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(isBn ? 'সব নোটিফিকেশন মুছবেন?' : 'Clear All Notifications?'),
+        content: Text(
+          isBn
+              ? 'আপনার সমস্ত সংরক্ষিত নোটিফিকেশন স্থায়ীভাবে মুছে ফেলা হবে।'
+              : 'All your notification history will be permanently deleted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(isBn ? 'বাতিল' : 'Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.errorRed,
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _controller.deleteAll();
+            },
+            child: Text(isBn ? 'সব মুছুন' : 'Clear All'),
+          ),
+        ],
       ),
     );
   }
