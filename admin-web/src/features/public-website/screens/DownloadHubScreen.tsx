@@ -2,10 +2,15 @@
 
 import { useState } from 'react';
 import {
+  ArrowRight,
+  BadgeCheck,
   Check,
   Copy,
+  Cpu,
   Download,
   ShieldCheck,
+  Smartphone,
+  Sparkles,
 } from 'lucide-react';
 import { formatBytes } from '@/lib/formatters';
 import { useSakugaToast } from '@/components/sakuga';
@@ -15,6 +20,7 @@ import { INITIAL_DISTRIBUTION } from '../public-site-data';
 import { useDeviceDetection } from '../hooks/useDeviceDetection';
 import { SmartphoneDeviceMockup } from '../SmartphoneDeviceMockup';
 import { DeviceCompatibilityCard } from '../components/DeviceCompatibilityCard';
+import { DownloadQrCode } from '../components/DownloadQrCode';
 
 export function DownloadHubScreen() {
   const { showToast } = useSakugaToast();
@@ -22,186 +28,273 @@ export function DownloadHubScreen() {
   const dist = INITIAL_DISTRIBUTION.android;
   const [copiedSha, setCopiedSha] = useState(false);
 
+  const directApkUrl = dist.apkUrl ?? '/downloads/skavia-latest.apk';
+  const fullDownloadUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}${directApkUrl}`
+      : `https://skavia-bd.vercel.app${directApkUrl}`;
+
   const handleCopySha = (hash: string) => {
     try {
       navigator.clipboard.writeText(hash);
       setCopiedSha(true);
       showToast('SHA-256 hash copied to clipboard', 'success');
       setTimeout(() => setCopiedSha(false), 2500);
-    } catch {}
+    } catch {
+      showToast('Unable to copy checksum', 'info');
+    }
   };
 
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-16 pt-4 pb-16 sm:pt-6 sm:pb-24">
-          {/* Hero */}
-          <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <div className="space-y-16 pb-16 sm:pb-24">
+          {/* Hero Section (Starts seamlessly right below the header) */}
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
-            <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
-              <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
-                Download the Official SKAVIA Application
+            <div className="max-w-4xl mx-auto text-center space-y-5 relative z-10">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>OFFICIAL PRODUCTION RELEASE &middot; v{dist.version ?? '1.0.1'}</span>
+              </div>
+
+              <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
+                Download SKAVIA for Android
               </h1>
 
-              <p className="mt-4 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
-                Single unified app for Individual Customers, Enterprise Businesses, and Skilled Specialists with live map dispatch, arrival OTP handshakes, and escrow protection.
+              <p className="mt-3 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
+                Single unified app for Individual Clients, Enterprise Businesses, and Skilled Specialists. 
+                Features real-time Haversine dispatch, 4-digit arrival OTP handshakes, and atomic escrow release.
               </p>
+
+              {/* Quick Trust Highlights */}
+              <div className="pt-2 flex flex-wrap items-center justify-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xs">
+                  <ShieldCheck className="h-3.5 w-3.5 text-teal-500" />
+                  <span>100% Verified Signed Build</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xs">
+                  <BadgeCheck className="h-3.5 w-3.5 text-blue-500" />
+                  <span>Zero Ads &amp; Zero Tracking</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/60 dark:bg-neutral-900/60 backdrop-blur-xs">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  <span>Android 7.0 to 15+</span>
+                </span>
+              </div>
             </div>
           </section>
 
-          {/* Hardware Detection & Download Cards */}
+          {/* Main Action Hub: Primary Download & QR Code Section */}
           <section className="px-4 sm:px-6 lg:px-8">
-            <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Download Options & Device Telemetry (7 cols) */}
-              <div className="lg:col-span-7 space-y-6">
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Left Column: Primary Universal Download Card (8 cols) */}
+              <div className="lg:col-span-8 space-y-6">
                 {/* Live Device Hardware Telemetry Card */}
                 <DeviceCompatibilityCard
                   telemetry={detection}
                   t={t}
                 />
 
-                {/* Primary Download Option: ARM64-v8a */}
-                <div
-                  className={`rounded-3xl border p-6 sm:p-8 space-y-5 relative overflow-hidden transition-all ${t.railBorder} ${t.cardBg} hover:border-[#15E7CA]/40 shadow-xl`}
-                >
-                  <div className="flex items-center justify-between flex-wrap gap-2">
+                {/* Main Hero Download Card */}
+                <div className={`rounded-3xl border p-6 sm:p-8 space-y-6 relative overflow-hidden transition-all ${t.railBorder} ${t.cardBg} shadow-2xl`}>
+                  {/* Glowing Edge Gradient Accent */}
+                  <div
+                    className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none blur-3xl opacity-20 dark:opacity-30"
+                    style={{ background: 'radial-gradient(circle, #3898EC, #15E7CA)' }}
+                    aria-hidden="true"
+                  />
+
+                  <div className="flex items-center justify-between flex-wrap gap-2 relative z-10">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-xs font-mono-code font-bold uppercase tracking-wider text-emerald-500">
-                        Recommended for Modern Phones
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                        Universal Build (Recommended for All Android Phones)
                       </span>
                     </div>
 
-                    <span className="text-xs font-mono-code text-slate-400">
-                      {formatBytes(dist.fileSizeBytes ?? 23668477)} &middot; Android 7.0+
+                    <span className="text-xs font-mono text-neutral-500 dark:text-neutral-400">
+                      {formatBytes(dist.fileSizeBytes ?? 69726983)} &middot; Complete Release
                     </span>
                   </div>
 
-                  <div>
-                    <h3 className={`text-xl sm:text-2xl font-bold ${t.textPrimary}`}>
-                      Universal Production Build (All Devices)
-                    </h3>
-                    <p className={`text-xs sm:text-sm mt-1 leading-relaxed ${t.textSecondary}`}>
-                      Complete universal package compatible with all Android devices (ARM64, ARMv7, x86_64).
+                  <div className="relative z-10 space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
+                      SKAVIA Universal Production APK
+                    </h2>
+                    <p className="text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                      Pre-compiled native binaries supporting all modern and legacy Android architectures 
+                      (ARM64-v8a, armeabi-v7a, and x86_64). One download works on every smartphone and tablet.
                     </p>
                   </div>
 
-                  <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
+                  {/* Primary Download Action Bar */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10">
                     <a
-                      href={dist.apkUrl ?? '/downloads/skavia-latest.apk'}
+                      href={directApkUrl}
                       download="skavia-latest.apk"
-                      className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#003399] hover:bg-[#002266] text-white text-xs sm:text-sm font-semibold shadow-lg shadow-blue-900/25 transition-all hover:scale-[1.01]"
+                      className="flex-1 inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] text-center"
                     >
-                      <Download className="h-4 w-4" />
-                      <span>Download Official APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
+                      <Download className="h-5 w-5 shrink-0" />
+                      <span>Download Universal APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
+                      <ArrowRight className="h-4 w-4 shrink-0" />
                     </a>
 
                     <button
                       type="button"
                       onClick={() => handleCopySha(dist.sha256Checksum ?? '')}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-2xl border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-mono-code transition"
-                      style={{ color: 'var(--text-secondary)' }}
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-4 rounded-2xl border border-neutral-300 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-mono transition text-neutral-700 dark:text-neutral-300"
                       title="Copy SHA-256 Checksum"
                     >
-                      {copiedSha ? <Check className="h-3.5 w-3.5 text-teal-400" /> : <Copy className="h-3.5 w-3.5" />}
-                      <span>SHA-256</span>
+                      {copiedSha ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                      <span>{copiedSha ? 'SHA-256 Copied' : 'Copy Checksum'}</span>
                     </button>
+                  </div>
+
+                  {/* Cryptographic SHA-256 Checksum Block */}
+                  <div className="pt-2 relative z-10 space-y-2">
+                    <div className="flex items-center justify-between text-xs text-neutral-500">
+                      <span className="font-mono uppercase tracking-wider text-[11px] font-semibold">
+                        SHA-256 Fingerprint
+                      </span>
+                      <span className="font-mono text-[10px]">ECDSA SHA256withRSA Signed</span>
+                    </div>
+                    <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 overflow-x-auto">
+                      <code className="text-[11px] font-mono text-emerald-600 dark:text-teal-400 break-all select-all">
+                        {dist.sha256Checksum}
+                      </code>
+                    </div>
                   </div>
                 </div>
 
-                {/* Secondary Option: ARMv7 (32-Bit Legacy) */}
-                <div
-                  className={`rounded-3xl border p-6 space-y-4 transition-all ${t.railBorder} ${t.cardBg}`}
-                >
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <span className="text-xs font-mono-code uppercase tracking-wider text-slate-400 font-semibold">
-                      Legacy Compatible
-                    </span>
-                    <span className="text-xs font-mono-code text-slate-400">
-                      {formatBytes(dist.armv7SizeBytes ?? 21257429)} &middot; armeabi-v7a
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className={`text-lg font-bold ${t.textPrimary}`}>
-                      ARMv7 (32-Bit Universal Build)
-                    </h3>
-                    <p className={`text-xs mt-1 leading-relaxed ${t.textSecondary}`}>
-                      Designed specifically for budget 32-bit Android phones and legacy field tablets.
+                {/* Architecture-Specific Builds (ARM64 & ARMv7) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* ARM64-v8a */}
+                  <div className={`p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                        <Cpu className="h-3.5 w-3.5 text-[#3898EC]" />
+                        <span>ARM64-v8a Only</span>
+                      </span>
+                      <span className="text-[11px] font-mono text-neutral-400">22.6 MB</span>
+                    </div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                      Optimized specifically for 64-bit phones with smaller download size.
                     </p>
+                    <a
+                      href="/downloads/skavia-v1.0.0-arm64-v8a.apk"
+                      download="skavia-v1.0.0-arm64-v8a.apk"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      <span>Download ARM64 APK</span>
+                    </a>
                   </div>
 
-                  <div>
+                  {/* ARMv7-a */}
+                  <div className={`p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
+                        <Smartphone className="h-3.5 w-3.5 text-[#15E7CA]" />
+                        <span>ARMv7 32-Bit</span>
+                      </span>
+                      <span className="text-[11px] font-mono text-neutral-400">20.3 MB</span>
+                    </div>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                      Legacy build for older 32-bit Android devices and budget tablets.
+                    </p>
                     <a
                       href={dist.armv7Url ?? '/downloads/skavia-v1.0.0-armeabi-v7a.apk'}
                       download="skavia-v1.0.0-armeabi-v7a.apk"
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold transition"
-                      style={{ color: 'var(--text-primary)' }}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
                     >
                       <Download className="h-3.5 w-3.5" />
-                      <span>Download ARMv7 APK (20.3 MB)</span>
+                      <span>Download ARMv7 APK</span>
                     </a>
                   </div>
                 </div>
-
-                {/* Cryptographic SHA-256 Verification Guide */}
-                <div className={`rounded-3xl border p-6 space-y-4 ${t.railBorder} ${t.cardBg}`}>
-                  <div className="flex items-center gap-2 text-xs font-mono-code text-[#15E7CA]">
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>CRYPTOGRAPHIC INTEGRITY</span>
-                  </div>
-
-                  <h3 className={`font-bold text-sm ${t.textPrimary}`}>
-                    Official Verified SHA-256 Checksum
-                  </h3>
-
-                  <div className={`p-3 rounded-xl border overflow-x-auto ${t.railBorder} ${t.surfaceBg}`}>
-                    <code className="text-[11px] font-mono-code text-teal-400 break-all select-all">
-                      {dist.sha256Checksum}
-                    </code>
-                  </div>
-
-                  <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
-                    Verify in terminal: certutil -hashfile skavia-v1.0.0-arm64-v8a.apk SHA256
-                  </p>
-                </div>
               </div>
 
-              {/* Right Column: Realistic Device Mockup Preview (5 cols) */}
-              <div className="lg:col-span-5 space-y-6">
-                <div
-                  className={`rounded-3xl border p-6 sm:p-8 flex flex-col items-center text-center space-y-4 ${t.railBorder} ${t.cardBg} shadow-2xl`}
-                >
-                  <span className="text-[11px] font-mono-code uppercase tracking-wider text-slate-400 font-semibold">
-                    Live App Experience
+              {/* Right Column: Scan to Download QR Code & Interactive Phone Preview (4 cols) */}
+              <div className="lg:col-span-4 space-y-6">
+                {/* Instant Scan-to-Download QR Code */}
+                <DownloadQrCode url={fullDownloadUrl} />
+
+                {/* Visual Phone Mockup */}
+                <div className={`rounded-3xl border p-6 flex flex-col items-center text-center space-y-4 ${t.railBorder} ${t.cardBg} shadow-xl`}>
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-semibold">
+                    Interactive Application Preview
                   </span>
 
                   <SmartphoneDeviceMockup t={t} />
 
-                  <div className="space-y-1 pt-2">
-                    <p className={`font-bold text-sm ${t.textPrimary}`}>
-                      Dual Client &amp; Specialist Modes
+                  <div className="space-y-1 pt-1">
+                    <p className="font-bold text-xs text-neutral-900 dark:text-white">
+                      Unified Client &amp; Specialist Workspace
                     </p>
-                    <p className={`text-xs ${t.textSecondary}`}>
-                      Seamlessly toggle between Client booking and Worker dispatch within one app.
+                    <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                      Toggle seamlessly between booking services and managing active trade assignments.
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
 
-                {/* Android Installation Steps */}
-                <div className={`rounded-3xl border p-6 space-y-3 ${t.railBorder} ${t.cardBg}`}>
-                  <h3 className={`font-bold text-sm ${t.textPrimary}`}>
-                    How to Install on Android
-                  </h3>
+          {/* 4-Step Sideload Installation Guide */}
+          <section className="px-4 sm:px-6 lg:px-8">
+            <div className="max-w-6xl mx-auto space-y-8">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <span className="text-xs font-mono uppercase tracking-wider text-[#003399] dark:text-[#3898EC] font-semibold">
+                  Simple 4-Step Setup
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-white tracking-tight">
+                  How to Install SKAVIA on Android
+                </h2>
+                <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+                  Because SKAVIA distributes directly without third-party middleman app stores, follow these standard steps:
+                </p>
+              </div>
 
-                  <ol className={`space-y-2 text-xs leading-relaxed list-decimal list-inside ${t.textSecondary}`}>
-                    <li>Download the APK file onto your phone.</li>
-                    <li>Open the downloaded file from notifications.</li>
-                    <li>Allow &quot;Install unknown apps&quot; if prompted by Android.</li>
-                    <li>Complete installation and sign in with your phone number.</li>
-                  </ol>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  {
+                    step: '01',
+                    title: 'Download the APK',
+                    desc: 'Tap "Download Universal APK" on this page or scan the QR code from your desktop screen.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Open Downloaded File',
+                    desc: 'When download completes, tap the notification or locate "skavia-latest.apk" in your Files / Downloads app.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Allow Installation',
+                    desc: 'If Android displays "Install unknown apps", tap Settings and switch on "Allow from this source" for your browser.',
+                  },
+                  {
+                    step: '04',
+                    title: 'Launch & Verify',
+                    desc: 'Tap Install. Launch SKAVIA and sign in instantly using Google, Phone OTP, or Email with zero delays.',
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.step}
+                    className={`p-6 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3 relative overflow-hidden`}
+                  >
+                    <span className="text-3xl font-extrabold font-mono text-neutral-200 dark:text-neutral-800">
+                      {item.step}
+                    </span>
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+                      {item.desc}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>

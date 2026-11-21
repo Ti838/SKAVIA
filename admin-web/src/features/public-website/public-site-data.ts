@@ -365,6 +365,12 @@ export function getWorkerOnboardingSteps(isBengali = false): Array<{
         ? 'অনুমোদনের পর একক কাজের অর্ডার গ্রহণ করুন, দলগত প্রকল্পে অংশ নিন বা টিম লিডার পদে পদোন্নতি পান।'
         : 'Once approved, accept individual jobs, collaborate inside teams, or advance to Team Leader.',
     },
+    {
+      step: isBengali ? 'ধাপ ৪ · ৯০% সরাসরি আয় ও সাপ্তাহিক পেমেন্ট' : 'Step 4 · 90% Direct Payout & Settlements',
+      detail: isBengali
+        ? 'প্রতিটি কাজের মোট মূল্যের ৯০% সরাসরি আপনার অ্যাকাউন্টে জমা হবে এবং সাপ্তাহিক নিরাপদ ব্যাংক বা এমএফএস উইথড্রয়াল পাবেন।'
+        : 'Earn 90% direct payout on every customer booking with guaranteed weekly bank or MFS settlements upon completion.',
+    },
   ];
 }
 

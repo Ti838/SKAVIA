@@ -6,16 +6,9 @@ import {
   ArrowRight,
   Building2,
   CheckCircle2,
-  Cpu,
-  HardHat,
   Home,
-  KeyRound,
   Play,
-  Search,
-  ShieldCheck,
   Smartphone,
-  Sprout,
-  Zap,
 } from 'lucide-react';
 import { CinematicAtmosphereCanvas } from './CinematicAtmosphereCanvas';
 import { CinematicStoryModal } from './CinematicStoryModal';
@@ -28,108 +21,22 @@ import {
   type WorkflowTab,
 } from './public-site-data';
 
-interface ScopingSuggestion {
-  query: string;
-  branchCode: string;
-  branchName: string;
-  price: string;
-  sla: string;
-  icon: typeof Zap;
-  accent: string;
-  description: string;
-  targetHref: string;
-}
-
-const SCOPING_SUGGESTIONS: ScopingSuggestion[] = [
-  {
-    query: 'AC Cooling & Jet Wash Servicing',
-    branchCode: 'TECH',
-    branchName: 'SKAVIA Technical',
-    price: '৳ 1,200 – ৳ 2,500',
-    sla: 'Specialist dispatched in 45m',
-    icon: Zap,
-    accent: '#3898EC',
-    description: 'High-pressure chemical jet wash, amperage test, and refrigerant leak detection.',
-    targetHref: '/services-catalog/inverter-ac-jet-wash',
-  },
-  {
-    query: 'Sanitary Plumbing & Pipe Leakage',
-    branchCode: 'HOME',
-    branchName: 'SKAVIA Home',
-    price: '৳ 600 – ৳ 1,500',
-    sla: 'Urgent doorstep response available',
-    icon: Home,
-    accent: '#15E7CA',
-    description: 'Concealed leak localization, pressure pump balancing, and PPR pipe fusion.',
-    targetHref: '/branches/home',
-  },
-  {
-    query: 'Main DB Board & Electrical Setup',
-    branchCode: 'TECH',
-    branchName: 'SKAVIA Technical',
-    price: '৳ 1,500 – ৳ 3,200',
-    sla: 'Level-3 certified wireman dispatch',
-    icon: Zap,
-    accent: '#3898EC',
-    description: 'RCCB earth leakage breaker tuning, 3-phase balancing, and thermal thermography.',
-    targetHref: '/services-catalog/main-db-board-setup',
-  },
-  {
-    query: 'LAN Cabling & PoE IP Surveillance',
-    branchCode: 'DIGI',
-    branchName: 'SKAVIA Digital',
-    price: '৳ 1,800 – ৳ 4,000',
-    sla: 'Diagnostic hardware scan included',
-    icon: Cpu,
-    accent: '#8B5CF6',
-    description: 'Structured Cat6 ethernet punchdown, PoE NVR setup, and WiFi mesh calibration.',
-    targetHref: '/services-catalog',
-  },
-  {
-    query: 'Commercial Turnkey Office Fit-Out',
-    branchCode: 'CONS',
-    branchName: 'SKAVIA Construction',
-    price: 'Milestone Escrow Contract',
-    sla: 'Supervised by on-site Team Leader',
-    icon: HardHat,
-    accent: '#F97316',
-    description: 'Acoustic gypsum partitions, aluminum-glass walls, and commercial vinyl finishing.',
-    targetHref: '/business',
-  },
-  {
-    query: 'Irrigation Pump & Agri-Automation',
-    branchCode: 'AGRI',
-    branchName: 'SKAVIA Agriculture',
-    price: '৳ 1,500 – ৳ 3,500',
-    sla: 'Field-tested electromechanic dispatch',
-    icon: Sprout,
-    accent: '#22C55E',
-    description: 'Drip solenoid valve wiring, submersible pump priming, and sensor tuning.',
-    targetHref: '/services-catalog',
-  },
-];
-
 export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(0);
   const [isStoryOpen, setIsStoryOpen] = useState(false);
 
-  const filteredSuggestions = searchQuery.trim()
-    ? SCOPING_SUGGESTIONS.filter((s) =>
-        s.query.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.branchName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : SCOPING_SUGGESTIONS;
-
-  const activeScoping =
-    filteredSuggestions[activeSuggestionIdx] ??
-    filteredSuggestions[0] ??
-    SCOPING_SUGGESTIONS[0]!;
-  const ActiveIcon = activeScoping.icon;
+  const branches = [
+    { code: 'HOME', name: 'SKAVIA Home', href: '/branches/home' },
+    { code: 'TECH', name: 'SKAVIA Technical', href: '/branches/technical' },
+    { code: 'AGRI', name: 'SKAVIA Agriculture', href: '/services-catalog' },
+    { code: 'LOGI', name: 'SKAVIA Logistics', href: '/services-catalog' },
+    { code: 'DIGI', name: 'SKAVIA Digital', href: '/services-catalog' },
+    { code: 'BIZ', name: 'SKAVIA Business', href: '/business' },
+    { code: 'CONS', name: 'SKAVIA Construction', href: '/services-catalog' },
+    { code: 'EVNT', name: 'SKAVIA Events', href: '/services-catalog' },
+  ];
 
   return (
-    <section className="relative overflow-hidden pt-4 pb-16 sm:pt-6 sm:pb-24 transition-colors">
+    <section className="relative overflow-hidden pt-8 pb-16 sm:pt-12 sm:pb-24 transition-colors">
       {/* Seamless Multi-Layered Hero Atmosphere (Zero-Banding Full-Bleed Lighting & Precision Dot Grid) */}
       <HeroAtmosphere dark={theme.dark} variant="hero" />
       <CinematicAtmosphereCanvas dark={theme.dark} />
@@ -150,35 +57,11 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
           and guarantees quality through a mandatory 4-digit arrival OTP handshake and protected escrow.
         </p>
 
-        {/* Taskrabbit-style Interactive Requirement Search Bar */}
-        <div className="mt-10 max-w-2xl mx-auto">
-          <div className="relative flex items-center rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#0B1120] shadow-2xl p-2 transition-all focus-within:ring-2 focus-within:ring-[#3898EC] focus-within:border-transparent">
-            <Search className="h-5 w-5 text-slate-400 ml-3 shrink-0" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setActiveSuggestionIdx(0);
-              }}
-              placeholder="What skilled trade do you need? (e.g. AC Repair, Electrical, Plumbing, Fit-Out)"
-              className="w-full bg-transparent px-3 py-2 text-xs sm:text-sm text-slate-900 dark:text-white outline-none placeholder:text-slate-400"
-            />
-            <Link
-              href={searchQuery ? `/services-catalog?q=${encodeURIComponent(searchQuery)}` : '/services-catalog'}
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-xl bg-[#003399] hover:bg-[#002266] px-5 py-2.5 text-xs font-bold text-white transition-all shrink-0"
-            >
-              <span>Explore</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </div>
-
         {/* Action CTAs */}
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/download"
-            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3 text-xs sm:text-sm font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-xs sm:text-sm font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Smartphone className="h-4 w-4" />
             <span>Download Official Mobile App</span>
@@ -188,7 +71,7 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
           <button
             type="button"
             onClick={() => setIsStoryOpen(true)}
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
           >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Play className="h-3 w-3 fill-current ml-0.5" />
@@ -198,10 +81,31 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
 
           <Link
             href="/services-catalog"
-            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
+            className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
           >
-            <span>View 8 Specialization Branches</span>
+            <span>Explore Services Catalog</span>
           </Link>
+        </div>
+
+        {/* Quick Branch Access Strip */}
+        <div className="mt-12 pt-8 border-t border-neutral-200/60 dark:border-white/10 max-w-4xl mx-auto">
+          <p className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-4 font-semibold">
+            Direct Access to 8 Internal Specialization Branches
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {branches.map((b) => (
+              <Link
+                key={b.code}
+                href={b.href}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/70 text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white hover:border-neutral-400 dark:hover:border-neutral-600 transition-all backdrop-blur-xs"
+              >
+                <span className="font-mono text-[10px] font-bold text-[#003399] dark:text-[#3898EC]">
+                  {b.code}
+                </span>
+                <span>{b.name}</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Interactive Story Modal */}
@@ -212,110 +116,7 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
           apkUrl="/download"
         />
 
-        {/* Interactive Requirement Scoping Engine */}
-        <div className="mt-14 max-w-3xl mx-auto text-left">
-          <div className="rounded-3xl border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-[#0B1120] p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-5 transition-all">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-4">
-              <div>
-                <p className="text-[11px] font-mono-code uppercase tracking-wider text-[#003399] dark:text-[#3898EC] font-bold">
-                  Interactive Service Blueprint
-                </p>
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                  Select a trade requirement to preview operational delivery:
-                </h3>
-              </div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live Estimator</span>
-              </span>
-            </div>
 
-            {/* Quick Suggestion Chips */}
-            <div className="flex flex-wrap gap-2">
-              {filteredSuggestions.map((item, idx) => {
-                const isSelected = activeSuggestionIdx === idx;
-                return (
-                  <button
-                    key={item.query}
-                    type="button"
-                    onClick={() => setActiveSuggestionIdx(idx)}
-                    className={`rounded-full px-3.5 py-1.5 text-xs transition font-semibold flex items-center gap-1.5 ${
-                      isSelected
-                        ? 'bg-[#003399] text-white shadow-md'
-                        : 'border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-600 bg-slate-50 dark:bg-slate-900/60'
-                    }`}
-                  >
-                    <span>{item.query}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Matched Delivery Blueprint Preview */}
-            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 p-5 space-y-4 transition-all">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="h-10 w-10 rounded-xl flex items-center justify-center text-white shadow-sm"
-                    style={{ backgroundColor: activeScoping.accent }}
-                  >
-                    <ActiveIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-slate-900 dark:text-white">
-                        {activeScoping.branchName}
-                      </span>
-                      <span className="text-[11px] font-mono-code px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold">
-                        {activeScoping.branchCode}
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {activeScoping.sla}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <p className="text-xs font-mono-code text-slate-500">Base Estimate:</p>
-                  <p className="text-base font-extrabold text-[#003399] dark:text-[#3898EC]">
-                    {activeScoping.price}
-                  </p>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                {activeScoping.description}
-              </p>
-
-              {/* Trust Signals */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-3 border-t border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                  <KeyRound className="h-4 w-4 text-blue-600 shrink-0" />
-                  <span>4-digit physical arrival handshake OTP</span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                  <ShieldCheck className="h-4 w-4 text-teal-600 shrink-0" />
-                  <span>NID biometric background-checked specialist</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Direct Action Link */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-              <p className="text-xs text-slate-500">
-                Direct dispatch with 90% specialist revenue retention and zero broker cuts.
-              </p>
-              <Link
-                href={activeScoping.targetHref}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#003399] hover:bg-[#002266] px-5 py-2.5 text-xs font-bold text-white transition shadow-md"
-              >
-                <span>View Trade Protocol</span>
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
 
         {/* Linear/Stripe-style Trust Metric Strip */}
         <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800/80 grid grid-cols-2 lg:grid-cols-4 gap-6 text-center">

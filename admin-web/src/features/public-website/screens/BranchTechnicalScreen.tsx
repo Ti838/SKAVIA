@@ -19,9 +19,9 @@ export function BranchTechnicalScreen() {
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-16 pt-4 pb-16 sm:pt-6 sm:pb-24">
+        <div className="space-y-16 pb-16 sm:pb-24">
           {/* Hero */}
-          <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
             <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">

@@ -37,9 +37,9 @@ export function ServicesCatalogScreen() {
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-12 pt-4 pb-16 sm:pt-6 sm:pb-24">
+        <div className="space-y-12 pb-16 sm:pb-24">
           {/* Header */}
-          <section className="relative px-4 sm:px-6 lg:px-8 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
             <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
               <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
