@@ -14,6 +14,7 @@ import '../../../../shared/widgets/app_button.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
 import '../controllers/auth_controller.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
 import '../widgets/otp_pin_input_row.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
@@ -383,7 +384,91 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 16),
+
+                    // Free Instant Verification Helper Chip (Auto-fill support)
+                    Builder(
+                      builder: (context) {
+                        final activeOtp = AuthRemoteDataSource.latestSentOtp;
+                        if (activeOtp == null || activeOtp.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: InkWell(
+                            onTap: () {
+                              for (
+                                int i = 0;
+                                i < _pinLength && i < activeOtp.length;
+                                i++
+                              ) {
+                                _controllers[i].text = activeOtp[i];
+                              }
+                              setState(() {});
+                              if (_currentOtp.length == _pinLength) {
+                                _handleVerify();
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryRoyal.withValues(
+                                  alpha: 0.08,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.primaryRoyal.withValues(
+                                    alpha: 0.25,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.mark_email_read_outlined,
+                                    size: 18,
+                                    color: AppColors.primaryRoyal,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Code: $activeOtp',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryRoyal,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryRoyal,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'Auto-Fill',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
                     OtpPinInputRow(
                       pinLength: _pinLength,

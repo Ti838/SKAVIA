@@ -9,7 +9,6 @@ import type { PublicKeyCredentialRequestOptionsJSON } from '@simplewebauthn/serv
 import type { MultiFactorResolver } from 'firebase/auth';
 import {
   ArrowLeft,
-  Building2,
   Eye,
   EyeOff,
   Fingerprint,
@@ -44,7 +43,6 @@ function LoginPortalContent() {
   const firebaseConfigured = isFirebaseWebConfigured();
 
   const [surfaceView, setSurfaceView] = useState<SurfaceView>('admin');
-  const [isSingleHost, setIsSingleHost] = useState(false);
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -114,15 +112,7 @@ function LoginPortalContent() {
   useEffect(() => {
     const host = window.location.hostname.toLowerCase();
     const qPortal = searchParams.get('portal')?.toLowerCase();
-    const explicitSuperHost = (process.env.NEXT_PUBLIC_SUPERADMIN_HOST || '').trim().toLowerCase();
     const explicitAdminHost = (process.env.NEXT_PUBLIC_ADMIN_HOST || '').trim().toLowerCase();
-    const isDedicatedSurface =
-      host.startsWith('superadmin.') ||
-      host.startsWith('admin.') ||
-      (Boolean(explicitSuperHost) && host === explicitSuperHost) ||
-      (Boolean(explicitAdminHost) && host === explicitAdminHost);
-    setIsSingleHost(!isDedicatedSurface);
-
     if (
       host.startsWith('admin.') ||
       (Boolean(explicitAdminHost) && host === explicitAdminHost) ||
@@ -451,76 +441,32 @@ function LoginPortalContent() {
               <div className="absolute inset-0 rounded-2xl bg-blue-500/15 blur-sm -z-10 animate-pulse" />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div
                 className="inline-flex items-center gap-2 rounded-full px-3 py-0.5 text-[11px] font-mono-code font-semibold border"
                 style={{
-                  borderColor: isSuperAdminView ? 'rgba(21, 231, 202, 0.35)' : 'rgba(0, 51, 153, 0.25)',
+                  borderColor: 'rgba(0, 51, 153, 0.25)',
                   backgroundColor: 'var(--bg-surface-subtle)',
-                  color: isSuperAdminView ? '#15E7CA' : '#003399',
+                  color: '#003399',
                 }}
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span>
-                  {isSuperAdminView
-                    ? (isBengali ? 'রুট গভর্ন্যান্স গেটওয়ে' : 'Root Platform Governance')
-                    : (isBengali ? 'অপারেশনস ও ব্রাঞ্চ গেটওয়ে' : 'Operations & Branch Gateway')}
+                  {isBengali ? 'এক্সিকিউটিভ অথরাইজেশন গেটওয়ে' : 'Executive Platform Gateway'}
                 </span>
               </div>
 
               <h1 className="font-heading text-2xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                {isSuperAdminView
-                  ? (isBengali ? 'স্ক্যাভিয়া সুপার এডমিন' : 'SKAVIA Super Admin')
-                  : (isBengali ? 'স্ক্যাভিয়া এডমিন পোর্টাল' : 'SKAVIA Admin Portal')}
+                {isBengali ? 'স্ক্যাভিয়া এক্সিকিউটিভ পোর্টাল' : 'SKAVIA Executive Portal'}
               </h1>
 
               <p className="text-xs max-w-sm mx-auto leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-                {isSuperAdminView
-                  ? (isBengali
-                      ? 'এক্সিকিউটিভ রুট গভর্ন্যান্স · সিকিউরিটি পলিসি, রিলিজ ম্যানেজমেন্ট ও সিস্টেম অডিট'
-                      : 'Executive Root Platform Governance · Security, Releases & System Policy')
-                  : (isBengali
-                      ? 'কোম্পানি এডমিন, শাখা ব্যবস্থাপক ও অপারেশনাল ভেরিফিকেশন প্যানেল'
-                      : 'Company Operations, Branch Management, KYC Verification & Release Dispatch')}
+                {isBengali
+                  ? 'সুপার এডমিন গভর্ন্যান্স, শাখা ব্যবস্থাপনা, কেওয়াইসি ভেরিফিকেশন ও রিলিজ ম্যানেজমেন্ট'
+                  : 'Platform Governance, Operations, KYC Verification & Release Dispatch'}
               </p>
             </div>
           </div>
-
-          {/* Surface Toggle Tabs (if on single host or query param) */}
-          {isSingleHost && (
-            <div
-              className="flex items-center gap-1 rounded-xl border p-1 text-xs shadow-xs"
-              style={{
-                borderColor: 'var(--border-subtle)',
-                backgroundColor: 'var(--bg-surface-subtle)',
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => setSurfaceView('superadmin')}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-center text-xs font-semibold transition ${
-                  isSuperAdminView
-                    ? 'bg-[#003399] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <ShieldCheck className="h-3.5 w-3.5 text-sky-300" />
-                <span>{isBengali ? 'সুপার এডমিন (রুট)' : 'Super Admin (Root)'}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setSurfaceView('admin')}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-lg py-2 text-center text-xs font-semibold transition ${
-                  !isSuperAdminView
-                    ? 'bg-[#003399] text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <Building2 className="h-3.5 w-3.5 text-blue-300" />
-                <span>{isBengali ? 'এডমিন পোর্টাল' : 'Admin Portal'}</span>
-              </button>
-            </div>
-          )}
 
           {/* Config Warnings */}
           {!firebaseConfigured && (
@@ -614,22 +560,16 @@ function LoginPortalContent() {
                     className="block text-xs font-semibold uppercase tracking-wider"
                     style={{ color: 'var(--text-secondary)' }}
                   >
-                    {isSuperAdminView
-                      ? (isBengali ? 'সুপার এডমিন ইউজারনেম বা ইমেইল' : 'Super Admin Username or Email')
-                      : (isBengali ? 'আমন্ত্রিত এডমিন ইমেইল' : 'Invited Admin Email')}
+                    {isBengali ? 'এডমিন ইমেইল বা ইউজারনেম' : 'Admin Email or Username'}
                   </label>
                   <input
                     id="admin-identifier"
-                    type={isSuperAdminView ? 'text' : 'email'}
+                    type="text"
                     required
                     autoComplete="username"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder={
-                      isSuperAdminView
-                        ? 'timonbiswas33@gmail.com or admin@skavia.com'
-                        : 'admin@skavia.com'
-                    }
+                    placeholder="timonbiswas33@gmail.com or admin@skavia.com"
                     className="w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#003399]/40"
                     style={{
                       backgroundColor: 'var(--bg-canvas)',

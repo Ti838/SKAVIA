@@ -106,12 +106,9 @@ export function assertSurfaceRoleCompatibility(params: {
   }
 
   if (surface === 'admin') {
-    if (primaryRole === 'Super Admin') {
-      throw new AuthorizationError(
-        'USE_SUPERADMIN_PORTAL',
-        'Primary Super Admin must sign in through the dedicated Super Admin Portal.',
-        403
-      );
+    // Primary Super Admin possesses root governance and is fully authorized on all administrative surfaces
+    if (primaryRole === 'Super Admin' || roles.includes('Super Admin')) {
+      return;
     }
     if (primaryRole !== 'Company Admin' && primaryRole !== 'Branch Manager') {
       throw new AuthorizationError(
