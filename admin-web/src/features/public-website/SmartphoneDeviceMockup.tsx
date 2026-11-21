@@ -30,7 +30,7 @@ export function SmartphoneDeviceMockup({
   size = 'standard',
 }: SmartphoneDeviceMockupProps) {
   const [activeScreen, setActiveScreen] = useState<'client' | 'worker'>('client');
-  const [phoneDark, setPhoneDark] = useState<boolean>(t.dark);
+  const phoneDark = t.dark;
   const isCompact = size === 'compact';
 
   return (
@@ -67,15 +67,6 @@ export function SmartphoneDeviceMockup({
         >
           <Wrench className="h-3.5 w-3.5" />
           <span>Worker Mode</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setPhoneDark((prev) => !prev)}
-          title="Toggle phone theme preview"
-          className="px-2 py-1.5 rounded-xl text-[11px] font-mono-code text-slate-500 hover:text-slate-900 dark:hover:text-white transition"
-        >
-          {phoneDark ? '🌙' : '☀️'}
         </button>
       </div>
 
