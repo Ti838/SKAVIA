@@ -172,25 +172,37 @@ body {
   will-change: transform;
 }
 
+.sakuga-spring-tap:hover {
+  transform: translateY(-1.5px);
+}
+
 .sakuga-spring-tap:active {
-  transform: scale(1.025, 0.94);
+  transform: scale(1.028, 0.94);
 }
 
 /* Global subtle Sakuga tactile feedback across all Admin Portal & Public interactive controls
    (excludes table rows so large datasets remain zero-overhead) */
 button:not(:disabled),
+a[role="button"],
 [role="tab"],
 [role="switch"] {
-  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
     background-color 160ms ease,
     border-color 160ms ease,
     color 160ms ease,
     box-shadow 160ms ease;
+  will-change: transform;
+}
+
+button:not(:disabled):hover,
+a[role="button"]:hover {
+  transform: translateY(-1px);
 }
 
 button:not(:disabled):active,
+a[role="button"]:active,
 [role="tab"]:active {
-  transform: scale(1.018, 0.955);
+  transform: scale(1.02, 0.95);
 }
 
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),

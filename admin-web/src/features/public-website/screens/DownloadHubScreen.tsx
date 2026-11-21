@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { formatBytes } from '@/lib/formatters';
 import { useSakugaToast } from '@/components/sakuga';
+import { sakugaCelebrate, sakugaTicks } from '@/lib/sakuga/sakuga-core';
 import { HeroAtmosphere } from '../components/HeroAtmosphere';
 import { PublicPageShell } from '../components/PublicPageShell';
 import { INITIAL_DISTRIBUTION } from '../public-site-data';
@@ -38,6 +39,9 @@ export function DownloadHubScreen() {
     try {
       navigator.clipboard.writeText(hash);
       setCopiedSha(true);
+      if (typeof window !== 'undefined') {
+        sakugaTicks(window.innerWidth / 2, window.innerHeight / 2, { n: 4, r: 8, color: '#10B981' });
+      }
       showToast('SHA-256 hash copied to clipboard', 'success');
       setTimeout(() => setCopiedSha(false), 2500);
     } catch {
@@ -45,12 +49,17 @@ export function DownloadHubScreen() {
     }
   };
 
+  const handleDownloadClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    sakugaCelebrate(e.clientX, e.clientY, { r: 52 });
+    showToast('Starting SKAVIA Universal APK download...', 'success', 3500);
+  };
+
   return (
     <PublicPageShell>
       {(t) => (
         <div className="space-y-16 pb-16 sm:pb-24">
           {/* Hero Section (Starts seamlessly right below the header) */}
-          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-6 pb-12 sm:pt-8 sm:pb-16 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
             <div className="max-w-4xl mx-auto text-center space-y-5 relative z-10">
@@ -60,7 +69,10 @@ export function DownloadHubScreen() {
               </div>
 
               <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
-                Download SKAVIA for Android
+                Download SKAVIA
+                <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-[#003399] via-[#3898EC] to-[#15E7CA] bg-clip-text text-transparent">
+                  for Android.
+                </span>
               </h1>
 
               <p className="mt-3 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
@@ -134,7 +146,8 @@ export function DownloadHubScreen() {
                     <a
                       href={directApkUrl}
                       download="skavia-latest.apk"
-                      className="flex-1 inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all hover:scale-[1.01] active:scale-[0.99] text-center"
+                      onClick={handleDownloadClick}
+                      className="sakuga-spring-tap flex-1 inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all text-center"
                     >
                       <Download className="h-5 w-5 shrink-0" />
                       <span>Download Universal APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
