@@ -1,11 +1,11 @@
-{
-  "versionName": "1.0.3",
-  "buildNumber": 4,
-  "channel": "stable",
-  "apkUrl": "https://skavia-bd.vercel.app/downloads/skavia-v1.0.3.apk",
-  "latestApkUrl": "https://skavia-bd.vercel.app/downloads/skavia-latest.apk",
-  "fileName": "skavia-v1.0.3.apk",
-  "fileSizeBytes": 69728126,
-  "deployedAt": "2026-11-21T17:26:00.000Z",
-  "releaseNotes": "- Redesigned luxury collision-free onboarding service ecosystem\n- Completely eliminated layout shift on login and signup tabs\n- Real-time OpenStreetMap integration and resilient network telemetry"
+﻿{
+    "buildNumber":  5,
+    "fileSizeBytes":  69646207,
+    "fileName":  "skavia-v1.0.4.apk",
+    "apkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-v1.0.4.apk",
+    "releaseNotes":  "- Luxury Apple-grade ecosystem showcase card on onboarding\n- 100% Free Esri Dark Gray + OpenStreetMap tiles with zero watermarks\n- Resilient Live Job Feed with seamless empty-state handling\n- Actionable Firebase Phone Auth guidance and stability polish",
+    "deployedAt":  "2026-11-21T12:21:07Z",
+    "channel":  "stable",
+    "versionName":  "1.0.4",
+    "latestApkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-latest.apk"
 }
