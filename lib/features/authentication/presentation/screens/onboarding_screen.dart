@@ -181,9 +181,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                         SizedBox(height: isSmallScreen ? 12 : 20),
 
-                        // 2. Animated Real SKAVIA Service Showcase
+                        // 2. Professional SKAVIA Service Showcase (Collision-Free Dual Track)
                         AnimatedServiceShowcase(
-                          height: isSmallScreen ? 170 : 210,
+                          height: isSmallScreen ? 155 : 180,
                         ),
 
                         SizedBox(height: isSmallScreen ? 14 : 22),

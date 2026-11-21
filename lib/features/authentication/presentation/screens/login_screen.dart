@@ -200,17 +200,20 @@ class _LoginScreenState extends State<LoginScreen> {
     final skavia = context.skavia;
     final l10n = context.l10n;
 
+    final isSmallScreen = MediaQuery.of(context).size.height < 700;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Center(
+        child: Align(
+          alignment: Alignment.topCenter,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               padding: EdgeInsets.fromLTRB(
                 24,
-                20,
+                isSmallScreen ? 16 : 28,
                 24,
                 MediaQuery.of(context).viewInsets.bottom + 24,
               ),
@@ -279,27 +282,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       },
                     ),
 
-                    if (_selectedMethodIndex == 0)
-                      EmailLoginForm(
-                        emailController: _emailController,
-                        passwordController: _passwordController,
-                        rememberMe: _rememberMe,
-                        onRememberMeChanged: (v) async {
-                          setState(() => _rememberMe = v);
-                          await _persistRememberMe(
-                            _emailController.text.trim(),
-                          );
-                        },
-                        onForgotPassword: _showForgotPasswordModal,
-                        authController: _authController,
-                        onLogin: _handleLogin,
-                      )
-                    else
-                      PhoneLoginForm(
-                        phoneController: _phoneController,
-                        authController: _authController,
-                        onSendOtp: _handlePhoneOtpSend,
-                      ),
+                    // Smooth animated form height container (prevents jarring jumps)
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 240),
+                      curve: Curves.easeInOutCubic,
+                      alignment: Alignment.topCenter,
+                      child: _selectedMethodIndex == 0
+                          ? EmailLoginForm(
+                              emailController: _emailController,
+                              passwordController: _passwordController,
+                              rememberMe: _rememberMe,
+                              onRememberMeChanged: (v) async {
+                                setState(() => _rememberMe = v);
+                                await _persistRememberMe(
+                                  _emailController.text.trim(),
+                                );
+                              },
+                              onForgotPassword: _showForgotPasswordModal,
+                              authController: _authController,
+                              onLogin: _handleLogin,
+                            )
+                          : PhoneLoginForm(
+                              phoneController: _phoneController,
+                              authController: _authController,
+                              onSendOtp: _handlePhoneOtpSend,
+                            ),
+                    ),
 
                     const SizedBox(height: 24),
 

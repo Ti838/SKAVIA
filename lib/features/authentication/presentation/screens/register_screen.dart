@@ -172,12 +172,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final l10n = context.l10n;
     final isBn = context.isBengali;
 
+    final isSmallScreen = MediaQuery.of(context).size.height < 700;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: Center(
+        child: Align(
+          alignment: Alignment.topCenter,
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+            padding: EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: isSmallScreen ? 16 : 28,
+            ),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: Form(

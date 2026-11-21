@@ -220,6 +220,7 @@ export function DownloadSection({
             {/* Real-time Hardware, Network & OS Compatibility Assessment */}
             <DeviceCompatibilityCard
               telemetry={telemetry}
+              distribution={distribution}
               t={t}
             />
 
