@@ -83,10 +83,10 @@ export function getPublicThemeTokens(dark: boolean): PublicThemeTokens {
 export const INITIAL_DISTRIBUTION: DistributionInfo = {
   android: {
     published: true,
-    releaseId: 'skavia-v1-0-2-prod',
+    releaseId: 'skavia-v1-0-3-prod',
     apkUrl: '/downloads/skavia-latest.apk',
-    version: '1.0.2',
-    buildNumber: 3,
+    version: '1.0.3',
+    buildNumber: 4,
     minSupportedBuild: 1,
     minSdkVersion: 24,
     fileName: 'skavia-latest.apk',
@@ -94,9 +94,9 @@ export const INITIAL_DISTRIBUTION: DistributionInfo = {
     sha256Checksum: '87eb8abe7fde09a06e32e794d1157a89fb290faef1db2f68003725e2d5a12768',
     signingCertSha256: '9920bf0cfdf2b5dc988be08044709d7936a18d9ef6f272c72b226f95fec1b4a0',
     releaseNotes:
-      'SKAVIA v1.0.2 official release. Full interactive OpenStreetMap with high-resolution satellite tiles, multi-host network connectivity, dual Client & Specialist modes, live geolocation dispatch, 4-digit arrival OTP, and protected escrow settlement.',
+      'SKAVIA v1.0.3 production release. Refined luxury onboarding experience with collision-free dual-track service ecosystem, zero-layout-shift auth screens, real-time OpenStreetMap integration, and multi-host network connectivity.',
     isMandatory: false,
-    publishedAt: '2026-11-21T11:00:00.000Z',
+    publishedAt: '2026-11-21T11:20:00.000Z',
     channel: 'stable',
     distributionMethod: 'Official Universal Signed Production APK',
     armv7Url: '/downloads/skavia-v1.0.0-armeabi-v7a.apk',
