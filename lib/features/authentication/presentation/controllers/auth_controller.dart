@@ -192,9 +192,29 @@ class AuthController extends ChangeNotifier {
           if (!completer.isCompleted) completer.complete(true);
         },
         onVerificationFailed: (e) {
+          debugPrint('[Firebase Phone Auth Error]: ${e.code} - ${e.message}');
           if (e.code == 'operation-not-allowed') {
             _setError(
               'Firebase Phone Authentication is disabled in Firebase Console (skavia-113a3). Please enable Phone sign-in in Firebase Console -> Authentication -> Sign-in method, or sign in using Email or Google.',
+            );
+          } else if (e.code == 'invalid-phone-number') {
+            _setError(
+              'Invalid phone number format. Please ensure the number includes a valid Bangladesh prefix (e.g. 017... or +8801...).',
+            );
+          } else if (e.code == 'quota-exceeded') {
+            _setError(
+              'Daily SMS quota exceeded. Please sign in using Email or Google, or use a test phone number in Firebase Console.',
+            );
+          } else if (e.code == 'too-many-requests') {
+            _setError(
+              'Too many attempts from this device. Please wait a few minutes before trying again, or use Email / Google sign-in.',
+            );
+          } else if (e.code == 'app-not-authorized' ||
+              (e.message != null &&
+                  (e.message!.toLowerCase().contains('region') ||
+                      e.message!.toLowerCase().contains('blocked')))) {
+            _setError(
+              'SMS to Bangladesh (+880) is not enabled in Firebase Console. Please add Bangladesh (+880) to Authentication -> Settings -> SMS region policy.',
             );
           } else {
             _setError(e.message ?? 'Phone verification failed.');
@@ -203,7 +223,15 @@ class AuthController extends ChangeNotifier {
           if (!completer.isCompleted) completer.complete(false);
         },
         onVerificationCompleted: (credential) async {
+          try {
+            final userCred =
+                await _dataSource.signInWithPhoneCredential(credential);
+            _user = userCred.user;
+          } catch (e) {
+            debugPrint('[Phone Auth onVerificationCompleted auto-sign-in]: $e');
+          }
           _setLoading(false);
+          notifyListeners();
           if (!completer.isCompleted) completer.complete(true);
         },
         onCodeAutoRetrievalTimeout: (verificationId) {
@@ -248,7 +276,13 @@ class AuthController extends ChangeNotifier {
       _setLoading(false);
       return true;
     } on fb.FirebaseAuthException catch (e) {
-      _setError(e.message ?? 'Invalid OTP code.');
+      if (e.code == 'invalid-verification-code') {
+        _setError('Invalid verification code. Please check the 6-digit OTP.');
+      } else if (e.code == 'session-expired') {
+        _setError('Verification session expired. Please tap Resend Code.');
+      } else {
+        _setError(e.message ?? 'Invalid OTP code.');
+      }
       _setLoading(false);
       return false;
     } catch (e) {

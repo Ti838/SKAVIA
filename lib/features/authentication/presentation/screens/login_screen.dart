@@ -115,7 +115,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final formattedPhone = Validators.normalizeBdPhone(rawPhone);
     final success = await _authController.sendPhoneOtp(formattedPhone);
-    if (success && mounted) {
+    if (!mounted) return;
+    if (success) {
+      if (_authController.user != null) {
+        // Automatically verified via Google Play services!
+        await _navigateToAppropriateScreen();
+        return;
+      }
       Navigator.of(context).pushNamed(
         AppRoutes.otpVerification,
         arguments: {
@@ -124,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
           'isLogin': true,
         },
       );
-    } else if (mounted && _authController.errorMessage != null) {
+    } else if (_authController.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_authController.errorMessage!),

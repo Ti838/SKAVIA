@@ -259,6 +259,14 @@ class AuthRemoteDataSource {
       verificationId: verificationId,
       smsCode: smsCode.trim(),
     );
+    return signInWithPhoneCredential(credential, fullName: fullName);
+  }
+
+  /// Sign In directly with a PhoneAuthCredential (for auto-retrieval / instant verification)
+  Future<fb.UserCredential> signInWithPhoneCredential(
+    fb.AuthCredential credential, {
+    String? fullName,
+  }) async {
     final userCredential = await _requireFirebaseAuth().signInWithCredential(
       credential,
     );
