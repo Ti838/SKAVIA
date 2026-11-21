@@ -145,6 +145,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final success = await _authController.sendPhoneOtp(phone);
     if (!mounted) return;
     if (success) {
+      if (_authController.user != null) {
+        await _onVerificationSuccess();
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Verification code sent successfully.'),
@@ -184,49 +188,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Phone verified successfully! Welcome to SKAVIA.'),
-          backgroundColor: AppColors.statusActive,
-        ),
-      );
-      final user = _authController.user;
-      String? activeMode;
-      if (user != null) {
-        await ProfileController.shared.loadProfile(
-          user.uid,
-          fallbackEmail: user.email,
-          fallbackName: user.displayName ?? widget.fullName,
-          fallbackPhone: user.phoneNumber ?? widget.phoneNumber,
-          fallbackAvatarUrl: user.photoURL,
-        );
-        final profile = await DashboardRepository().getUserProfileRecord(
-          user.uid,
-        );
-        activeMode =
-            profile?['active_mode']?.toString() ??
-            LocalCacheService.instance
-                .get('${AppConstants.userModeStorageKey}_${user.uid}')
-                ?.toString() ??
-            LocalCacheService.instance
-                .get(AppConstants.userModeStorageKey)
-                ?.toString();
-      }
-      if (!mounted) return;
-      if (activeMode != null && activeMode.isNotEmpty) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.appShell,
-          (route) => false,
-          arguments: {'initialMode': activeMode},
-        );
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.roleSelection,
-          (route) => false,
-        );
-      }
+      await _onVerificationSuccess();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -235,6 +197,53 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
           backgroundColor: AppColors.statusCancelled,
         ),
+      );
+    }
+  }
+
+  Future<void> _onVerificationSuccess() async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Phone verified successfully! Welcome to SKAVIA.'),
+        backgroundColor: AppColors.statusActive,
+      ),
+    );
+    final user = _authController.user;
+    String? activeMode;
+    if (user != null) {
+      await ProfileController.shared.loadProfile(
+        user.uid,
+        fallbackEmail: user.email,
+        fallbackName: user.displayName ?? widget.fullName,
+        fallbackPhone: user.phoneNumber ?? widget.phoneNumber,
+        fallbackAvatarUrl: user.photoURL,
+      );
+      final profile = await DashboardRepository().getUserProfileRecord(
+        user.uid,
+      );
+      activeMode =
+          profile?['active_mode']?.toString() ??
+          LocalCacheService.instance
+              .get('${AppConstants.userModeStorageKey}_${user.uid}')
+              ?.toString() ??
+          LocalCacheService.instance
+              .get(AppConstants.userModeStorageKey)
+              ?.toString();
+    }
+    if (!mounted) return;
+    if (activeMode != null && activeMode.isNotEmpty) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.appShell,
+        (route) => false,
+        arguments: {'initialMode': activeMode},
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.roleSelection,
+        (route) => false,
       );
     }
   }
