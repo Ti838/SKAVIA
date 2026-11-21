@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -10,6 +10,7 @@ import {
   Link as LinkIcon,
   Lock,
   ShieldAlert,
+  Sparkles,
   UploadCloud,
 } from 'lucide-react';
 import type { AppReleaseChannel } from '@/lib/contracts';
@@ -120,10 +121,45 @@ export function PublishReleasePanel({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [updatingPin, setUpdatingPin] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [stagedManifest, setStagedManifest] = useState<{
+    versionName: string;
+    buildNumber: number;
+    channel: AppReleaseChannel;
+    apkUrl: string;
+    latestApkUrl: string;
+    fileName: string;
+    fileSizeBytes: number;
+    deployedAt: string;
+    releaseNotes: string;
+  } | null>(null);
   const { showToast } = useSakugaToast();
 
-  async function handleInspectFromUrl() {
-    const trimmed = githubUrl.trim();
+  useEffect(() => {
+    async function loadStaged() {
+      try {
+        const res = await fetch('/downloads/staged-release.json');
+        if (res.ok) {
+          const data = await res.json();
+          setStagedManifest(data);
+          const defaultUrl =
+            typeof window !== 'undefined'
+              ? `${window.location.origin}/downloads/${data.fileName || 'skavia-latest.apk'}`
+              : data.apkUrl;
+          setGithubUrl((prev) => prev || defaultUrl);
+          if (data.releaseNotes) {
+            setReleaseNotes((prev) => prev || data.releaseNotes);
+          }
+        }
+      } catch {
+        // Ignored if file doesn't exist
+      }
+    }
+    void loadStaged();
+  }, []);
+
+  async function handleInspectFromUrl(overrideUrl?: string | unknown) {
+    const rawUrl = typeof overrideUrl === 'string' ? overrideUrl : githubUrl;
+    const trimmed = rawUrl.trim();
     if (!trimmed) {
       setError('Enter a valid GitHub Release APK download URL.');
       return;
@@ -152,14 +188,14 @@ export function PublishReleasePanel({
       setStoragePath(trimmed);
       setInspection(inspectRes);
       setMinSupportedBuild(String(Math.min(1, inspectRes.inspected.buildNumber)));
-      showToast('APK verified cleanly from GitHub Release!', 'success');
+      showToast('APK verified cleanly from Release CDN / URL!', 'success');
     } catch (err) {
       if (err instanceof AdminApiError && err.code === 'STEP_UP_REQUIRED') {
         setError('Step-Up verification opened. Complete verification, then re-inspect.');
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Failed inspecting APK from GitHub Release URL.');
+        setError('Failed inspecting APK from Release URL.');
       }
     } finally {
       setInspectingUrl(false);
@@ -451,15 +487,63 @@ export function PublishReleasePanel({
 
         {sourceMode === 'github' ? (
           <div
-            className="rounded-xl border p-5 space-y-3"
+            className="rounded-xl border p-5 space-y-4"
             style={{ backgroundColor: 'var(--bg-canvas)', borderColor: 'var(--border-subtle)' }}
           >
+            {stagedManifest && (
+              <div
+                className="rounded-xl border p-4 flex flex-wrap items-center justify-between gap-3 shadow-xs"
+                style={{
+                  backgroundColor: 'rgba(0, 51, 153, 0.05)',
+                  borderColor: 'rgba(0, 51, 153, 0.35)',
+                }}
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-sky-400">
+                      Auto-Detected Vercel CDN Staged Build
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold">
+                    v{stagedManifest.versionName} (Build #{stagedManifest.buildNumber}) · {formatBytes(stagedManifest.fileSizeBytes)}
+                  </p>
+                  <p className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                    {typeof window !== 'undefined'
+                      ? `${window.location.origin}/downloads/${stagedManifest.fileName || 'skavia-latest.apk'}`
+                      : stagedManifest.apkUrl}
+                  </p>
+                </div>
+
+                <SakugaButton
+                  type="button"
+                  variant="primary"
+                  onClick={() => {
+                    const target = typeof window !== 'undefined'
+                      ? `${window.location.origin}/downloads/${stagedManifest.fileName || 'skavia-latest.apk'}`
+                      : stagedManifest.apkUrl;
+                    setGithubUrl(target);
+                    if (stagedManifest.releaseNotes && !releaseNotes.trim()) {
+                      setReleaseNotes(stagedManifest.releaseNotes);
+                    }
+                    void handleInspectFromUrl(target);
+                    setReviewConfirmed(true);
+                  }}
+                  disabled={inspectingUrl || submitting}
+                  className="px-4 py-2 text-xs font-semibold"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>{inspectingUrl ? 'Verifying APK…' : '⚡ 1-Click Load & Auto-Verify'}</span>
+                </SakugaButton>
+              </div>
+            )}
+
             <div className="space-y-1">
               <label htmlFor="github-apk-url" className="text-xs font-semibold uppercase tracking-wider block">
-                Direct GitHub Release APK Download URL
+                Direct GitHub Release / CDN APK Download URL
               </label>
               <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                Paste the permanent GitHub Release APK download link. Supabase storage remains 0 MB used, with zero file size limits!
+                Paste any external release APK URL, or use the 1-Click Load button above for your deployed CDN build.
               </p>
             </div>
 
@@ -481,7 +565,7 @@ export function PublishReleasePanel({
               <SakugaButton
                 type="button"
                 variant="primary"
-                onClick={handleInspectFromUrl}
+                onClick={() => void handleInspectFromUrl()}
                 disabled={inspectingUrl || submitting || !githubUrl.trim()}
                 className="px-4 py-2 text-xs font-semibold shrink-0"
               >

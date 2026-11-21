@@ -9,6 +9,7 @@ import {
   PackageCheck,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   UploadCloud,
 } from 'lucide-react';
 import { AdminApiError, apiFetch } from '@/lib/api-client';
@@ -61,28 +62,50 @@ export default function ReleasesScreen() {
   const [banner, setBanner] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [stagedRelease, setStagedRelease] = useState<{
+    versionName: string;
+    buildNumber: number;
+    channel: string;
+    apkUrl: string;
+    latestApkUrl: string;
+    fileName: string;
+    fileSizeBytes: number;
+    deployedAt: string;
+    releaseNotes: string;
+  } | null>(null);
 
   const loadReleases = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await apiFetch<{
-        releases: AppReleaseDto[];
-        currentStable: AppReleaseDto | null;
-        signingPolicy: ReleaseSigningPolicyDto;
-        analytics: AppReleaseAnalyticsDto;
-      }>('/api/admin/releases');
+      const [res, stagedRes] = await Promise.allSettled([
+        apiFetch<{
+          releases: AppReleaseDto[];
+          currentStable: AppReleaseDto | null;
+          signingPolicy: ReleaseSigningPolicyDto;
+          analytics: AppReleaseAnalyticsDto;
+        }>('/api/admin/releases'),
+        fetch('/downloads/staged-release.json').then((r) => (r.ok ? r.json() : null)),
+      ]);
 
-      setReleases(res.releases);
-      setCurrentStable(res.currentStable);
-      setSigningPolicy(res.signingPolicy);
-      setAnalytics(res.analytics);
-      setPolicyPackage(res.signingPolicy.expectedPackageName);
-      setPolicyCertPin(res.signingPolicy.pinnedSigningCertSha256 ?? '');
+      if (res.status === 'fulfilled') {
+        setReleases(res.value.releases);
+        setCurrentStable(res.value.currentStable);
+        setSigningPolicy(res.value.signingPolicy);
+        setAnalytics(res.value.analytics);
+        setPolicyPackage(res.value.signingPolicy.expectedPackageName);
+        setPolicyCertPin(res.value.signingPolicy.pinnedSigningCertSha256 ?? '');
 
-      setSelectedRelease((prev) =>
-        prev ? res.releases.find((r) => r.release_id === prev.release_id) ?? null : null
-      );
+        setSelectedRelease((prev) =>
+          prev ? res.value.releases.find((r) => r.release_id === prev.release_id) ?? null : null
+        );
+      } else {
+        throw res.reason;
+      }
+
+      if (stagedRes.status === 'fulfilled' && stagedRes.value) {
+        setStagedRelease(stagedRes.value);
+      }
     } catch (err) {
       setError(
         err instanceof AdminApiError ? err.message : 'Failed loading app release management console.'
@@ -214,6 +237,12 @@ export default function ReleasesScreen() {
   const filteredReleases =
     channelFilter === 'all' ? releases : releases.filter((r) => r.channel === channelFilter);
 
+  const isStagedPending = Boolean(
+    stagedRelease &&
+    (!currentStable || stagedRelease.buildNumber > currentStable.build_number) &&
+    !releases.some((r) => r.build_number === stagedRelease.buildNumber && r.status === 'published')
+  );
+
   const columns: TableColumn<AppReleaseDto>[] = [
     {
       key: 'version',
@@ -319,6 +348,45 @@ export default function ReleasesScreen() {
           </button>
         </div>
       </div>
+
+      {isStagedPending && stagedRelease && (
+        <div
+          className="rounded-xl border p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm"
+          style={{
+            backgroundColor: 'rgba(0, 51, 153, 0.08)',
+            borderColor: '#003399',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Deployed Vercel CDN Build Detected
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  Build #{stagedRelease.buildNumber} · {formatBytes(stagedRelease.fileSizeBytes)}
+                </span>
+              </div>
+              <h3 className="text-sm font-semibold mt-0.5">
+                SKAVIA v{stagedRelease.versionName} is deployed on CDN and pending your approval.
+              </h3>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTab('publish')}
+            className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold text-white transition shadow-sm hover:opacity-95"
+            style={{ backgroundColor: '#003399' }}
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            <span>1-Click Review &amp; Approve</span>
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
