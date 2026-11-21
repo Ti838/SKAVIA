@@ -55,17 +55,12 @@ export function DownloadHubScreen() {
   return (
     <PublicPageShell>
       {(t) => (
-        <div className="space-y-16 pb-16 sm:pb-24">
+        <div className="space-y-10 sm:space-y-12 pb-16 sm:pb-24">
           {/* Hero Section (Starts seamlessly right below the header) */}
-          <section className="relative px-4 sm:px-6 lg:px-8 pt-6 pb-12 sm:pt-8 sm:pb-16 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-6 sm:pb-10 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
-            <div className="max-w-4xl mx-auto text-center space-y-5 relative z-10">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-mono uppercase tracking-wider font-semibold">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>OFFICIAL PRODUCTION RELEASE &middot; v{dist.version ?? '1.0.1'}</span>
-              </div>
-
+            <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
               <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white leading-[1.1]">
                 Download SKAVIA
                 <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-[#003399] via-[#3898EC] to-[#15E7CA] bg-clip-text text-transparent">
