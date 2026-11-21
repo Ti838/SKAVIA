@@ -30,23 +30,46 @@ export function DownloadHubScreen({
 }) {
   const { showToast } = useSakugaToast();
   const detection = useDeviceDetection();
-  const dist = (initialDistribution ?? INITIAL_DISTRIBUTION).android;
+  const [activeDist, setActiveDist] = useState(
+    (initialDistribution ?? INITIAL_DISTRIBUTION).android
+  );
+  const dist = activeDist;
   const [copiedSha, setCopiedSha] = useState(false);
 
-  const directApkUrl = dist.apkUrl ?? '/downloads/skavia-latest.apk';
+  const directApkUrl = activeDist.apkUrl ?? '/downloads/skavia-latest.apk';
   const [fullDownloadUrl, setFullDownloadUrl] = useState(`https://skavia-bd.vercel.app${directApkUrl}`);
 
-  const versionLabel = dist.version ? `v${dist.version}` : 'v1.0.1';
-  const buildLabel = dist.buildNumber ? `#${dist.buildNumber}` : '#2';
+  const versionLabel = activeDist.version ? `v${activeDist.version}` : 'v1.0.7';
+  const buildLabel = activeDist.buildNumber ? `#${activeDist.buildNumber}` : '#8';
   const apkSizeLabel =
-    dist.fileSizeBytes && dist.fileSizeBytes > 0
-      ? formatBytes(dist.fileSizeBytes, 1)
-      : '66.5 MB';
-  const publishedDateLabel = dist.publishedAt
+    activeDist.fileSizeBytes && activeDist.fileSizeBytes > 0
+      ? formatBytes(activeDist.fileSizeBytes, 1)
+      : '69.7 MB';
+  const publishedDateLabel = activeDist.publishedAt
     ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(
-        new Date(dist.publishedAt)
+        new Date(activeDist.publishedAt)
       )
     : 'Latest Production';
+
+  useEffect(() => {
+    fetch('/api/public/app-update?platform=android&channel=stable&installed_build=0')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.latestRelease) {
+          const lr = data.latestRelease;
+          setActiveDist((prev) => ({
+            ...prev,
+            version: lr.versionName || prev.version,
+            buildNumber: lr.buildNumber || prev.buildNumber,
+            fileSizeBytes: lr.fileSizeBytes || prev.fileSizeBytes,
+            sha256Checksum: lr.sha256Checksum || prev.sha256Checksum,
+            apkUrl: lr.downloadUrl || prev.apkUrl,
+            publishedAt: lr.publishedAt || prev.publishedAt,
+          }));
+        }
+      })
+      .catch(() => null);
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
