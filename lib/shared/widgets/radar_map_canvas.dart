@@ -109,12 +109,10 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
-                urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c', 'd'],
-                retinaMode: isRetina,
                 userAgentPackageName: 'com.example.skavia',
-                maxZoom: 19,
+                maxZoom: 18,
               )
             else
               TileLayer(

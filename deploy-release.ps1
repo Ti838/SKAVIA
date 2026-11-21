@@ -54,7 +54,7 @@ $stagedManifest = @{
     fileName = "skavia-v$versionName.apk"
     fileSizeBytes = $fileSizeBytes
     deployedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-    releaseNotes = "- SKAVIA production release v$versionName (Build #$buildNumber)`n- Core reliability, low-latency API dispatch, and UI polish"
+    releaseNotes = "- Luxury Apple-grade ecosystem showcase card on onboarding`n- 100% Free Esri Dark Gray + OpenStreetMap tiles with zero watermarks`n- Resilient Live Job Feed with seamless empty-state handling`n- Actionable Firebase Phone Auth guidance and stability polish"
 } | ConvertTo-Json -Depth 4
 Set-Content -Path "admin-web\public\downloads\staged-release.json" -Value $stagedManifest -Encoding UTF8
 Write-Host "   ✅ Generated staged-release.json for 1-click Admin Portal approval" -ForegroundColor Green
