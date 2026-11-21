@@ -9,6 +9,7 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { SakugaLink } from '@/components/sakuga';
 import { VercelThemeToggle, type ThemeMode } from '@/components/theme/VercelThemeToggle';
 import { MobileNavDrawer } from './MobileNavDrawer';
 
@@ -182,16 +183,17 @@ export function PublicHeader({
               compact
             />
 
-            {/* High-Contrast Primary CTA (Vercel Style) */}
-            <Link
+            {/* High-Contrast Primary CTA (Vercel Style) with Sakuga Tactile Spring */}
+            <SakugaLink
               href="/download"
               onClick={onDownloadClick}
-              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xs whitespace-nowrap shrink-0"
+              intensity="medium"
+              className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-xs whitespace-nowrap shrink-0"
             >
               <Smartphone className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Get Mobile App</span>
               <span className="sm:hidden">Get App</span>
-            </Link>
+            </SakugaLink>
 
             {/* Mobile Hamburger Button (< 1024px) */}
             <button

@@ -17,6 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
+import { SakugaLink } from '@/components/sakuga';
 import type { PublicThemeTokens } from './public-site-data';
 
 interface StoryScene {
@@ -191,10 +192,10 @@ export function CinematicStoryModal({
       aria-modal="true"
       aria-label="How SKAVIA Works Cinematic Tour"
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-2xl animate-fade-in"
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6 md:p-8 bg-black/85 backdrop-blur-2xl animate-fade-in overflow-y-auto"
     >
       <div
-        className="relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto"
+        className="relative w-full max-w-4xl rounded-3xl border shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto shrink-0"
         style={{
           borderColor: 'var(--border-subtle)',
           backgroundColor: t.dark ? '#000000' : '#FFFFFF',
@@ -406,14 +407,15 @@ export function CinematicStoryModal({
             </button>
           </div>
 
-          <a
+          <SakugaLink
             href={apkUrl}
             onClick={onClose}
+            celebrateOnClick
             className="inline-flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold text-white bg-[#003399] hover:bg-[#002266] transition shadow-md"
           >
             <Download className="h-3.5 w-3.5" />
             <span>Download SKAVIA Android App</span>
-          </a>
+          </SakugaLink>
         </div>
       </div>
     </div>,

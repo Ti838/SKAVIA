@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { HeroAtmosphere } from '../components/HeroAtmosphere';
 import { PublicPageShell } from '../components/PublicPageShell';
+import { SakugaLink } from '@/components/sakuga';
 import { WORKER_ONBOARDING_STEPS } from '../public-site-data';
 
 export function SpecialistsScreen() {
@@ -18,12 +19,15 @@ export function SpecialistsScreen() {
       {(t) => (
         <div className="space-y-16 pb-16 sm:pb-24">
           {/* Hero */}
-          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-6 pb-12 sm:pt-8 sm:pb-16 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
             <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
               <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
-                Empowering Bangladesh&apos;s Skilled Field Specialists
+                Empowering Bangladesh&apos;s
+                <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-[#003399] via-[#3898EC] to-[#15E7CA] bg-clip-text text-transparent">
+                  Skilled Field Specialists.
+                </span>
               </h1>
 
               <p className="mt-4 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">
@@ -31,17 +35,19 @@ export function SpecialistsScreen() {
               </p>
 
               <div className="pt-2 flex flex-wrap items-center justify-center gap-4">
-                <Link
+                <SakugaLink
                   href="/download"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-teal-900/20 bg-gradient-to-r from-[#003399] to-[#06B6D4] hover:from-[#002266] hover:to-[#0891b2] transition-all hover:scale-[1.02]"
+                  celebrateOnClick
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold text-white shadow-lg shadow-teal-900/20 bg-gradient-to-r from-[#003399] to-[#06B6D4] hover:from-[#002266] hover:to-[#0891b2] transition-all"
                 >
                   <Smartphone className="h-4 w-4" />
                   <span>Join as Specialist (Get App)</span>
                   <ArrowRight className="h-4 w-4" />
-                </Link>
+                </SakugaLink>
 
-                <Link
+                <SakugaLink
                   href="/services-catalog"
+                  intensity="subtle"
                   className={`inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-semibold border transition-all ${
                     t.dark
                       ? 'border-slate-800 bg-slate-900/80 text-white hover:bg-slate-800'
@@ -49,7 +55,7 @@ export function SpecialistsScreen() {
                   }`}
                 >
                   <span>Explore Rate Cards</span>
-                </Link>
+                </SakugaLink>
               </div>
             </div>
           </section>

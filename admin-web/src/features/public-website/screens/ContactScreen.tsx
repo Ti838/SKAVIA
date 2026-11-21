@@ -50,12 +50,15 @@ export function ContactScreen() {
       {(t) => (
         <div className="space-y-16 pb-16 sm:pb-24">
           {/* Header */}
-          <section className="relative px-4 sm:px-6 lg:px-8 pt-12 pb-16 sm:pt-16 sm:pb-20 overflow-hidden">
+          <section className="relative px-4 sm:px-6 lg:px-8 pt-6 pb-12 sm:pt-8 sm:pb-16 overflow-hidden">
             <HeroAtmosphere dark={t.dark} variant="subpage" />
 
             <div className="max-w-4xl mx-auto text-center space-y-4 relative z-10">
               <h1 className="font-heading font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight text-neutral-900 dark:text-white">
-                Direct Escalation &amp; Operations Contact
+                Direct Escalation &amp;
+                <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-[#003399] via-[#3898EC] to-[#15E7CA] bg-clip-text text-transparent">
+                  Operations Contact.
+                </span>
               </h1>
 
               <p className="mt-4 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto text-neutral-600 dark:text-neutral-400">

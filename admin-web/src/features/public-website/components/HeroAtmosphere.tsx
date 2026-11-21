@@ -52,15 +52,15 @@ export function HeroAtmosphere({
     if (variant === 'subpage') {
       return {
         primary: dark
-          ? 'radial-gradient(ellipse 90% 65% at 50% -15%, rgba(0, 51, 153, 0.28) 0%, rgba(21, 231, 202, 0.1) 45%, transparent 100%)'
-          : 'radial-gradient(ellipse 90% 65% at 50% -15%, rgba(0, 51, 153, 0.08) 0%, rgba(21, 231, 202, 0.04) 45%, transparent 100%)',
+          ? 'radial-gradient(ellipse 90% 70% at 50% 0%, rgba(0, 51, 153, 0.38) 0%, rgba(21, 231, 202, 0.12) 42%, transparent 100%)'
+          : 'radial-gradient(ellipse 90% 70% at 50% 0%, rgba(0, 51, 153, 0.1) 0%, rgba(21, 231, 202, 0.05) 42%, transparent 100%)',
         accentLeft: dark
-          ? 'radial-gradient(circle 450px at 15% 10%, rgba(21, 231, 202, 0.08), transparent 70%)'
-          : 'radial-gradient(circle 450px at 15% 10%, rgba(21, 231, 202, 0.03), transparent 70%)',
+          ? 'radial-gradient(circle 500px at 15% 0%, rgba(21, 231, 202, 0.1), transparent 70%)'
+          : 'radial-gradient(circle 500px at 15% 0%, rgba(21, 231, 202, 0.04), transparent 70%)',
         accentRight: dark
-          ? 'radial-gradient(circle 450px at 85% 15%, rgba(56, 152, 236, 0.08), transparent 70%)'
-          : 'radial-gradient(circle 450px at 85% 15%, rgba(56, 152, 236, 0.03), transparent 70%)',
-        horizonBeam: dark ? 'from-transparent via-[#15E7CA]/40 to-transparent' : 'from-transparent via-[#003399]/20 to-transparent',
+          ? 'radial-gradient(circle 500px at 85% 0%, rgba(56, 152, 236, 0.1), transparent 70%)'
+          : 'radial-gradient(circle 500px at 85% 0%, rgba(56, 152, 236, 0.04), transparent 70%)',
+        horizonBeam: dark ? 'from-transparent via-[#15E7CA]/60 to-transparent' : 'from-transparent via-[#003399]/30 to-transparent',
       };
     }
 
@@ -129,8 +129,14 @@ export function HeroAtmosphere({
       <svg
         className="absolute inset-0 w-full h-full"
         style={{
-          maskImage: 'radial-gradient(ellipse 70% 55% at 50% 25%, black 20%, transparent 80%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 70% 55% at 50% 25%, black 20%, transparent 80%)',
+          maskImage:
+            variant === 'subpage'
+              ? 'radial-gradient(ellipse 85% 70% at 50% 0%, black 35%, transparent 85%)'
+              : 'radial-gradient(ellipse 75% 60% at 50% 20%, black 25%, transparent 80%)',
+          WebkitMaskImage:
+            variant === 'subpage'
+              ? 'radial-gradient(ellipse 85% 70% at 50% 0%, black 35%, transparent 85%)'
+              : 'radial-gradient(ellipse 75% 60% at 50% 20%, black 25%, transparent 80%)',
         }}
       >
         <defs>

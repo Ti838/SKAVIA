@@ -1,4 +1,5 @@
 export { SakugaButton, type SakugaButtonProps } from './SakugaButton';
+export { SakugaLink, type SakugaLinkProps } from './SakugaLink';
 export {
   SakugaCheckbox,
   SakugaInput,

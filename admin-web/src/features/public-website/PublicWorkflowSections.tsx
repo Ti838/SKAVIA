@@ -13,6 +13,7 @@ import {
 import { CinematicAtmosphereCanvas } from './CinematicAtmosphereCanvas';
 import { CinematicStoryModal } from './CinematicStoryModal';
 import { HeroAtmosphere } from './components/HeroAtmosphere';
+import { SakugaButton, SakugaLink } from '@/components/sakuga';
 import {
   getBusinessHighlights,
   getIndividualHighlights,
@@ -57,19 +58,21 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
           and guarantees quality through a mandatory 4-digit arrival OTP handshake and protected escrow.
         </p>
 
-        {/* Action CTAs */}
+        {/* Action CTAs with Sakuga VFX Kinetic Energy */}
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
+          <SakugaLink
             href="/download"
+            celebrateOnClick
             className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-xs sm:text-sm font-semibold bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Smartphone className="h-4 w-4" />
             <span>Download Official Mobile App</span>
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </SakugaLink>
 
-          <button
-            type="button"
+          <SakugaButton
+            variant="ghost"
+            intensity="medium"
             onClick={() => setIsStoryOpen(true)}
             className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
           >
@@ -77,14 +80,15 @@ export function HeroSection({ t: theme }: { t: PublicThemeTokens }) {
               <Play className="h-3 w-3 fill-current ml-0.5" />
             </span>
             <span>Watch How It Works</span>
-          </button>
+          </SakugaButton>
 
-          <Link
+          <SakugaLink
             href="/services-catalog"
+            intensity="subtle"
             className="inline-flex items-center gap-2 rounded-full border border-neutral-200 dark:border-neutral-800 bg-white/80 dark:bg-neutral-900/80 px-6 py-3.5 text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 transition-all hover:border-neutral-400 dark:hover:border-neutral-600 backdrop-blur-md"
           >
             <span>Explore Services Catalog</span>
-          </Link>
+          </SakugaLink>
         </div>
 
         {/* Quick Branch Access Strip */}
