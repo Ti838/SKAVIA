@@ -140,6 +140,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${plusJakartaSans.variable} ${inter.variable} min-h-screen antialiased`}
       >
         <LanguageProvider>

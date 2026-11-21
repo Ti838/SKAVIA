@@ -32,6 +32,7 @@ export function DeviceCompatibilityCard({
   if (!telemetry.isLoaded) {
     return (
       <div
+        suppressHydrationWarning
         className={`p-4 rounded-xl border animate-pulse ${t.railBorder} ${t.subtleCardBg}`}
       >
         <div className="flex items-center gap-2">
@@ -72,6 +73,7 @@ export function DeviceCompatibilityCard({
 
   return (
     <div
+      suppressHydrationWarning
       className={`rounded-2xl border p-5 sm:p-6 ${t.railBorder} ${t.cardBg} backdrop-blur-md shadow-md space-y-4`}
     >
       {/* Top Banner: Detected Device Summary & Real-Time Pill */}

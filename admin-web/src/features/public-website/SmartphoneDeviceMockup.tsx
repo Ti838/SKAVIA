@@ -21,17 +21,20 @@ interface SmartphoneDeviceMockupProps {
   t: PublicThemeTokens;
   version?: string;
   onDownloadClick?: () => void;
+  size?: 'compact' | 'standard';
 }
 
 export function SmartphoneDeviceMockup({
   t,
   version = '1.0.0',
+  size = 'standard',
 }: SmartphoneDeviceMockupProps) {
   const [activeScreen, setActiveScreen] = useState<'client' | 'worker'>('client');
   const [phoneDark, setPhoneDark] = useState<boolean>(t.dark);
+  const isCompact = size === 'compact';
 
   return (
-    <div className="flex flex-col items-center w-full max-w-[380px] sm:max-w-[420px] mx-auto select-none">
+    <div className={`flex flex-col items-center w-full ${isCompact ? 'max-w-[310px]' : 'max-w-[380px] sm:max-w-[420px]'} mx-auto select-none`}>
       {/* Interactive Mode Pills on top of device */}
       <div
         className="flex items-center gap-1.5 p-1 rounded-2xl border mb-4 backdrop-blur-md text-xs font-medium shadow-sm"
@@ -77,7 +80,7 @@ export function SmartphoneDeviceMockup({
       </div>
 
       {/* Realistic Flagship Smartphone Chassis */}
-      <div className="relative w-full max-w-[340px] sm:max-w-[360px] aspect-[9/18.8] group">
+      <div className={`relative w-full ${isCompact ? 'max-w-[270px] sm:max-w-[285px]' : 'max-w-[340px] sm:max-w-[360px]'} aspect-[9/18.8] group`}>
         {/* Ambient Back Glow */}
         <div
           className={`absolute -inset-1.5 rounded-[54px] blur-xl transition-opacity duration-700 pointer-events-none ${
