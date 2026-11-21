@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { BadgeCheck, KeyRound, ShieldCheck, Smartphone } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
@@ -51,6 +52,32 @@ export function PublicFooter() {
               <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-0.5 bg-neutral-50 dark:bg-neutral-900">
                 <BadgeCheck className="h-3 w-3 text-amber-600 dark:text-amber-400" /> Escrow Protected
               </span>
+            </div>
+
+            {/* Parent Organization Endorsement: BITA STUDIO */}
+            <div className="pt-2">
+              <a
+                href="https://bita-studio.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 rounded-2xl border border-neutral-200 dark:border-neutral-800 p-2.5 bg-neutral-50 dark:bg-neutral-900/60 hover:border-blue-500/50 hover:bg-neutral-100 dark:hover:bg-neutral-800/80 transition-all shadow-xs"
+              >
+                <Image
+                  src="/images/bita-studio-logo.png"
+                  alt="BITA STUDIO"
+                  width={36}
+                  height={36}
+                  className="h-8 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-mono tracking-wider uppercase text-neutral-500 dark:text-neutral-400 group-hover:text-blue-500 transition-colors font-medium">
+                    A Product of BITA STUDIO
+                  </span>
+                  <span className="text-xs font-bold text-neutral-900 dark:text-white">
+                    Building Ideas. Engineering the Future.
+                  </span>
+                </div>
+              </a>
             </div>
           </div>
 
@@ -148,14 +175,24 @@ export function PublicFooter() {
           </div>
         </div>
 
-        {/* Bottom Bar (Vercel Style: Headquarter info and Copyright) */}
+        {/* Bottom Bar: Copyright and BITA STUDIO Engineering Backing */}
         <div className="pt-8 border-t border-neutral-200 dark:border-neutral-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-500">
           <div className="flex flex-wrap items-center gap-4">
             <p>© {new Date().getFullYear()} SKAVIA Technologies. Headquartered in Dhaka, Bangladesh.</p>
           </div>
-          <p className="text-[11px] font-mono text-neutral-400">
-            Engineered with Vercel Design System Precision
-          </p>
+          <a
+            href="https://bita-studio.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 hover:opacity-100 transition"
+          >
+            <span className="text-[11px] text-neutral-500 group-hover:text-blue-500 transition-colors">
+              Engineered by
+            </span>
+            <span className="text-xs font-extrabold text-neutral-800 dark:text-neutral-200 group-hover:text-blue-500 transition-colors">
+              BITA STUDIO
+            </span>
+          </a>
         </div>
       </div>
     </footer>
