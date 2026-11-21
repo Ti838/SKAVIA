@@ -104,9 +104,9 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     final mapHeight = textScale > 1.3 ? 196.0 : 172.0;
 
-    // 100% Free OpenStreetMap raster tiles (no API key required)
+    // 100% Free OpenStreetMap & Esri Dark raster tiles (no API key required)
     final tileUrl = isDark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
         : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
     final isRetina = RetinaMode.isHighDensity(context);
 

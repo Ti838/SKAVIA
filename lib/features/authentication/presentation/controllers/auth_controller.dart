@@ -192,7 +192,13 @@ class AuthController extends ChangeNotifier {
           if (!completer.isCompleted) completer.complete(true);
         },
         onVerificationFailed: (e) {
-          _setError(e.message ?? 'Phone verification failed.');
+          if (e.code == 'operation-not-allowed') {
+            _setError(
+              'Firebase Phone Authentication is disabled in Firebase Console (skavia-113a3). Please enable Phone sign-in in Firebase Console -> Authentication -> Sign-in method, or sign in using Email or Google.',
+            );
+          } else {
+            _setError(e.message ?? 'Phone verification failed.');
+          }
           _setLoading(false);
           if (!completer.isCompleted) completer.complete(false);
         },
