@@ -230,9 +230,58 @@ class NotificationCenterController extends ChangeNotifier {
   }
 
   void dismiss(String id) {
+    deleteNotification(id);
+  }
+
+  void deleteNotification(String id) {
     _notifications.removeWhere((n) => n.id == id);
     _saveToCache();
     notifyListeners();
+    _deleteRemote(id);
+  }
+
+  void deleteAll() {
+    _notifications.clear();
+    _seenDedupKeys.clear();
+    _saveToCache();
+    notifyListeners();
+    _deleteAllRemote();
+  }
+
+  Future<void> _deleteRemote(String id) async {
+    final client = tryGetSupabaseClient();
+    if (client == null || _activeUserId == null) return;
+    try {
+      await client
+          .from(DatabaseTables.userNotifications)
+          .delete()
+          .eq('id', id)
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+    try {
+      await client
+          .from(DatabaseTables.notifications)
+          .delete()
+          .eq('notification_id', id)
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+  }
+
+  Future<void> _deleteAllRemote() async {
+    final client = tryGetSupabaseClient();
+    if (client == null || _activeUserId == null) return;
+    try {
+      await client
+          .from(DatabaseTables.userNotifications)
+          .delete()
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
+    try {
+      await client
+          .from(DatabaseTables.notifications)
+          .delete()
+          .eq('user_id', _activeUserId!);
+    } catch (_) {}
   }
 
   Future<void> _syncReadStatusRemote(String id) async {
@@ -308,6 +357,11 @@ class NotificationCenterController extends ChangeNotifier {
     ProfileCompletionResult result,
   ) {
     if (result.isComplete || result.nextRecommendedAction == null) return;
+    // Keep inbox 100% pristine and zero-clutter for brand-new accounts
+    if (profile.fullName.trim().isEmpty ||
+        profile.fullName == 'SKAVIA Member') {
+      return;
+    }
 
     final action = result.nextRecommendedAction!;
     final dedupKey = 'profile_reminder_${profile.id}_${action.key}';

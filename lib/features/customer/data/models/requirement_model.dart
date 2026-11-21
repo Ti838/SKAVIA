@@ -20,6 +20,7 @@ class JobRequirementItem {
   final String status; // 'Open', 'In Progress', 'Closed'
   final List<String> skills;
   final String? submittedBy;
+  final String? mediaUrl;
 
   const JobRequirementItem({
     required this.id,
@@ -43,6 +44,7 @@ class JobRequirementItem {
     this.status = 'Open',
     this.skills = const [],
     this.submittedBy,
+    this.mediaUrl,
   });
 
   JobRequirementItem copyWith({
@@ -67,6 +69,7 @@ class JobRequirementItem {
     String? status,
     List<String>? skills,
     String? submittedBy,
+    String? mediaUrl,
   }) {
     return JobRequirementItem(
       id: id ?? this.id,
@@ -90,19 +93,35 @@ class JobRequirementItem {
       status: status ?? this.status,
       skills: skills ?? this.skills,
       submittedBy: submittedBy ?? this.submittedBy,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
     );
   }
 
   factory JobRequirementItem.fromMap(Map<String, dynamic> map) {
+    final rawDesc = map['description']?.toString() ?? '';
+    String? parsedMediaUrl = map['media_url']?.toString();
+    var cleanDesc = rawDesc;
+    if (rawDesc.startsWith('[img]')) {
+      final closeIdx = rawDesc.indexOf('[/img]');
+      if (closeIdx != -1) {
+        parsedMediaUrl ??= rawDesc.substring(5, closeIdx).trim();
+        cleanDesc = rawDesc.substring(closeIdx + 6).trim();
+      }
+    }
+
     return JobRequirementItem(
-      id: map['id']?.toString() ?? '',
+      id: map['id']?.toString() ?? map['requirement_id']?.toString() ?? '',
       title: map['title']?.toString() ?? '',
       category: map['category']?.toString() ?? 'General',
       categoryId: map['category_id']?.toString() ?? '',
-      description: map['description']?.toString() ?? '',
+      description: cleanDesc,
       location: map['location']?.toString() ?? 'Dhaka',
-      budgetMin: (map['budget_min'] as num?)?.toDouble() ?? 500.0,
-      budgetMax: (map['budget_max'] as num?)?.toDouble() ?? 1500.0,
+      budgetMin: (map['budget_min'] as num?)?.toDouble() ??
+          (map['budget'] as num?)?.toDouble() ??
+          500.0,
+      budgetMax: (map['budget_max'] as num?)?.toDouble() ??
+          (map['budget'] as num?)?.toDouble() ??
+          1500.0,
       urgency: map['urgency']?.toString() ?? 'Standard',
       timeAgo: map['created_at'] != null ? 'Recently' : 'Just now',
       clientName: map['client_name']?.toString() ?? 'SKAVIA Member',
@@ -116,6 +135,7 @@ class JobRequirementItem {
       status: map['status']?.toString() ?? 'Open',
       skills: (map['skills'] as List?)?.map((e) => e.toString()).toList() ?? [],
       submittedBy: map['submitted_by']?.toString(),
+      mediaUrl: parsedMediaUrl,
     );
   }
 }

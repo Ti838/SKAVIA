@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
+import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_dimensions.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
+import '../../../../core/services/media_picker_service.dart';
+import '../../../../core/storage/remote_storage_datasource.dart';
 import '../../../../core/utils/category_resolver.dart';
 import '../../../../core/utils/supabase_guard.dart';
 import '../../../../core/utils/ui_feedback_helper.dart';
@@ -58,6 +63,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
   String _selectedLocation = 'Dhanmondi, Dhaka';
   String _urgency = 'Standard';
   bool _isSubmitting = false;
+  File? _attachedImage;
 
   final Map<String, String> _categories = const {
     'cat_electrical': 'Electrical',
@@ -81,6 +87,50 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
     _budgetController.dispose();
     _authController.dispose();
     super.dispose();
+  }
+
+  void _showMediaSourceDialog() {
+    final isBn = AppLanguageService.isBengali;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primarySky),
+                title: Text(isBn ? 'ক্যামেরা দিয়ে ছবি তুলুন' : 'Take Photo with Camera'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickMedia(fromCamera: true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: AppColors.primarySky),
+                title: Text(isBn ? 'গ্যালারি থেকে ছবি বেছে নিন' : 'Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickMedia(fromCamera: false);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickMedia({required bool fromCamera}) async {
+    final file = await MediaPickerService.pickImage(fromCamera: fromCamera);
+    if (file != null && mounted) {
+      final compressed = await MediaPickerService.compressToJpeg(file);
+      setState(() => _attachedImage = compressed);
+    }
   }
 
   Future<void> _submitPost() async {
@@ -118,6 +168,25 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
         : rawTitle;
 
     try {
+      String? uploadedMediaUrl;
+      if (_attachedImage != null) {
+        try {
+          final storageRes = await RemoteStorageDataSource().uploadFileDetailed(
+            file: _attachedImage!,
+            path: 'posts/${user.uid}/${DateTime.now().millisecondsSinceEpoch}.jpg',
+          );
+          if (storageRes.isSuccess) {
+            uploadedMediaUrl = storageRes.url;
+          }
+        } catch (e) {
+          debugPrint('[PostComposer] Image upload warning: $e');
+        }
+      }
+
+      final finalDesc = uploadedMediaUrl != null
+          ? '[img]$uploadedMediaUrl[/img]\n$desc'
+          : desc;
+
       final resolvedCategoryUuid = await CategoryResolver.resolveCategoryUuid(
         client,
         _selectedCategory,
@@ -129,7 +198,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
             'submitted_by': user.uid,
             'category_id': ?resolvedCategoryUuid,
             'title': persistedTitle,
-            'description': desc,
+            'description': finalDesc,
             'requirement_type': normalizedType,
             'budget': budget,
             'location': _selectedLocation,
@@ -160,6 +229,7 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
         likesCount: 0,
         commentsCount: 0,
         submittedBy: user.uid,
+        mediaUrl: uploadedMediaUrl,
       );
 
       if (mounted) {
@@ -270,6 +340,10 @@ class _PostComposerSheetState extends State<PostComposerSheet> {
                         onUrgencyChanged: (urg) =>
                             setState(() => _urgency = urg),
                         categories: _categories,
+                        attachedImage: _attachedImage,
+                        onPickImage: _showMediaSourceDialog,
+                        onRemoveImage: () =>
+                            setState(() => _attachedImage = null),
                       ),
                       const SizedBox(height: 24),
                       AppButton(

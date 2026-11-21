@@ -386,26 +386,30 @@ function LoginPortalContent() {
 
       {/* Top Header / Bar */}
       <header className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between py-2 sm:py-4">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:border-[#3898EC]"
-          style={{
-            borderColor: 'var(--border-subtle)',
-            backgroundColor: 'var(--bg-surface)',
-            color: 'var(--text-secondary)',
-          }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5 text-blue-500" />
-          <span>{isBengali ? 'হোমপেজে ফিরুন' : 'Back to Website'}</span>
-        </Link>
+        <div className="flex items-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border transition hover:border-[#3898EC]"
+            style={{
+              borderColor: 'var(--border-subtle)',
+              backgroundColor: 'var(--bg-surface)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5 text-blue-500" />
+            <span>{isBengali ? 'হোমপেজে ফিরুন' : 'Back to Website'}</span>
+          </Link>
+        </div>
 
-        {/* Center Emblem on larger screens */}
-        <Link href="/" className="hidden sm:flex items-center gap-2">
-          <SkaviaBrandMark variant="emblem" size={26} />
-          <span className="font-heading font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
-            SKAVIA
-          </span>
-        </Link>
+        {/* Perfectly centered SKAVIA logo and text */}
+        <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
+          <Link href="/" className="flex items-center gap-2 hover:opacity-90 transition">
+            <SkaviaBrandMark variant="emblem" size={26} />
+            <span className="font-heading font-extrabold text-sm tracking-tight text-slate-900 dark:text-white">
+              SKAVIA
+            </span>
+          </Link>
+        </div>
 
         {/* Right utility buttons */}
         <div className="flex items-center gap-2">
@@ -413,7 +417,7 @@ function LoginPortalContent() {
             type="button"
             onClick={handleCycleTheme}
             aria-label="Toggle theme"
-            className="inline-flex items-center justify-center h-8 w-8 rounded-full border text-xs transition"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-full border text-xs transition hover:scale-105"
             style={{
               backgroundColor: 'var(--bg-surface)',
               borderColor: 'var(--border-subtle)',

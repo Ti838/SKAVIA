@@ -82,7 +82,6 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
     final colorScheme = Theme.of(context).colorScheme;
     final tokens = context.skavia;
     final activeStyle = _effectiveStyle(context);
-    final isRetina = RetinaMode.isHighDensity(context);
 
     return Stack(
       children: [
@@ -99,29 +98,35 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
             onTap: widget.onMapTap,
           ),
           children: [
-            // Base Tile Layer (100% Free OpenStreetMap & Esri Satellite — No API Key Required)
+            // Base Tile Layer (Authentic Google Maps Street, Google Hybrid Satellite & Dark Canvas)
             if (activeStyle == SkaviaMapStyle.satellite) ...[
               TileLayer(
-                urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate:
+                    'https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+                fallbackUrl:
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 userAgentPackageName: 'com.example.skavia',
-                maxZoom: 18,
+                maxZoom: 20,
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
-                urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate:
+                    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                fallbackUrl:
+                    'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
                 userAgentPackageName: 'com.example.skavia',
-                maxZoom: 18,
+                maxZoom: 19,
               )
             else
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                fallbackUrl: 'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c'],
-                retinaMode: isRetina,
+                urlTemplate:
+                    'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.skavia',
-                maxZoom: 19,
+                maxZoom: 20,
               ),
 
             // Live Markers (Custom Pin, Google-Style Blue GPS Dot, Real Technicians)

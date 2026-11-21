@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/app_colors.dart';
@@ -5,7 +7,7 @@ import '../../../../core/extensions/context_extensions.dart';
 import '../../../../core/services/app_language_service.dart';
 import '../../../../core/services/location_service.dart';
 
-/// Form fields for PostComposerSheet: Category, Location, Budget, Urgency & Description.
+/// Form fields for PostComposerSheet: Category, Location, Budget, Urgency, Description & Media.
 class PostComposerFields extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController descController;
@@ -17,6 +19,9 @@ class PostComposerFields extends StatelessWidget {
   final String urgency;
   final ValueChanged<String> onUrgencyChanged;
   final Map<String, String> categories;
+  final File? attachedImage;
+  final VoidCallback? onPickImage;
+  final VoidCallback? onRemoveImage;
 
   const PostComposerFields({
     super.key,
@@ -30,6 +35,9 @@ class PostComposerFields extends StatelessWidget {
     required this.urgency,
     required this.onUrgencyChanged,
     required this.categories,
+    this.attachedImage,
+    this.onPickImage,
+    this.onRemoveImage,
   });
 
   @override
@@ -325,6 +333,72 @@ class PostComposerFields extends StatelessWidget {
               ? 'Description is required'
               : null,
         ),
+        const SizedBox(height: 16),
+
+        // Photo / Media Attachment Section (Facebook-style)
+        Text(
+          isBn ? 'ছবি / মিডিয়া সংযুক্ত করুন' : 'Attach Photo / Media',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (attachedImage == null)
+          OutlinedButton.icon(
+            onPressed: onPickImage,
+            icon: Icon(
+              Icons.add_photo_alternate_rounded,
+              size: 20,
+              color: tokens.brandAccent,
+            ),
+            label: Text(
+              isBn ? 'ছবি যোগ করুন (ঐচ্ছিক)' : 'Add Photo (Optional)',
+              style: TextStyle(
+                color: tokens.brandAccent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: tokens.border),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+          )
+        else
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  attachedImage!,
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Colors.black.withValues(alpha: 0.7),
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    onPressed: onRemoveImage,
+                  ),
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
