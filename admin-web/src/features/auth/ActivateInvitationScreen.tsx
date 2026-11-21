@@ -11,7 +11,6 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from 'lucide-react';
-import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
 import { useTranslation } from '@/lib/l10n/LanguageContext';
 import {
   createInvitedAdminFirebaseAccount,
@@ -205,7 +204,6 @@ function ActivateInvitationContent() {
           <ArrowLeft className="h-3.5 w-3.5 text-blue-500" />
           <span>{isBengali ? 'হোমপেজে ফিরুন' : 'Back to Website'}</span>
         </Link>
-        <LanguageSwitcher />
       </header>
 
       {/* Card */}
