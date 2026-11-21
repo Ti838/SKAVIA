@@ -91,9 +91,9 @@ export function HeroAtmosphere({
         className={`absolute top-0 left-0 right-0 h-[1px] w-full bg-gradient-to-r ${styles.horizonBeam}`}
       />
 
-      {/* Layer 2: Main Top-Anchored Radial Spotlight (Smooth, seamless falloff) */}
+      {/* Layer 2: Main Top-Anchored Radial Spotlight (Smooth, living motion graphics breathing) */}
       <div
-        className="absolute inset-0 w-full h-full transition-opacity duration-700"
+        className="absolute inset-0 w-full h-full transition-opacity duration-700 animate-aura-pulse"
         style={{
           background: styles.primary,
         }}
@@ -101,7 +101,7 @@ export function HeroAtmosphere({
 
       {/* Layer 3: Left Ambient Color Swell */}
       <div
-        className="absolute inset-0 w-full h-full transition-opacity duration-700"
+        className="absolute inset-0 w-full h-full transition-opacity duration-700 animate-aura-pulse [animation-delay:2s]"
         style={{
           background: styles.accentLeft,
         }}

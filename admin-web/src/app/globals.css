@@ -205,10 +205,55 @@ textarea:focus-visible {
   box-shadow: 0 0 0 3px rgba(56, 152, 236, 0.22);
 }
 
+/* Motion Graphics Enhancements: Living Ambient & Tactile Micro-Interactions */
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes aura-pulse {
+  0%, 100% {
+    opacity: 0.82;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 6s ease-in-out infinite;
+}
+
+.animate-aura-pulse {
+  animation: aura-pulse 8s ease-in-out infinite;
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 3s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sakuga-pop-in,
   .sakuga-toast-enter,
-  .animate-radar-sweep {
+  .animate-radar-sweep,
+  .animate-float-gentle,
+  .animate-aura-pulse,
+  .animate-shimmer-sweep {
     animation: none !important;
   }
   .sakuga-spring-tap,
