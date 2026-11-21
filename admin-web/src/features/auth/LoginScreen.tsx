@@ -22,7 +22,6 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { SkaviaBrandMark } from '@/components/brand/SkaviaBrandMark';
-import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
 import { useTranslation } from '@/lib/l10n/LanguageContext';
 import { MfaChallengeForm } from '@/features/auth/MfaChallengeForm';
 import {
@@ -365,8 +364,6 @@ function LoginPortalContent() {
 
         {/* Right utility buttons */}
         <div className="flex items-center gap-2">
-          <LanguageSwitcher />
-
           <button
             type="button"
             onClick={handleCycleTheme}

@@ -6,7 +6,6 @@ import { Building2, LogOut, Menu, Moon, Search, ShieldCheck, Sun } from 'lucide-
 import { signOutFirebaseClient } from '@/lib/firebase-client';
 import { useAdminSession } from './SessionProvider';
 import { CommandPalette } from './CommandPalette';
-import { LanguageSwitcher } from '@/components/navigation/LanguageSwitcher';
 import { useTranslation } from '@/lib/l10n/LanguageContext';
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
@@ -169,8 +168,6 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
               ? isBengali ? 'স্টেপ-আপ নিশ্চিত' : 'Step-Up Verified'
               : isBengali ? 'স্টেপ-আপ যাচাই' : 'Verify Step-Up'}
           </button>
-
-          <LanguageSwitcher />
 
           <button
             type="button"
