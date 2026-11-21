@@ -40,9 +40,10 @@ export function WorkerAndFeaturesSection({ t }: { t: PublicThemeTokens }) {
     <section id="workers" className={`relative border-b ${t.railBorder} py-20 px-4 sm:px-6 lg:px-8 overflow-hidden scroll-mt-20`}>
       {/* Seamless Ambient Lighting with no sharp bounding borders */}
       <div 
+        suppressHydrationWarning
         className="absolute inset-0 pointer-events-none select-none overflow-hidden" 
         style={{
-          background: t.dark
+          backgroundImage: t.dark
             ? 'radial-gradient(ellipse 65% 50% at 0% 50%, rgba(0, 51, 153, 0.18) 0%, rgba(21, 231, 202, 0.05) 50%, transparent 100%)'
             : 'radial-gradient(ellipse 65% 50% at 0% 50%, rgba(0, 51, 153, 0.05) 0%, rgba(56, 152, 236, 0.03) 50%, transparent 100%)'
         }}
@@ -160,7 +161,7 @@ export function DownloadSection({
   const version = distribution.android.version ?? '1.0.0';
 
   const publishedDateLabel = distribution.android.publishedAt
-    ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(
+    ? new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(
         new Date(distribution.android.publishedAt)
       )
     : 'Latest Production';
@@ -234,7 +235,7 @@ export function DownloadSection({
                   >
                     v{version} (Production)
                   </span>
-                  <span className={`text-xs ${t.textMuted}`}>
+                  <span suppressHydrationWarning className={`text-xs ${t.textMuted}`}>
                     {publishedDateLabel}
                   </span>
                 </div>

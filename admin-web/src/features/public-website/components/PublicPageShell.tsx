@@ -15,6 +15,7 @@ export function PublicPageShell({ children }: PublicPageShellProps) {
 
   return (
     <div
+      suppressHydrationWarning
       className={`min-h-screen transition-colors duration-200 overflow-x-clip ${
         isDark ? 'bg-black text-neutral-100' : 'bg-white text-neutral-900'
       }`}

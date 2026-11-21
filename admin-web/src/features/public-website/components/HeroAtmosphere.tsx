@@ -1,7 +1,5 @@
 'use client';
 
-import { useId } from 'react';
-
 interface HeroAtmosphereProps {
   dark: boolean;
   variant?: 'hero' | 'subpage' | 'enterprise' | 'technical';
@@ -15,7 +13,7 @@ export function HeroAtmosphere({
   accentColor,
   className = '',
 }: HeroAtmosphereProps) {
-  const patternId = useId();
+  const patternId = `dot_pattern_${variant}`;
 
   // Color profiles based on variant & theme
   const getGlowStyles = () => {
@@ -83,50 +81,57 @@ export function HeroAtmosphere({
 
   return (
     <div
+      suppressHydrationWarning
       className={`absolute inset-0 w-full h-full pointer-events-none overflow-hidden select-none z-0 ${className}`}
       aria-hidden="true"
     >
       {/* Layer 1: Top Horizon Lighting Beam */}
       <div
+        suppressHydrationWarning
         className={`absolute top-0 left-0 right-0 h-[1px] w-full bg-gradient-to-r ${styles.horizonBeam}`}
       />
 
       {/* Layer 2: Main Top-Anchored Radial Spotlight (Clean, stable atmospheric glow) */}
       <div
+        suppressHydrationWarning
         className="absolute inset-0 w-full h-full transition-opacity duration-500"
         style={{
-          background: styles.primary,
+          backgroundImage: styles.primary,
         }}
       />
 
       {/* Layer 3: Left Ambient Color Swell */}
       <div
+        suppressHydrationWarning
         className="absolute inset-0 w-full h-full transition-opacity duration-500"
         style={{
-          background: styles.accentLeft,
+          backgroundImage: styles.accentLeft,
         }}
       />
 
       {/* Layer 4: Right Ambient Color Swell */}
       <div
+        suppressHydrationWarning
         className="absolute inset-0 w-full h-full transition-opacity duration-700"
         style={{
-          background: styles.accentRight,
+          backgroundImage: styles.accentRight,
         }}
       />
 
       {/* Custom Accent Tint if provided */}
       {accentColor && (
         <div
+          suppressHydrationWarning
           className="absolute inset-0 w-full h-full opacity-15"
           style={{
-            background: `radial-gradient(circle 400px at 50% 10%, ${accentColor}, transparent 70%)`,
+            backgroundImage: `radial-gradient(circle 400px at 50% 10%, ${accentColor}, transparent 70%)`,
           }}
         />
       )}
 
       {/* Layer 5: Architectural Precision Dot Grid with Organic Radial Fade (Magic UI Style) */}
       <svg
+        suppressHydrationWarning
         className="absolute inset-0 w-full h-full"
         style={{
           maskImage:

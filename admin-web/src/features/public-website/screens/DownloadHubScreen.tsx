@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -29,10 +29,13 @@ export function DownloadHubScreen() {
   const [copiedSha, setCopiedSha] = useState(false);
 
   const directApkUrl = dist.apkUrl ?? '/downloads/skavia-latest.apk';
-  const fullDownloadUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}${directApkUrl}`
-      : `https://skavia-bd.vercel.app${directApkUrl}`;
+  const [fullDownloadUrl, setFullDownloadUrl] = useState(`https://skavia-bd.vercel.app${directApkUrl}`);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setFullDownloadUrl(`${window.location.origin}${directApkUrl}`);
+    }
+  }, [directApkUrl]);
 
   const handleCopySha = (hash: string) => {
     try {
@@ -96,8 +99,8 @@ export function DownloadHubScreen() {
           {/* Main Action Hub: Primary Download & QR Code Section */}
           <section className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Primary Universal Download Card (8 cols) */}
-              <div className="lg:col-span-8 space-y-6">
+              {/* Left Column: Primary Universal Download & Architecture Builds (7 cols) */}
+              <div className="lg:col-span-7 space-y-5">
                 {/* Live Device Hardware Telemetry Card */}
                 <DeviceCompatibilityCard
                   telemetry={detection}
@@ -105,11 +108,12 @@ export function DownloadHubScreen() {
                 />
 
                 {/* Main Hero Download Card */}
-                <div className={`rounded-3xl border p-6 sm:p-8 space-y-6 relative overflow-hidden transition-all ${t.railBorder} ${t.cardBg} shadow-2xl`}>
+                <div className={`rounded-3xl border p-6 sm:p-7 space-y-5 relative overflow-hidden transition-all ${t.railBorder} ${t.cardBg} shadow-xl`}>
                   {/* Glowing Edge Gradient Accent */}
                   <div
+                    suppressHydrationWarning
                     className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none blur-3xl opacity-20 dark:opacity-30"
-                    style={{ background: 'radial-gradient(circle, #3898EC, #15E7CA)' }}
+                    style={{ backgroundImage: 'radial-gradient(circle, #3898EC, #15E7CA)' }}
                     aria-hidden="true"
                   />
 
@@ -126,7 +130,7 @@ export function DownloadHubScreen() {
                     </span>
                   </div>
 
-                  <div className="relative z-10 space-y-2">
+                  <div className="relative z-10 space-y-1.5">
                     <h2 className="text-2xl sm:text-3xl font-extrabold text-neutral-950 dark:text-white tracking-tight">
                       SKAVIA Universal Production APK
                     </h2>
@@ -137,14 +141,14 @@ export function DownloadHubScreen() {
                   </div>
 
                   {/* Primary Download Action Bar */}
-                  <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10">
+                  <div className="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10">
                     <a
                       href={directApkUrl}
                       download="skavia-latest.apk"
                       onClick={handleDownloadClick}
-                      className="sakuga-spring-tap flex-1 inline-flex items-center justify-center gap-2.5 px-7 py-4 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all text-center"
+                      className="sakuga-spring-tap flex-1 inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-neutral-950 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-200 text-sm font-bold shadow-xl transition-all text-center active:scale-[0.98]"
                     >
-                      <Download className="h-5 w-5 shrink-0" />
+                      <Download className="h-4 w-4 shrink-0" />
                       <span>Download Universal APK ({formatBytes(dist.fileSizeBytes ?? 69726983)})</span>
                       <ArrowRight className="h-4 w-4 shrink-0" />
                     </a>
@@ -152,7 +156,7 @@ export function DownloadHubScreen() {
                     <button
                       type="button"
                       onClick={() => handleCopySha(dist.sha256Checksum ?? '')}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-4 rounded-2xl border border-neutral-300 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-mono transition text-neutral-700 dark:text-neutral-300"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-3.5 rounded-2xl border border-neutral-300 dark:border-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-mono transition text-neutral-700 dark:text-neutral-300 active:scale-[0.98]"
                       title="Copy SHA-256 Checksum"
                     >
                       {copiedSha ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
@@ -161,14 +165,14 @@ export function DownloadHubScreen() {
                   </div>
 
                   {/* Cryptographic SHA-256 Checksum Block */}
-                  <div className="pt-2 relative z-10 space-y-2">
+                  <div className="pt-1 relative z-10 space-y-1.5">
                     <div className="flex items-center justify-between text-xs text-neutral-500">
                       <span className="font-mono uppercase tracking-wider text-[11px] font-semibold">
                         SHA-256 Fingerprint
                       </span>
                       <span className="font-mono text-[10px]">ECDSA SHA256withRSA Signed</span>
                     </div>
-                    <div className="p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 overflow-x-auto">
+                    <div className="p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/60 overflow-x-auto">
                       <code className="text-[11px] font-mono text-emerald-600 dark:text-teal-400 break-all select-all">
                         {dist.sha256Checksum}
                       </code>
@@ -179,7 +183,7 @@ export function DownloadHubScreen() {
                 {/* Architecture-Specific Builds (ARM64 & ARMv7) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* ARM64-v8a */}
-                  <div className={`p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                  <div className={`p-4 sm:p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-2.5`}>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                         <Cpu className="h-3.5 w-3.5 text-[#3898EC]" />
@@ -201,7 +205,7 @@ export function DownloadHubScreen() {
                   </div>
 
                   {/* ARMv7-a */}
-                  <div className={`p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                  <div className={`p-4 sm:p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-2.5`}>
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono font-bold text-neutral-900 dark:text-white flex items-center gap-1.5">
                         <Smartphone className="h-3.5 w-3.5 text-[#15E7CA]" />
@@ -222,22 +226,62 @@ export function DownloadHubScreen() {
                     </a>
                   </div>
                 </div>
+
+                {/* Direct Android Sideload Guide (Balances Left Column Height to Match Right Column) */}
+                <div className={`p-4 sm:p-5 rounded-2xl border ${t.railBorder} ${t.cardBg} space-y-3`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                        Direct Android Sideload Guide
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-mono text-neutral-400">Zero Third-Party Store</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-0.5">
+                    <div className="p-2.5 rounded-xl border border-neutral-200/70 dark:border-neutral-800/70 bg-neutral-50/50 dark:bg-neutral-900/40 space-y-0.5">
+                      <span className="text-[10px] font-mono font-bold text-[#3898EC]">01 &middot; DOWNLOAD</span>
+                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-snug">
+                        Tap Universal APK or scan QR from your camera.
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl border border-neutral-200/70 dark:border-neutral-800/70 bg-neutral-50/50 dark:bg-neutral-900/40 space-y-0.5">
+                      <span className="text-[10px] font-mono font-bold text-[#15E7CA]">02 &middot; ALLOW</span>
+                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-snug">
+                        Tap Settings and toggle &ldquo;Allow from this source&rdquo;.
+                      </p>
+                    </div>
+                    <div className="p-2.5 rounded-xl border border-neutral-200/70 dark:border-neutral-800/70 bg-neutral-50/50 dark:bg-neutral-900/40 space-y-0.5">
+                      <span className="text-[10px] font-mono font-bold text-emerald-500">03 &middot; LAUNCH</span>
+                      <p className="text-[11px] text-neutral-600 dark:text-neutral-400 leading-snug">
+                        Install and authenticate with instant OTP handshake.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Right Column: Scan to Download QR Code & Interactive Phone Preview (4 cols) */}
-              <div className="lg:col-span-4 space-y-6">
-                {/* Instant Scan-to-Download QR Code */}
-                <DownloadQrCode url={fullDownloadUrl} />
+              {/* Right Column: Dedicated Scan-to-Download QR Code & Phone Preview (5 cols) - Perfectly Leveled */}
+              <div className="lg:col-span-5 space-y-4">
+                {/* Dedicated Scan-to-Download QR Code Card */}
+                <DownloadQrCode url={fullDownloadUrl} variant="horizontal" />
 
-                {/* Visual Phone Mockup */}
-                <div className={`rounded-3xl border p-6 flex flex-col items-center text-center space-y-4 ${t.railBorder} ${t.cardBg} shadow-xl`}>
-                  <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-semibold">
-                    Interactive Application Preview
-                  </span>
+                {/* Interactive Flagship Phone Preview */}
+                <div className={`w-full rounded-3xl border p-5 sm:p-6 flex flex-col items-center text-center space-y-3.5 ${t.railBorder} ${t.cardBg} shadow-xl`}>
+                  <div className="flex items-center justify-between w-full px-1">
+                    <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 font-semibold flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Live Interactive Preview</span>
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500">
+                      v1.0.0
+                    </span>
+                  </div>
 
-                  <SmartphoneDeviceMockup t={t} />
+                  <SmartphoneDeviceMockup t={t} size="compact" />
 
-                  <div className="space-y-1 pt-1">
+                  <div className="space-y-0.5 pt-1">
                     <p className="font-bold text-xs text-neutral-900 dark:text-white">
                       Unified Client &amp; Specialist Workspace
                     </p>
