@@ -46,11 +46,14 @@ class LiveJobFeedDataSource {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
+      // Return immediately if no open requirements exist
+      if (res.isEmpty) return const [];
+
       final likedIds = _readCachedIdSet(_likedCacheKey);
       final savedIds = _readCachedIdSet(_savedCacheKey);
 
       final List<JobRequirementItem> fetched = [];
-      for (final row in (res as List<dynamic>)) {
+      for (final row in res) {
         final id = row['requirement_id']?.toString() ?? '';
         final rawTitle = row['title']?.toString() ?? 'Service Requirement';
         final isMarkedUpdate = rawTitle.startsWith(updatePrefix);

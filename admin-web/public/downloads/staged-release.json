@@ -1,11 +1,12 @@
 ﻿{
-    "buildNumber":  7,
-    "fileSizeBytes":  69744703,
-    "fileName":  "skavia-v1.0.6.apk",
-    "apkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-v1.0.6.apk",
-    "releaseNotes":  "- Luxury Apple-grade ecosystem showcase card on onboarding\n- 100% Free Esri Dark Gray + OpenStreetMap tiles with zero watermarks\n- Resilient Live Job Feed with seamless empty-state handling\n- Actionable Firebase Phone Auth guidance and stability polish",
-    "deployedAt":  "2026-11-21T13:38:54Z",
+    "buildNumber":  9,
+    "fileSizeBytes":  70089708,
+    "fileName":  "skavia-v1.0.8.apk",
+    "apkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-v1.0.8.apk",
+    "releaseNotes":  "- BITA STUDIO parent organization branding \u0026 official portal link\n- Real Google Maps standard OpenStreetMap \u0026 Stadia tiles (zero watermark)\n- 100% Free Cloud Phone OTP verification engine (no credit card or Blaze billing required)\n- Resilient feed empty state and clean pristine new account experience",
+    "deployedAt":  "2026-11-24T13:58:43Z",
     "channel":  "stable",
-    "versionName":  "1.0.6",
+    "versionName":  "1.0.8",
+    "sha256Checksum":  "96649b63b13b77d217f4dfdf08a8912c9ef23fbb9cffe6c2b386784d1cd2bffa",
     "latestApkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-latest.apk"
 }

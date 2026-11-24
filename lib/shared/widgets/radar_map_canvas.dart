@@ -98,35 +98,31 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
             onTap: widget.onMapTap,
           ),
           children: [
-            // Base Tile Layer (Authentic Google Maps Street, Google Hybrid Satellite & Dark Canvas)
+            // Base Tile Layer — 100% free, no API key required
+            // Street: OSM Standard | Dark: Stadia Smooth Dark | Satellite: Esri World Imagery
             if (activeStyle == SkaviaMapStyle.satellite) ...[
               TileLayer(
                 urlTemplate:
-                    'https://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
-                fallbackUrl:
                     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                userAgentPackageName: 'com.example.skavia',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.skavia.app',
                 maxZoom: 20,
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
+                // Stadia Alidade Smooth Dark — free for ≤500K tiles/month, no key needed
                 urlTemplate:
-                    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-                fallbackUrl:
-                    'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
-                userAgentPackageName: 'com.example.skavia',
-                maxZoom: 19,
+                    'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 20,
               )
             else
               TileLayer(
-                urlTemplate:
-                    'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-                subdomains: const ['mt0', 'mt1', 'mt2', 'mt3'],
-                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.skavia',
-                maxZoom: 20,
+                // OpenStreetMap Standard — completely free, no key, no watermark
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.skavia.app',
+                maxZoom: 19,
               ),
 
             // Live Markers (Custom Pin, Google-Style Blue GPS Dot, Real Technicians)
@@ -363,8 +359,10 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
               ),
               child: Text(
                 activeStyle == SkaviaMapStyle.satellite
-                    ? '© Esri · © CARTO · © OSM'
-                    : '© OpenStreetMap · © CARTO',
+                    ? '© Esri · © OpenStreetMap'
+                    : activeStyle == SkaviaMapStyle.dark
+                        ? '© Stadia Maps · © OpenStreetMap'
+                        : '© OpenStreetMap contributors',
                 style: const TextStyle(
                   fontSize: 9,
                   color: Colors.white,
