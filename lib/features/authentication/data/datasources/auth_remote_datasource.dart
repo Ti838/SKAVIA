@@ -11,9 +11,11 @@ import '../../../../data/tables/database_tables.dart';
 import '../../../profile/data/datasources/profile_remote_datasource.dart';
 
 class AuthRemoteDataSource {
-  /// Cached OTP and target phone for in-app auto-fill and resilient delivery
+  /// Cached OTP, delivery channel, and targets for OTP verification
   static String? latestSentOtp;
+  static String? latestDeliveryChannel;
   static String? latestTargetPhone;
+  static String? latestTargetEmail;
   fb.FirebaseAuth? get _firebaseAuth {
     try {
       return fb.FirebaseAuth.instance;
@@ -191,12 +193,21 @@ class AuthRemoteDataSource {
 
       final firebasePhotoUrl = _firebaseAuth?.currentUser?.photoURL;
 
+      final existingByPhone = (phone != null && phone.isNotEmpty)
+          ? await supabase
+                .from(DatabaseTables.users)
+                .select('user_id, email')
+                .eq('phone', phone)
+                .maybeSingle()
+          : null;
+
       // 1. Sync Base User Record for new user (including Google photoURL if present)
       await supabase.from(DatabaseTables.users).insert({
         'user_id': userId,
         'full_name': fullName,
         'email': email,
-        'phone': phone,
+        if (phone != null && phone.isNotEmpty && existingByPhone == null)
+          'phone': phone,
         if (firebasePhotoUrl != null && firebasePhotoUrl.trim().isNotEmpty)
           'avatar_url': firebasePhotoUrl.trim(),
         'status': 'Active',
@@ -237,9 +248,11 @@ class AuthRemoteDataSource {
     }
   }
 
-  /// Send 100% Free Cloud Verification OTP (No Firebase Blaze / credit card required)
+  /// Send Verification OTP via SKAVIA Cloud OTP Engine (Real Email via Resend/SMTP,
+  /// Real SMS when gateway configured, or free in-app fallback without Firebase Blaze billing).
   Future<void> sendPhoneOtp({
     required String phoneNumber,
+    String? email,
     required void Function(String verificationId, int? resendToken) onCodeSent,
     required void Function(fb.FirebaseAuthException error) onVerificationFailed,
     required void Function(fb.PhoneAuthCredential credential)
@@ -247,6 +260,12 @@ class AuthRemoteDataSource {
     void Function(String verificationId)? onCodeAutoRetrievalTimeout,
   }) async {
     latestTargetPhone = phoneNumber;
+    latestTargetEmail = (email != null && email.trim().isNotEmpty)
+        ? email.trim()
+        : null;
+    latestSentOtp = null;
+    latestDeliveryChannel = null;
+
     try {
       final url = Uri.parse(
         '${AppConfig.releaseApiBaseUrl}/api/public/auth/phone/send-otp',
@@ -255,78 +274,186 @@ class AuthRemoteDataSource {
           .post(
             url,
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'phoneNumber': phoneNumber}),
+            body: jsonEncode({
+              'phoneNumber': phoneNumber,
+              if (latestTargetEmail != null) 'email': latestTargetEmail,
+            }),
           )
-          .timeout(const Duration(seconds: 12));
+          .timeout(const Duration(seconds: 15));
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode == 200 && data['success'] == true) {
         final verificationId =
             data['verificationId']?.toString() ??
             'vid_${DateTime.now().millisecondsSinceEpoch}';
-        final otp = data['otp']?.toString() ?? '123456';
-        latestSentOtp = otp;
+        final otp = data['otp']?.toString();
+        latestDeliveryChannel = data['deliveryChannel']?.toString();
+        final deliveredEmail = data['email']?.toString();
+        if (deliveredEmail != null && deliveredEmail.isNotEmpty) {
+          latestTargetEmail = deliveredEmail;
+        }
+        latestSentOtp = (otp != null && otp.isNotEmpty) ? otp : null;
         onCodeSent(verificationId, null);
         return;
       }
-    } catch (e) {
-      debugPrint('[Cloud Free OTP API fallback]: $e');
-    }
 
-    // Resilient local self-contained OTP generation if network/Vercel is unreachable
-    final fallbackOtp = (100000 + (DateTime.now().millisecondsSinceEpoch % 900000)).toString();
-    latestSentOtp = fallbackOtp;
-    final fallbackVid = 'vid_${DateTime.now().millisecondsSinceEpoch}';
-    onCodeSent(fallbackVid, null);
+      final errorMsg =
+          data['error']?.toString() ?? 'Failed to dispatch verification code.';
+      final code = response.statusCode == 429
+          ? 'too-many-requests'
+          : (response.statusCode == 400
+                ? 'invalid-phone-number'
+                : 'otp-dispatch-failed');
+      onVerificationFailed(
+        fb.FirebaseAuthException(code: code, message: errorMsg),
+      );
+    } catch (e) {
+      debugPrint('[Cloud OTP Dispatch Error]: $e');
+      onVerificationFailed(
+        fb.FirebaseAuthException(
+          code: 'network-request-failed',
+          message:
+              'Unable to reach verification server. Please check your internet connection and try again.',
+        ),
+      );
+    }
   }
 
-  /// Verify 6-digit OTP code and authenticate into Firebase & Supabase (100% Free Forever)
+  /// Send 6-digit OTP directly to user's Email via Resend/SMTP.
+  Future<void> sendEmailOtp({
+    required String email,
+    required void Function(String verificationId) onCodeSent,
+    required void Function(fb.FirebaseAuthException error) onVerificationFailed,
+  }) async {
+    final trimmed = email.trim();
+    latestTargetPhone = null;
+    latestTargetEmail = trimmed;
+    latestSentOtp = null;
+    latestDeliveryChannel = null;
+
+    try {
+      final url = Uri.parse(
+        '${AppConfig.releaseApiBaseUrl}/api/public/auth/email/send-otp',
+      );
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': trimmed}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (response.statusCode == 200 && data['success'] == true) {
+        final verificationId =
+            data['verificationId']?.toString() ??
+            'vid_${DateTime.now().millisecondsSinceEpoch}';
+        final otp = data['otp']?.toString();
+        latestDeliveryChannel = data['deliveryChannel']?.toString() ?? 'email';
+        latestSentOtp = (otp != null && otp.isNotEmpty) ? otp : null;
+        onCodeSent(verificationId);
+        return;
+      }
+
+      final errorMsg =
+          data['error']?.toString() ?? 'Failed to send verification email.';
+      onVerificationFailed(
+        fb.FirebaseAuthException(
+          code: response.statusCode == 429
+              ? 'too-many-requests'
+              : 'otp-dispatch-failed',
+          message: errorMsg,
+        ),
+      );
+    } catch (e) {
+      debugPrint('[Email OTP Dispatch Error]: $e');
+      onVerificationFailed(
+        fb.FirebaseAuthException(
+          code: 'network-request-failed',
+          message:
+              'Unable to reach verification server. Please check your internet connection.',
+        ),
+      );
+    }
+  }
+
+  /// Verify 6-digit OTP code strictly on server, then authenticate into Firebase & Supabase.
   Future<fb.UserCredential> verifyPhoneOtp({
     required String verificationId,
     required String smsCode,
     String? fullName,
   }) async {
     final phone = latestTargetPhone ?? '';
+    final email = latestTargetEmail ?? '';
+    final isEmailOnlyFlow = phone.isEmpty && email.isNotEmpty;
     final code = smsCode.trim();
 
-    String? bridgeEmail;
-    String? bridgePassword;
-    String? resolvedName = fullName;
-
-    try {
-      final url = Uri.parse(
-        '${AppConfig.releaseApiBaseUrl}/api/public/auth/phone/verify-otp',
+    if (code.length != 6 || !RegExp(r'^\d{6}$').hasMatch(code)) {
+      throw fb.FirebaseAuthException(
+        code: 'invalid-verification-code',
+        message: 'Please enter a valid 6-digit numeric verification code.',
       );
-      final response = await http
-          .post(
-            url,
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'phoneNumber': phone,
-              'smsCode': code,
-              'verificationId': verificationId,
-              'fullName': fullName,
-            }),
-          )
-          .timeout(const Duration(seconds: 12));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final userMap = data['user'] as Map<String, dynamic>?;
-        bridgeEmail = userMap?['bridgeEmail']?.toString();
-        bridgePassword = userMap?['bridgePassword']?.toString();
-        resolvedName = userMap?['displayName']?.toString() ?? fullName;
-      }
-    } catch (e) {
-      debugPrint('[Cloud Free OTP Verify Fallback]: $e');
     }
 
-    // Deterministic bridge credentials for Firebase Free Spark Authentication
-    final cleanDigits = phone.replaceAll(RegExp(r'\D'), '');
-    bridgeEmail ??=
-        'phone_${cleanDigits.isNotEmpty ? cleanDigits : "user"}@skavia.internal';
-    bridgePassword ??=
-        'SkaviaSecureOtp_${cleanDigits.isNotEmpty ? cleanDigits : "user"}_2026!';
+    final url = Uri.parse(
+      isEmailOnlyFlow
+          ? '${AppConfig.releaseApiBaseUrl}/api/public/auth/email/verify-otp'
+          : '${AppConfig.releaseApiBaseUrl}/api/public/auth/phone/verify-otp',
+    );
+    final response = await http
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            if (isEmailOnlyFlow) 'email': email else 'phoneNumber': phone,
+            'smsCode': code,
+            'verificationId': verificationId,
+            'fullName': fullName,
+          }),
+        )
+        .timeout(const Duration(seconds: 15));
+
+    Map<String, dynamic> data = <String, dynamic>{};
+    try {
+      data = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {}
+
+    if (response.statusCode != 200 || data['success'] != true) {
+      final serverMessage =
+          data['error']?.toString() ??
+          'Invalid or expired verification code. Please check the 6-digit OTP or tap Resend.';
+      final codeStr = response.statusCode == 429
+          ? 'too-many-requests'
+          : 'invalid-verification-code';
+      throw fb.FirebaseAuthException(code: codeStr, message: serverMessage);
+    }
+
+    final userMap = data['user'] as Map<String, dynamic>?;
+    final existingEmail = userMap?['existingEmail']?.toString();
+    if (existingEmail != null &&
+        existingEmail.isNotEmpty &&
+        !existingEmail.endsWith('@skavia.internal')) {
+      throw fb.FirebaseAuthException(
+        code: 'account-exists-with-different-credential',
+        message:
+            'This phone number is already linked to $existingEmail. Please sign in with Email or Google.',
+      );
+    }
+
+    final bridgeEmail = userMap?['bridgeEmail']?.toString();
+    final bridgePassword = userMap?['bridgePassword']?.toString();
+    final resolvedName = userMap?['displayName']?.toString() ?? fullName;
+
+    if (bridgeEmail == null ||
+        bridgeEmail.isEmpty ||
+        bridgePassword == null ||
+        bridgePassword.isEmpty) {
+      throw fb.FirebaseAuthException(
+        code: 'invalid-credential',
+        message: 'Verification response incomplete. Please request a new OTP.',
+      );
+    }
 
     final auth = _requireFirebaseAuth();
     fb.UserCredential credential;
@@ -347,6 +474,10 @@ class AuthRemoteDataSource {
         rethrow;
       }
     }
+
+    latestSentOtp = null;
+    latestDeliveryChannel = null;
+    latestTargetEmail = null;
 
     if (credential.user != null) {
       if (resolvedName != null && resolvedName.isNotEmpty) {
@@ -391,6 +522,10 @@ class AuthRemoteDataSource {
 
   /// Sign Out from all sessions
   Future<void> signOut() async {
+    latestSentOtp = null;
+    latestDeliveryChannel = null;
+    latestTargetEmail = null;
+    latestTargetPhone = null;
     final futures = <Future<void>>[];
     if (_firebaseAuth != null) {
       futures.add(_firebaseAuth!.signOut());

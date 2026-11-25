@@ -6,15 +6,17 @@ import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../controllers/auth_controller.dart';
 
-/// Form inputs and submission button for Phone OTP verification.
+/// Form inputs and submission button for Phone/Email OTP verification.
 class PhoneLoginForm extends StatelessWidget {
   final TextEditingController phoneController;
+  final TextEditingController? emailController;
   final AuthController authController;
   final VoidCallback onSendOtp;
 
   const PhoneLoginForm({
     super.key,
     required this.phoneController,
+    this.emailController,
     required this.authController,
     required this.onSendOtp,
   });
@@ -41,11 +43,30 @@ class PhoneLoginForm extends StatelessWidget {
           ),
           validator: Validators.bdPhone,
         ),
+        if (emailController != null) ...[
+          const SizedBox(height: 12),
+          AppTextField(
+            controller: emailController,
+            label: isBn
+                ? 'ইমেইল (ইনবক্সে OTP পেতে — ঐচ্ছিক)'
+                : 'Email for Real OTP (Optional)',
+            hint: 'you@gmail.com',
+            keyboardType: TextInputType.emailAddress,
+            prefixIcon: Icon(
+              Icons.mark_email_read_outlined,
+              color: colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+            validator: Validators.optionalEmail,
+          ),
+        ],
         const SizedBox(height: 12),
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            isBn ? 'আপনার মোবাইলে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।' : 'A 6-digit OTP code will be sent to your mobile phone via SMS.',
+            isBn
+                ? 'আপনার ইমেইলে (Resend) অথবা ফোনে ৬-সংখ্যার ওটিপি কোড পাঠানো হবে।'
+                : 'A 6-digit OTP code will be sent to your email inbox or phone.',
             style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
           ),
         ),

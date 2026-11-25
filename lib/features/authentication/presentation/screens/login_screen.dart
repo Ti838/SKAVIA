@@ -9,6 +9,7 @@ import '../../../../core/storage/secure_storage_service.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../navigation/data/repositories/dashboard_repository.dart';
 import '../../../profile/presentation/controllers/profile_controller.dart';
+import '../../data/datasources/auth_remote_datasource.dart';
 import '../controllers/auth_controller.dart';
 import '../widgets/auth_header_widget.dart';
 import '../widgets/email_login_form.dart';
@@ -34,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _otpEmailController = TextEditingController();
 
   final AuthController _authController = AuthController();
   final SecureStorageService _secureStorage = SecureStorageService();
@@ -77,6 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _phoneController.dispose();
+    _otpEmailController.dispose();
     _authController.dispose();
     super.dispose();
   }
@@ -114,7 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     final formattedPhone = Validators.normalizeBdPhone(rawPhone);
-    final success = await _authController.sendPhoneOtp(formattedPhone);
+    final otpEmail = _otpEmailController.text.trim();
+    final success = await _authController.sendPhoneOtp(
+      formattedPhone,
+      email: otpEmail.isNotEmpty ? otpEmail : null,
+    );
     if (!mounted) return;
     if (success) {
       if (_authController.user != null) {
@@ -126,6 +133,8 @@ class _LoginScreenState extends State<LoginScreen> {
         AppRoutes.otpVerification,
         arguments: {
           'phoneNumber': formattedPhone,
+          'email': AuthRemoteDataSource.latestTargetEmail,
+          'deliveryChannel': AuthRemoteDataSource.latestDeliveryChannel,
           'verificationId': _authController.verificationId,
           'isLogin': true,
         },
@@ -310,6 +319,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             )
                           : PhoneLoginForm(
                               phoneController: _phoneController,
+                              emailController: _otpEmailController,
                               authController: _authController,
                               onSendOtp: _handlePhoneOtpSend,
                             ),

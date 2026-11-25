@@ -59,22 +59,41 @@ export async function sendTransactionalEmail(params: {
 
   if (cfg.resendApiKey) {
     try {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${cfg.resendApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          from: process.env.SMTP_FROM || 'SKAVIA Security <security@skavia.com>',
-          to: [params.to],
-          subject: params.subject,
-          html: params.html,
-          text: params.text,
-        }),
-      });
+      const preferredFrom =
+        process.env.RESEND_FROM?.trim() ||
+        process.env.SMTP_FROM?.trim() ||
+        'SKAVIA Security <security@skavia.com>';
+
+      const dispatchResend = async (fromAddress: string) =>
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${cfg.resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: fromAddress,
+            to: [params.to],
+            subject: params.subject,
+            html: params.html,
+            text: params.text,
+          }),
+        });
+
+      let res = await dispatchResend(preferredFrom);
+      let textBody = res.ok ? '' : await res.text();
+
+      // Automatic fallback to Resend's built-in onboarding sender if custom domain is not yet DNS-verified
+      if (
+        res.status === 403 &&
+        textBody.toLowerCase().includes('domain is not verified') &&
+        !preferredFrom.includes('onboarding@resend.dev')
+      ) {
+        res = await dispatchResend('SKAVIA Security <onboarding@resend.dev>');
+        textBody = res.ok ? '' : await res.text();
+      }
+
       if (!res.ok) {
-        const textBody = await res.text();
         return {
           status: 'DeliveryFailed',
           provider: 'resend',
@@ -183,6 +202,54 @@ export async function sendNewDeviceSecurityAlert(params: {
     </div>
   `;
   const text = `New Device Sign-In Alert for ${params.fullName} (${params.roleName}) on ${params.surface}. IP: ${params.ipAddress}, Device: ${params.userAgent}.`;
+
+  return sendTransactionalEmail({
+    to: params.to,
+    subject,
+    html,
+    text,
+  });
+}
+
+export async function sendUserOtpEmail(params: {
+  to: string;
+  fullName?: string;
+  otp: string;
+  targetPhone?: string;
+}): Promise<EmailSendResult> {
+  const recipientName = params.fullName?.trim() || 'SKAVIA Member';
+  const subject = `Your SKAVIA Verification Code: ${params.otp}`;
+  const phoneLine = params.targetPhone
+    ? `<p style="margin: 0 0 12px; font-size: 13px; color: #475569;">Requested for phone number: <strong>${escapeHtml(params.targetPhone)}</strong></p>`
+    : '';
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+      <div style="background: #003399; color: #ffffff; padding: 20px 24px;">
+        <h1 style="margin: 0; font-size: 18px;">SKAVIA Verification</h1>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #cbd5e1;">One-Time Passcode (OTP)</p>
+      </div>
+      <div style="padding: 24px; color: #0f172a; line-height: 1.6;">
+        <p style="margin-top: 0;">Hello <strong>${escapeHtml(recipientName)}</strong>,</p>
+        ${phoneLine}
+        <p>Use the 6-digit verification code below to complete your sign-in:</p>
+        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 16px; margin: 18px 0; text-align: center;">
+          <span style="font-size: 30px; font-weight: 800; letter-spacing: 6px; color: #003399;">${escapeHtml(params.otp)}</span>
+        </div>
+        <p style="font-size: 13px; color: #475569;">This code expires in <strong>5 minutes</strong>. Never share this code with anyone.</p>
+      </div>
+    </div>
+  `;
+  const text = [
+    `Hello ${recipientName},`,
+    '',
+    params.targetPhone ? `Phone: ${params.targetPhone}` : '',
+    `Your 6-digit SKAVIA verification code is: ${params.otp}`,
+    '',
+    'This code expires in 5 minutes. Never share it with anyone.',
+    '— SKAVIA Security Team',
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return sendTransactionalEmail({
     to: params.to,

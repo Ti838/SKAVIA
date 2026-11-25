@@ -68,11 +68,11 @@ CREATE TABLE IF NOT EXISTS public.user_addresses (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 1.5 USER_SESSIONS (Mobile Devices & Admin Web Step-Up Sessions)
+-- 1.5 USER_SESSIONS (Mobile Devices, Admin Web Step-Up & Pending Phone OTP Challenges)
 CREATE TABLE IF NOT EXISTS public.user_sessions (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     session_id TEXT DEFAULT gen_random_uuid()::text,
-    user_id TEXT NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL, -- Auth UID or 'otp_pending:<e164_phone>' for pre-auth OTP challenges
     device_id TEXT,
     device_name TEXT,
     device_os TEXT,

@@ -3,17 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../datasources/auth_remote_datasource.dart';
 import '../models/user_account_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final FirebaseAuth _firebaseAuth;
   final SupabaseClient _supabase;
+  final AuthRemoteDataSource _remoteDataSource;
 
   AuthRepositoryImpl({
     FirebaseAuth? firebaseAuth,
     SupabaseClient? supabaseClient,
+    AuthRemoteDataSource? remoteDataSource,
   }) : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
-       _supabase = supabaseClient ?? Supabase.instance.client;
+       _supabase = supabaseClient ?? Supabase.instance.client,
+       _remoteDataSource = remoteDataSource ?? AuthRemoteDataSource();
 
   @override
   Future<UserEntity?> getCurrentUser() async {
@@ -42,16 +46,20 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> signInWithPhone(String phone) async {
-    // Handled via Firebase verifyPhoneNumber in AuthRemoteDataSource
+    await _remoteDataSource.sendPhoneOtp(
+      phoneNumber: phone,
+      onCodeSent: (_, _) {},
+      onVerificationFailed: (error) => throw error,
+      onVerificationCompleted: (_) {},
+    );
   }
 
   @override
   Future<UserEntity?> verifyOtp(String verificationId, String smsCode) async {
-    final cred = PhoneAuthProvider.credential(
+    final userCred = await _remoteDataSource.verifyPhoneOtp(
       verificationId: verificationId,
       smsCode: smsCode,
     );
-    final userCred = await _firebaseAuth.signInWithCredential(cred);
     if (userCred.user != null) {
       return getCurrentUser();
     }

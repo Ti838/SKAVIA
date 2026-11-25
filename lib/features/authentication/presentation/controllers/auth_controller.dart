@@ -176,8 +176,8 @@ class AuthController extends ChangeNotifier {
     _globalVerificationId = val;
   }
 
-  /// Send SMS OTP to phone number
-  Future<bool> sendPhoneOtp(String phoneNumber) async {
+  /// Send OTP to phone number (with optional email delivery via Resend/SMTP)
+  Future<bool> sendPhoneOtp(String phoneNumber, {String? email}) async {
     _setLoading(true);
     _setError(null);
     final completer = Completer<bool>();
@@ -185,6 +185,7 @@ class AuthController extends ChangeNotifier {
     try {
       await _dataSource.sendPhoneOtp(
         phoneNumber: phoneNumber,
+        email: email,
         onCodeSent: (verificationId, resendToken) {
           _verificationId = verificationId;
           _globalVerificationId = verificationId;

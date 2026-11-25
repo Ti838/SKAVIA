@@ -19,12 +19,16 @@ import '../widgets/otp_pin_input_row.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String? phoneNumber;
+  final String? email;
+  final String? deliveryChannel;
   final String? fullName;
   final String? verificationId;
 
   const OtpVerificationScreen({
     super.key,
     this.phoneNumber,
+    this.email,
+    this.deliveryChannel,
     this.fullName,
     this.verificationId,
   });
@@ -143,7 +147,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       return;
     }
 
-    final success = await _authController.sendPhoneOtp(phone);
+    final success = await _authController.sendPhoneOtp(
+      phone,
+      email: widget.email ?? AuthRemoteDataSource.latestTargetEmail,
+    );
     if (!mounted) return;
     if (success) {
       if (_authController.user != null) {
@@ -203,6 +210,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   Future<void> _onVerificationSuccess() async {
+    AuthRemoteDataSource.latestSentOtp = null;
+    AuthRemoteDataSource.latestDeliveryChannel = null;
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -255,9 +264,20 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final skavia = context.skavia;
     final l10n = context.l10n;
     final isBn = context.isBengali;
+    final channel =
+        widget.deliveryChannel ?? AuthRemoteDataSource.latestDeliveryChannel;
+    final targetEmail = widget.email ?? AuthRemoteDataSource.latestTargetEmail;
     final displayPhone = (widget.phoneNumber?.trim().isNotEmpty ?? false)
         ? widget.phoneNumber!.trim()
         : (isBn ? 'আপনার নিবন্ধিত নম্বর' : 'your registered number');
+    final sentTargetDescription =
+        channel == 'email' && targetEmail != null && targetEmail.isNotEmpty
+        ? (isBn
+              ? '$targetEmail ইমেইলে ৬-সংখ্যার যাচাইকরণ কোড পাঠানো হয়েছে'
+              : 'We sent a 6-digit verification code to $targetEmail')
+        : (isBn
+              ? '$displayPhone নম্বরে ৬-সংখ্যার যাচাইকরণ কোড পাঠানো হয়েছে'
+              : 'We sent a 6-digit verification code to $displayPhone');
 
     return Scaffold(
       backgroundColor: skavia.canvasBg,
@@ -323,9 +343,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          isBn
-                              ? '$displayPhone নম্বরে ৬-সংখ্যার যাচাইকরণ কোড পাঠানো হয়েছে'
-                              : 'We sent a 6-digit verification code to $displayPhone',
+                          sentTargetDescription,
                           style: TextStyle(
                             fontFamily: AppTypography.bodyFont,
                             fontSize: 14,

@@ -21,6 +21,13 @@ abstract class Validators {
     return null;
   }
 
+  static String? optionalEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    return email(value);
+  }
+
   static String? bdPhone(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Phone number is required';

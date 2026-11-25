@@ -85,6 +85,8 @@ abstract class AppRouter {
           settings,
           (_) => OtpVerificationScreen(
             phoneNumber: args?['phoneNumber'] as String?,
+            email: args?['email'] as String?,
+            deliveryChannel: args?['deliveryChannel'] as String?,
             fullName: args?['fullName'] as String?,
             verificationId: args?['verificationId'] as String?,
           ),
