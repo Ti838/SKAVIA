@@ -9,6 +9,7 @@ import {
   normalizeBdPhone,
   normalizeEmail,
 } from '@/server/services/sms-otp';
+import { extractClientIp } from '@/server/audit/logger';
 import { sendUserOtpEmail } from '@/server/services/email';
 
 export const dynamic = 'force-dynamic';
@@ -50,10 +51,13 @@ export async function POST(req: Request) {
       auth: { persistSession: false },
     });
 
+    const ipAddress = extractClientIp(req);
+
     const issued = await issueOtpChallenge({
       supabase,
       scope: 'phone_otp',
       otpKey: `otp_pending:${normalized}`,
+      ipAddress,
       secret: cfg.adminSessionSecret,
     });
 

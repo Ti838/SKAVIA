@@ -15,6 +15,7 @@ const BD_PHONE_REGEX = /^\+8801[3-9]\d{8}$/;
 const EMAIL_REGEX = /^[\w\-.+]+@([\w-]+\.)+[\w-]{2,}$/i;
 const RESEND_COOLDOWN_MS = 30 * 1000;
 const MAX_REQUESTS_15_MIN = 5;
+const MAX_IP_REQUESTS_15_MIN = 15;
 const MAX_VERIFY_ATTEMPTS = 5;
 
 /**
@@ -108,14 +109,33 @@ export async function issueOtpChallenge(params: {
   supabase: SupabaseClient;
   scope: OtpScope;
   otpKey: string;
+  ipAddress?: string;
   secret: string;
 }): Promise<
   | { ok: true; otp: string; verificationId: string; expiresAt: string }
   | { ok: false; status: number; error: string }
 > {
-  const { supabase, scope, otpKey, secret } = params;
+  const { supabase, scope, otpKey, ipAddress, secret } = params;
   const fifteenMinAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
 
+  // 1. IP-level rate limiting to prevent SMS/email bombing
+  if (ipAddress && ipAddress !== 'unknown' && ipAddress !== '127.0.0.1') {
+    const { count: ipCount } = await supabase
+      .from('user_sessions')
+      .select('id', { count: 'exact', head: true })
+      .eq('ip_address', ipAddress)
+      .gte('created_at', fifteenMinAgo);
+
+    if ((ipCount || 0) >= MAX_IP_REQUESTS_15_MIN) {
+      return {
+        ok: false,
+        status: 429,
+        error: 'Too many requests from this network. Please wait 15 minutes and try again.',
+      };
+    }
+  }
+
+  // 2. Target identity rate limiting
   const { data: recentRequests } = await supabase
     .from('user_sessions')
     .select('created_at')
@@ -163,6 +183,7 @@ export async function issueOtpChallenge(params: {
     device_os: otpDigest,
     device_info: 'attempts:0',
     app_scope: scope,
+    ip_address: ipAddress || null,
     expires_at: expiresAt,
     is_revoked: false,
   });
@@ -249,14 +270,15 @@ export async function verifyOtpChallenge(params: {
 
   const stored = String(activeRecord.device_os || '');
   const vid = String(activeRecord.device_id || '');
-  const matches = stored.startsWith('sha256:')
+  const isHashed = stored.startsWith('sha256:');
+  const matches = isHashed
     ? verifyOtpHash({
         otp: smsCode,
         verificationId: vid,
         storedValue: stored,
         secret,
       })
-    : stored === smsCode;
+    : (process.env.NODE_ENV !== 'production' && stored === smsCode);
 
   if (!matches) {
     const nextAttempts = attempts + 1;
