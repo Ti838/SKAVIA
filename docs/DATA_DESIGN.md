@@ -64,6 +64,11 @@ erDiagram
 | Part | File | Domain | Primary Consumer | Tables |
 | :--- | :--- | :--- | :--- | :--- |
 | **01** | `01_identity_and_rbac.sql` | Identity, Roles & Sessions | Flutter + Admin | `users`, `roles`, `user_roles`, `user_addresses`, `user_sessions`, `verifications` |
+
+> **Note on `user_sessions` Dual Usage:**
+> The `user_sessions` table serves two purposes:
+> 1. **Active Device Sessions:** Normal authenticated sessions where `user_id` is the authenticated user's UUID.
+> 2. **Pre-Auth OTP Challenges:** Temporary challenge entries where `user_id` contains a synthetic identifier (`otp_pending:<e164phone>` or `otp_pending:email:<email>`). The `user_sessions.token_hash` column stores the keyed HMAC-SHA256 hash of the 6-digit OTP, `device_id` holds the `verificationId`, `ip_address` tracks attempt counts (max 5 attempts before lockout), and `expires_at` enforces a strict 5-minute challenge window. Foreign key enforcement on `user_id` is omitted to support this pre-auth challenge workflow.
 | **02** | `02_admin_governance.sql` | Admin RBAC, Passkeys & Security | Admin Web Only | `permissions`, `role_permissions`, `user_permission_overrides`, `admin_profiles`, `admin_branch_assignments`, `admin_invitations`, `admin_passkeys`, `webauthn_challenges`, `admin_login_events`, `audit_logs`, `security_incidents`, `system_settings`, `backup_verification_logs` |
 | **03** | `03_catalog_and_branches.sql` | Branches & Service Taxonomy | Flutter + Admin | `branches`, `categories`, `services`, `skills` |
 | **04** | `04_marketplace_and_operations.sql` | Profiles, Matching, Bookings & Teams | Flutter + Admin | `customer_profiles`, `worker_profiles`, `worker_skills`, `portfolio_items`, `certificates`, `availability_slots`, `requirements`, `requirement_skills`, `match_results`, `service_requests`, `projects`, `teams`, `team_members`, `tasks` |

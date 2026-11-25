@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/Web_Console-Next.js_15_App_Router-000000?logo=nextdotjs&logoColor=white" alt="Next.js 15"/>
   <img src="https://img.shields.io/badge/Architecture-Feature--First_Clean-blueviolet?logo=dart&logoColor=white" alt="Clean Architecture"/>
   <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL_15-3ECF8E?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
-  <img src="https://img.shields.io/badge/Auth-Firebase_SMS_OTP_%2B_Passkeys-FFCA28?logo=firebase&logoColor=black" alt="Auth"/>
+  <img src="https://img.shields.io/badge/Auth-Cloud_OTP_%2B_Mailjet_SMTP_%2B_Passkeys-FFCA28?logo=firebase&logoColor=black" alt="Auth"/>
   <img src="https://img.shields.io/badge/Payment-SSLCommerz_v4-success" alt="Payment"/>
   <img src="https://img.shields.io/badge/Flutter_Tests-182_Passed-brightgreen" alt="Flutter Tests"/>
   <img src="https://img.shields.io/badge/Web_Tests-43_Passed-brightgreen" alt="Web Tests"/>
@@ -55,10 +55,12 @@ graph TB
         
         UserApp <-->|HTTPS REST & Realtime WSS| CloudBackend
         AdminWeb <-->|Server-Side Service Role & PostgREST| CloudBackend
+        UserApp <-->|Cloud OTP & Releases| AdminWeb
     end
 
     subgraph External_Services ["🌐 External Cloud & Financial Rails"]
-        FirebaseEngine["🔥 Google Firebase Cloud<br/>(Phone SMS OTP, Google OAuth, Media Storage)"]
+        FirebaseEngine["🔥 Google Firebase Cloud<br/>(Firebase Auth Spark Bridge, Google OAuth, Media Storage)"]
+        EmailEngine["✉️ Transactional Messaging Rails<br/>(Mailjet SMTP Primary, Resend Fallback, Multi-Gateway BD SMS)"]
         PaymentRails["💳 Bangladesh Banking & MFS Rails<br/>(SSLCommerz Gateway v4, bKash Direct, Nagad)"]
         CloudflareEdge["🛡️ Cloudflare CDN & 1.1.1.1 Latency Endpoint"]
     end
@@ -68,7 +70,8 @@ graph TB
     WorkerUser <-->|Fulfills Dispatches| UserApp
     AdminUser <-->|Supervises Operations| AdminWeb
 
-    UserApp <-->|Phone Auth & Storage| FirebaseEngine
+    UserApp <-->|Auth Tokens & Storage| FirebaseEngine
+    AdminWeb <-->|OTP & Admin Invitations| EmailEngine
     UserApp <-->|Latency Ping| CloudflareEdge
     CloudBackend <-->|Server-to-Server IPN| PaymentRails
     UserApp -->|Hosted Checkout Redirect| PaymentRails

@@ -1,29 +1,64 @@
 sequenceDiagram
     autonumber
-    actor User as 👤 Mobile User
-    participant Flutter as 📱 SKAVIA App
-    participant Firebase as 🔥 Firebase Auth
+    actor User as 👤 App User / Admin
+    participant Flutter as 📱 SKAVIA App / Web
+    participant ApiServer as ⚙️ SKAVIA Server (Vercel)
+    participant Mailjet as ✉️ Mailjet SMTP / SMS
     participant Supabase as ☁️ Supabase PostgreSQL
+    participant Firebase as 🔥 Firebase Auth (Spark Bridge)
 
-    User->>Flutter: Inputs Mobile Number (+880...)
-    Flutter->>Firebase: verifyPhoneNumber(number)
-    Firebase-->>User: 6-Digit SMS OTP Code
-    User->>Flutter: Submits SMS Code
-    Flutter->>Firebase: signInWithCredential(credential)
-    Firebase-->>Flutter: UserCredential (UID & ID Token)
-
+    %% Section 1: User Phone/Email OTP Authentication
     rect rgb(240, 248, 255)
-        Note over Flutter,Supabase: Handshake & Authorization
-        Flutter->>Supabase: SELECT FROM users WHERE id = auth.uid()
-        alt Account Exists
-            Supabase-->>Flutter: User Record (id, primary_role)
-            Flutter->>Flutter: Cache Session in FlutterSecureStorage
-            Flutter->>User: Route to Dashboard
-        else New Account
-            Flutter->>User: Route to Role Selection
-            User->>Flutter: Chooses Role (Customer / Worker / Business)
-            Flutter->>Supabase: INSERT INTO users & user_roles
-            Supabase-->>Flutter: Account Registered
-            Flutter->>User: Route to Profile Wizard
+        Note over User,Firebase: FLOW 1: User Phone & Email OTP Authentication
+        User->>Flutter: Inputs BD Phone (+880...) + Optional Email
+        Flutter->>ApiServer: POST /api/public/auth/phone/send-otp
+        ApiServer->>ApiServer: Generate 6-Digit OTP + Compute HMAC-SHA256 Hash
+        ApiServer->>Supabase: Save Challenge in user_sessions (device_id, ip_address, 5m TTL)
+        alt Mailjet SMTP Configured
+            ApiServer->>Mailjet: Dispatch Branded OTP Email (HTML)
+            Mailjet-->>User: Delivers 6-Digit OTP to Inbox
+        else SMS Provider Configured
+            ApiServer->>Mailjet: Dispatch SMS via BD Gateway
+            Mailjet-->>User: Delivers SMS to SIM
+        else In-App Demo Fallback (No Gateway/Email)
+            ApiServer-->>Flutter: Return OTP in payload (Dev only)
         end
+        ApiServer-->>Flutter: 200 OK (verificationId, deliveryChannel)
+        User->>Flutter: Enters 6-Digit Code
+        Flutter->>ApiServer: POST /api/public/auth/phone/verify-otp (code, verificationId)
+        ApiServer->>ApiServer: Verify HMAC Hash + Rate Limit (max 5 attempts)
+        ApiServer->>Supabase: Mark Challenge Session as Revoked (Single-Use)
+        ApiServer->>ApiServer: Derive Deterministic Firebase Bridge Creds (HMAC)
+        ApiServer-->>Flutter: 200 OK (bridgeEmail, bridgePassword, user info)
+        Flutter->>Firebase: signInWithEmailAndPassword(bridgeEmail, bridgePassword)
+        alt Account Not Yet Created in Firebase
+            Firebase-->>Flutter: error: user-not-found
+            Flutter->>Firebase: createUserWithEmailAndPassword(bridgeEmail, bridgePassword)
+        end
+        Firebase-->>Flutter: UserCredential (UID & Auth Tokens)
+        Flutter->>Supabase: _syncUserToSupabase(UID, name, phone, role)
+        Supabase-->>Flutter: Profile & Session Registered
+        Flutter-->>User: Route to Dashboard (Client/Worker Mode)
+    end
+
+    %% Section 2: Admin One-Time Invitation & Activation
+    rect rgb(255, 248, 240)
+        Note over User,Firebase: FLOW 2: Internal Admin Invitation & Activation
+        actor SuperAdmin as 👔 Super Admin
+        SuperAdmin->>ApiServer: POST /api/admin/invitations (name, email, role, branches)
+        ApiServer->>ApiServer: Generate 32-Byte Secure Token + Compute SHA-256 Hash
+        ApiServer->>Supabase: INSERT INTO admin_invitations (token_hash, status: 'Invited')
+        ApiServer->>Mailjet: sendAdminInvitationEmail(activationUrl, role, branches)
+        Mailjet-->>User: Official Invitation Email Delivered
+        User->>ApiServer: GET /api/public/invitations/verify?token=...
+        ApiServer->>Supabase: Lookup by tokenHash -> Verify Expiry/Revocation -> Update status: 'Opened'
+        ApiServer-->>User: Invitation Details (masked email, role, branches)
+        User->>Flutter: Authenticate with Firebase (Google or Email)
+        Flutter->>ApiServer: POST /api/public/invitations/activate (token, idToken)
+        ApiServer->>Firebase: verifyFirebaseIdToken(idToken)
+        ApiServer->>ApiServer: Verify Authenticated Email matches Invitation Email
+        ApiServer->>Supabase: activateInvitedAdmin() -> INSERT INTO admin_profiles
+        ApiServer->>Supabase: Record Audit Log (admin.invitation.activated)
+        ApiServer-->>Flutter: 200 OK (status: Active / PendingApproval)
+        Flutter-->>User: Access Granted to Internal Admin Portal
     end

@@ -1,6 +1,6 @@
 graph TB
     subgraph Users ["Actors & Stakeholder Personas"]
-        ClientUser["👤 Individual Customer<br/>(Service discovery, Instant booking, OTP verification)"]
+        ClientUser["👤 Individual Customer<br/>(Service discovery, Instant booking, Email/Phone OTP)"]
         BizUser["🏢 Business Client / Organization<br/>(Turnkey projects, Milestone contracts, Kanban boards)"]
         WorkerUser["🔧 Skilled Specialist / Contractor<br/>(Accepts dispatches, Job execution, Wallet earnings)"]
         AdminUser["👔 Internal SKAVIA Administrator<br/>(KYC verification, Dispute mediation, Operations audit)"]
@@ -13,13 +13,15 @@ graph TB
         
         UserApp <-->|HTTPS REST & Realtime WSS| CloudBackend
         AdminWeb <-->|Server-Side Service Role & PostgREST| CloudBackend
+        UserApp <-->|Cloud OTP & Releases| AdminWeb
     end
 
     subgraph External_Services ["🌐 External Cloud & Financial Rails"]
-        FirebaseEngine["🔥 Google Firebase Cloud<br/>(Phone SMS OTP, Google OAuth, Media Storage)"]
+        FirebaseEngine["🔥 Google Firebase Cloud<br/>(Firebase Auth Spark Bridge, Google OAuth, Media Storage)"]
+        EmailEngine["✉️ Transactional Messaging Rails<br/>(Mailjet SMTP Primary, Resend Fallback, Multi-Gateway BD SMS)"]
         PaymentRails["💳 Bangladesh Banking & MFS Rails<br/>(SSLCommerz Gateway v4, bKash Direct, Nagad)"]
         AIEngines["🤖 Natural Language Inference Cloud<br/>(Task breakdown & Diagnostic prompt processing)"]
-        MapEngine["🗺️ Geospatial & Cartography Engine<br/>(Geolocator telemetry & Haversine distance matrix)"]
+        MapEngine["🗺️ Geospatial & Cartography Engine<br/>(CartoDB Positron / OSM Basemap & Geolocator)"]
     end
 
     ClientUser <-->|Orders Services| UserApp
@@ -27,7 +29,8 @@ graph TB
     WorkerUser <-->|Fulfills Dispatches| UserApp
     AdminUser <-->|Supervises Operations| AdminWeb
 
-    UserApp <-->|Phone Auth & Storage| FirebaseEngine
+    UserApp <-->|Auth Tokens & Storage| FirebaseEngine
+    AdminWeb <-->|OTP & Admin Invitations| EmailEngine
     UserApp <-->|Telemetry & Distance| MapEngine
     CloudBackend <-->|AI Diagnostics| AIEngines
     CloudBackend <-->|Server-to-Server IPN| PaymentRails
