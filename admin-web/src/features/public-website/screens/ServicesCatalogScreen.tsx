@@ -114,9 +114,12 @@ export function ServicesCatalogScreen() {
           <section className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-6xl mx-auto">
               {filteredServices.length === 0 ? (
-                <div className={`text-center py-16 rounded-3xl border ${t.railBorder} ${t.cardBg}`}>
-                  <p className={`text-sm ${t.textSecondary}`}>
-                    No services found matching your query.
+                <div className={`text-center py-16 px-4 rounded-3xl border ${t.railBorder} ${t.cardBg}`}>
+                  <p className={`text-base font-semibold ${t.textPrimary}`}>
+                    No services published yet
+                  </p>
+                  <p className={`text-sm mt-1 max-w-md mx-auto ${t.textSecondary}`}>
+                    Standardized trade services and transparent rates will appear here once officially published by the SKAVIA team.
                   </p>
                 </div>
               ) : (

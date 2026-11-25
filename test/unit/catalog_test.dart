@@ -75,36 +75,23 @@ void main() {
       },
     );
 
-    test('FR-C04: CatalogRemoteDataSource searches services by keyword case-insensitively', () async {
+    test('FR-C04: CatalogRemoteDataSource returns empty list when unauthenticated/offline without fabricating mock data', () async {
       final dataSource = CatalogRemoteDataSource();
 
-      // Search for 'ac'
       final acResults = await dataSource.searchServices('ac');
-      expect(acResults.isNotEmpty, isTrue);
-      expect(acResults.any((s) => s.name.toLowerCase().contains('ac')), isTrue);
+      expect(acResults.isEmpty, isTrue);
 
-      // Search for 'circuit'
-      final circuitResults = await dataSource.searchServices('circuit');
-      expect(circuitResults.isNotEmpty, isTrue);
-      expect(
-        circuitResults.any((s) => s.name.toLowerCase().contains('circuit')),
-        isTrue,
-      );
-
-      // Search with empty query returns all services
       final allResults = await dataSource.searchServices('');
-      expect(allResults.length, equals(ServiceModel.defaultServices.length));
+      expect(allResults.isEmpty, isTrue);
     });
 
-    test('FR-C05: CatalogRemoteDataSource filters services by category ID correctly', () async {
+    test('FR-C05: CatalogRemoteDataSource returns clean empty list for category queries when no live services exist', () async {
       final dataSource = CatalogRemoteDataSource();
 
       final acServices = await dataSource.getServices(
         categoryId: 'cat_ac_hvac',
       );
-      for (final s in acServices) {
-        expect(s.categoryId, equals('cat_ac_hvac'));
-      }
+      expect(acServices.isEmpty, isTrue);
     });
   });
 }

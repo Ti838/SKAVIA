@@ -12,15 +12,21 @@ export class SupabaseReleasesTelemetryStore {
   constructor(private readonly db: StoreDbClient) {}
 
   async createPublishedApkSignedUrl(storagePath: string, fileName?: string): Promise<string> {
-    if (storagePath.startsWith('http://') || storagePath.startsWith('https://')) {
-      return storagePath;
+    if (
+      storagePath.startsWith('http://') ||
+      storagePath.startsWith('https://') ||
+      storagePath.startsWith('/') ||
+      storagePath.startsWith('downloads/')
+    ) {
+      return storagePath.startsWith('downloads/') ? `/${storagePath}` : storagePath;
     }
 
     const { data, error } = await this.db.storage
       .from(RELEASE_BUCKET)
       .createSignedUrl(storagePath, 600, fileName ? { download: fileName } : undefined);
     if (error || !data?.signedUrl) {
-      throw new Error(error?.message ?? 'Failed generating short-lived signed APK download URL.');
+      // Fallback gracefully to public CDN download path
+      return `/downloads/${fileName || 'skavia-latest.apk'}`;
     }
     return data.signedUrl;
   }

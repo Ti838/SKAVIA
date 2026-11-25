@@ -29,16 +29,28 @@ export async function getPublicDistributionSnapshot(
     null;
 
   if (androidRelease) {
+    const rawPath = androidRelease.storage_path;
+    const isDirectStatic =
+      rawPath.includes('/downloads/') ||
+      rawPath.endsWith('.apk') ||
+      rawPath.startsWith('/downloads') ||
+      rawPath.startsWith('downloads');
+
+    const downloadPath = isDirectStatic
+      ? `/downloads/${androidRelease.file_name || 'skavia-latest.apk'}`
+      : `${origin}/api/public/releases/${androidRelease.release_id}/download`;
+
     return {
       android: {
         published: true,
         releaseId: androidRelease.release_id,
-        apkUrl: `${origin}/api/public/releases/${androidRelease.release_id}/download`,
+        apkUrl: downloadPath,
+        armv7Url: '/downloads/skavia-v1.0.0-armeabi-v7a.apk',
         version: androidRelease.version_name,
         buildNumber: androidRelease.build_number,
         minSupportedBuild: androidRelease.min_supported_build,
         minSdkVersion: androidRelease.min_sdk_version,
-        fileName: androidRelease.file_name,
+        fileName: androidRelease.file_name || 'skavia-latest.apk',
         fileSizeBytes: androidRelease.file_size_bytes,
         sha256Checksum: androidRelease.sha256_checksum,
         signingCertSha256: androidRelease.signing_cert_sha256,
@@ -46,7 +58,7 @@ export async function getPublicDistributionSnapshot(
         isMandatory: androidRelease.is_mandatory,
         publishedAt: androidRelease.published_at,
         channel: androidRelease.channel,
-        distributionMethod: 'Official Signed APK Distribution',
+        distributionMethod: 'Official Universal Signed Production APK',
       },
       ios: {
         published: Boolean(iosUrl),
@@ -77,18 +89,18 @@ export async function getPublicDistributionSnapshot(
       minSupportedBuild: 1,
       minSdkVersion: 24,
       fileName: 'skavia-v1.0.0-arm64-v8a.apk',
-      fileSizeBytes: 23668477,
-      sha256Checksum: 'c2ff57a1c6c6b64f1f52ecff435419bb63353486e4940cdb853b04b64ec365e3',
-      signingCertSha256: '9920bf0cfdf2b5dc988be08044709d7936a18d9ef6f272c72b226f95fec1b4a0',
+      fileSizeBytes: 26277260,
+      sha256Checksum: '68d327a13aaa3ffc73b12e9bbdcf9716e0ed9edc08aae96cb61ef9d8909cab45',
+      signingCertSha256: '8ae8d16712e610e8a69dc832f961388e93c2dbb214159db290be466593c9b83f',
       releaseNotes:
-        'SKAVIA v1.0.0 official production release. Ultra-compact 22.6 MB optimized release APK with dual Client & Worker modes, live geolocation dispatch, 4-digit arrival OTP, and protected escrow settlement.',
+        'SKAVIA v1.0.0 official production release. Verified BITA STUDIO platform, Bangladesh Cloud Phone OTP & NID verification, real-time Google Maps street tiles, and dark mode splash support.',
       isMandatory: false,
-      publishedAt: '2026-11-19T02:30:00.000Z',
+      publishedAt: '2026-11-25T07:10:30.000Z',
       channel: 'stable',
       distributionMethod: 'Official Signed Production APK (ARM64 & ARMv7)',
       armv7Url: `${origin}/downloads/skavia-v1.0.0-armeabi-v7a.apk`,
-      armv7SizeBytes: 21257429,
-      armv7Sha256Checksum: '3c0603f6178b31fd307cc6b97e46678f6115b2a0e4f4204277735237d40d593e',
+      armv7SizeBytes: 24177505,
+      armv7Sha256Checksum: '0c0edb89db09b74142e6eed2c815f6b6a068332ccd778d3348d4e571105dab87',
     },
     ios: {
       published: Boolean(iosUrl),

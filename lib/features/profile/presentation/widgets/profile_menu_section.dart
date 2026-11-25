@@ -180,6 +180,30 @@ class ProfileMenuSection extends StatelessWidget {
         const SizedBox(height: 8),
         _buildTile(
           context: context,
+          icon: Icons.verified_user_outlined,
+          title: isBn
+              ? 'জাতীয় পরিচয়পত্র (NID) ভেরিফিকেশন'
+              : 'National ID (NID) Verification',
+          subtitle: isBn
+              ? (profileController.profile?.verificationStatus == 'verified'
+                  ? 'আপনার এনআইডি সফলভাবে যাচাইকৃত • ট্রাস্ট ব্যাজ সক্রিয়'
+                  : (profileController.profile?.verificationStatus == 'pending'
+                      ? 'এনআইডি পর্যালোচনায় রয়েছে (সাধারণত ২-৪ ঘণ্টা)'
+                      : 'এনআইডি কার্ড সাবমিট করে ট্রাস্ট ব্যাজ পান'))
+              : (profileController.profile?.verificationStatus == 'verified'
+                  ? 'NID Verified • Official Trust Badge Active'
+                  : (profileController.profile?.verificationStatus == 'pending'
+                      ? 'NID documents currently under review'
+                      : 'Submit NID card to unlock verified citizen badge')),
+          onTap: () => Navigator.pushNamed(
+            context,
+            AppRoutes.nidVerification,
+            arguments: profileController,
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildTile(
+          context: context,
           icon: Icons.grid_view_outlined,
           title: l10n.profileMyBookings,
           subtitle: isBn

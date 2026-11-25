@@ -196,48 +196,49 @@ class _CategoryCatalogScreenState extends State<CategoryCatalogScreen> {
                         const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
                         // Section Header
-                        SliverToBoxAdapter(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    l10n.servicesAvailableCount(
-                                      _controller.services.length,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w700,
-                                          color: colorScheme.onSurface,
-                                        ),
-                                  ),
-                                ),
-                                if (_controller.hasActiveFilter) ...[
-                                  const SizedBox(width: 8),
-                                  TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
+                        if (_controller.services.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      l10n.servicesAvailableCount(
+                                        _controller.services.length,
                                       ),
-                                      minimumSize: Size.zero,
-                                      tapTargetSize:
-                                          MaterialTapTargetSize.shrinkWrap,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: colorScheme.onSurface,
+                                          ),
                                     ),
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      _controller.resetFilters();
-                                    },
-                                    child: Text(l10n.commonReset),
                                   ),
+                                  if (_controller.hasActiveFilter) ...[
+                                    const SizedBox(width: 8),
+                                    TextButton(
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        _controller.resetFilters();
+                                      },
+                                      child: Text(l10n.commonReset),
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
-                        ),
 
                         const SliverToBoxAdapter(child: SizedBox(height: 10)),
 

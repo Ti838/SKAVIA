@@ -70,7 +70,15 @@ export async function GET(
     });
   }
 
-  const redirect = NextResponse.redirect(signedOrMemoryUrl, { status: 302 });
+  let targetUrl = signedOrMemoryUrl;
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = new URL(
+      targetUrl.startsWith('/') ? targetUrl : `/${targetUrl}`,
+      _req.url
+    ).toString();
+  }
+
+  const redirect = NextResponse.redirect(targetUrl, { status: 302 });
   redirect.headers.set('X-Content-Sha256', release.sha256_checksum);
   redirect.headers.set('Cache-Control', 'no-store');
   return redirect;

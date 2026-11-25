@@ -132,7 +132,7 @@ export class SupabaseAdminRepository implements AdminRepository {
   writeAuditLog(entry: AuditWriteInput): Promise<void> {
     return this.identity.writeAuditLog(entry);
   }
-  listAuditLogs(filters: { action?: string; userId?: string; limit?: number }): Promise<AuditLogEntry[]> {
+  listAuditLogs(filters: { action?: string; userId?: string; limit?: number; since?: string }): Promise<AuditLogEntry[]> {
     return this.identity.listAuditLogs(filters);
   }
   listAdmins(): Promise<AdminAccountRecord[]> {

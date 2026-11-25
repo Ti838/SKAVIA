@@ -134,60 +134,71 @@ export function BranchHomeScreen() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {homeServices.map((service) => (
-                  <div
-                    key={service.slug}
-                    className={`rounded-3xl border p-6 sm:p-8 flex flex-col justify-between space-y-6 ${t.railBorder} ${t.cardBg} hover:border-[#15E7CA]/40 transition`}
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono-code font-bold text-[#15E7CA] px-2.5 py-0.5 rounded-full bg-[#15E7CA]/10">
-                          {service.categoryNameEn}
-                        </span>
-                        <span className="text-sm font-bold font-mono-code text-[#003399] dark:text-[#3898EC]">
-                          {service.priceRangeEn}
-                        </span>
+              {homeServices.length === 0 ? (
+                <div className={`text-center py-16 px-4 rounded-3xl border ${t.railBorder} ${t.cardBg}`}>
+                  <p className={`text-base font-semibold ${t.textPrimary}`}>
+                    No home services published yet
+                  </p>
+                  <p className={`text-sm mt-1 max-w-md mx-auto ${t.textSecondary}`}>
+                    Standardized residential maintenance packages will appear here once officially published.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {homeServices.map((service) => (
+                    <div
+                      key={service.slug}
+                      className={`rounded-3xl border p-6 sm:p-8 flex flex-col justify-between space-y-6 ${t.railBorder} ${t.cardBg} hover:border-[#15E7CA]/40 transition`}
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono-code font-bold text-[#15E7CA] px-2.5 py-0.5 rounded-full bg-[#15E7CA]/10">
+                            {service.categoryNameEn}
+                          </span>
+                          <span className="text-sm font-bold font-mono-code text-[#003399] dark:text-[#3898EC]">
+                            {service.priceRangeEn}
+                          </span>
+                        </div>
+
+                        <h3 className={`text-xl font-bold ${t.textPrimary}`}>
+                          {service.nameEn}
+                        </h3>
+
+                        <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
+                          {service.summaryEn}
+                        </p>
+
+                        <ul className="space-y-2 text-xs">
+                          {service.featuresEn.slice(0, 3).map((f, i) => (
+                            <li key={i} className={`flex items-start gap-2 ${t.textSecondary}`}>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-teal-500 shrink-0 mt-0.5" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
-                      <h3 className={`text-xl font-bold ${t.textPrimary}`}>
-                        {service.nameEn}
-                      </h3>
+                      <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <Link
+                          href={`/services-catalog/${service.slug}`}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
+                        >
+                          <span>Full Trade Protocol</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
 
-                      <p className={`text-xs sm:text-sm leading-relaxed ${t.textSecondary}`}>
-                        {service.summaryEn}
-                      </p>
-
-                      <ul className="space-y-2 text-xs">
-                        {service.featuresEn.slice(0, 3).map((f, i) => (
-                          <li key={i} className={`flex items-start gap-2 ${t.textSecondary}`}>
-                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-500 shrink-0 mt-0.5" />
-                            <span>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
+                        <Link
+                          href="/download"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white bg-[#003399] hover:bg-[#002266] transition shadow-sm"
+                        >
+                          <Smartphone className="h-3.5 w-3.5" />
+                          <span>Book Specialist</span>
+                        </Link>
+                      </div>
                     </div>
-
-                    <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
-                      <Link
-                        href={`/services-catalog/${service.slug}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
-                      >
-                        <span>Full Trade Protocol</span>
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
-
-                      <Link
-                        href="/download"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold text-white bg-[#003399] hover:bg-[#002266] transition shadow-sm"
-                      >
-                        <Smartphone className="h-3.5 w-3.5" />
-                        <span>Book Specialist</span>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </div>

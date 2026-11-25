@@ -405,10 +405,12 @@ export class SupabaseIdentityStore {
     }
   }
 
-  async listAuditLogs(filters: { action?: string; userId?: string; limit?: number }): Promise<AuditLogEntry[]> {
+  async listAuditLogs(filters: { action?: string; userId?: string; limit?: number; since?: string }): Promise<AuditLogEntry[]> {
+    const launchEpoch = filters.since ?? process.env.ADMIN_LOGS_EPOCH ?? '2026-11-25T00:00:00.000Z';
     let q = this.db
       .from('audit_logs')
       .select('audit_id, user_id, action, entity_type, entity_id, details, ip_address, created_at')
+      .gte('created_at', launchEpoch)
       .order('created_at', { ascending: false })
       .limit(filters.limit ?? 100);
 

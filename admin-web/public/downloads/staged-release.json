@@ -1,12 +1,12 @@
-﻿{
-    "buildNumber":  9,
-    "fileSizeBytes":  70089708,
-    "fileName":  "skavia-v1.0.8.apk",
-    "apkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-v1.0.8.apk",
-    "releaseNotes":  "- BITA STUDIO parent organization branding \u0026 official portal link\n- Real Google Maps standard OpenStreetMap \u0026 Stadia tiles (zero watermark)\n- 100% Free Cloud Phone OTP verification engine (no credit card or Blaze billing required)\n- Resilient feed empty state and clean pristine new account experience",
-    "deployedAt":  "2026-11-24T13:58:43Z",
-    "channel":  "stable",
-    "versionName":  "1.0.8",
-    "sha256Checksum":  "96649b63b13b77d217f4dfdf08a8912c9ef23fbb9cffe6c2b386784d1cd2bffa",
-    "latestApkUrl":  "https://skavia-bd.vercel.app/downloads/skavia-latest.apk"
+{
+  "versionName": "1.0.0",
+  "buildNumber": 1,
+  "channel": "stable",
+  "apkUrl": "https://skavia-bd.vercel.app/downloads/skavia-v1.0.0.apk",
+  "latestApkUrl": "https://skavia-bd.vercel.app/downloads/skavia-latest.apk",
+  "fileName": "skavia-v1.0.0.apk",
+  "fileSizeBytes": 70442649,
+  "sha256Checksum": "039af46c0525b29c5829a65f0558a49a217ce218118154112c1df99f72c4c230",
+  "deployedAt": "2026-11-25T07:10:30Z",
+  "releaseNotes": "- SKAVIA v1.0.0 official production release\n- BITA STUDIO parent organization branding & official portal link\n- Real Google Maps standard OpenStreetMap & Stadia tiles\n- Free Cloud Phone OTP & NID verification support\n- Dark mode splash screen & clean pristine new account experience"
 }

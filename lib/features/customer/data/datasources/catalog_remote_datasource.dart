@@ -38,12 +38,7 @@ class CatalogRemoteDataSource {
   Future<List<ServiceModel>> getServices({String? categoryId}) async {
     final client = _supabase;
     if (client == null) {
-      if (categoryId != null && categoryId.isNotEmpty && categoryId != 'all') {
-        return ServiceModel.defaultServices
-            .where((s) => s.categoryId == categoryId)
-            .toList();
-      }
-      return ServiceModel.defaultServices;
+      return const [];
     }
 
     String? dbCategoryUuid;
@@ -77,14 +72,7 @@ class CatalogRemoteDataSource {
 
     final client = _supabase;
     if (client == null) {
-      final lower = query.toLowerCase();
-      return ServiceModel.defaultServices
-          .where(
-            (s) =>
-                s.name.toLowerCase().contains(lower) ||
-                s.description.toLowerCase().contains(lower),
-          )
-          .toList();
+      return const [];
     }
 
     final safeQuery = query.replaceAll(',', ' ');

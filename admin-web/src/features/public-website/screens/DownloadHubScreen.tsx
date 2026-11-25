@@ -39,7 +39,7 @@ export function DownloadHubScreen({
   const directApkUrl = activeDist.apkUrl ?? '/downloads/skavia-latest.apk';
   const [fullDownloadUrl, setFullDownloadUrl] = useState(`https://skavia-bd.vercel.app${directApkUrl}`);
 
-  const versionLabel = activeDist.version ? `v${activeDist.version}` : 'v1.0.7';
+  const versionLabel = activeDist.version ? `v${activeDist.version}` : 'v1.0.0';
   const buildLabel = activeDist.buildNumber ? `#${activeDist.buildNumber}` : '#8';
   const apkSizeLabel =
     activeDist.fileSizeBytes && activeDist.fileSizeBytes > 0

@@ -556,7 +556,7 @@ export function PublishReleasePanel({
                   value={githubUrl}
                   disabled={inspectingUrl || submitting}
                   onChange={(e) => setGithubUrl(e.target.value)}
-                  placeholder="https://github.com/Ti838/SKAVIA/releases/download/v1.0.1/skavia-latest.apk"
+                  placeholder="https://github.com/Ti838/SKAVIA/releases/download/v1.0.0/skavia-latest.apk"
                   className="w-full pl-9 pr-3 py-2 text-xs font-mono rounded-lg border outline-none focus:border-blue-500"
                   style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
                 />

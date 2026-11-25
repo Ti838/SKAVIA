@@ -523,7 +523,7 @@ export interface AdminRepository {
 
   // Audit
   writeAuditLog(entry: AuditWriteInput): Promise<void>;
-  listAuditLogs(filters: { action?: string; userId?: string; limit?: number }): Promise<AuditLogEntry[]>;
+  listAuditLogs(filters: { action?: string; userId?: string; limit?: number; since?: string }): Promise<AuditLogEntry[]>;
 
   // Dashboard & Search
   getDashboardMetrics(branchFilter: string[] | null): Promise<DashboardMetrics>;

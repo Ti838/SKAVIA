@@ -894,21 +894,10 @@ INSERT INTO categories (category_id, branch_id, name, slug, icon_name, descripti
 ON CONFLICT (category_id) DO NOTHING;
 
 -- 16.4 Services
-INSERT INTO services (service_id, category_id, name, description, base_price) VALUES
-    ('c1111111-1111-4111-8111-111111111111', 'a2222222-2222-4222-8222-222222222222', 'Inverter AC Master Jet Wash', 'Indoor and outdoor unit chemical servicing', 1200.00),
-    ('c2222222-2222-4222-8222-222222222222', 'a2222222-2222-4222-8222-222222222222', 'R32 / R410A Gas Refill', 'Full gas top-up with leak pressure test', 2500.00),
-    ('c3333333-3333-4333-8333-333333333333', 'a1111111-1111-4111-8111-111111111111', 'Residential Main DB Board Setup', 'Circuit breaker load balancing and earthing', 1800.00),
-    ('c4444444-4444-4444-8444-444444444444', 'a3333333-3333-4333-8333-333333333333', 'Concealed Water Leakage Repair', 'Acoustic detector leak locating & pipe replacement', 2200.00),
-    ('c5555555-5555-4555-8555-555555555555', 'a4444444-4444-4444-8444-444444444444', '4-Channel IP CCTV Installation', 'Camera mounting, NVR setup, remote phone live view', 3500.00)
-ON CONFLICT (service_id) DO NOTHING;
+-- Note: Initial seed rows omitted to maintain clean zero-state for new environments.
+-- Services and standardized rates are created through admin-web or live verified migrations.
 
 -- 16.5 Skills
-INSERT INTO skills (skill_id, category_id, service_id, name) VALUES
-    ('d1111111-1111-4111-8111-111111111111', 'a2222222-2222-4222-8222-222222222222', 'c1111111-1111-4111-8111-111111111111', 'HVAC Diagnostics'),
-    ('d2222222-2222-4222-8222-222222222222', 'a2222222-2222-4222-8222-222222222222', 'c2222222-2222-4222-8222-222222222222', 'Freon Gas Charging'),
-    ('d3333333-3333-4333-8333-333333333333', 'a1111111-1111-4111-8111-111111111111', 'c3333333-3333-4333-8333-333333333333', 'Three-Phase Industrial Wiring'),
-    ('d4444444-4444-4444-8444-444444444444', 'a3333333-3333-4333-8333-333333333333', 'c4444444-4444-4444-8444-444444444444', 'Sanitary Plumbing'),
-    ('d5555555-5555-4555-8555-555555555555', 'a4444444-4444-4444-8444-444444444444', 'c5555555-5555-4555-8555-555555555555', 'IP Camera Configuration')
-ON CONFLICT (skill_id) DO NOTHING;
+-- Note: Granular skills are populated when associated services are published.
 
 

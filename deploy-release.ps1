@@ -1,4 +1,4 @@
-# SKAVIA One-Click Release Automation Script
+﻿# SKAVIA One-Click Release Automation Script
 # Usage: .\deploy-release.ps1
 
 Write-Host "==========================================" -ForegroundColor Cyan
@@ -47,7 +47,7 @@ Write-Host "   ✅ Copied to skavia-latest.apk and skavia-v$versionName.apk" -Fo
 
 # Automatically publish release to Supabase app_releases table
 Write-Host "   📡 Auto-publishing v$versionName (#$buildNumber) directly to Supabase app_releases..." -ForegroundColor Cyan
-node -e @"
+$publishScript = @"
 const https = require('https');
 const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1mc3J2dHZnanJ3cndhcGttbHhnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MDQxMjQ4MCwiZXhwIjoyMTA1OTg4NDgwfQ.8PBwWXW8sRokpqb1rG2fl0UFx5y9ZbzOWg-ci-sSNBc';
 const headers = {
@@ -72,12 +72,12 @@ const demoteReq = https.request({
     min_supported_build: 1,
     min_sdk_version: 24,
     target_sdk_version: 35,
-    release_notes: '- 100% Free Cloud Phone OTP Verification (no credit card or Blaze billing required)\n- Unified executive governance login portal\n- Dynamic latest APK telemetry on public download hub\n- Direct auto-fill OTP helper and zero-data pristine accounts',
+    release_notes: '- SKAVIA v1.0.0 official production release\n- BITA STUDIO parent organization branding & official portal link\n- Real Google Maps standard OpenStreetMap & Stadia tiles\n- Free Cloud Phone OTP & NID verification support\n- Dark mode splash screen & clean pristine new account experience',
     is_mandatory: false,
     status: 'published',
     is_current: true,
     storage_bucket: 'vercel-cdn',
-    storage_path: 'https://skavia-bd.vercel.app/downloads/skavia-v$versionName.apk',
+    storage_path: '/downloads/skavia-v$versionName.apk',
     file_name: 'skavia-v$versionName.apk',
     file_size_bytes: $fileSizeBytes,
     sha256_checksum: '$sha256',
@@ -103,6 +103,7 @@ const demoteReq = https.request({
 demoteReq.write(JSON.stringify({ is_current: false }));
 demoteReq.end();
 "@
+$publishScript | node -
 
 # Generate staged-release.json for reference
 $stagedManifest = @{
@@ -115,13 +116,13 @@ $stagedManifest = @{
     fileSizeBytes = $fileSizeBytes
     sha256Checksum = $sha256
     deployedAt = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-    releaseNotes = "- 100% Free Cloud Phone OTP Verification (no credit card or Blaze billing required)`n- Unified executive governance login portal`n- Dynamic latest APK telemetry on public download hub`n- Direct auto-fill OTP helper and zero-data pristine accounts"
+    releaseNotes = "- SKAVIA v1.0.0 official production release`n- BITA STUDIO parent organization branding & official portal link`n- Real Google Maps standard OpenStreetMap & Stadia tiles`n- Free Cloud Phone OTP & NID verification support`n- Dark mode splash screen & clean pristine new account experience"
 } | ConvertTo-Json -Depth 4
 Set-Content -Path "admin-web\public\downloads\staged-release.json" -Value $stagedManifest -Encoding UTF8
 
 # 4. Commit and push to git
 Write-Host "`n[4/4] Deploying to Vercel via Git..." -ForegroundColor Cyan
-git add "admin-web\public\downloads\skavia-latest.apk" "admin-web\public\downloads\skavia-v$versionName.apk" "admin-web\public\downloads\staged-release.json" pubspec.yaml
+git add "admin-web\public\downloads\skavia-latest.apk" "admin-web\public\downloads\skavia-v$versionName.apk" "admin-web\public\downloads\staged-release.json" pubspec.yaml lib admin-web
 git commit -m "deploy: update production release APK to v$currentVersion"
 git push
 

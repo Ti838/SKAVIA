@@ -49,6 +49,7 @@ abstract class AppRoutes {
   static const String savedAddresses = '/saved-addresses';
   static const String notificationPreferences = '/notification-preferences';
   static const String privacySecurity = '/privacy-security';
+  static const String nidVerification = '/nid-verification';
   static const String notificationCenter = '/notifications';
   static const String settings = '/settings';
   static const String supportFaq = '/support-faq';

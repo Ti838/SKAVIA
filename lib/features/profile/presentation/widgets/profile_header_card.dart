@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/router/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../../../shared/enums/app_role_mode.dart';
@@ -243,20 +244,82 @@ class ProfileHeaderCard extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          decoration: BoxDecoration(
-            color: roleAccent.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Text(
-            roleLabel,
-            style: TextStyle(
-              color: roleAccent,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+              decoration: BoxDecoration(
+                color: roleAccent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Text(
+                roleLabel,
+                style: TextStyle(
+                  color: roleAccent,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, AppRoutes.nidVerification),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: profile.verificationStatus == 'verified'
+                      ? AppColors.successGreen.withValues(alpha: 0.12)
+                      : (profile.verificationStatus == 'pending'
+                          ? AppColors.warningAmber.withValues(alpha: 0.12)
+                          : tokens.subtleCardBg),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: profile.verificationStatus == 'verified'
+                        ? AppColors.successGreen.withValues(alpha: 0.4)
+                        : (profile.verificationStatus == 'pending'
+                            ? AppColors.warningAmber.withValues(alpha: 0.4)
+                            : tokens.border),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      profile.verificationStatus == 'verified'
+                          ? Icons.verified_rounded
+                          : (profile.verificationStatus == 'pending'
+                              ? Icons.hourglass_top_rounded
+                              : Icons.shield_outlined),
+                      size: 13,
+                      color: profile.verificationStatus == 'verified'
+                          ? AppColors.successGreen
+                          : (profile.verificationStatus == 'pending'
+                              ? AppColors.warningAmber
+                              : tokens.brandAccent),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      profile.verificationStatus == 'verified'
+                          ? (isBn ? 'এনআইডি যাচাইকৃত' : 'NID Verified')
+                          : (profile.verificationStatus == 'pending'
+                              ? (isBn ? 'পর্যালোচনাধীন' : 'Reviewing')
+                              : (isBn ? 'এনআইডি যাচাই' : 'Verify NID')),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: profile.verificationStatus == 'verified'
+                            ? AppColors.successGreen
+                            : (profile.verificationStatus == 'pending'
+                                ? AppColors.warningAmber
+                                : tokens.brandAccent),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );

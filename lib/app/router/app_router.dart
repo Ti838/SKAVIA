@@ -30,6 +30,7 @@ import '../../features/profile/presentation/controllers/profile_controller.dart'
 import '../../features/profile/presentation/screens/about_skavia_screen.dart';
 import '../../features/profile/presentation/screens/edit_detailed_profile_screen.dart';
 import '../../features/profile/presentation/screens/notification_preferences_screen.dart';
+import '../../features/profile/presentation/screens/nid_verification_screen.dart';
 import '../../features/profile/presentation/screens/privacy_security_screen.dart';
 import '../../features/profile/presentation/screens/saved_addresses_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
@@ -428,6 +429,15 @@ abstract class AppRouter {
         return _page(
           settings,
           (_) => PrivacySecurityScreen(controller: controller),
+        );
+
+      case AppRoutes.nidVerification:
+        final controller =
+            (settings.arguments as ProfileController?) ??
+            ProfileController.shared;
+        return _page(
+          settings,
+          (_) => NidVerificationScreen(controller: controller),
         );
 
       case AppRoutes.notificationCenter:

@@ -328,8 +328,22 @@ export class SupabaseOperationsDirectoryStore {
       p_review_notes: input.reviewNotes,
     });
     if (error) throw new Error(error.message);
+
     const updated = await this.getVerificationById(input.verificationId);
     if (!updated) throw new Error('Verification record missing after update');
+
+    // Also update user profile verification status
+    if (updated.worker_user_id) {
+      const userStatus = input.decision === 'Approved' ? 'verified' : 'rejected';
+      await this.db
+        .from('users')
+        .update({
+          verification_status: userStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', updated.worker_user_id);
+    }
+
     return updated;
   }
 

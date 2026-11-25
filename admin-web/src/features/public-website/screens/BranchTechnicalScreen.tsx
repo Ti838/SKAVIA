@@ -134,60 +134,71 @@ export function BranchTechnicalScreen() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {techServices.map((service) => (
-                  <div
-                    key={service.slug}
-                    className={`rounded-3xl border p-6 flex flex-col justify-between space-y-6 ${t.railBorder} ${t.cardBg} hover:border-[#3898EC]/40 transition`}
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono-code font-bold text-[#3898EC] px-2.5 py-0.5 rounded-full bg-[#3898EC]/10">
-                          {service.categoryNameEn}
-                        </span>
-                        <span className="text-sm font-bold font-mono-code text-[#003399] dark:text-[#3898EC]">
-                          {service.priceRangeEn}
-                        </span>
+              {techServices.length === 0 ? (
+                <div className={`text-center py-16 px-4 rounded-3xl border ${t.railBorder} ${t.cardBg}`}>
+                  <p className={`text-base font-semibold ${t.textPrimary}`}>
+                    No technical services published yet
+                  </p>
+                  <p className={`text-sm mt-1 max-w-md mx-auto ${t.textSecondary}`}>
+                    Standardized engineering trade packages will appear here once officially published.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {techServices.map((service) => (
+                    <div
+                      key={service.slug}
+                      className={`rounded-3xl border p-6 flex flex-col justify-between space-y-6 ${t.railBorder} ${t.cardBg} hover:border-[#3898EC]/40 transition`}
+                    >
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-mono-code font-bold text-[#3898EC] px-2.5 py-0.5 rounded-full bg-[#3898EC]/10">
+                            {service.categoryNameEn}
+                          </span>
+                          <span className="text-sm font-bold font-mono-code text-[#003399] dark:text-[#3898EC]">
+                            {service.priceRangeEn}
+                          </span>
+                        </div>
+
+                        <h3 className={`text-lg font-bold leading-snug ${t.textPrimary}`}>
+                          {service.nameEn}
+                        </h3>
+
+                        <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
+                          {service.summaryEn}
+                        </p>
+
+                        <ul className="space-y-1.5 text-xs">
+                          {service.featuresEn.slice(0, 3).map((f, i) => (
+                            <li key={i} className={`flex items-start gap-2 ${t.textSecondary}`}>
+                              <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
-                      <h3 className={`text-lg font-bold leading-snug ${t.textPrimary}`}>
-                        {service.nameEn}
-                      </h3>
+                      <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <Link
+                          href={`/services-catalog/${service.slug}`}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
+                        >
+                          <span>Trade SOP</span>
+                          <ArrowRight className="h-3 w-3" />
+                        </Link>
 
-                      <p className={`text-xs leading-relaxed ${t.textSecondary}`}>
-                        {service.summaryEn}
-                      </p>
-
-                      <ul className="space-y-1.5 text-xs">
-                        {service.featuresEn.slice(0, 3).map((f, i) => (
-                          <li key={i} className={`flex items-start gap-2 ${t.textSecondary}`}>
-                            <CheckCircle2 className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
-                            <span>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
+                        <Link
+                          href="/download"
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-[#003399] hover:bg-[#002266] transition shadow-sm"
+                        >
+                          <Smartphone className="h-3.5 w-3.5" />
+                          <span>Book Dispatch</span>
+                        </Link>
+                      </div>
                     </div>
-
-                    <div className="pt-4 border-t flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
-                      <Link
-                        href={`/services-catalog/${service.slug}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#003399] dark:text-[#3898EC] hover:underline"
-                      >
-                        <span>Trade SOP</span>
-                        <ArrowRight className="h-3 w-3" />
-                      </Link>
-
-                      <Link
-                        href="/download"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-white bg-[#003399] hover:bg-[#002266] transition shadow-sm"
-                      >
-                        <Smartphone className="h-3.5 w-3.5" />
-                        <span>Book Dispatch</span>
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </section>
         </div>
