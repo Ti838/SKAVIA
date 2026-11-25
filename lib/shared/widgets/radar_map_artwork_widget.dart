@@ -104,13 +104,10 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
     final textScale = MediaQuery.textScalerOf(context).scale(1.0);
     final mapHeight = textScale > 1.3 ? 196.0 : 172.0;
 
-    // Authentic Google Maps Street raster tiles with dark canvas fallback
+    // Crisp CartoDB Voyager (Light) & DarkMatter (Dark) tiles — 100% free, no API key, no 401
     final tileUrl = isDark
-        ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
-        : 'https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
-    final subdomains = isDark
-        ? const <String>[]
-        : const <String>['mt0', 'mt1', 'mt2', 'mt3'];
+        ? 'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
     final isRetina = RetinaMode.isHighDensity(context);
 
     return GestureDetector(
@@ -154,10 +151,9 @@ class _RadarMapArtworkWidgetState extends State<RadarMapArtworkWidget>
                     TileLayer(
                       urlTemplate: tileUrl,
                       fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      subdomains: subdomains,
                       retinaMode: isRetina,
-                      userAgentPackageName: 'com.example.skavia',
-                      maxZoom: 20,
+                      userAgentPackageName: 'com.skavia.app',
+                      maxZoom: 19,
                     ),
                     MarkerLayer(
                       markers: [

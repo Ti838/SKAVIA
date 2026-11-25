@@ -1,54 +1,16 @@
 # PostgreSQL Database Schema & Table Reference
 
-## 1. Schema Overview
+> **Master Reference:** See [docs/DATA_DESIGN.md](../DATA_DESIGN.md) for the complete End-to-End Entity-Relationship Diagram, User vs. Admin access boundaries, and all 54 tables.
 
-The SKAVIA database is engineered in Third Normal Form (3NF) on **PostgreSQL 15** (managed via Supabase Cloud). The schema comprises **34 core tables** plus **24 migration/governance tables** (58 total tables across 8 timestamped migrations):
+## Structured SQL Modules (`supabase/schema/`)
 
----
+All database definitions are organized cleanly by domain instead of fragmented migration files:
 
-## 2. Core Functional Clusters
-
-### Cluster 1: Organizational Hierarchy & Identity
-- `branches`: Internal specialization sectors (`TECH`, `HOME`, `CORP`, `AGRI`, `LOGI`, `DIGI`, `BIZ`, `CONS`, `EVNT`).
-- `users`: Core identity table linked to authentication provider UID with status (`active`, `suspended`).
-- `user_roles`: Multi-role assignment linking `users` to `branches` and roles (`customer`, `worker`, `business_client`, `admin`).
-- `customer_profiles`: Consumer preferences, default addresses, and emergency contacts.
-- `worker_profiles`: Trade category, hourly rate, verified skill badge, and active dispatch toggle.
-
-### Cluster 2: Taxonomy & Service SKU Catalog
-- `categories`: Service classifications with localized names (English & Bengali).
-- `services`: SKU items with base prices, estimated duration, and required trade qualifications.
-- `service_addons`: Optional modular add-on equipment or labor extensions.
-
-### Cluster 3: Customer Demand & Bidding
-- `requirements`: Turnkey customized requests posted by customers.
-- `requirement_bids`: Sealed bids submitted by qualified specialists.
-
-### Cluster 4: Dispatch & Real-Time Telemetry
-- `service_requests`: Instant booking orders with 4-digit arrival OTP, timestamps, and status history.
-- `service_request_status_history`: Immutable audit trail of every status transition.
-- `service_request_coordinates`: Live geospatial breadcrumbs during technician transit.
-
-### Cluster 5: Turnkey Commercial Projects & Kanban
-- `projects`: Commercial multi-phase contracts with start/end milestones.
-- `project_milestones`: Discrete deliverables tied to escrow tranches.
-- `tasks`: Kanban work items (`todo`, `in_progress`, `review`, `done`).
-- `teams` & `team_members`: Collaborative multi-trade workforce squads.
-
-### Cluster 6: Real-Time Chat & Communications
-- `conversations`: Two-party or group messaging channels.
-- `conversation_participants`: Presence, read receipts, and mute status.
-- `messages`: Encrypted text, location pins, and media attachment references.
-
-### Cluster 7: Billing, Financial Ledger & Escrow
-- `payments`: Payment gateway transaction logs (SSLCommerz, bKash, Card).
-- `invoices`: Formal customer bills with breakdown of labor, materials, and taxes.
-- `worker_earnings`: Net accrued technician balances available for withdrawal.
-- `escrow_accounts`: Locked escrow accounts guaranteeing payout upon job sign-off.
-
-### Cluster 8: Trust, Quality & Platform Governance
-- `reviews`: Mutual rating and feedback scores.
-- `worker_reputations`: Aggregated completion rates, punctuality, and ratings.
-- `disputes` & `dispute_messages`: Formal complaint escalation desk.
-- `worker_verifications`: National ID (NID) and trade certificate verification queue.
-- `audit_logs`: Immutable security and administrative action logs.
+1. `supabase/schema/01_identity_and_rbac.sql` — `users`, `roles`, `user_roles`, `user_addresses`, `user_sessions`, `verifications`
+2. `supabase/schema/02_admin_governance.sql` — `permissions`, `role_permissions`, `user_permission_overrides`, `admin_profiles`, `admin_invitations`, `admin_passkeys`, `webauthn_challenges`, `admin_login_events`, `audit_logs`, `security_incidents`, `system_settings`, `backup_verification_logs`
+3. `supabase/schema/03_catalog_and_branches.sql` — `branches`, `categories`, `services`, `skills`, `admin_branch_assignments`
+4. `supabase/schema/04_marketplace_and_operations.sql` — `customer_profiles`, `worker_profiles`, `worker_skills`, `portfolio_items`, `certificates`, `availability_slots`, `requirements`, `requirement_skills`, `match_results`, `service_requests`, `projects`, `teams`, `team_members`, `tasks`
+5. `supabase/schema/05_finance_and_escrow.sql` — `payments`, `invoices`, `transactions`, `worker_earnings`, `maker_checker_approvals`, `payout_requests`, `commission_rules`, `reconciliation_runs`
+6. `supabase/schema/06_engagement_and_sync.sql` — `reviews`, `reputations`, `complaints`, `disputes`, `dispute_notes`, `refund_requests`, `conversations`, `messages`, `notifications`, `user_notifications`, `offline_sync_queue`
+7. `supabase/schema/07_releases_and_ota.sql` — `app_releases`, `app_release_events`, `app-releases` private storage bucket
+8. `supabase/schema/08_rls_functions_and_indexes.sql` — Row-Level Security (RLS) policies, `prevent_audit_log_mutation` trigger, and performance B-Tree indexes.

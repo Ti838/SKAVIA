@@ -110,17 +110,21 @@ class _RadarMapCanvasState extends State<RadarMapCanvas> {
               ),
             ] else if (activeStyle == SkaviaMapStyle.dark)
               TileLayer(
-                // Stadia Alidade Smooth Dark — free for ≤500K tiles/month, no key needed
+                // CartoDB DarkMatter — 100% free, no API key, crisp dark street tiles
                 urlTemplate:
-                    'https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png',
+                    'https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                 fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                retinaMode: RetinaMode.isHighDensity(context),
                 userAgentPackageName: 'com.skavia.app',
-                maxZoom: 20,
+                maxZoom: 19,
               )
             else
               TileLayer(
-                // OpenStreetMap Standard — completely free, no key, no watermark
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                // CartoDB Voyager / OSM fallback — clean street map with zero watermark
+                urlTemplate:
+                    'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                retinaMode: RetinaMode.isHighDensity(context),
                 userAgentPackageName: 'com.skavia.app',
                 maxZoom: 19,
               ),
